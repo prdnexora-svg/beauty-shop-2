@@ -65,6 +65,20 @@ export interface SupplierLocationDetails {
   transitAdvantage: string;
 }
 
+export interface ComplianceReport {
+  id: string;
+  title: string;
+  category: 'ISO Certificate' | 'Lab Test Result' | 'Audit Summary' | 'Regulatory Approval' | 'GMP Compliance' | 'COA & Stability';
+  fileSize: string;
+  issueDate: string;
+  validUntil?: string;
+  issuedBy: string;
+  downloadUrl?: string;
+  summary: string;
+  accreditationNumber?: string;
+  status: 'Verified' | 'Active' | 'Audit Passed';
+}
+
 export interface PortfolioProduct {
   id: string;
   name: string;
@@ -104,9 +118,12 @@ export interface VerifiedSupplier {
   sampleLeadTime?: string;
   monthlyCapacity?: string;
   facilityArea?: string;
+  moq?: string;
+  verificationBadge?: string;
   certificationsList?: string[];
   locationDetails?: SupplierLocationDetails;
   portfolioProducts?: PortfolioProduct[];
+  complianceReports?: ComplianceReport[];
 }
 
 export interface SearchProduct {

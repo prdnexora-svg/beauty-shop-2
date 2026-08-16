@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   ShieldCheck,
   Phone,
@@ -24,9 +24,15 @@ import {
   Leaf,
   BadgeCheck,
   Video,
-  Star
+  Star,
+  FileText,
+  Download,
+  FileSpreadsheet,
+  FlaskConical,
+  FileCheck,
+  Compass
 } from 'lucide-react';
-import { VerifiedSupplier } from '../types';
+import { VerifiedSupplier, ComplianceReport } from '../types';
 
 interface VerifiedSuppliersSectionProps {
   suppliers: VerifiedSupplier[];
@@ -58,13 +64,174 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
   onWhatsAppSupplier
 }) => {
   const [expandedPortfolioIds, setExpandedPortfolioIds] = useState<Record<string, boolean>>({});
+  const [expandedComplianceIds, setExpandedComplianceIds] = useState<Record<string, boolean>>({});
   const [activeRatingSupplierId, setActiveRatingSupplierId] = useState<string | null>(null);
+  const [downloadToast, setDownloadToast] = useState<string | null>(null);
+
+  // Proximity Sourcing ('Near Me') States
+  const [nearMeEnabled, setNearMeEnabled] = useState(false);
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number }>({ lat: 19.076, lng: 72.8777 }); // Default Mumbai
+  const [selectedCity, setSelectedCity] = useState<string>('Mumbai');
+  const [maxDistance, setMaxDistance] = useState<number>(300); // Default 300 km
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
+
+  const CITY_COORDINATES: Record<string, { lat: number; lng: number; name: string }> = {
+    Mumbai: { lat: 19.076, lng: 72.8777, name: 'Mumbai, MH' },
+    Delhi: { lat: 28.6139, lng: 77.2090, name: 'Delhi NCR' },
+    Bengaluru: { lat: 12.9716, lng: 77.5946, name: 'Bengaluru, KA' },
+    Pune: { lat: 18.5204, lng: 73.8567, name: 'Pune, MH' },
+    Ahmedabad: { lat: 23.0225, lng: 72.5714, name: 'Ahmedabad, GJ' },
+    Hyderabad: { lat: 17.3850, lng: 78.4867, name: 'Hyderabad, TS' }
+  };
+
+  const handleCityChange = (cityName: string) => {
+    setSelectedCity(cityName);
+    setGeoError(null);
+    if (CITY_COORDINATES[cityName]) {
+      setUserCoords({
+        lat: CITY_COORDINATES[cityName].lat,
+        lng: CITY_COORDINATES[cityName].lng
+      });
+    }
+  };
+
+  const handleAutoDetectLocation = () => {
+    setGeoLoading(true);
+    setGeoError(null);
+    if (!navigator.geolocation) {
+      setGeoError('Geolocation is not supported by this browser.');
+      setGeoLoading(false);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserCoords({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+        setSelectedCity('Auto-Detected');
+        setGeoLoading(false);
+        setDownloadToast('Location auto-detected successfully!');
+        setTimeout(() => setDownloadToast(null), 2500);
+      },
+      (error) => {
+        console.warn('Geolocation error:', error);
+        setGeoError('Unable to retrieve location. Falling back to Mumbai.');
+        setGeoLoading(false);
+        handleCityChange('Mumbai');
+      },
+      { enableHighAccuracy: true, timeout: 6000 }
+    );
+  };
+
+  const getProximityDistance = (sup: VerifiedSupplier): number => {
+    const lat1 = userCoords.lat;
+    const lng1 = userCoords.lng;
+    const lat2 = sup.locationDetails?.lat ?? (sup.city === 'Delhi NCR' ? 28.3685 : 19.076);
+    const lng2 = sup.locationDetails?.lng ?? (sup.city === 'Delhi NCR' ? 76.9412 : 72.8777);
+
+    const R = 6371; // Earth's radius in km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLng = ((lng2 - lng1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return Math.round(R * c);
+  };
+
+  const processedSuppliers = useMemo(() => {
+    if (!nearMeEnabled) return suppliers;
+
+    const withDistance = suppliers.map((sup) => ({
+      ...sup,
+      computedDistance: getProximityDistance(sup)
+    }));
+
+    const filtered = maxDistance === -1 
+      ? withDistance 
+      : withDistance.filter((s) => s.computedDistance <= maxDistance);
+
+    return filtered.sort((a, b) => a.computedDistance - b.computedDistance);
+  }, [suppliers, nearMeEnabled, userCoords, maxDistance]);
 
   const togglePortfolio = (supplierId: string) => {
     setExpandedPortfolioIds((prev) => ({
       ...prev,
       [supplierId]: !prev[supplierId]
     }));
+  };
+
+  const toggleCompliance = (supplierId: string) => {
+    setExpandedComplianceIds((prev) => ({
+      ...prev,
+      [supplierId]: !prev[supplierId]
+    }));
+  };
+
+  const triggerPdfDownload = (reportTitle: string) => {
+    setDownloadToast(`Downloading ${reportTitle} (PDF)...`);
+    setTimeout(() => {
+      setDownloadToast(null);
+    }, 3000);
+  };
+
+  const getComplianceReportsForSupplier = (sup: VerifiedSupplier): ComplianceReport[] => {
+    if (sup.complianceReports && sup.complianceReports.length > 0) {
+      return sup.complianceReports;
+    }
+    return [
+      {
+        id: `${sup.id}-iso`,
+        title: `${sup.name} ISO 22716:2007 (GMP) Certificate`,
+        category: 'ISO Certificate',
+        fileSize: '2.4 MB',
+        issueDate: 'Jan 2024',
+        validUntil: 'Dec 2026',
+        issuedBy: 'SGS International Inspection',
+        summary: 'Verified compliance with global Good Manufacturing Practices for cosmetics cleanroom production.',
+        accreditationNumber: 'SGS-GMP-88219-IN',
+        status: 'Verified'
+      },
+      {
+        id: `${sup.id}-lab`,
+        title: 'Heavy Metals & Microbiological Quality Control Lab Test',
+        category: 'Lab Test Result',
+        fileSize: '1.8 MB',
+        issueDate: 'Feb 2024',
+        issuedBy: 'Bureau Veritas Quality Labs',
+        summary: 'Zero heavy metals, arsenic, or microbial contamination detected across batch samples.',
+        accreditationNumber: 'BV-LAB-2024-091',
+        status: 'Active'
+      },
+      {
+        id: `${sup.id}-audit`,
+        title: 'Third-Party Manufacturing & Environmental Audit Summary',
+        category: 'Audit Summary',
+        fileSize: '3.1 MB',
+        issueDate: 'Mar 2024',
+        validUntil: 'Mar 2025',
+        issuedBy: 'Intertek Quality Assurance',
+        summary: 'Grade A+ audit score covering ethical labor practices, raw material traceability & effluent control.',
+        accreditationNumber: 'ITK-AUD-5521-A',
+        status: 'Audit Passed'
+      },
+      {
+        id: `${sup.id}-coa`,
+        title: 'Certificate of Analysis (COA) & 24-Mo Stability Study',
+        category: 'COA & Stability',
+        fileSize: '1.5 MB',
+        issueDate: 'Jan 2024',
+        issuedBy: 'TÜV SÜD South Asia',
+        summary: '24-month accelerated stability testing & viscosity retention study for base formulations.',
+        accreditationNumber: 'TUV-COA-7731-9',
+        status: 'Verified'
+      }
+    ];
   };
 
   const getPortfolioProducts = (sup: VerifiedSupplier) => {
@@ -208,13 +375,139 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
           )}
         </div>
 
+        {/* Proximity / 'Near Me' Control Bar */}
+        <div className="mb-8 p-4 bg-[#fcf9f8] rounded-2xl border border-[#e8e8e8] shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className={`p-2.5 rounded-xl transition-colors shrink-0 ${nearMeEnabled ? 'bg-[#b90064] text-white' : 'bg-white text-[#594047] border border-[#e8e8e8]'}`}>
+              <Compass className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[13px] font-bold text-[#1c1b1b]">Proximity Sourcing ("Near Me")</span>
+                <span className="text-[10px] font-extrabold bg-[#fde7f3] text-[#b90064] px-1.5 py-0.2 rounded-full uppercase tracking-wider">NEW</span>
+              </div>
+              <p className="text-[11.5px] text-[#594047]">
+                Filter and sort manufacturers dynamically based on proximity to your warehouse or head office.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            {/* Toggle Switch */}
+            <button
+              onClick={() => setNearMeEnabled(!nearMeEnabled)}
+              className={`px-4 py-2 rounded-xl text-[12.5px] font-bold flex items-center gap-2 border transition-all cursor-pointer ${
+                nearMeEnabled
+                  ? 'bg-[#b90064] border-[#b90064] text-white shadow-sm'
+                  : 'bg-white border-[#e8e8e8] text-[#594047] hover:border-[#b90064] hover:text-[#b90064]'
+              }`}
+            >
+              <span>{nearMeEnabled ? 'Proximity Filter Active' : 'Enable Near Me'}</span>
+              <div className={`w-8 h-4 rounded-full p-0.5 transition-colors ${nearMeEnabled ? 'bg-white/30' : 'bg-[#e8e8e8]'} flex items-center`}>
+                <div className={`w-3 h-3 rounded-full bg-white transition-transform ${nearMeEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
+              </div>
+            </button>
+
+            {nearMeEnabled && (
+              <>
+                {/* City Location dropdown */}
+                <div className="flex items-center gap-1.5 bg-white border border-[#e8e8e8] px-3 py-1.8 rounded-xl text-[12px] shadow-2xs">
+                  <span className="text-[#8c7077] font-semibold">Your Location:</span>
+                  <select
+                    value={selectedCity}
+                    onChange={(e) => handleCityChange(e.target.value)}
+                    className="bg-transparent font-bold text-[#1c1b1b] focus:outline-none cursor-pointer"
+                  >
+                    <option value="Mumbai">Mumbai Hub</option>
+                    <option value="Delhi">Delhi NCR Hub</option>
+                    <option value="Bengaluru">Bengaluru Hub</option>
+                    <option value="Pune">Pune Hub</option>
+                    <option value="Ahmedabad">Ahmedabad Hub</option>
+                    <option value="Hyderabad">Hyderabad Hub</option>
+                    {selectedCity === 'Auto-Detected' && (
+                      <option value="Auto-Detected">📍 GPS Auto-Detected</option>
+                    )}
+                  </select>
+                </div>
+
+                {/* Auto detect button */}
+                <button
+                  onClick={handleAutoDetectLocation}
+                  disabled={geoLoading}
+                  className="bg-white hover:bg-[#fde7f3]/20 border border-[#e8e8e8] hover:border-[#b90064] text-[#b90064] text-[12px] font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer disabled:opacity-60"
+                  title="Auto-detect current location using browser GPS"
+                >
+                  <MapPin className={`w-3.5 h-3.5 ${geoLoading ? 'animate-bounce' : ''}`} />
+                  <span>{geoLoading ? 'Detecting...' : 'Auto-Detect'}</span>
+                </button>
+
+                {/* Range Limit dropdown */}
+                <div className="flex items-center gap-1.5 bg-white border border-[#e8e8e8] px-3 py-1.8 rounded-xl text-[12px] shadow-2xs">
+                  <span className="text-[#8c7077] font-semibold">Max Distance:</span>
+                  <select
+                    value={maxDistance}
+                    onChange={(e) => setMaxDistance(Number(e.target.value))}
+                    className="bg-transparent font-bold text-[#1c1b1b] focus:outline-none cursor-pointer"
+                  >
+                    <option value={100}>Within 100 km</option>
+                    <option value={300}>Within 300 km</option>
+                    <option value={500}>Within 500 km</option>
+                    <option value={1000}>Within 1000 km</option>
+                    <option value={-1}>Show All (Distance Sorted)</option>
+                  </select>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Geolocation Feedback / Alerts */}
+        {nearMeEnabled && geoError && (
+          <div className="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-xl text-[12px] text-amber-800 flex items-center justify-between gap-2 animate-in fade-in duration-200">
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span>
+              <span>{geoError}</span>
+            </div>
+            <button onClick={() => setGeoError(null)} className="text-amber-500 hover:text-amber-800 font-bold">
+              Dismiss
+            </button>
+          </div>
+        )}
+
         {/* Suppliers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {suppliers.map((sup) => {
+        {processedSuppliers.length === 0 ? (
+          <div className="text-center py-16 bg-[#fcf9f8] rounded-2xl border border-dashed border-[#e8e8e8] p-6 w-full">
+            <Compass className="w-12 h-12 text-[#8c7077] mx-auto mb-3 animate-pulse" />
+            <h3 className="text-lg font-bold text-[#1c1b1b]">No Manufacturers Found</h3>
+            <p className="text-[13px] text-[#594047] max-w-md mx-auto mt-1">
+              There are no verified manufacturing facilities within {maxDistance} km of {selectedCity === 'Auto-Detected' ? 'your GPS coordinates' : `${selectedCity} Hub`}.
+            </p>
+            <div className="mt-5 flex items-center justify-center gap-3">
+              <button
+                onClick={() => setMaxDistance(-1)}
+                className="bg-[#b90064] text-white font-bold text-[12.5px] px-4 py-2 rounded-xl hover:bg-[#8e004b] transition-colors shadow-2xs cursor-pointer"
+              >
+                Show All (Distance Sorted)
+              </button>
+              <button
+                onClick={() => setMaxDistance(1000)}
+                className="bg-white border border-[#e8e8e8] hover:border-[#b90064] text-[#594047] hover:text-[#b90064] font-bold text-[12.5px] px-4 py-2 rounded-xl transition-all shadow-2xs cursor-pointer"
+              >
+                Expand to 1000 km
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {processedSuppliers.map((sup) => {
             const saved = isSaved ? isSaved(sup.id) : false;
             const inComparison = isSelectedForComparison(sup.id);
             const isPortfolioExpanded = !!expandedPortfolioIds[sup.id];
+            const isComplianceExpanded = !!expandedComplianceIds[sup.id];
             const portfolioList = getPortfolioProducts(sup);
+
+            const computedDistance = (sup as any).computedDistance;
+            const isLocalHighlight = nearMeEnabled && computedDistance !== undefined && computedDistance <= 150;
 
             return (
               <div
@@ -222,7 +515,9 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                 className={`bg-[#fcf9f8] rounded-2xl border p-6 flex flex-col justify-between card-hover-fx transition-all ${
                   inComparison
                     ? 'border-[#b90064] ring-1 ring-[#b90064]/20 shadow-md'
-                    : 'border-[#e8e8e8]'
+                    : isLocalHighlight
+                      ? 'border-emerald-500 ring-2 ring-emerald-500/10 shadow-xs bg-[#f8fdf9]'
+                      : 'border-[#e8e8e8]'
                 }`}
               >
                 <div>
@@ -382,6 +677,17 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                               <MapPin className="w-3 h-3" />
                               <span>View on Map</span>
                             </button>
+                          )}
+                          {nearMeEnabled && computedDistance !== undefined && (
+                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 transition-colors ${
+                              computedDistance <= 150
+                                ? 'bg-[#e6f4ea] text-[#137333] border border-[#a3cfb1]'
+                                : 'bg-[#fffcf7] text-[#9a3412] border border-[#ffedd5]'
+                            }`}
+                            title={`Calculated proximity to your chosen ${selectedCity} office hub`}>
+                              <Compass className="w-3.5 h-3.5 text-current animate-pulse" />
+                              <span>{computedDistance} km away {computedDistance <= 150 ? '(Local Cluster)' : '(Interstate)'}</span>
+                            </span>
                           )}
                         </div>
                       </div>
@@ -562,36 +868,49 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                     </div>
                   </div>
 
-                  {/* Expandable Best-Selling Portfolio Section */}
-                  <div className="mb-4">
-                    <button
-                      type="button"
-                      onClick={() => togglePortfolio(sup.id)}
-                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all text-[12px] font-bold cursor-pointer ${
-                        isPortfolioExpanded
-                          ? 'bg-[#fde7f3] border-[#b90064] text-[#b90064] shadow-2xs'
-                          : 'bg-white border-[#e8e8e8] text-[#1c1b1b] hover:border-[#b90064] hover:text-[#b90064] shadow-2xs'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="w-3.5 h-3.5 text-[#b90064]" />
-                        <span>Best-Selling Portfolio</span>
-                        <span className="text-[10px] font-extrabold bg-[#b90064] text-white px-1.5 py-0.2 rounded-full">
-                          3 Products
+                  {/* Expandable Sections: Portfolio & Compliance Tabs */}
+                  <div className="mb-4 space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => togglePortfolio(sup.id)}
+                        className={`flex items-center justify-between px-3 py-2 rounded-xl border transition-all text-[11.5px] font-bold cursor-pointer ${
+                          isPortfolioExpanded
+                            ? 'bg-[#fde7f3] border-[#b90064] text-[#b90064] shadow-2xs'
+                            : 'bg-white border-[#e8e8e8] text-[#1c1b1b] hover:border-[#b90064] hover:text-[#b90064] shadow-2xs'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 truncate">
+                          <Sparkles className="w-3.5 h-3.5 text-[#b90064] shrink-0" />
+                          <span className="truncate">Portfolio</span>
+                        </div>
+                        <span className="text-[10px] font-extrabold bg-[#b90064] text-white px-1.5 py-0.2 rounded-full shrink-0">
+                          3
                         </span>
-                      </div>
-                      <div className="flex items-center gap-1 text-[11px] font-semibold text-[#8c7077]">
-                        <span>{isPortfolioExpanded ? 'Hide Showcase' : 'View Best-Sellers'}</span>
-                        {isPortfolioExpanded ? (
-                          <ChevronUp className="w-4 h-4 text-[#b90064]" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
-                        )}
-                      </div>
-                    </button>
+                      </button>
 
+                      <button
+                        type="button"
+                        onClick={() => toggleCompliance(sup.id)}
+                        className={`flex items-center justify-between px-3 py-2 rounded-xl border transition-all text-[11.5px] font-bold cursor-pointer ${
+                          isComplianceExpanded
+                            ? 'bg-[#e6f4ea] border-[#00875a] text-[#00875a] shadow-2xs'
+                            : 'bg-white border-[#e8e8e8] text-[#1c1b1b] hover:border-[#00875a] hover:text-[#00875a] shadow-2xs'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 truncate">
+                          <FileCheck className="w-3.5 h-3.5 text-[#00875a] shrink-0" />
+                          <span className="truncate">Compliance</span>
+                        </div>
+                        <span className="text-[10px] font-extrabold bg-[#00875a] text-white px-1.5 py-0.2 rounded-full shrink-0">
+                          4 PDF
+                        </span>
+                      </button>
+                    </div>
+
+                    {/* Portfolio Content */}
                     {isPortfolioExpanded && (
-                      <div className="mt-2.5 p-3 bg-white border border-[#e0bec6] rounded-xl shadow-2xs">
+                      <div className="mt-2.5 p-3 bg-white border border-[#e0bec6] rounded-xl shadow-2xs animate-in fade-in duration-200">
                         <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-[#f0edec]">
                           <span className="text-[10.5px] font-bold text-[#8c7077] uppercase tracking-wider flex items-center gap-1">
                             <Package className="w-3 h-3 text-[#b90064]" />
@@ -651,6 +970,57 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                         </div>
                       </div>
                     )}
+
+                    {/* Compliance & Audit Reports Content */}
+                    {isComplianceExpanded && (
+                      <div className="mt-2.5 p-3 bg-white border border-[#00875a]/30 rounded-xl shadow-2xs animate-in fade-in duration-200">
+                        <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-[#f0edec]">
+                          <span className="text-[10.5px] font-bold text-[#00875a] uppercase tracking-wider flex items-center gap-1">
+                            <ShieldCheck className="w-3.5 h-3.5 text-[#00875a]" />
+                            Verified Audit Reports & ISO Documents
+                          </span>
+                          <span className="text-[10px] font-bold text-[#00875a] bg-[#e6f4ea] px-2 py-0.5 rounded-full">
+                            Official PDFs
+                          </span>
+                        </div>
+
+                        <div className="space-y-2">
+                          {getComplianceReportsForSupplier(sup).map((report) => (
+                            <div
+                              key={report.id}
+                              className="p-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-lg hover:border-[#00875a] transition-all flex items-start justify-between gap-2"
+                            >
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <span className="text-[9.5px] font-bold uppercase tracking-wider bg-[#e6f4ea] text-[#00875a] px-1.5 py-0.2 rounded">
+                                    {report.category}
+                                  </span>
+                                  <span className="text-[10px] text-[#8c7077] font-medium">
+                                    {report.issuedBy}
+                                  </span>
+                                </div>
+                                <h6 className="text-[11.5px] font-bold text-[#1c1b1b] leading-snug line-clamp-1">
+                                  {report.title}
+                                </h6>
+                                <p className="text-[10.5px] text-[#594047] line-clamp-1 mt-0.5">
+                                  {report.summary}
+                                </p>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => triggerPdfDownload(report.title)}
+                                className="shrink-0 bg-white border border-[#e8e8e8] hover:border-[#00875a] text-[#00875a] hover:bg-[#e6f4ea] px-2.5 py-1.5 rounded-md text-[10.5px] font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-2xs"
+                                title={`Download PDF (${report.fileSize})`}
+                              >
+                                <Download className="w-3 h-3 text-[#00875a]" />
+                                <span>PDF</span>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                 </div>
@@ -688,8 +1058,17 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
             );
           })}
         </div>
+        )}
 
       </div>
+
+      {/* Download Toast Notification */}
+      {downloadToast && (
+        <div className="fixed bottom-20 right-6 z-50 bg-[#00875a] text-white text-[13px] font-semibold px-4 py-3 rounded-xl shadow-2xl border border-[#00875a]/30 flex items-center gap-2.5 animate-in slide-in-from-bottom-5">
+          <CheckCircle2 className="w-4 h-4 text-white" />
+          <span>{downloadToast}</span>
+        </div>
+      )}
 
       {/* Floating Bottom Comparison Drawer Bar */}
       {selectedComparisonIds.length > 0 && onOpenComparisonModal && (

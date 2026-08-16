@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, PlusCircle, User, ShieldCheck, Search, Bookmark, BookmarkCheck } from 'lucide-react';
 
 interface TopNavBarProps {
-  currentScreen: 'explore' | 'search' | 'plp' | 'suppliers' | 'supplier-profile' | 'brands';
-  onNavigate: (screen: 'explore' | 'search' | 'plp' | 'suppliers' | 'supplier-profile' | 'brands', params?: any) => void;
+  currentScreen: 'explore' | 'search' | 'plp' | 'suppliers' | 'supplier-profile' | 'brands' | 'oem' | 'rfq' | 'workspace' | 'inbox' | 'supplier-portal' | 'packaging-studio';
+  onNavigate: (screen: 'explore' | 'search' | 'plp' | 'suppliers' | 'supplier-profile' | 'brands' | 'oem' | 'rfq' | 'workspace' | 'inbox' | 'supplier-portal' | 'packaging-studio', params?: any) => void;
   onOpenRFQModal: () => void;
   selectedLocation: string;
   onLocationChange: (loc: string) => void;
@@ -104,14 +104,57 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             Brands
           </button>
           <button
-            onClick={() => onNavigate('supplier-profile')}
+            onClick={() => onNavigate('oem')}
             className={`text-[13px] font-semibold pb-1 transition-all ${
-              currentScreen === 'supplier-profile'
+              currentScreen === 'oem'
                 ? 'text-[#b90064] border-b-2 border-[#b90064]'
                 : 'text-[#594047] hover:text-[#b90064]'
             }`}
           >
-            OEM
+            OEM Hub
+          </button>
+          <button
+            onClick={() => onNavigate('inbox')}
+            className={`text-[13px] font-semibold pb-1 transition-all flex items-center gap-1 ${
+              currentScreen === 'inbox'
+                ? 'text-[#b90064] border-b-2 border-[#b90064]'
+                : 'text-[#594047] hover:text-[#b90064]'
+            }`}
+          >
+            <span>B2B Inbox</span>
+            <span className="text-[9.5px] bg-[#e6007e] text-white px-1.5 py-0.2 rounded-full font-bold">Negotiate</span>
+          </button>
+          <button
+            onClick={() => onNavigate('packaging-studio')}
+            className={`text-[13px] font-semibold pb-1 transition-all ${
+              currentScreen === 'packaging-studio'
+                ? 'text-[#b90064] border-b-2 border-[#b90064]'
+                : 'text-[#594047] hover:text-[#b90064]'
+            }`}
+          >
+            Bottle Studio
+          </button>
+          <button
+            onClick={() => onNavigate('supplier-portal')}
+            className={`text-[13px] font-semibold pb-1 transition-all flex items-center gap-1 ${
+              currentScreen === 'supplier-portal'
+                ? 'text-[#b90064] border-b-2 border-[#b90064]'
+                : 'text-[#594047] hover:text-[#b90064]'
+            }`}
+          >
+            <span>Supplier Portal</span>
+            <span className="text-[9.5px] bg-[#0050d6] text-white px-1.5 py-0.2 rounded-full font-bold">Admin</span>
+          </button>
+          <button
+            onClick={() => onNavigate('workspace')}
+            className={`text-[13px] font-semibold pb-1 transition-all flex items-center gap-1.5 ${
+              currentScreen === 'workspace'
+                ? 'text-[#b90064] border-b-2 border-[#b90064]'
+                : 'text-[#594047] hover:text-[#b90064]'
+            }`}
+          >
+            <span>Transaction Hub</span>
+            <span className="text-[9.5px] bg-[#0050d6] text-white px-2 py-0.2 rounded-full font-bold uppercase tracking-wider">PI/PO</span>
           </button>
           <button
             onClick={() => {
@@ -207,8 +250,12 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
 
           {/* Primary CTA: Post Requirement */}
           <button
-            onClick={onOpenRFQModal}
-            className="bg-[#b90064] hover:bg-[#8e004b] text-white text-[13px] font-bold px-5 py-2.5 rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2 active:scale-98"
+            onClick={() => onNavigate('rfq')}
+            className={`text-[13px] font-bold px-5 py-2.5 rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2 active:scale-98 cursor-pointer ${
+              currentScreen === 'rfq'
+                ? 'bg-[#8e004b] text-white ring-2 ring-[#ffd9e2]'
+                : 'bg-[#b90064] hover:bg-[#8e004b] text-white'
+            }`}
           >
             <PlusCircle className="w-4 h-4" />
             <span>Post Requirement</span>

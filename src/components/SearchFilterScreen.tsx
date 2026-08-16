@@ -784,35 +784,47 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                             duration: 0.22,
                             ease: [0.16, 1, 0.3, 1]
                           }}
-                          className="bg-white/80 backdrop-blur-xs border border-[#e8e8e8] rounded-xl overflow-hidden flex flex-col hover:border-[#8c7077] hover:shadow-md transition-shadow group"
+                          className="bg-white/80 backdrop-blur-xs border border-[#e8e8e8] rounded-xl overflow-hidden flex flex-col hover:scale-[1.02] hover:border-[#b90064] transition-all duration-300 group shadow-2xs"
                         >
                           {/* Image Header */}
                           <div className="relative h-48 bg-[#f0edec] overflow-hidden">
                             <img
                               src={prod.image}
                               alt={prod.title}
+                              referrerPolicy="no-referrer"
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
-                            <div className="absolute top-3 left-3 flex gap-1.5">
+                            <div className="absolute top-3 left-3 flex gap-2">
                               {prod.isGstVerified && (
-                                <span className="bg-[#0050d6] text-white font-bold text-[10px] px-2 py-0.5 rounded shadow-xs tracking-wide">
+                                <span className="bg-[#0150d6] text-white font-bold text-[11px] px-2 py-1 rounded shadow-xs tracking-wide">
                                   GST Verified
                                 </span>
                               )}
                               {prod.isNexoraVerified && (
-                                <span className="bg-[#b90064] text-white font-bold text-[10px] px-2 py-0.5 rounded shadow-xs tracking-wide">
-                                  Tier-1
+                                <span className="bg-[#b90064] text-white font-bold text-[11px] px-2 py-1 rounded shadow-xs tracking-wide">
+                                  Nexora Verified
                                 </span>
                               )}
                             </div>
 
-                            <button
-                              onClick={() => toggleFavorite(prod.id)}
-                              className="absolute top-3 right-3 p-1.5 bg-white/90 rounded-full text-[#594047] hover:text-[#b90064] transition-colors shadow-xs"
-                              title={isFav ? 'Remove Favorite' : 'Save to Favorites'}
-                            >
-                              <Heart className={`w-4 h-4 ${isFav ? 'fill-[#b90064] text-[#b90064]' : ''}`} />
-                            </button>
+                            <div className="absolute top-3 right-3 flex gap-2">
+                              <label className="flex items-center gap-1.5 bg-white/90 px-2.5 py-1 rounded-md shadow-xs cursor-pointer hover:bg-white transition-colors select-none">
+                                <input
+                                  type="checkbox"
+                                  checked={isCompared}
+                                  onChange={() => toggleCompare(prod.id)}
+                                  className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+                                />
+                                <span className="text-[11.5px] font-bold text-[#594047]">Compare</span>
+                              </label>
+                              <button
+                                onClick={() => toggleFavorite(prod.id)}
+                                className="p-1.5 bg-white/90 rounded-md text-[#594047] hover:text-[#b90064] transition-colors shadow-xs"
+                                title={isFav ? 'Remove Favorite' : 'Save to Favorites'}
+                              >
+                                <Heart className={`w-4 h-4 ${isFav ? 'fill-[#b90064] text-[#b90064]' : ''}`} />
+                              </button>
+                            </div>
                           </div>
 
                           {/* Card Content */}
@@ -821,61 +833,49 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                               <h3 className="font-bold text-[15px] text-[#1c1b1b] line-clamp-2 mb-1 group-hover:text-[#b90064] transition-colors leading-snug">
                                 {prod.title}
                               </h3>
-                              <p className="text-[12px] text-[#594047] flex items-center gap-1">
-                                <Store className="w-3.5 h-3.5 text-[#b90064]" />
-                                <span>{prod.supplierName}</span>
+                              <p className="text-[12.5px] text-[#594047] flex items-center gap-1">
+                                <Store className="w-3.5 h-3.5 text-[#b90064] shrink-0" />
+                                <span className="truncate">{prod.supplierName}</span>
                                 <span className="text-[#8c7077] mx-1">•</span>
                                 <span>{prod.supplierLocation}</span>
                               </p>
                             </div>
 
-                            {/* Low container metrics box */}
-                            <div className="bg-[#f7f2f2] rounded-lg p-3 my-3 grid grid-cols-2 gap-y-2 border border-[#e8e8e8]/60">
-                              <div>
-                                <span className="block text-[10.5px] font-bold text-[#8c7077] uppercase tracking-wider">
-                                  Min. Order
-                                </span>
-                                <span className="font-bold text-[13px] text-[#1c1b1b]">{prod.moq}</span>
-                              </div>
-                              <div>
-                                <span className="block text-[10.5px] font-bold text-[#8c7077] uppercase tracking-wider">
-                                  Est. Price
-                                </span>
-                                <span className="font-bold text-[14px] text-[#b90064]">{prod.priceRange}</span>
-                              </div>
-                              {prod.bulkTierText && (
-                                <div className="col-span-2 pt-2 border-t border-[#e8e8e8]/80 mt-0.5">
-                                  <span className="text-[11.5px] font-medium text-[#594047] flex items-center gap-1">
-                                    <Info className="w-3 h-3 text-[#0050d6]" />
-                                    {prod.bulkTierText}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Quick Trust Badges & SLA */}
-                            <div className="flex items-center gap-2 mb-4 mt-auto">
-                              <span className="bg-[#ece7e7] text-[#1c1b1b] font-medium text-[11px] px-2 py-0.5 rounded flex items-center gap-1">
-                                <Zap className="w-3 h-3 text-[#b90064]" />
-                                {prod.responseTime}
+                            {/* Verification Tag Chips */}
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              <span className="bg-[#f0edec] text-[#1c1b1b] font-semibold text-[11.5px] px-2.5 py-1 rounded-md">
+                                MOQ: {prod.moq}
                               </span>
-                              {prod.certifications.slice(0, 1).map((cert, idx) => (
-                                <span key={idx} className="bg-[#ece7e7] text-[#1c1b1b] font-medium text-[11px] px-2 py-0.5 rounded">
-                                  {cert}
-                                </span>
-                              ))}
+                              <span className="bg-[#f0edec] text-[#1c1b1b] font-semibold text-[11.5px] px-2.5 py-1 rounded-md">
+                                Ships in 7-10 Days
+                              </span>
                             </div>
 
-                            {/* Actions Row */}
-                            <div className="flex items-center gap-2 mt-auto pt-1">
+                            {/* Premium Tiered Pricing Box */}
+                            <div className="bg-[#fcf9f8] rounded-xl p-3 mb-4 border border-[#e8e8e8] shadow-2xs">
+                              <span className="block text-[11px] font-extrabold text-[#8c7077] uppercase tracking-wider mb-2">
+                                Tiered Pricing
+                              </span>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="flex justify-between border-r border-[#e8e8e8] pr-2.5">
+                                  <span className="text-[12px] font-semibold text-[#594047]">100u:</span>
+                                  <span className="text-[13px] font-bold text-[#1c1b1b]">₹{prod.priceMin || 350}</span>
+                                </div>
+                                <div className="flex justify-between pl-2.5">
+                                  <span className="text-[12px] font-semibold text-[#594047]">500u:</span>
+                                  <span className="text-[13px] font-bold text-[#b90064]">₹{Math.round((prod.priceMin || 350) * 0.8)}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Action CTAs */}
+                            <div className="flex flex-col gap-2 mt-auto">
                               <button
                                 onClick={() => onOpenEnquiryModal(prod)}
-                                className="flex-1 bg-[#b90064] hover:bg-[#8e004b] text-white font-bold text-[12.5px] py-2.5 rounded-lg shadow-2xs transition-colors flex items-center justify-center gap-1.5"
+                                className="w-full bg-[#b90064] hover:bg-[#8e004b] text-white font-bold text-[13px] py-2.5 rounded-xl shadow-xs transition-opacity cursor-pointer text-center"
                               >
-                                <Send className="w-3.5 h-3.5" />
-                                Send Enquiry
+                                Get Quick Quote
                               </button>
-
                               <button
                                 onClick={() => {
                                   onOpenEnquiryModal({
@@ -883,22 +883,9 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                                     title: `[Sample Request] ${prod.title}`
                                   });
                                 }}
-                                className="w-10 h-10 border border-[#e8e8e8] text-[#594047] hover:border-[#b90064] hover:text-[#b90064] rounded-lg flex items-center justify-center transition-colors shadow-2xs"
-                                title="Request Formulation Lab Sample"
+                                className="w-full border border-[#e8e8e8] hover:border-[#b90064] hover:text-[#b90064] text-[#594047] font-bold text-[13px] py-2.5 rounded-xl transition-all cursor-pointer text-center bg-transparent"
                               >
-                                <FlaskConical className="w-4 h-4" />
-                              </button>
-
-                              <button
-                                onClick={() => toggleCompare(prod.id)}
-                                className={`w-10 h-10 border rounded-lg flex items-center justify-center transition-colors shadow-2xs ${
-                                  isCompared
-                                    ? 'border-[#b90064] bg-[#fde7f3] text-[#b90064]'
-                                    : 'border-[#e8e8e8] text-[#594047] hover:border-[#b90064] hover:text-[#b90064]'
-                                }`}
-                                title={isCompared ? 'Remove from Compare Dock' : 'Add to Compare Dock'}
-                              >
-                                <ArrowLeftRight className="w-4 h-4" />
+                                Request Sample
                               </button>
                             </div>
 

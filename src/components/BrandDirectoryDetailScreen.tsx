@@ -28,6 +28,7 @@ import {
   Layers,
   ZoomIn,
   Video,
+  MessageCircle,
   X
 } from 'lucide-react';
 import { VerifiedSupplier } from '../types';
@@ -1009,6 +1010,37 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
           </div>
         </div>
       )}
+
+      {/* Floating Quick Action Buttons */}
+      <div className="fixed bottom-20 right-6 z-50 flex flex-col items-end gap-3 pointer-events-auto">
+        <button
+          onClick={() => onOpenEnquiryModal({ title: `Live Chat & WhatsApp Inquiry for ${selectedBrand.name}` })}
+          className="w-12 h-12 bg-white text-emerald-600 rounded-full shadow-2xl flex items-center justify-center border border-[#e8e8e8] hover:scale-105 transition-all cursor-pointer"
+          title="Direct Supplier Live Chat"
+        >
+          <MessageCircle className="w-6 h-6 fill-emerald-50 text-emerald-600" />
+        </button>
+
+        <button
+          onClick={() => {
+            if (onOpenFacilityTour) {
+              onOpenFacilityTour();
+            }
+          }}
+          className="w-12 h-12 bg-white text-[#b90064] rounded-full shadow-2xl flex items-center justify-center border border-[#e8e8e8] hover:scale-105 transition-all cursor-pointer"
+          title="View 15-Sec Facility Virtual Tour"
+        >
+          <Video className="w-5 h-5 text-[#b90064]" />
+        </button>
+
+        <button
+          onClick={onOpenRFQModal}
+          className="h-12 px-5 bg-[#b90064] text-white rounded-full shadow-2xl flex items-center gap-2 hover:bg-[#8e004b] transition-all font-bold text-xs cursor-pointer"
+        >
+          <FileText className="w-4 h-4" />
+          <span>Request Official Quote</span>
+        </button>
+      </div>
 
       {/* Floating Bottom Action Bar / Multi-Product RFQ Bar */}
       <div className="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-[#e8e8e8] p-4 z-40 shadow-2xl">

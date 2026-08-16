@@ -18,6 +18,9 @@ import { ProductListingScreen } from './components/ProductListingScreen';
 import { SupplierDirectoryScreen } from './components/SupplierDirectoryScreen';
 import { SupplierProfileScreen } from './components/SupplierProfileScreen';
 import { BrandDirectoryDetailScreen } from './components/BrandDirectoryDetailScreen';
+import { OemPrivateLabelHubScreen } from './components/OemPrivateLabelHubScreen';
+import { PostRequirementScreen } from './components/PostRequirementScreen';
+import { WorkspaceScreen } from './components/WorkspaceScreen';
 import { SourcingTrendsDashboard } from './components/SourcingTrendsDashboard';
 import { SavedSuppliersSection } from './components/SavedSuppliersSection';
 import { SupplierComparisonModal } from './components/SupplierComparisonModal';
@@ -25,6 +28,9 @@ import { ProductCompareModal } from './components/ProductCompareModal';
 import { SupplierMapModal } from './components/SupplierMapModal';
 import { VirtualFacilityTourModal } from './components/VirtualFacilityTourModal';
 import { useSavedSuppliers } from './hooks/useSavedSuppliers';
+import { NegotiationInboxScreen } from './components/NegotiationInboxScreen';
+import { SupplierAdminPortal } from './components/SupplierAdminPortal';
+import { PackagingCustomizerScreen } from './components/PackagingCustomizerScreen';
 
 import {
   CATEGORIES,
@@ -38,7 +44,7 @@ import { RFQItem, DealProduct, TrendingProduct, VerifiedSupplier, SearchProduct 
 import { CheckCircle2 } from 'lucide-react';
 
 export function App() {
-  const [currentScreen, setCurrentScreen] = useState<'explore' | 'search' | 'plp' | 'suppliers' | 'supplier-profile' | 'brands'>('explore');
+  const [currentScreen, setCurrentScreen] = useState<'explore' | 'search' | 'plp' | 'suppliers' | 'supplier-profile' | 'brands' | 'oem' | 'rfq' | 'workspace' | 'inbox' | 'supplier-portal' | 'packaging-studio'>('explore');
   const [selectedLocation, setSelectedLocation] = useState('All');
   
   // Search parameters for Screen 02
@@ -174,7 +180,7 @@ export function App() {
   );
 
   // Handlers
-  const handleNavigate = (screen: 'explore' | 'search' | 'plp' | 'suppliers' | 'supplier-profile' | 'brands', params?: any) => {
+  const handleNavigate = (screen: 'explore' | 'search' | 'plp' | 'suppliers' | 'supplier-profile' | 'brands' | 'oem' | 'rfq' | 'workspace' | 'inbox' | 'supplier-portal' | 'packaging-studio', params?: any) => {
     setCurrentScreen(screen);
     if (params) {
       setSearchParams((prev) => ({
@@ -455,6 +461,59 @@ export function App() {
             onOpenFacilityTour={handleOpenFacilityTour}
             onNavigateToSuppliers={() => handleNavigate('suppliers')}
           />
+        </main>
+      )}
+
+      {/* Screen 09: OEM / Private Label Hub */}
+      {currentScreen === 'oem' && (
+        <main className="flex-1">
+          <OemPrivateLabelHubScreen
+            onOpenRFQModal={handleOpenRFQModal}
+            onOpenEnquiryModal={handleOpenEnquiry}
+            onOpenFacilityTour={handleOpenFacilityTour}
+            onNavigateToSuppliers={() => handleNavigate('suppliers')}
+          />
+        </main>
+      )}
+
+      {/* Screen 10 / 10.1: Post Requirement / Public RFQ Form */}
+      {currentScreen === 'rfq' && (
+        <main className="flex-1">
+          <PostRequirementScreen
+            onNavigateToExplore={() => handleNavigate('explore')}
+            onNavigateToRFQs={() => handleNavigate('explore')}
+          />
+        </main>
+      )}
+
+      {/* Screen 12/13/14: Buyer Sourcing & Transaction Workspace */}
+      {currentScreen === 'workspace' && (
+        <main className="flex-1">
+          <WorkspaceScreen
+            onOpenRFQModal={handleOpenRFQModal}
+            onNavigateToExplore={() => handleNavigate('explore')}
+          />
+        </main>
+      )}
+
+      {/* Screen 15: Direct Sourcing Chat & Counter-Quote Engine */}
+      {currentScreen === 'inbox' && (
+        <main className="flex-1">
+          <NegotiationInboxScreen />
+        </main>
+      )}
+
+      {/* Screen 18: Supplier & Manufacturer Admin Portal with Freight Calculator */}
+      {currentScreen === 'supplier-portal' && (
+        <main className="flex-1">
+          <SupplierAdminPortal />
+        </main>
+      )}
+
+      {/* Interactive Visual Packaging & Bottle Design Studio */}
+      {currentScreen === 'packaging-studio' && (
+        <main className="flex-1">
+          <PackagingCustomizerScreen />
         </main>
       )}
 
