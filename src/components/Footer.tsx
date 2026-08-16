@@ -62,9 +62,9 @@ export const Footer: React.FC<FooterProps> = ({ onOpenRFQModal, onOpenAuthModal 
                   Supplier Registration
                 </button>
               </li>
-              <li><a href="#suppliers" className="hover:text-[#e6007e] transition-colors">Supplier Directory</a></li>
-              <li><a href="#oem" className="hover:text-[#e6007e] transition-colors">OEM / Private Label</a></li>
-              <li><a href="#deals" className="hover:text-[#e6007e] transition-colors">Bulk Sourcing Deals</a></li>
+              <li><a href="#suppliers" className="text-zinc-100 hover:text-[#b90064] hover:underline underline-offset-4 decoration-2 transition-all">Supplier Directory</a></li>
+              <li><a href="#oem" className="text-zinc-100 hover:text-[#b90064] hover:underline underline-offset-4 decoration-2 transition-all">OEM / Private Label</a></li>
+              <li><a href="#deals" className="text-zinc-100 hover:text-[#b90064] hover:underline underline-offset-4 decoration-2 transition-all">Bulk Sourcing Deals</a></li>
             </ul>
           </div>
 

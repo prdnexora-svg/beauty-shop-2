@@ -46,58 +46,61 @@ export const SupplierMapModal: React.FC<SupplierMapModalProps> = ({
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [copiedCoords, setCopiedCoords] = useState(false);
 
-  if (!isOpen || !supplier) return null;
-
-  const location = supplier.locationDetails || {
-    industrialZone: `${supplier.city} Manufacturing Zone`,
-    fullAddress: `Plot Industrial Area, ${supplier.city}, ${supplier.state || 'India'}`,
-    city: supplier.city,
-    state: supplier.state || 'India',
-    lat: 19.076,
-    lng: 72.8777,
-    shippingHubs: [
-      {
-        id: 'def-hub-1',
-        name: `${supplier.city} Sea Cargo Terminal`,
-        type: 'Port',
-        distanceKm: 28,
-        transitTime: '1.5 hrs direct freight',
-        description: 'Direct maritime export container terminal',
-        coords: { x: 35, y: 70 }
-      },
-      {
-        id: 'def-hub-2',
-        name: `${supplier.city} International Air Cargo`,
-        type: 'Airport',
-        distanceKm: 32,
-        transitTime: '45 mins express transit',
-        description: 'Bonded temperature-controlled air freight terminal',
-        coords: { x: 65, y: 30 }
-      }
-    ],
-    rawMaterialSources: [
-      {
-        id: 'def-mat-1',
-        name: `${supplier.city} Bio-Active Ingredient Cluster`,
-        type: 'Chemical Hub',
-        distanceKm: 12,
-        transitTime: '25 mins',
-        category: 'Bio-Actives & Base Oils',
-        description: 'Chemical & cosmetic active raw material producers',
-        coords: { x: 45, y: 35 }
-      }
-    ],
-    customsStatus: 'AEO Certified • Direct Port Delivery (DPD) Enabled',
-    dispatchTurnaround: 'Same-day container dispatch to port gateway',
-    coldChainAvailable: true,
-    transitAdvantage: 'High-speed industrial belt with streamlined export terminal access'
-  };
+  const location = useMemo(() => {
+    if (!supplier) return null;
+    return supplier.locationDetails || {
+      industrialZone: `${supplier.city} Manufacturing Zone`,
+      fullAddress: `Plot Industrial Area, ${supplier.city}, ${supplier.state || 'India'}`,
+      city: supplier.city,
+      state: supplier.state || 'India',
+      lat: 19.076,
+      lng: 72.8777,
+      shippingHubs: [
+        {
+          id: 'def-hub-1',
+          name: `${supplier.city} Sea Cargo Terminal`,
+          type: 'Port',
+          distanceKm: 28,
+          transitTime: '1.5 hrs direct freight',
+          description: 'Direct maritime export container terminal',
+          coords: { x: 35, y: 70 }
+        },
+        {
+          id: 'def-hub-2',
+          name: `${supplier.city} International Air Cargo`,
+          type: 'Airport',
+          distanceKm: 32,
+          transitTime: '45 mins express transit',
+          description: 'Bonded temperature-controlled air freight terminal',
+          coords: { x: 65, y: 30 }
+        }
+      ],
+      rawMaterialSources: [
+        {
+          id: 'def-mat-1',
+          name: `${supplier.city} Bio-Active Ingredient Cluster`,
+          type: 'Chemical Hub',
+          distanceKm: 12,
+          transitTime: '25 mins',
+          category: 'Bio-Actives & Base Oils',
+          description: 'Chemical & cosmetic active raw material producers',
+          coords: { x: 45, y: 35 }
+        }
+      ],
+      customsStatus: 'AEO Certified • Direct Port Delivery (DPD) Enabled',
+      dispatchTurnaround: 'Same-day container dispatch to port gateway',
+      coldChainAvailable: true,
+      transitAdvantage: 'High-speed industrial belt with streamlined export terminal access'
+    };
+  }, [supplier]);
 
   const allHubs = useMemo(() => {
+    if (!location) return [];
     return [...location.shippingHubs, ...location.rawMaterialSources];
   }, [location]);
 
   const filteredHubs = useMemo(() => {
+    if (!location) return [];
     if (activeFilter === 'shipping') {
       return location.shippingHubs.filter((h) => h.type === 'Port' || h.type === 'Airport');
     }
@@ -109,6 +112,8 @@ export const SupplierMapModal: React.FC<SupplierMapModalProps> = ({
     }
     return allHubs;
   }, [activeFilter, location, allHubs]);
+
+  if (!isOpen || !supplier || !location) return null;
 
   const handleCopyCoordinates = () => {
     const textToCopy = `${location.fullAddress} [Coordinates: ${location.lat.toFixed(4)}° N, ${location.lng.toFixed(4)}° E]`;

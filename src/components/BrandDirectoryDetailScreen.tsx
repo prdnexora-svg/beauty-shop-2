@@ -1012,7 +1012,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
       )}
 
       {/* Floating Quick Action Buttons */}
-      <div className="fixed bottom-20 right-6 z-50 flex flex-col items-end gap-3 pointer-events-auto">
+      <div className="fixed bottom-28 right-6 z-50 flex flex-col items-end gap-3 pointer-events-auto">
         <button
           onClick={() => onOpenEnquiryModal({ title: `Live Chat & WhatsApp Inquiry for ${selectedBrand.name}` })}
           className="w-12 h-12 bg-white text-emerald-600 rounded-full shadow-2xl flex items-center justify-center border border-[#e8e8e8] hover:scale-105 transition-all cursor-pointer"
