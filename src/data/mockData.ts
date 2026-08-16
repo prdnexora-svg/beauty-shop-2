@@ -1,0 +1,1322 @@
+import { RFQItem, DealProduct, TrendingProduct, VerifiedSupplier, CategoryItem, SearchProduct, SearchSupplier, OEMFormulation } from '../types';
+
+
+export const CATEGORIES: CategoryItem[] = [
+  {
+    id: 'skincare',
+    name: 'Skincare',
+    iconName: 'Sparkles',
+    subtitle: 'Serums, Creams & Actives',
+    itemCount: '1,420+ Listings',
+    image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'haircare',
+    name: 'Haircare',
+    iconName: 'Scissors',
+    subtitle: 'Keratin, Oils & Spa Kits',
+    itemCount: '890+ Listings',
+    image: 'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'cosmetics',
+    name: 'Cosmetics',
+    iconName: 'Palette',
+    subtitle: 'Lipsticks, Powders & Bases',
+    itemCount: '1,150+ Listings',
+    image: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'fragrances',
+    name: 'Fragrances',
+    iconName: 'Wind',
+    subtitle: 'Attars, EDP & Essential Oils',
+    itemCount: '620+ Listings',
+    image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'bodycare',
+    name: 'Body Care',
+    iconName: 'Droplets',
+    subtitle: 'Butters, Scrubs & Lotions',
+    itemCount: '780+ Listings',
+    image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'personalcare',
+    name: 'Personal Care',
+    iconName: 'HandMetal',
+    subtitle: 'Cleansers & Hygiene Lines',
+    itemCount: '940+ Listings',
+    image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'rawmaterials',
+    name: 'Raw Materials',
+    iconName: 'FlaskConical',
+    subtitle: 'Active Extracts & Emulsifiers',
+    itemCount: '530+ Suppliers',
+    image: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'packaging',
+    name: 'Packaging',
+    iconName: 'Package',
+    subtitle: 'Glass, Acrylic & Pumps',
+    itemCount: '1,280+ Molds',
+    image: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'salonequip',
+    name: 'Salon Equipment',
+    iconName: 'Armchair',
+    subtitle: 'Chairs, Steamers & Lasers',
+    itemCount: '410+ Units',
+    image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'tools',
+    name: 'Tools & Accessories',
+    iconName: 'Wrench',
+    subtitle: 'Brushes, Rollers & Sponges',
+    itemCount: '670+ Listings',
+    image: 'https://images.unsplash.com/photo-1526045612212-70caf35c14df?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'mensgrooming',
+    name: "Men's Grooming",
+    iconName: 'UserCheck',
+    subtitle: 'Beard Care & Styling Pomades',
+    itemCount: '390+ Listings',
+    image: 'https://images.unsplash.com/photo-1621607512214-68297480165e?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'oem',
+    name: 'OEM / Private Label',
+    iconName: 'Factory',
+    subtitle: 'Turnkey Formulations & Labs',
+    itemCount: '180+ Audited Facilities',
+    image: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80',
+    isHighlighted: true
+  },
+];
+
+export const LIVE_RFQS: RFQItem[] = [
+  {
+    id: 'rfq-01',
+    buyerLocation: 'Mumbai, MH',
+    isVerifiedBuyer: true,
+    timeAgo: 'Just now',
+    title: 'Requested 200L Hair Treatment Formulation',
+    description: 'Looking for premium botanical keratin hair smoothing treatment formulation with immediate delivery. Need lab samples first.',
+    quantityRequired: '200 Liters',
+    targetPrice: '₹950 / L',
+    category: 'Haircare'
+  },
+  {
+    id: 'rfq-02',
+    buyerLocation: 'Bengaluru, KA',
+    isVerifiedBuyer: true,
+    timeAgo: '15m ago',
+    title: 'Requested Custom Frosted Cosmetic Packaging',
+    description: 'Require custom frosted glass jars (50g) with bamboo lids for a new organic skincare line. Silk-screen printing ready.',
+    quantityRequired: '5,000 Units',
+    targetPrice: '₹45 / Unit',
+    category: 'Packaging'
+  },
+  {
+    id: 'rfq-03',
+    buyerLocation: 'Delhi NCR',
+    isVerifiedBuyer: false,
+    timeAgo: '1h ago',
+    title: 'Requested Professional Salon Spa Equipment',
+    description: 'Opening new 5-chair luxury salon in Gurugram. Need quotes for hydraulic styling chairs and advanced ozone hair spa machines.',
+    quantityRequired: '5 Complete Sets',
+    targetPrice: '₹1,50,000 Total',
+    category: 'Salon Equipment'
+  },
+  {
+    id: 'rfq-04',
+    buyerLocation: 'Hyderabad, TS',
+    isVerifiedBuyer: true,
+    timeAgo: '2h ago',
+    title: 'Bulk Vitamin C + Hyaluronic Serum Base',
+    description: '10% stabilized Ethyl Ascorbic Acid formulation base with 2% Multi-Molecular HA for private label bottling.',
+    quantityRequired: '100 Liters / 3,000 Bottles',
+    targetPrice: '₹1,200 / L',
+    category: 'OEM / Private Label'
+  }
+];
+
+export const FEATURED_DEALS: DealProduct[] = [
+  {
+    id: 'deal-1',
+    title: 'Professional Keratin Hair Repair Treatment Concentrate',
+    supplierName: 'Aura Beauty Labs',
+    supplierLocation: 'Mumbai, Maharashtra',
+    isVerified: true,
+    discountPercentage: 15,
+    bulkTierLabel: 'For 500+ Units',
+    estimatedDelivery: 'Est. Delivery: 7–10 Days',
+    originalPrice: '₹1,200 / L',
+    dealPrice: '₹1,020 / L',
+    moq: '50 Liters',
+    image: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=800&q=80',
+    tags: ['Haircare', 'Salon Grade', 'OEM Ready']
+  },
+  {
+    id: 'deal-2',
+    title: 'Peptide Barrier Repair Cream Formulation Base',
+    supplierName: 'Dermaglow India',
+    supplierLocation: 'Delhi NCR',
+    isVerified: true,
+    discountPercentage: 20,
+    bulkTierLabel: 'For 1,000+ Units',
+    estimatedDelivery: 'Est. Delivery: 10–14 Days',
+    originalPrice: '₹250 / Jar',
+    dealPrice: '₹200 / Jar',
+    moq: '100 kg / 500 Jars',
+    image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80',
+    tags: ['Skincare', 'Dermat Tested', 'Custom Scent']
+  },
+  {
+    id: 'deal-3',
+    title: 'Luxury 30ml Matte Frosted Dropper Bottles with Gold Collar',
+    supplierName: 'LuxeForm Packaging',
+    supplierLocation: 'Ahmedabad, Gujarat',
+    isVerified: true,
+    discountPercentage: 18,
+    bulkTierLabel: 'For 5,000+ Units',
+    estimatedDelivery: 'Est. Delivery: 5–7 Days',
+    originalPrice: '₹38 / Piece',
+    dealPrice: '₹31 / Piece',
+    moq: '1,000 Pieces',
+    image: 'https://images.unsplash.com/photo-1608248597359-994b633bfd8a?auto=format&fit=crop&w=800&q=80',
+    tags: ['Packaging', 'Glassware', 'Custom Logo']
+  }
+];
+
+export const TRENDING_PRODUCTS: TrendingProduct[] = [
+  {
+    id: 'trend-1',
+    title: 'Professional Keratin Hair Smoothing & Gloss Serum',
+    supplierName: 'Aura Beauty Labs',
+    supplierLocation: 'Mumbai, Maharashtra',
+    isGstVerified: true,
+    isIsoCertified: true,
+    moq: '50 Liters',
+    priceRange: '₹850 — ₹1,200 / L',
+    image: 'https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=800&q=80',
+    category: 'Haircare'
+  },
+  {
+    id: 'trend-2',
+    title: 'Botanical Ceramide Barrier Repair Cream Base',
+    supplierName: 'Dermaglow India',
+    supplierLocation: 'Delhi NCR',
+    isGstVerified: true,
+    isIsoCertified: true,
+    moq: '100 kg',
+    priceRange: 'Price On Request',
+    image: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=800&q=80',
+    category: 'Skincare'
+  },
+  {
+    id: 'trend-3',
+    title: 'Advanced Digital Ozone Hair Spa & Steamer Machine',
+    supplierName: 'BeautyPro Equipment Co.',
+    supplierLocation: 'Bengaluru, Karnataka',
+    isGstVerified: true,
+    isIsoCertified: true,
+    moq: '5 Units',
+    priceRange: '₹18,500 / Unit',
+    image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80',
+    category: 'Salon Equipment'
+  }
+];
+
+export const VERIFIED_SUPPLIERS: VerifiedSupplier[] = [
+  {
+    id: 'sup-1',
+    name: 'Aura Beauty Labs',
+    shortCode: 'AB',
+    type: 'Manufacturer & OEM',
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    isVerified: true,
+    isGstVerified: true,
+    isIsoCertified: true,
+    isGmpCertified: true,
+    isFdaRegistered: true,
+    categories: ['Haircare Formulations', 'Keratin Treatments', 'OEM Private Label'],
+    specialties: ['Nano-Keratin Matrix', 'Cold-Process Hair Serums', 'Custom Fragrance Blending'],
+    phone: '+91 98201 55443',
+    whatsapp: '919820155443',
+    responseRate: '98% within 2 hrs',
+    trustScore: 98,
+    reliabilityRating: 99,
+    productQualityRating: 98,
+    overallRating: 4.9,
+    totalReviewsCount: 142,
+    responseScore: 97,
+    responseTimeText: '< 2 hrs',
+    exportReadiness: 94,
+    exportCertifications: 'FDA Registered • EU CPNP Ready',
+    establishedYear: '2014 (12 yrs)',
+    minOrderValue: '₹25,000 / 100 units',
+    sampleLeadTime: '2 - 3 Days',
+    monthlyCapacity: '150,000 Units/mo',
+    facilityArea: '32,000 sq.ft GMP Lab',
+    certificationsList: ['ISO 9001:2015', 'WHO-GMP Compliant', 'US-FDA Registered', 'EU CPNP Ready', 'Cruelty-Free Certified'],
+    portfolioProducts: [
+      {
+        id: 'ab-port-1',
+        name: 'Professional Argan Repair Hair Serum',
+        image: 'https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=400&q=80',
+        price: '₹850 / L',
+        moq: '50 Liters'
+      },
+      {
+        id: 'ab-port-2',
+        name: 'Nano-Keratin Smoothing Complex',
+        image: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=400&q=80',
+        price: '₹1,200 / L',
+        moq: '25 Liters'
+      },
+      {
+        id: 'ab-port-3',
+        name: 'Intense Moisture Scalp Therapy Base',
+        image: 'https://images.unsplash.com/photo-1608248597359-52e1eb704179?auto=format&fit=crop&w=400&q=80',
+        price: '₹620 / kg',
+        moq: '100 kg'
+      }
+    ],
+    locationDetails: {
+      industrialZone: 'MIDC Taloja Special Chemical & Cosmetic Zone',
+      fullAddress: 'Plot C-14, Sector 19, MIDC Taloja Industrial Area, Navi Mumbai, MH 410208',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      lat: 19.0438,
+      lng: 73.1098,
+      shippingHubs: [
+        {
+          id: 'hub-1',
+          name: 'JNPT International Sea Port (Nhava Sheva)',
+          type: 'Port',
+          distanceKm: 26,
+          transitTime: '1.2 hrs direct freight',
+          description: 'Primary container gateway for EU/US sea freight consignments',
+          coords: { x: 38, y: 72 }
+        },
+        {
+          id: 'hub-2',
+          name: 'CSMIA International Air Cargo Terminal (BOM)',
+          type: 'Airport',
+          distanceKm: 34,
+          transitTime: '1.5 hrs express transit',
+          description: 'Daily bonded temperature-controlled air cargo connections',
+          coords: { x: 32, y: 36 }
+        },
+        {
+          id: 'hub-3',
+          name: 'Panvel Multi-Modal Logistics Hub & ICD',
+          type: 'Dry Port / ICD',
+          distanceKm: 12,
+          transitTime: '25 mins direct dispatch',
+          description: 'Customs bonded inland container depot & rail siding',
+          coords: { x: 62, y: 64 }
+        },
+        {
+          id: 'hub-4',
+          name: 'Western Dedicated Freight Corridor (WDFC)',
+          type: 'Corridor',
+          distanceKm: 8,
+          transitTime: '15 mins access',
+          description: 'Direct heavy haul rail access connecting JNPT to Northern Metros',
+          coords: { x: 74, y: 44 }
+        }
+      ],
+      rawMaterialSources: [
+        {
+          id: 'mat-1',
+          name: 'Taloja Specialty Surfactants & Botanical Active Base',
+          type: 'Chemical Hub',
+          distanceKm: 4,
+          transitTime: '10 mins',
+          category: 'Bio-Actives & Base Oils',
+          description: 'Local synthesis of cold-process emulsifiers and fatty alcohols',
+          coords: { x: 55, y: 38 }
+        },
+        {
+          id: 'mat-2',
+          name: 'Thane-Belapur Fine Chemical Corridor',
+          type: 'Chemical Hub',
+          distanceKm: 18,
+          transitTime: '35 mins',
+          category: 'Preservatives & Conditioning Polymers',
+          description: 'ISO-certified cosmetic grade chemical manufacturers',
+          coords: { x: 42, y: 26 }
+        },
+        {
+          id: 'mat-3',
+          name: 'Daman & Vapi Cosmetic Packaging & Moulding Hub',
+          type: 'Packaging Cluster',
+          distanceKm: 145,
+          transitTime: '3.5 hrs freight',
+          category: 'Amber Glass & Airless Pumps',
+          description: 'Direct delivery of automated injection-moulded bottles',
+          coords: { x: 24, y: 15 }
+        }
+      ],
+      customsStatus: 'AEO Tier-2 Certified • Direct Port Delivery (DPD) Enabled',
+      dispatchTurnaround: 'Same-day container seal to JNPT port gate-in (< 4 hrs)',
+      coldChainAvailable: true,
+      transitAdvantage: 'Immediate deep-sea port proximity with direct DPD customs gate-in'
+    }
+  },
+  {
+    id: 'sup-2',
+    name: 'Dermaglow India',
+    shortCode: 'DI',
+    type: 'Cosmeceutical Manufacturer',
+    city: 'Delhi NCR',
+    state: 'Delhi',
+    isVerified: true,
+    isGstVerified: true,
+    isIsoCertified: true,
+    isGmpCertified: true,
+    isFdaRegistered: false,
+    categories: ['Skincare Formulations', 'Dermatological Actives', 'Private Label Serums'],
+    specialties: ['Stabilized Vitamin C 20%', 'Barrier Repair Ceramides', 'Micro-Encapsulated Retinol'],
+    phone: '+91 98110 33221',
+    whatsapp: '919811033221',
+    responseRate: '95% within 1 hr',
+    trustScore: 96,
+    reliabilityRating: 97,
+    productQualityRating: 98,
+    overallRating: 4.8,
+    totalReviewsCount: 118,
+    responseScore: 98,
+    responseTimeText: '< 1 hr',
+    exportReadiness: 91,
+    exportCertifications: 'ISO 22716 GMP • Halal Certified',
+    establishedYear: '2017 (9 yrs)',
+    minOrderValue: '₹30,000 / 150 units',
+    sampleLeadTime: '1 - 2 Days',
+    monthlyCapacity: '200,000 Units/mo',
+    facilityArea: '45,000 sq.ft Cleanroom',
+    certificationsList: ['ISO 22716 (Cosmetics GMP)', 'Halal Certified', 'AYUSH Approved', 'ISO 14001', 'Dermatologist Tested'],
+    portfolioProducts: [
+      {
+        id: 'di-port-1',
+        name: 'Botanical Ceramide Barrier Cream Base',
+        image: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=400&q=80',
+        price: '₹450 / unit',
+        moq: '100 kg'
+      },
+      {
+        id: 'di-port-2',
+        name: 'Stabilized 20% Vitamin C Glow Serum',
+        image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80',
+        price: '₹380 / unit',
+        moq: '150 Units'
+      },
+      {
+        id: 'di-port-3',
+        name: 'Micro-Encapsulated Retinol 0.5% Elixir',
+        image: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=400&q=80',
+        price: '₹520 / unit',
+        moq: '100 Units'
+      }
+    ],
+    locationDetails: {
+      industrialZone: 'IMT Manesar Cosmeceutical Cleanroom Zone',
+      fullAddress: 'Plot 88, Sector 6, IMT Manesar, Gurugram / Delhi NCR 122051',
+      city: 'Delhi NCR',
+      state: 'Delhi',
+      lat: 28.3685,
+      lng: 76.9412,
+      shippingHubs: [
+        {
+          id: 'hub-21',
+          name: 'IGI International Airport Cargo Terminal (DEL)',
+          type: 'Airport',
+          distanceKm: 28,
+          transitTime: '40 mins expressway',
+          description: 'Largest air cargo facility with dedicated pharma/cosmetics cold-zone',
+          coords: { x: 56, y: 28 }
+        },
+        {
+          id: 'hub-22',
+          name: 'ICD Tughlakabad Inland Container Dry Port',
+          type: 'Dry Port / ICD',
+          distanceKm: 42,
+          transitTime: '1.1 hrs direct transit',
+          description: 'Asia’s largest inland dry port for containerised export cargo',
+          coords: { x: 70, y: 46 }
+        },
+        {
+          id: 'hub-23',
+          name: 'Delhi-Mumbai Industrial Expressway (DMEX Interchange)',
+          type: 'Corridor',
+          distanceKm: 6,
+          transitTime: '10 mins entry',
+          description: 'High-speed 8-lane expressway corridor for overnight pan-India distribution',
+          coords: { x: 38, y: 70 }
+        }
+      ],
+      rawMaterialSources: [
+        {
+          id: 'mat-21',
+          name: 'Baddi Active Pharmaceutical & Cosmetic Ingredient Belt',
+          type: 'Chemical Hub',
+          distanceKm: 290,
+          transitTime: 'Overnight reefer',
+          category: 'Pure Peptides & Retinoids',
+          description: 'Pharma-grade USP/EP certified active suppliers',
+          coords: { x: 44, y: 12 }
+        },
+        {
+          id: 'mat-22',
+          name: 'Okhla High-Precision Cosmetic Packaging Cluster',
+          type: 'Packaging Cluster',
+          distanceKm: 36,
+          transitTime: '55 mins',
+          category: 'Double-Wall Jars & Gold Collars',
+          description: 'Luxury cosmetic carton & primary closure producers',
+          coords: { x: 68, y: 35 }
+        },
+        {
+          id: 'mat-23',
+          name: 'Kundli Bio-Fermentation Science Park',
+          type: 'Chemical Hub',
+          distanceKm: 62,
+          transitTime: '1.3 hrs',
+          category: 'Hyaluronic Acid & Prebiotics',
+          description: 'Biotech lab cultivation of active ferment extracts',
+          coords: { x: 52, y: 18 }
+        }
+      ],
+      customsStatus: 'Authorized Economic Operator (AEO) • Green Channel Clearance',
+      dispatchTurnaround: '24-hour departure for international bonded air cargo',
+      coldChainAvailable: true,
+      transitAdvantage: 'High-speed expressway access + 40-min IGI international air freight connection'
+    }
+  },
+  {
+    id: 'sup-3',
+    name: 'PureFormulations Pvt.',
+    shortCode: 'PF',
+    type: 'Botanical & Organic OEM',
+    city: 'Pune',
+    state: 'Maharashtra',
+    isVerified: true,
+    isGstVerified: true,
+    isIsoCertified: true,
+    isGmpCertified: true,
+    isFdaRegistered: true,
+    categories: ['Hair Oils & Bases', 'Botanical Extracts', 'Organic Cosmeceuticals'],
+    specialties: ['Cold-Pressed Moroccan Argan', 'Plant Peptide Blends', 'Ayurvedic Fermented Extracts'],
+    phone: '+91 98220 77889',
+    whatsapp: '919822077889',
+    responseRate: '96% within 2 hrs',
+    trustScore: 95,
+    reliabilityRating: 96,
+    productQualityRating: 97,
+    overallRating: 4.8,
+    totalReviewsCount: 96,
+    responseScore: 95,
+    responseTimeText: '< 2 hrs',
+    exportReadiness: 89,
+    exportCertifications: 'ECOCERT Organic • ISO 9001',
+    establishedYear: '2011 (15 yrs)',
+    minOrderValue: '₹20,000 / 50 units',
+    sampleLeadTime: '3 - 4 Days',
+    monthlyCapacity: '120,000 Units/mo',
+    facilityArea: '28,000 sq.ft Eco Facility',
+    certificationsList: ['ECOCERT Organic', 'ISO 9001:2015', 'GMP Certified', 'Non-GMO Verified', 'USDA Organic Equivalent'],
+    portfolioProducts: [
+      {
+        id: 'pf-port-1',
+        name: 'Cold-Pressed Moroccan Argan Pure Oil',
+        image: 'https://images.unsplash.com/photo-1608248597359-52e1eb704179?auto=format&fit=crop&w=400&q=80',
+        price: '₹950 / L',
+        moq: '50 Liters'
+      },
+      {
+        id: 'pf-port-2',
+        name: 'Plant Peptide Revitalizing Face Fluid',
+        image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=80',
+        price: '₹410 / unit',
+        moq: '100 Units'
+      },
+      {
+        id: 'pf-port-3',
+        name: 'Fermented Herbal Hair Nourishing Tonic',
+        image: 'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=400&q=80',
+        price: '₹320 / unit',
+        moq: '200 Units'
+      }
+    ],
+    locationDetails: {
+      industrialZone: 'MIDC Bhosari & Chakan Bio-Industrial Park',
+      fullAddress: 'G-Block, Plot 42/1, MIDC Bhosari, Pune, MH 411026',
+      city: 'Pune',
+      state: 'Maharashtra',
+      lat: 18.6279,
+      lng: 73.8394,
+      shippingHubs: [
+        {
+          id: 'hub-31',
+          name: 'Pune International Air Cargo Complex (PNQ)',
+          type: 'Airport',
+          distanceKm: 14,
+          transitTime: '30 mins direct',
+          description: 'Direct domestic & Middle East air freight connectivity',
+          coords: { x: 65, y: 42 }
+        },
+        {
+          id: 'hub-32',
+          name: 'JNPT Port Sea Terminal via Mumbai-Pune Expressway',
+          type: 'Port',
+          distanceKm: 118,
+          transitTime: '2.5 hrs express tollway',
+          description: 'Dedicated sealed container express lane to deep-sea berths',
+          coords: { x: 26, y: 30 }
+        },
+        {
+          id: 'hub-33',
+          name: 'Chakan Multi-Modal Freight Terminal',
+          type: 'Dry Port / ICD',
+          distanceKm: 16,
+          transitTime: '25 mins',
+          description: 'Rail container depot with direct coastal freight trains',
+          coords: { x: 48, y: 22 }
+        }
+      ],
+      rawMaterialSources: [
+        {
+          id: 'mat-31',
+          name: 'Western Ghats ECOCERT Organic Botanical Plantations',
+          type: 'Chemical Hub',
+          distanceKm: 45,
+          transitTime: '1 hr direct',
+          category: 'Pure Cold-Pressed Oils & Plant Extracts',
+          description: 'Direct farmer cooperative sourcing of fresh botanical extracts',
+          coords: { x: 28, y: 72 }
+        },
+        {
+          id: 'mat-32',
+          name: 'Kurkumbh Cosmetic Chemical Cluster',
+          type: 'Chemical Hub',
+          distanceKm: 75,
+          transitTime: '1.6 hrs',
+          category: 'Natural Surfactants & Glucosides',
+          description: 'Green chemistry plant producing RSPO certified ingredients',
+          coords: { x: 76, y: 64 }
+        },
+        {
+          id: 'mat-33',
+          name: 'Shirwal Sustainable Glass Packaging Facility',
+          type: 'Packaging Cluster',
+          distanceKm: 55,
+          transitTime: '1.2 hrs',
+          category: 'PCR Recycled Glass & Bamboo Caps',
+          description: 'Eco-friendly sustainable cosmetic packaging partner',
+          coords: { x: 42, y: 80 }
+        }
+      ],
+      customsStatus: 'Export Inspection Agency (EIA) Cleared • ECOCERT Supply Chain Certified',
+      dispatchTurnaround: 'Daily express container trucks to JNPT port gateway',
+      coldChainAvailable: true,
+      transitAdvantage: 'Direct 45-min access to certified organic botanical harvest belts'
+    }
+  },
+  {
+    id: 'sup-4',
+    name: 'BioTech Derma Labs',
+    shortCode: 'BT',
+    type: 'OEM Bulk Active Formulator',
+    city: 'Ahmedabad',
+    state: 'Gujarat',
+    isVerified: true,
+    isGstVerified: true,
+    isIsoCertified: true,
+    isGmpCertified: true,
+    isFdaRegistered: true,
+    categories: ['Bulk Concentrates', 'Hair Growth Actives', 'Peptide Complexes'],
+    specialties: ['Copper Tripeptide-1', 'Redensyl + Procapil Actives', 'Liposomal Delivery Systems'],
+    phone: '+91 98795 11223',
+    whatsapp: '919879511223',
+    responseRate: '97% within 3 hrs',
+    trustScore: 97,
+    reliabilityRating: 98,
+    productQualityRating: 99,
+    overallRating: 4.9,
+    totalReviewsCount: 164,
+    responseScore: 94,
+    responseTimeText: '< 3 hrs',
+    exportReadiness: 96,
+    exportCertifications: 'US-FDA DMF • ISO 13485 & 22716',
+    establishedYear: '2008 (18 yrs)',
+    minOrderValue: '₹50,000 / Bulk 10kg',
+    sampleLeadTime: '2 - 3 Days',
+    monthlyCapacity: '300,000 Units/mo',
+    facilityArea: '60,000 sq.ft Automated Plant',
+    certificationsList: ['US-FDA DMF Filed', 'ISO 22716 GMP', 'ISO 13485', 'CE Marking Support', 'GLP Certified Lab'],
+    portfolioProducts: [
+      {
+        id: 'bt-port-1',
+        name: 'Procapil & Redensyl Hair Growth Concentrate',
+        image: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=400&q=80',
+        price: '₹1,800 / kg',
+        moq: '10 kg'
+      },
+      {
+        id: 'bt-port-2',
+        name: 'Copper Tripeptide-1 Anti-Aging Active Complex',
+        image: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=400&q=80',
+        price: '₹2,400 / kg',
+        moq: '5 kg'
+      },
+      {
+        id: 'bt-port-3',
+        name: 'Liposomal Niacinamide 10% Raw Active Blend',
+        image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80',
+        price: '₹1,100 / kg',
+        moq: '20 kg'
+      }
+    ],
+    locationDetails: {
+      industrialZone: 'Sanand GIDC Industrial Estate & Chemical Corridor',
+      fullAddress: 'Plot 304, Phase II, Sanand GIDC, Ahmedabad, GJ 382110',
+      city: 'Ahmedabad',
+      state: 'Gujarat',
+      lat: 22.9868,
+      lng: 72.3787,
+      shippingHubs: [
+        {
+          id: 'hub-41',
+          name: 'Mundra Major Port & Container Terminal',
+          type: 'Port',
+          distanceKm: 320,
+          transitTime: 'Direct freight rail (14 hrs)',
+          description: 'India’s largest commercial port with global maritime sailings',
+          coords: { x: 18, y: 44 }
+        },
+        {
+          id: 'hub-42',
+          name: 'Ahmedabad International Air Cargo Terminal (AMD)',
+          type: 'Airport',
+          distanceKm: 32,
+          transitTime: '45 mins expressway',
+          description: 'Daily bonded temperature-controlled international cargo',
+          coords: { x: 62, y: 28 }
+        },
+        {
+          id: 'hub-43',
+          name: 'Sanand Multi-Modal Logistics Hub (ICD)',
+          type: 'Dry Port / ICD',
+          distanceKm: 8,
+          transitTime: '15 mins dispatch',
+          description: 'On-site rail transfer hub for bulk containerised liquid freight',
+          coords: { x: 44, y: 55 }
+        }
+      ],
+      rawMaterialSources: [
+        {
+          id: 'mat-41',
+          name: 'Ankleshwar-Vapi Specialty Chemical Belt',
+          type: 'Chemical Hub',
+          distanceKm: 190,
+          transitTime: '3.8 hrs expressway',
+          category: 'Active Raw Chemical Synthesis',
+          description: 'Global benchmark chemical active manufacturing cluster',
+          coords: { x: 58, y: 78 }
+        },
+        {
+          id: 'mat-42',
+          name: 'Vatva Cosmetic Specialty Ingredient Zone',
+          type: 'Chemical Hub',
+          distanceKm: 25,
+          transitTime: '35 mins',
+          category: 'Preservatives & Chelating Agents',
+          description: 'High-purity raw actives formulation hub',
+          coords: { x: 68, y: 42 }
+        },
+        {
+          id: 'mat-43',
+          name: 'Morbi Specialty Packaging & Dispenser Complex',
+          type: 'Packaging Cluster',
+          distanceKm: 175,
+          transitTime: '3.2 hrs',
+          category: 'Cosmetic Jars & Closures',
+          description: 'Bulk automated packaging component manufacturing',
+          coords: { x: 30, y: 65 }
+        }
+      ],
+      customsStatus: 'US-FDA Drug Master File (DMF) Gate • Direct Port Entry (DPE) Authorized',
+      dispatchTurnaround: 'Automated pallet loading & customs sealing in under 2 hours',
+      coldChainAvailable: true,
+      transitAdvantage: 'Heavy chemical infrastructure belt with direct rail link to Mundra Port'
+    }
+  }
+];
+
+export const SEARCH_PRODUCTS: SearchProduct[] = [
+  {
+    id: 'sp-1',
+    title: 'Professional Argan Repair Hair Serum (Bulk/Wholesale)',
+    supplierName: 'Aura Beauty Labs',
+    supplierLocation: 'Mumbai, Maharashtra',
+    supplierType: 'Verified Manufacturer',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    moq: '50 Units',
+    moqNumber: 50,
+    priceRange: '₹350 - ₹450',
+    priceMin: 350,
+    priceMax: 450,
+    bulkTierText: '50-99: ₹450 | 100+: ₹350',
+    responseTime: '< 1 hr',
+    certifications: ['GMP', 'ISO 9001'],
+    image: 'https://images.unsplash.com/photo-1608248597359-00f723812586?auto=format&fit=crop&w=600&q=80',
+    category: 'Haircare',
+    specs: {
+      formulationBase: 'Moroccan Argan Kernel Oil + Hydrolyzed Keratin Matrix',
+      packagingType: 'Amber Glass Dropper Bottle (50ml / 100ml)',
+      shelfLife: '24 Months',
+      sampleLeadTime: '1-2 Business Days',
+      productionCapacity: '65,000 Units / Month',
+      compliance: 'GMP Compliant • ISO 9001:2015'
+    }
+  },
+  {
+    id: 'sp-2',
+    title: 'Pro-Keratin Smoothing Serum Bulk 1L (Salon Use)',
+    supplierName: 'CosmoTech Industries',
+    supplierLocation: 'Delhi NCR',
+    supplierType: 'OEM / Contract Manufacturer',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    moq: '10 Liters',
+    moqNumber: 10,
+    priceRange: '₹980 - ₹1,200',
+    priceMin: 980,
+    priceMax: 1200,
+    bulkTierText: '10-49 L: ₹1,200 | 50-199 L: ₹1,050 | ≥200 L: ₹980',
+    responseTime: '< 24 hr',
+    certifications: ['GST Verified', 'ISO 22716'],
+    image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80',
+    category: 'Haircare',
+    specs: {
+      formulationBase: 'Bio-Identical Keratin + Amino Acid Bond Repair',
+      packagingType: '1000ml HDPE Salon Pump Dispenser',
+      shelfLife: '36 Months',
+      sampleLeadTime: '2 Business Days',
+      productionCapacity: '10,000 Liters / Month',
+      compliance: 'Dermat Tested • Paraben-Free'
+    }
+  },
+  {
+    id: 'sp-3',
+    title: 'Biotin Hair Growth Serum Custom Formulation',
+    supplierName: 'Luxe Formulations',
+    supplierLocation: 'Bengaluru, Karnataka',
+    supplierType: 'Private Label Lab',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    moq: '500 Units',
+    moqNumber: 500,
+    priceRange: '₹210 - ₹280',
+    priceMin: 210,
+    priceMax: 280,
+    bulkTierText: '500-999: ₹280 | 1,000+: ₹210',
+    responseTime: '< 2 hr',
+    certifications: ['FDA Registered', 'ISO Certified'],
+    image: 'https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=600&q=80',
+    category: 'Haircare',
+    specs: {
+      formulationBase: 'Biotinoyl Tripeptide-1 + Redensyl 3% + Rosemary Oil',
+      packagingType: 'Frosted Glass Dropper with Gold Collar',
+      shelfLife: '24 Months',
+      sampleLeadTime: '2-3 Business Days',
+      productionCapacity: '120,000 Units / Month',
+      compliance: 'US FDA Registered • Heavy Metal Free'
+    }
+  },
+  {
+    id: 'sp-4',
+    title: 'Rosemary & Redensyl Scalp Revitalizing Serum (50ml)',
+    supplierName: 'BioTech Derma Labs',
+    supplierLocation: 'Ahmedabad, Gujarat',
+    supplierType: 'Verified Manufacturer',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    moq: '100 Units',
+    moqNumber: 100,
+    priceRange: '₹320 - ₹390',
+    priceMin: 320,
+    priceMax: 390,
+    bulkTierText: '100-249: ₹390 | 250+: ₹320',
+    responseTime: '< 2 hr',
+    certifications: ['GMP', 'ISO 9001', 'COA'],
+    image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80',
+    category: 'Haircare',
+    specs: {
+      formulationBase: 'Pure Rosmarinus Officinalis Extract + Anagain + Biotin',
+      packagingType: 'UV-Protected Matte Black Dropper Bottle',
+      shelfLife: '24 Months',
+      sampleLeadTime: '1 Business Day',
+      productionCapacity: '75,000 Units / Month',
+      compliance: 'Clinically Evaluated • AYUSH Approved'
+    }
+  },
+  {
+    id: 'sp-5',
+    title: 'Moroccan Argan Deep Shine Hair Serum Concentrate',
+    supplierName: 'PureFormulations Pvt.',
+    supplierLocation: 'Pune, Maharashtra',
+    supplierType: 'Botanical & Organic OEM',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    moq: '50 Units',
+    moqNumber: 50,
+    priceRange: '₹420 - ₹480',
+    priceMin: 420,
+    priceMax: 480,
+    bulkTierText: '50-199: ₹480 | 200+: ₹420',
+    responseTime: '< 1 hr',
+    certifications: ['ECOCERT Organic', 'GMP'],
+    image: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=600&q=80',
+    category: 'Haircare',
+    specs: {
+      formulationBase: '100% Cold-Pressed Organic Argan Oil + Vitamin E',
+      packagingType: 'Luxury Heavy-Bottom Glass Pump Bottle',
+      shelfLife: '36 Months',
+      sampleLeadTime: '2 Business Days',
+      productionCapacity: '40,000 Units / Month',
+      compliance: 'USDA Organic Equivalent • Cruelty-Free'
+    }
+  },
+  {
+    id: 'sp-6',
+    title: 'Salon-Grade Color Lock Thermal Shield Serum (100ml)',
+    supplierName: 'LuxeCosmetics Mfg.',
+    supplierLocation: 'Mumbai, Maharashtra',
+    supplierType: 'Verified Manufacturer',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    moq: '200 Units',
+    moqNumber: 200,
+    priceRange: '₹260 - ₹310',
+    priceMin: 260,
+    priceMax: 310,
+    bulkTierText: '200-499: ₹310 | 500+: ₹260',
+    responseTime: '< 1 hr',
+    certifications: ['ISO 9001', 'GMP Compliant'],
+    image: 'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=600&q=80',
+    category: 'Haircare',
+    specs: {
+      formulationBase: 'Thermal Protection Polymer + Marula Oil + UV Filters',
+      packagingType: 'Airless Dispenser Bottle (100ml)',
+      shelfLife: '24 Months',
+      sampleLeadTime: '2 Business Days',
+      productionCapacity: '90,000 Units / Month',
+      compliance: 'Salon Tested • Sulfate & Paraben Free'
+    }
+  },
+  {
+    id: 'sp-7',
+    title: 'Peptide Barrier Restorative Cream - 50g',
+    supplierName: 'Dermaglow India',
+    supplierLocation: 'Delhi NCR',
+    supplierType: 'Cosmeceutical Manufacturer',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    moq: '150 Units',
+    moqNumber: 150,
+    priceRange: '₹320 - ₹380',
+    priceMin: 320,
+    priceMax: 380,
+    bulkTierText: '500+ units @ ₹290/unit',
+    responseTime: '< 1 hr',
+    certifications: ['US FDA Reg.', 'ISO 22716 GMP'],
+    image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80',
+    category: 'Skincare',
+    specs: {
+      formulationBase: 'Ceramide NP + Multi-Peptide Complex (Matrixyl 3000)',
+      packagingType: 'Double-Wall Acrylic Jar with Inner Liner',
+      shelfLife: '30 Months',
+      sampleLeadTime: '2 Business Days',
+      productionCapacity: '80,000 Units / Month',
+      compliance: 'Dermatologically Tested • Paraben Free'
+    }
+  },
+  {
+    id: 'sp-8',
+    title: 'Professional Micro-Mist Ozone Salon Hair Steamer',
+    supplierName: 'BeautyPro Equipment Co.',
+    supplierLocation: 'Bengaluru, Karnataka',
+    supplierType: 'Wholesaler / Distributor',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    moq: '2 Units',
+    moqNumber: 2,
+    priceRange: '₹18,500 - ₹22,000',
+    priceMin: 18500,
+    priceMax: 22000,
+    bulkTierText: '10+ units @ ₹16,900/unit',
+    responseTime: '< 2 hr',
+    certifications: ['CE Certified', '1-Yr Warranty'],
+    image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80',
+    category: 'Salon Equipment',
+    specs: {
+      formulationBase: 'High-Grade Industrial Titanium Heating Element',
+      packagingType: 'Reinforced Plywood Export Crate',
+      shelfLife: '10+ Years Operational Life',
+      sampleLeadTime: 'In Stock for Demo',
+      productionCapacity: '200 Machines / Month',
+      compliance: 'CE Certified • ISO 9001 Quality Control'
+    }
+  }
+];
+
+export const SEARCH_SUPPLIERS: SearchSupplier[] = [
+  {
+    id: 'ss-1',
+    name: 'LuxeCosmetics Mfg.',
+    shortCode: 'LC',
+    type: 'Manufacturer & Formulation Lab',
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    rating: 4.9,
+    trustScore: 98,
+    responseRate: '99%',
+    responseTime: '< 1 hr',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    exportReady: true,
+    categories: ['Haircare', 'Keratin Treatments', 'Hair Serums', 'Private Label'],
+    totalProductsCount: 42,
+    minOrderValue: '₹25,000',
+    phone: '+91 98201 55443',
+    whatsapp: '919820155443',
+    locationDetails: {
+      industrialZone: 'MIDC Taloja Special Chemical & Cosmetic Zone',
+      fullAddress: 'Plot C-14, Sector 19, MIDC Taloja, Navi Mumbai, MH 410208',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      lat: 19.0438,
+      lng: 73.1098,
+      shippingHubs: [
+        {
+          id: 'ss-hub-1',
+          name: 'JNPT International Sea Port (Nhava Sheva)',
+          type: 'Port',
+          distanceKm: 26,
+          transitTime: '1.2 hrs direct freight',
+          description: 'Primary container gateway for sea freight export consignments',
+          coords: { x: 38, y: 72 }
+        },
+        {
+          id: 'ss-hub-2',
+          name: 'CSMIA International Air Cargo Complex (BOM)',
+          type: 'Airport',
+          distanceKm: 34,
+          transitTime: '1.5 hrs express transit',
+          description: 'Daily bonded temperature-controlled air cargo connections',
+          coords: { x: 32, y: 36 }
+        },
+        {
+          id: 'ss-hub-3',
+          name: 'Western Dedicated Freight Corridor (WDFC)',
+          type: 'Corridor',
+          distanceKm: 8,
+          transitTime: '15 mins access',
+          description: 'Direct heavy haul rail access connecting JNPT to Northern Metros',
+          coords: { x: 74, y: 44 }
+        }
+      ],
+      rawMaterialSources: [
+        {
+          id: 'ss-mat-1',
+          name: 'Taloja Specialty Surfactants & Botanical Active Base',
+          type: 'Chemical Hub',
+          distanceKm: 4,
+          transitTime: '10 mins',
+          category: 'Bio-Actives & Base Oils',
+          description: 'Local synthesis of cold-process emulsifiers',
+          coords: { x: 55, y: 38 }
+        },
+        {
+          id: 'ss-mat-2',
+          name: 'Thane-Belapur Fine Chemical Corridor',
+          type: 'Chemical Hub',
+          distanceKm: 18,
+          transitTime: '35 mins',
+          category: 'Preservatives & Conditioning Polymers',
+          description: 'ISO-certified cosmetic grade chemical manufacturers',
+          coords: { x: 42, y: 26 }
+        }
+      ],
+      customsStatus: 'AEO Tier-2 Certified • Direct Port Delivery (DPD) Enabled',
+      dispatchTurnaround: 'Same-day container seal to JNPT port gate-in (< 4 hrs)',
+      coldChainAvailable: true,
+      transitAdvantage: 'Direct deep-sea port proximity with instant DPD customs gate-in'
+    }
+  },
+  {
+    id: 'ss-2',
+    name: 'PureFormulations Pvt.',
+    shortCode: 'PF',
+    type: 'Cosmeceutical & Botanical Manufacturer',
+    city: 'Pune',
+    state: 'Maharashtra',
+    rating: 4.8,
+    trustScore: 96,
+    responseRate: '95%',
+    responseTime: '< 2 hrs',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    exportReady: true,
+    categories: ['Hair Oils', 'Argan Bases', 'Natural Actives', 'Cold Pressed'],
+    totalProductsCount: 36,
+    minOrderValue: '₹20,000',
+    phone: '+91 98220 77889',
+    whatsapp: '919822077889',
+    locationDetails: {
+      industrialZone: 'MIDC Bhosari & Chakan Bio-Industrial Park',
+      fullAddress: 'G-Block, Plot 42/1, MIDC Bhosari, Pune, MH 411026',
+      city: 'Pune',
+      state: 'Maharashtra',
+      lat: 18.6279,
+      lng: 73.8394,
+      shippingHubs: [
+        {
+          id: 'ss-hub-21',
+          name: 'Pune International Air Cargo Complex (PNQ)',
+          type: 'Airport',
+          distanceKm: 14,
+          transitTime: '30 mins direct',
+          description: 'Direct domestic & Middle East air freight connectivity',
+          coords: { x: 65, y: 42 }
+        },
+        {
+          id: 'ss-hub-22',
+          name: 'JNPT Port Sea Terminal via Mumbai-Pune Expressway',
+          type: 'Port',
+          distanceKm: 118,
+          transitTime: '2.5 hrs express tollway',
+          description: 'Dedicated sealed container express lane to deep-sea berths',
+          coords: { x: 26, y: 30 }
+        }
+      ],
+      rawMaterialSources: [
+        {
+          id: 'ss-mat-21',
+          name: 'Western Ghats ECOCERT Organic Botanical Plantations',
+          type: 'Chemical Hub',
+          distanceKm: 45,
+          transitTime: '1 hr direct',
+          category: 'Pure Cold-Pressed Oils & Plant Extracts',
+          description: 'Direct farmer cooperative sourcing of fresh botanical extracts',
+          coords: { x: 28, y: 72 }
+        }
+      ],
+      customsStatus: 'Export Inspection Agency (EIA) Cleared • ECOCERT Supply Chain Certified',
+      dispatchTurnaround: 'Daily express container trucks to JNPT port gateway',
+      coldChainAvailable: true,
+      transitAdvantage: 'Direct 45-min access to certified organic botanical harvest belts'
+    }
+  },
+  {
+    id: 'ss-3',
+    name: 'BioTech Derma Labs',
+    shortCode: 'BT',
+    type: 'OEM Bulk Active Formulator',
+    city: 'Ahmedabad',
+    state: 'Gujarat',
+    rating: 4.9,
+    trustScore: 97,
+    responseRate: '96%',
+    responseTime: '< 3 hrs',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    exportReady: true,
+    categories: ['Bulk Concentrates', 'Hair Growth Actives', 'Peptides', 'Raw Bases'],
+    totalProductsCount: 28,
+    minOrderValue: '₹50,000',
+    phone: '+91 98795 11223',
+    whatsapp: '919879511223',
+    locationDetails: {
+      industrialZone: 'Sanand GIDC Industrial Estate & Chemical Corridor',
+      fullAddress: 'Plot 304, Phase II, Sanand GIDC, Ahmedabad, GJ 382110',
+      city: 'Ahmedabad',
+      state: 'Gujarat',
+      lat: 22.9868,
+      lng: 72.3787,
+      shippingHubs: [
+        {
+          id: 'ss-hub-31',
+          name: 'Mundra Major Port & Container Terminal',
+          type: 'Port',
+          distanceKm: 320,
+          transitTime: 'Direct freight rail (14 hrs)',
+          description: 'India’s largest commercial port with global maritime sailings',
+          coords: { x: 18, y: 44 }
+        },
+        {
+          id: 'ss-hub-32',
+          name: 'Ahmedabad International Air Cargo Terminal (AMD)',
+          type: 'Airport',
+          distanceKm: 32,
+          transitTime: '45 mins expressway',
+          description: 'Daily bonded temperature-controlled international cargo',
+          coords: { x: 62, y: 28 }
+        }
+      ],
+      rawMaterialSources: [
+        {
+          id: 'ss-mat-31',
+          name: 'Ankleshwar-Vapi Specialty Chemical Belt',
+          type: 'Chemical Hub',
+          distanceKm: 190,
+          transitTime: '3.8 hrs expressway',
+          category: 'Active Raw Chemical Synthesis',
+          description: 'Global benchmark chemical active manufacturing cluster',
+          coords: { x: 58, y: 78 }
+        }
+      ],
+      customsStatus: 'US-FDA Drug Master File (DMF) Gate • Direct Port Entry (DPE) Authorized',
+      dispatchTurnaround: 'Automated pallet loading & customs sealing in under 2 hours',
+      coldChainAvailable: true,
+      transitAdvantage: 'Heavy chemical infrastructure belt with direct rail link to Mundra Port'
+    }
+  },
+  {
+    id: 'ss-4',
+    name: 'Dermaglow India',
+    shortCode: 'DI',
+    type: 'Cosmeceutical Manufacturer',
+    city: 'Delhi NCR',
+    state: 'Delhi',
+    rating: 4.9,
+    trustScore: 97,
+    responseRate: '98%',
+    responseTime: '< 1 hr',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    exportReady: true,
+    categories: ['Dermatological Skincare', 'Anti-Aging Creams', 'Serums', 'Sunscreen SPF50'],
+    totalProductsCount: 54,
+    minOrderValue: '₹30,000',
+    phone: '+91 98110 33221',
+    whatsapp: '919811033221',
+    locationDetails: {
+      industrialZone: 'IMT Manesar Cosmeceutical Cleanroom Zone',
+      fullAddress: 'Plot 88, Sector 6, IMT Manesar, Gurugram / Delhi NCR 122051',
+      city: 'Delhi NCR',
+      state: 'Delhi',
+      lat: 28.3685,
+      lng: 76.9412,
+      shippingHubs: [
+        {
+          id: 'ss-hub-41',
+          name: 'IGI International Airport Cargo Terminal (DEL)',
+          type: 'Airport',
+          distanceKm: 28,
+          transitTime: '40 mins expressway',
+          description: 'Largest air cargo facility with dedicated pharma/cosmetics cold-zone',
+          coords: { x: 56, y: 28 }
+        },
+        {
+          id: 'ss-hub-42',
+          name: 'ICD Tughlakabad Inland Container Dry Port',
+          type: 'Dry Port / ICD',
+          distanceKm: 42,
+          transitTime: '1.1 hrs direct transit',
+          description: 'Asia’s largest inland dry port for containerised export cargo',
+          coords: { x: 70, y: 46 }
+        }
+      ],
+      rawMaterialSources: [
+        {
+          id: 'ss-mat-41',
+          name: 'Baddi Active Pharmaceutical & Cosmetic Ingredient Belt',
+          type: 'Chemical Hub',
+          distanceKm: 290,
+          transitTime: 'Overnight reefer',
+          category: 'Pure Peptides & Retinoids',
+          description: 'Pharma-grade USP/EP certified active suppliers',
+          coords: { x: 44, y: 12 }
+        }
+      ],
+      customsStatus: 'Authorized Economic Operator (AEO) • Green Channel Clearance',
+      dispatchTurnaround: '24-hour departure for international bonded air cargo',
+      coldChainAvailable: true,
+      transitAdvantage: 'High-speed expressway access + 40-min IGI international air freight connection'
+    }
+  }
+];
+
+export const SEARCH_OEM_FORMULATIONS: OEMFormulation[] = [
+  {
+    id: 'oem-1',
+    title: 'Custom Botanical Keratin Hair Smoothing Treatment',
+    developer: 'Aura Beauty Labs',
+    location: 'Mumbai, MH',
+    developmentType: 'Turnkey Contract Manufacturing (Formulation + Filling)',
+    batchCapacity: '500L - 10,000L / Batch',
+    moq: '500 Units / 250 Liters',
+    targetPrice: '₹140 - ₹280 / Unit',
+    testingIncluded: 'Stability at 45°C + Microbial Efficacy + Patch Test',
+    image: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=600&q=80',
+    tags: ['Formaldehyde Free', 'Botanical Actives', 'Salon Grade'],
+    isGstVerified: true,
+    isIsoCertified: true
+  },
+  {
+    id: 'oem-2',
+    title: 'Triple-Ceramide + 2% Ectoin Barrier Restore Emulsion',
+    developer: 'Dermaglow India',
+    location: 'Delhi NCR',
+    developmentType: 'Custom Private Label Development',
+    batchCapacity: '1,000 Units - 50,000 Units',
+    moq: '300 Units',
+    targetPrice: '₹190 - ₹290 / Unit',
+    testingIncluded: 'TEWL Clinical Hydration Study + 90-Day Real-Time Stability',
+    image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80',
+    tags: ['Clinical Actives', 'Clean Beauty', 'Hypoallergenic'],
+    isGstVerified: true,
+    isIsoCertified: true
+  },
+  {
+    id: 'oem-3',
+    title: 'Sulfate-Free Organic Rosemary & Biotin Hair Density Cleanser',
+    developer: 'PureFormulations Pvt.',
+    location: 'Pune, MH',
+    developmentType: 'Ready-to-Bottle Formulation Library',
+    batchCapacity: '1,000L - 25,000L',
+    moq: '1,000 Bottles (250ml)',
+    targetPrice: '₹85 - ₹120 / Bottle',
+    testingIncluded: 'Foam Density Analysis + Preservation Challenge Test',
+    image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80',
+    tags: ['Ayush Approved', 'Sulfate-Free', 'Eco-Certified'],
+    isGstVerified: true,
+    isIsoCertified: true
+  }
+];
+

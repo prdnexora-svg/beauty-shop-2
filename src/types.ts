@@ -1,0 +1,190 @@
+export interface RFQItem {
+  id: string;
+  buyerLocation: string;
+  isVerifiedBuyer: boolean;
+  timeAgo: string;
+  title: string;
+  description: string;
+  quantityRequired: string;
+  targetPrice?: string;
+  category: string;
+}
+
+export interface DealProduct {
+  id: string;
+  title: string;
+  supplierName: string;
+  supplierLocation: string;
+  isVerified: boolean;
+  discountPercentage: number;
+  bulkTierLabel: string;
+  estimatedDelivery: string;
+  originalPrice: string;
+  dealPrice: string;
+  moq: string;
+  image: string;
+  tags: string[];
+}
+
+export interface TrendingProduct {
+  id: string;
+  title: string;
+  supplierName: string;
+  supplierLocation: string;
+  isGstVerified: boolean;
+  isIsoCertified: boolean;
+  moq: string;
+  priceRange: string;
+  image: string;
+  category: string;
+}
+
+export interface LogisticsHub {
+  id: string;
+  name: string;
+  type: 'Port' | 'Airport' | 'Corridor' | 'Chemical Hub' | 'Packaging Cluster' | 'Dry Port / ICD';
+  distanceKm: number;
+  transitTime: string;
+  category?: string;
+  description: string;
+  coords: { x: number; y: number }; // Relative percentage on the schematic map (0-100)
+}
+
+export interface SupplierLocationDetails {
+  industrialZone: string;
+  fullAddress: string;
+  city: string;
+  state: string;
+  lat: number;
+  lng: number;
+  shippingHubs: LogisticsHub[];
+  rawMaterialSources: LogisticsHub[];
+  customsStatus: string;
+  dispatchTurnaround: string;
+  coldChainAvailable: boolean;
+  transitAdvantage: string;
+}
+
+export interface PortfolioProduct {
+  id: string;
+  name: string;
+  image: string;
+  price: string;
+  moq: string;
+}
+
+export interface VerifiedSupplier {
+  id: string;
+  name: string;
+  shortCode: string;
+  type: string;
+  city: string;
+  state?: string;
+  isVerified: boolean;
+  isGstVerified: boolean;
+  isIsoCertified: boolean;
+  isGmpCertified?: boolean;
+  isFdaRegistered?: boolean;
+  categories: string[];
+  specialties?: string[];
+  phone: string;
+  whatsapp: string;
+  responseRate: string;
+  trustScore: number;
+  reliabilityRating: number;
+  productQualityRating?: number;
+  overallRating?: number;
+  totalReviewsCount?: number;
+  responseScore: number;
+  responseTimeText: string;
+  exportReadiness: number;
+  exportCertifications?: string;
+  establishedYear?: string;
+  minOrderValue?: string;
+  sampleLeadTime?: string;
+  monthlyCapacity?: string;
+  facilityArea?: string;
+  certificationsList?: string[];
+  locationDetails?: SupplierLocationDetails;
+  portfolioProducts?: PortfolioProduct[];
+}
+
+export interface SearchProduct {
+  id: string;
+  title: string;
+  supplierName: string;
+  supplierLocation: string;
+  supplierType?: string;
+  isGstVerified: boolean;
+  isIsoCertified: boolean;
+  isNexoraVerified?: boolean;
+  moq: string;
+  moqNumber: number;
+  priceRange: string;
+  priceMin: number;
+  priceMax: number;
+  bulkTierText?: string;
+  responseTime: string;
+  certifications: string[];
+  image: string;
+  category: string;
+  specs?: {
+    formulationBase?: string;
+    packagingType?: string;
+    shelfLife?: string;
+    sampleLeadTime?: string;
+    productionCapacity?: string;
+    compliance?: string;
+  };
+}
+
+export interface SearchSupplier {
+  id: string;
+  name: string;
+  shortCode: string;
+  type: string;
+  city: string;
+  state: string;
+  rating: number;
+  trustScore: number;
+  responseRate: string;
+  responseTime: string;
+  isGstVerified: boolean;
+  isIsoCertified: boolean;
+  isNexoraVerified: boolean;
+  exportReady: boolean;
+  categories: string[];
+  totalProductsCount: number;
+  minOrderValue: string;
+  phone: string;
+  whatsapp: string;
+  locationDetails?: SupplierLocationDetails;
+}
+
+export interface OEMFormulation {
+  id: string;
+  title: string;
+  developer: string;
+  location: string;
+  developmentType: string;
+  batchCapacity: string;
+  moq: string;
+  targetPrice: string;
+  testingIncluded: string;
+  image: string;
+  tags: string[];
+  isGstVerified: boolean;
+  isIsoCertified: boolean;
+}
+
+export interface CategoryItem {
+  id: string;
+  name: string;
+  iconName: string;
+  image?: string;
+  itemCount?: string;
+  subtitle?: string;
+  isHighlighted?: boolean;
+}
+
+
