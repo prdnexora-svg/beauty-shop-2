@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   ClipboardList, 
@@ -21,6 +21,7 @@ import {
   LayoutDashboard,
   Bell,
   UserCheck,
+  UserPlus,
   FileText,
   LayoutGrid,
   ShoppingBag,
@@ -33,7 +34,16 @@ import {
   Edit3,
   Building2,
   Check,
-  Globe
+  Globe,
+  Calendar,
+  Share2,
+  ThumbsUp,
+  Camera,
+  Image,
+  Video,
+  Trash2,
+  Send,
+  Play
 } from 'lucide-react';
 import { BuyerEnquiry, BuyerRFQ, VerifiedSupplier } from '../types';
 import { BUYER_MOCK_ENQUIRIES, BUYER_MOCK_RFQS, VERIFIED_SUPPLIERS } from '../data/mockData';
@@ -51,6 +61,32 @@ interface BuyerDashboardProps {
   onOpenEditProfile?: () => void;
 }
 
+interface CommentItem {
+  id: string;
+  author: string;
+  avatar?: string;
+  businessName?: string;
+  content: string;
+  timeAgo: string;
+}
+
+interface TimelinePost {
+  id: string;
+  author: string;
+  businessName: string;
+  avatar?: string;
+  timeAgo: string;
+  content: string;
+  tag: string;
+  likes: number;
+  comments: number;
+  shares: number;
+  liked?: boolean;
+  mediaUrl?: string;
+  mediaType?: 'image' | 'video' | 'none';
+  commentsList?: CommentItem[];
+}
+
 export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({ 
   isLoggedIn,
   onNavigate, 
@@ -64,7 +100,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [profileComplete, setProfileComplete] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'rfqs' | 'enquiries' | 'saved'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'about' | 'rfqs' | 'saved' | 'social' | 'activity'>('overview');
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [profileToast, setProfileToast] = useState<string | null>(null);
 
@@ -88,10 +124,378 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
     whatsappAlerts: true,
     emailAlerts: true,
     isGstVerified: true,
-    isBusinessVerified: true
+    isBusinessVerified: true,
+    coverPhotoUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80',
+    bio: 'Head of Procurement at Radiant Beauty Solutions. Sourcing premium salon formulations, organic serums, and advanced aesthetic equipment across India.',
+    joinedDate: 'January 2024',
+    socialLinks: {
+      facebook: 'https://facebook.com/radiantbeauty',
+      instagram: 'https://instagram.com/radiantbeauty_in',
+      linkedin: 'https://linkedin.com/company/radiant-beauty-solutions',
+      youtube: 'https://youtube.com/@radiantbeautytv',
+      twitter: 'https://twitter.com/radiantbeauty',
+      website: 'https://radiantbeauty.in'
+    }
   });
 
   const buyerProfile = propBuyerProfile || localBuyerProfile;
+
+  // --- Dynamic Follow & Live Tracking System ---
+  const [buyerFollowed, setBuyerFollowed] = useState<boolean>(() => {
+    return localStorage.getItem('buyer_followed') === 'true';
+  });
+
+  const [buyerFollowers, setBuyerFollowers] = useState<number>(() => {
+    const saved = localStorage.getItem('buyer_followers_count');
+    return saved ? parseInt(saved, 10) : 1480;
+  });
+
+  const handleBuyerFollowToggle = () => {
+    const nextFollowed = !buyerFollowed;
+    const nextCount = buyerFollowers + (nextFollowed ? 1 : -1);
+    setBuyerFollowed(nextFollowed);
+    setBuyerFollowers(nextCount);
+    localStorage.setItem('buyer_followed', String(nextFollowed));
+    localStorage.setItem('buyer_followers_count', String(nextCount));
+    
+    setProfileToast(nextFollowed ? 'You are now tracking your own profile followers!' : 'Profile follower tracking updated.');
+    setTimeout(() => setProfileToast(null), 3000);
+  };
+
+  const mapSupplierId = (supId: string) => {
+    if (supId === 'sup-1') return 'seller_aura_001';
+    if (supId === 'sup-2') return 'seller_luxe_002';
+    if (supId === 'sup-3') return 'seller_beautypro_003';
+    if (supId === 'sup-4') return 'seller_radiant_004';
+    return supId;
+  };
+
+  const [followedSuppliers, setFollowedSuppliers] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    const ids = ['seller_aura_001', 'seller_luxe_002', 'seller_beautypro_003', 'seller_radiant_004'];
+    ids.forEach(id => {
+      initial[id] = localStorage.getItem(`follow_${id}`) === 'true';
+    });
+    return initial;
+  });
+
+  const [supplierFollowerCounts, setSupplierFollowerCounts] = useState<Record<string, number>>(() => {
+    const initial: Record<string, number> = {};
+    const ids = ['seller_aura_001', 'seller_luxe_002', 'seller_beautypro_003', 'seller_radiant_004'];
+    ids.forEach(id => {
+      const saved = localStorage.getItem(`follower_count_${id}`);
+      if (saved) {
+        initial[id] = parseInt(saved, 10);
+      } else {
+        let defaultVal = 1248;
+        if (id === 'seller_aura_001') defaultVal = 482;
+        if (id === 'seller_luxe_002') defaultVal = 310;
+        if (id === 'seller_beautypro_003') defaultVal = 824;
+        if (id === 'seller_radiant_004') defaultVal = 195;
+        initial[id] = defaultVal;
+      }
+    });
+    return initial;
+  });
+
+  useEffect(() => {
+    const handleSync = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { supplierId, isFollowed, followerCount } = customEvent.detail;
+      setFollowedSuppliers(prev => ({
+        ...prev,
+        [supplierId]: isFollowed
+      }));
+      setSupplierFollowerCounts(prev => ({
+        ...prev,
+        [supplierId]: followerCount
+      }));
+    };
+
+    window.addEventListener('supplier-follow-updated', handleSync);
+    return () => {
+      window.removeEventListener('supplier-follow-updated', handleSync);
+    };
+  }, []);
+
+  const handleSupplierFollowToggle = (supplierId: string) => {
+    const isCurrentlyFollowed = !!followedSuppliers[supplierId];
+    const nextFollowed = !isCurrentlyFollowed;
+    const nextCount = (supplierFollowerCounts[supplierId] || 482) + (nextFollowed ? 1 : -1);
+
+    localStorage.setItem(`follow_${supplierId}`, String(nextFollowed));
+    localStorage.setItem(`follower_count_${supplierId}`, String(nextCount));
+
+    setFollowedSuppliers(prev => ({
+      ...prev,
+      [supplierId]: nextFollowed
+    }));
+    setSupplierFollowerCounts(prev => ({
+      ...prev,
+      [supplierId]: nextCount
+    }));
+
+    window.dispatchEvent(new CustomEvent('supplier-follow-updated', {
+      detail: { supplierId, isFollowed: nextFollowed, followerCount: nextCount }
+    }));
+
+    setProfileToast(nextFollowed ? 'Supplier followed successfully!' : 'Supplier unfollowed.');
+    setTimeout(() => setProfileToast(null), 3000);
+  };
+  // ---------------------------------------------
+
+  // Timeline feed posts state with localStorage persistence
+  const [newPostText, setNewPostText] = useState('');
+  const [mediaInputType, setMediaInputType] = useState<'none' | 'image' | 'video'>('none');
+  const [mediaUrlInput, setMediaUrlInput] = useState('');
+  const [postTag, setPostTag] = useState('Buyer Update');
+  const [isUploadingPostPhoto, setIsUploadingPostPhoto] = useState(false);
+  const postPhotoInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePostPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+      setProfileToast(`Selected photo is ${(file.size / (1024 * 1024)).toFixed(1)}MB. Max limit is 5MB.`);
+      setTimeout(() => setProfileToast(null), 3500);
+      return;
+    }
+
+    setIsUploadingPostPhoto(true);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          setMediaUrlInput(compressedDataUrl);
+          setMediaInputType('image');
+          setProfileToast(`Photo uploaded successfully!`);
+          setTimeout(() => setProfileToast(null), 3000);
+        }
+        setIsUploadingPostPhoto(false);
+      };
+      img.onerror = () => {
+        setProfileToast('Unable to process selected photo.');
+        setTimeout(() => setProfileToast(null), 3000);
+        setIsUploadingPostPhoto(false);
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => {
+      setProfileToast('Failed to read photo file.');
+      setTimeout(() => setProfileToast(null), 3000);
+      setIsUploadingPostPhoto(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Track comment input values and expanded/drawer status per post ID
+  const [openCommentPostIds, setOpenCommentPostIds] = useState<Record<string, boolean>>({});
+  const [newCommentTexts, setNewCommentTexts] = useState<Record<string, string>>({});
+
+  const [feedPosts, setFeedPosts] = useState<TimelinePost[]>(() => {
+    const saved = localStorage.getItem('nexora_buyer_posts');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing saved posts:', e);
+      }
+    }
+    return [
+      {
+        id: 'post-1',
+        author: 'Priya Sharma',
+        businessName: 'Radiant Beauty Solutions',
+        avatar: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80',
+        timeAgo: '2 hours ago',
+        content: 'Looking for verified OEM manufacturers for private label Vitamin C & Hyaluronic Acid anti-aging serums. Minimum initial batch size 500 units with custom packaging. Please share direct quotations or schedule a meeting.',
+        tag: 'Sourcing RFQ',
+        likes: 14,
+        comments: 2,
+        shares: 2,
+        liked: false,
+        commentsList: [
+          {
+            id: 'comment-1-1',
+            author: 'Ananya Sen',
+            avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=120&q=80',
+            businessName: 'Aura Beauty Labs',
+            content: 'We can manufacture this for you! We specialize in custom active-ingredient serums. Will send a direct message.',
+            timeAgo: '1 hour ago'
+          },
+          {
+            id: 'comment-1-2',
+            author: 'Rajesh Kumar',
+            avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=120&q=80',
+            businessName: 'LuxeForm Cosmetics',
+            content: 'Interested! We have ready-to-go stability-tested Vitamin C formulations. Minimum order is 500 units.',
+            timeAgo: '30 mins ago'
+          }
+        ]
+      },
+      {
+        id: 'post-2',
+        author: 'Priya Sharma',
+        businessName: 'Radiant Beauty Solutions',
+        avatar: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80',
+        timeAgo: 'Yesterday',
+        content: 'Successfully onboarded 3 new tier-1 skincare suppliers through Nexora Luxe verified B2B marketplace. The GST verification and direct WhatsApp RFQ features have cut our procurement turnaround time by 60%!',
+        tag: 'Milestone',
+        likes: 32,
+        comments: 1,
+        shares: 6,
+        liked: true,
+        mediaUrl: 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?auto=format&fit=crop&w=800&q=80',
+        mediaType: 'image',
+        commentsList: [
+          {
+            id: 'comment-2-1',
+            author: 'Vikram Mehta',
+            avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=120&q=80',
+            businessName: 'BeautyPro Manufacturing',
+            content: 'Congratulations Priya! Proud to be one of your trusted partners here.',
+            timeAgo: 'Yesterday'
+          }
+        ]
+      }
+    ];
+  });
+
+  // Persist posts to localStorage on changes
+  useEffect(() => {
+    localStorage.setItem('nexora_buyer_posts', JSON.stringify(feedPosts));
+  }, [feedPosts]);
+
+  const getEmbeddableVideoUrl = (url: string) => {
+    if (!url) return '';
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    if (match && match[2].length === 11) {
+      return `https://www.youtube.com/embed/${match[2]}`;
+    }
+    return url;
+  };
+
+  const handleCreatePost = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPostText.trim()) return;
+
+    const newPost: TimelinePost = {
+      id: `post-${Date.now()}`,
+      author: buyerProfile.fullName,
+      businessName: buyerProfile.businessName,
+      avatar: buyerProfile.avatarUrl,
+      timeAgo: 'Just now',
+      content: newPostText,
+      tag: postTag,
+      likes: 0,
+      comments: 0,
+      shares: 0,
+      liked: false,
+      mediaUrl: mediaInputType !== 'none' && mediaUrlInput.trim() ? mediaUrlInput.trim() : undefined,
+      mediaType: mediaInputType !== 'none' && mediaUrlInput.trim() ? mediaInputType : undefined,
+      commentsList: []
+    };
+
+    setFeedPosts([newPost, ...feedPosts]);
+    setNewPostText('');
+    setMediaUrlInput('');
+    setMediaInputType('none');
+    setPostTag('Buyer Update');
+    setProfileToast('Timeline update posted successfully!');
+    setTimeout(() => setProfileToast(null), 3000);
+  };
+
+  const handleToggleLike = (postId: string) => {
+    setFeedPosts(posts => posts.map(p => {
+      if (p.id === postId) {
+        return {
+          ...p,
+          liked: !p.liked,
+          likes: p.liked ? p.likes - 1 : p.likes + 1
+        };
+      }
+      return p;
+    }));
+  };
+
+  const handleToggleCommentsDrawer = (postId: string) => {
+    setOpenCommentPostIds(prev => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }));
+  };
+
+  const handleAddComment = (postId: string, commentText: string) => {
+    if (!commentText || !commentText.trim()) return;
+
+    const newComment: CommentItem = {
+      id: `comment-${postId}-${Date.now()}`,
+      author: buyerProfile.fullName,
+      avatar: buyerProfile.avatarUrl,
+      businessName: buyerProfile.businessName,
+      content: commentText,
+      timeAgo: 'Just now'
+    };
+
+    setFeedPosts(posts => posts.map(p => {
+      if (p.id === postId) {
+        const commentsList = p.commentsList || [];
+        return {
+          ...p,
+          comments: commentsList.length + 1,
+          commentsList: [...commentsList, newComment]
+        };
+      }
+      return p;
+    }));
+
+    setNewCommentTexts(prev => ({ ...prev, [postId]: '' }));
+    setProfileToast('Comment published successfully!');
+    setTimeout(() => setProfileToast(null), 2500);
+  };
+
+  const handleSharePost = (postId: string) => {
+    setFeedPosts(posts => posts.map(p => {
+      if (p.id === postId) {
+        return {
+          ...p,
+          shares: p.shares + 1
+        };
+      }
+      return p;
+    }));
+
+    // Mock copy post url to clipboard
+    const mockPostUrl = `${window.location.origin}/buyer-dashboard/posts/${postId}`;
+    navigator.clipboard.writeText(mockPostUrl).then(() => {
+      setProfileToast('Post link copied! (Copied to clipboard)');
+      setTimeout(() => setProfileToast(null), 3000);
+    }).catch(err => {
+      console.error("Could not copy link", err);
+      setProfileToast('Post shared!');
+      setTimeout(() => setProfileToast(null), 3000);
+    });
+  };
 
   const handleTriggerEditProfile = () => {
     if (propOnOpenEditProfile) {
@@ -113,17 +517,15 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   };
 
   useEffect(() => {
-    // Simulate initial loading for premium feel
     const timer = setTimeout(() => setIsLoading(false), 800);
     return () => clearTimeout(timer);
   }, []);
 
-  // Stats for the overview (KPI Cards)
   const stats = [
-    { label: 'Active RFQs', value: '08', icon: ClipboardList, color: '#b90064', trend: '+2 this week' },
-    { label: 'New Quotes', value: '03', icon: BarChart3, color: '#0050d6', badge: true, trend: 'Action needed' },
-    { label: 'Sent Enquiries', value: '14', icon: MessageSquare, color: '#e6007e', trend: '4 pending reply' },
-    { label: 'Unread Messages', value: '02', icon: MessageCircle, color: '#1c1b1b', badge: true, trend: 'Aura Labs, LuxeForm' },
+    { label: 'Active RFQs', value: '08', icon: ClipboardList, color: '#b90064', trend: '+2 this week', route: 'rfq-tracking' },
+    { label: 'New Quotes', value: '03', icon: BarChart3, color: '#0050d6', badge: true, trend: 'Action needed', route: 'rfq-tracking' },
+    { label: 'Sent Enquiries', value: '14', icon: MessageSquare, color: '#e6007e', trend: '4 pending reply', route: 'buyer-enquiry-log' },
+    { label: 'Unread Messages', value: '02', icon: MessageCircle, color: '#1c1b1b', badge: true, trend: 'Aura Labs, LuxeForm', route: 'buyer-dashboard' },
   ];
 
   const getStatusColor = (status: string) => {
@@ -136,6 +538,164 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
       case 'Closed': return 'bg-gray-50 text-gray-700 border-gray-100';
       default: return 'bg-gray-50 text-gray-700 border-gray-100';
     }
+  };
+
+  const renderPostCard = (post: TimelinePost) => {
+    const isCommentsOpen = !!openCommentPostIds[post.id];
+    const commentText = newCommentTexts[post.id] || '';
+    const commentsList = post.commentsList || [];
+
+    const embedUrl = post.mediaUrl ? getEmbeddableVideoUrl(post.mediaUrl) : '';
+    const isYoutube = embedUrl.includes('youtube.com/embed') || embedUrl.includes('youtu.be');
+
+    return (
+      <div key={post.id} className="bg-white border border-[#e8e8e8] rounded-2xl p-6 shadow-xs space-y-4 text-left">
+        {/* Post Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#b90064] to-[#e6007e] text-white font-bold flex items-center justify-center overflow-hidden shrink-0">
+              {post.avatar ? (
+                <img src={post.avatar} alt={post.author} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-sm font-black">{post.author ? post.author[0].toUpperCase() : 'U'}</span>
+              )}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-xs font-bold text-[#1c1b1b]">{post.author}</h4>
+                <span className="text-[10px] text-[#8c7077] font-medium">• {post.timeAgo}</span>
+              </div>
+              <p className="text-[10px] text-[#594047] font-medium">{post.businessName}</p>
+            </div>
+          </div>
+          <span className="px-2.5 py-1 rounded-full bg-[#fde7f3] text-[#b90064] text-[10px] font-black uppercase tracking-wider">
+            {post.tag}
+          </span>
+        </div>
+
+        {/* Post Content */}
+        <p className="text-xs text-[#1c1b1b] leading-relaxed font-medium whitespace-pre-wrap">{post.content}</p>
+
+        {/* Media Player or HD Image Rendering */}
+        {post.mediaUrl && post.mediaType === 'image' && (
+          <div className="rounded-xl overflow-hidden border border-[#e8e8e8] bg-[#fcf9f8] mt-3 max-h-96 flex justify-center items-center">
+            <img src={post.mediaUrl} alt="Post Attachment" className="max-h-96 object-contain w-full hover:scale-[1.01] transition-transform duration-300" referrerPolicy="no-referrer" />
+          </div>
+        )}
+
+        {post.mediaUrl && post.mediaType === 'video' && (
+          <div className="rounded-xl overflow-hidden border border-[#e8e8e8] bg-black aspect-video mt-3">
+            {isYoutube ? (
+              <iframe src={embedUrl} className="w-full h-full" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+            ) : (
+              <video src={post.mediaUrl} controls className="w-full h-full object-contain" />
+            )}
+          </div>
+        )}
+
+        {/* Interaction Action Buttons & Live Counter */}
+        <div className="pt-3 border-t border-[#f0edec] flex items-center justify-between text-xs text-[#8c7077]">
+          <button 
+            onClick={() => handleToggleLike(post.id)} 
+            className={`flex items-center gap-1.5 font-bold transition-all px-3 py-1.5 rounded-lg hover:bg-[#fde7f3]/50 cursor-pointer ${
+              post.liked ? 'text-[#b90064]' : 'hover:text-[#1c1b1b]'
+            }`}
+          >
+            <ThumbsUp className={`w-4 h-4 transition-transform ${post.liked ? 'fill-[#b90064] scale-110' : ''}`} /> 
+            <span>{post.likes} {post.likes === 1 ? 'Like' : 'Likes'}</span>
+          </button>
+
+          <button 
+            onClick={() => handleToggleCommentsDrawer(post.id)} 
+            className={`flex items-center gap-1.5 font-bold transition-all px-3 py-1.5 rounded-lg hover:bg-[#0050d6]/5 cursor-pointer ${
+              isCommentsOpen ? 'text-[#0050d6]' : 'hover:text-[#1c1b1b]'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4" /> 
+            <span>{commentsList.length} {commentsList.length === 1 ? 'Comment' : 'Comments'}</span>
+          </button>
+
+          <button 
+            onClick={() => handleSharePost(post.id)} 
+            className="flex items-center gap-1.5 font-bold transition-all px-3 py-1.5 rounded-lg hover:bg-gray-100 cursor-pointer hover:text-[#1c1b1b]"
+          >
+            <Share2 className="w-4 h-4" /> 
+            <span>{post.shares} {post.shares === 1 ? 'Share' : 'Shares'}</span>
+          </button>
+        </div>
+
+        {/* Comments Drawer / Inline comments list & posting */}
+        {isCommentsOpen && (
+          <div className="pt-4 border-t border-[#f0edec] space-y-4 animate-in slide-in-from-top-2 duration-200">
+            {/* Existing Comments List */}
+            {commentsList.length > 0 ? (
+              <div className="space-y-3.5 max-h-60 overflow-y-auto pr-1">
+                {commentsList.map(comment => (
+                  <div key={comment.id} className="bg-[#fcf9f8] p-3 rounded-xl border border-[#f0edec] text-xs space-y-1 text-left">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded bg-[#fde7f3] text-[#b90064] font-black text-[9px] flex items-center justify-center overflow-hidden shrink-0">
+                          {comment.avatar ? (
+                            <img src={comment.avatar} alt={comment.author} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-[9px] font-black">{comment.author[0].toUpperCase()}</span>
+                          )}
+                        </div>
+                        <div>
+                          <span className="font-extrabold text-[#1c1b1b]">{comment.author}</span>
+                          {comment.businessName && (
+                            <span className="text-[10px] text-[#8c7077] font-medium ml-1.5">({comment.businessName})</span>
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-[9px] text-[#8c7077] font-medium">{comment.timeAgo}</span>
+                    </div>
+                    <p className="text-[#594047] pl-8 leading-relaxed font-medium">{comment.content}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-4 bg-[#fcf9f8] rounded-xl border border-dashed border-[#e8e8e8] text-xs text-[#8c7077] font-medium">
+                No comments yet. Be the first to reply!
+              </div>
+            )}
+
+            {/* Post New Comment Input */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#b90064] to-[#e6007e] text-white font-bold flex items-center justify-center overflow-hidden shrink-0 text-xs">
+                {buyerProfile.avatarUrl ? (
+                  <img src={buyerProfile.avatarUrl} alt={buyerProfile.fullName} className="w-full h-full object-cover" />
+                ) : (
+                  <span>{buyerProfile.fullName ? buyerProfile.fullName[0].toUpperCase() : 'B'}</span>
+                )}
+              </div>
+              <div className="flex-1 relative flex items-center">
+                <input
+                  type="text"
+                  value={commentText}
+                  onChange={e => setNewCommentTexts(prev => ({ ...prev, [post.id]: e.target.value }))}
+                  placeholder="Write a professional comment/reply..."
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      handleAddComment(post.id, commentText);
+                    }
+                  }}
+                  className="w-full pl-3.5 pr-12 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-medium"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleAddComment(post.id, commentText)}
+                  className="absolute right-2.5 p-1.5 text-[#b90064] hover:text-[#8e004b] transition-colors rounded-lg cursor-pointer"
+                  title="Submit Comment"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const SkeletonCard = () => (
@@ -151,74 +711,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
 
   return (
     <div className="flex flex-col min-h-screen bg-[#fdf8f8]">
-      {/* Header Section with Profile Details & Edit Button */}
-      <header className="bg-white/80 backdrop-blur-md sticky top-20 z-30 border-b border-[#e8e8e8] px-4 md:px-10 py-5">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="relative group cursor-pointer" onClick={handleTriggerEditProfile}>
-              <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[#b90064] to-[#e6007e] flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-[#b90064]/20 group-hover:opacity-90 transition-opacity overflow-hidden">
-                {buyerProfile.avatarUrl ? (
-                  <img src={buyerProfile.avatarUrl} alt={buyerProfile.fullName} className="w-full h-full object-cover" />
-                ) : (
-                  buyerProfile.fullName ? buyerProfile.fullName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'PR'
-                )}
-              </div>
-              <div className="absolute -bottom-1 -right-1 p-1 bg-white rounded-full border border-[#e8e8e8] text-[#b90064] shadow-xs">
-                <Edit3 className="w-3 h-3" />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl font-bold text-[#1c1b1b]">Welcome back, {buyerProfile.fullName.split(' ')[0]}</h1>
-                {buyerProfile.isGstVerified && (
-                  <span className="px-2 py-0.5 rounded-md bg-green-50 border border-green-200 text-green-700 text-[10px] font-bold flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3 text-green-600" /> GST Verified Buyer
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2 text-[#594047] text-xs font-medium mt-0.5 flex-wrap">
-                <span className="flex items-center gap-1 font-semibold text-[#1c1b1b]">
-                  <Building2 className="w-3.5 h-3.5 text-[#b90064]" /> {buyerProfile.businessName}
-                </span>
-                <span className="w-1 h-1 rounded-full bg-gray-300 hidden sm:inline" />
-                <span className="text-[#594047] hidden sm:inline">{buyerProfile.city}, {buyerProfile.state}</span>
-                <span className="w-1 h-1 rounded-full bg-gray-300" />
-                <span className="text-[#0050d6] font-mono">ID: NEX-B-2041</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* Edit Profile / Business Settings Button */}
-            <button
-              onClick={handleTriggerEditProfile}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-[#e8e8e8] hover:border-[#b90064] text-[#1c1b1b] hover:text-[#b90064] rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
-            >
-              <Settings className="w-4 h-4 text-[#b90064]" />
-              <span>Edit Profile & Settings</span>
-            </button>
-
-            <div className="relative hidden md:block">
-              <button 
-                title="Notifications"
-                className="p-2.5 rounded-xl bg-[#fcf9f8] border border-[#e8e8e8] text-[#594047] hover:bg-white transition-all relative cursor-pointer"
-              >
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-[#b90064] rounded-full border-2 border-white" />
-              </button>
-            </div>
-
-            <button 
-              onClick={onPostRFQ}
-              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-[#b90064] text-white rounded-xl text-xs font-extrabold shadow-md shadow-[#b90064]/25 hover:bg-[#8e004b] transition-all active:scale-95 group cursor-pointer"
-            >
-              <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-              Post Requirement
-            </button>
-          </div>
-        </div>
-      </header>
-
+      
       {/* Global Toast */}
       {profileToast && (
         <div className="fixed top-24 right-6 z-50 bg-[#1c1b1b] text-white px-4 py-3 rounded-xl shadow-xl border border-[#333] flex items-center gap-2 text-xs font-bold animate-in fade-in slide-in-from-top-2">
@@ -227,305 +720,1000 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
         </div>
       )}
 
+      {/* FACEBOOK-STYLE PROFILE HEADER & COVER BANNER */}
+      <div className="bg-white border-b border-[#e8e8e8] shadow-xs">
+        {/* Cover Photo Banner */}
+        <div className="relative h-48 sm:h-72 w-full bg-gradient-to-r from-[#b90064] via-[#e6007e] to-[#0050d6] overflow-hidden">
+          {buyerProfile.coverPhotoUrl ? (
+            <img src={buyerProfile.coverPhotoUrl} alt="Cover Banner" className="w-full h-full object-cover" />
+          ) : (
+            <div className="absolute inset-0 bg-black/20" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+          
+          <div className="absolute bottom-4 right-4 flex items-center gap-2">
+            <button
+              onClick={handleTriggerEditProfile}
+              className="px-3.5 py-2 bg-white/90 hover:bg-white text-[#1c1b1b] rounded-xl text-xs font-bold shadow-md backdrop-blur-md transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <Camera className="w-3.5 h-3.5 text-[#b90064]" />
+              <span>Edit Cover & Profile</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Profile Info Bar */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-10 pb-6 relative">
+          
+          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-8 pt-4">
+            
+            {/* Left/Main Column: Avatar & Text Info */}
+            <div className="flex flex-col md:flex-row md:items-start gap-6 flex-1">
+              
+              {/* Avatar neatly overlapped at the bottom-left edge of the cover banner */}
+              <div className="-mt-16 sm:–mt-20 lg:-mt-24 relative z-20 shrink-0">
+                <div className="relative group">
+                  <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-white p-1.5 shadow-xl border-4 border-white overflow-hidden bg-gradient-to-br from-[#b90064] to-[#e6007e]">
+                    <div className="w-full h-full rounded-2xl overflow-hidden bg-[#fde7f3] flex items-center justify-center text-white font-black text-3xl">
+                      {buyerProfile.avatarUrl ? (
+                        <img src={buyerProfile.avatarUrl} alt={buyerProfile.fullName} className="w-full h-full object-cover" />
+                      ) : (
+                        buyerProfile.fullName ? buyerProfile.fullName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'PS'
+                      )}
+                    </div>
+                  </div>
+                  {/* Online Status Indicator */}
+                  <div className="absolute bottom-3 right-3 w-5 h-5 bg-green-500 rounded-full border-4 border-white shadow-md z-30" title="Active Now" />
+                </div>
+              </div>
+
+              {/* Text Info: User Name, Title/Role, Location, etc. sits cleanly below the cover banner in vertical flow */}
+              <div className="space-y-3 pt-2 md:pt-4 text-left">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-2xl sm:text-3xl font-black text-[#1c1b1b] tracking-tight">{buyerProfile.fullName}</h1>
+                  {buyerProfile.isGstVerified && (
+                    <span className="px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-green-700 text-xs font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-green-600" /> Verified Business Account
+                    </span>
+                  )}
+                  <span className="px-2.5 py-1 rounded-full bg-[#fde7f3] border border-[#e0bec6] text-[#b90064] text-xs font-black flex items-center gap-1">
+                    <Users className="w-3.5 h-3.5 text-[#b90064]" /> {buyerFollowers} Followers
+                  </span>
+                </div>
+
+                <p className="text-sm font-bold text-[#594047]">
+                  {buyerProfile.designation} at <span className="text-[#1c1b1b] font-extrabold">{buyerProfile.businessName}</span> ({buyerProfile.businessType})
+                </p>
+
+                <div className="flex items-center gap-3.5 text-xs text-[#8c7077] font-semibold flex-wrap pt-1">
+                  <span className="flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-[#b90064]" /> {buyerProfile.city}, {buyerProfile.state}
+                  </span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-[#0050d6]" /> Joined {buyerProfile.joinedDate || 'January 2024'}
+                  </span>
+                  <span>•</span>
+                  <span className="font-mono text-[#0050d6] bg-[#0050d6]/5 px-2.5 py-0.5 rounded border border-[#0050d6]/15">GST: {buyerProfile.gstin}</span>
+                </div>
+
+                {/* Quick Social Badges */}
+                {buyerProfile.socialLinks && (
+                  <div className="flex items-center gap-2.5 pt-2 flex-wrap">
+                    {buyerProfile.socialLinks.website && (
+                      <a href={buyerProfile.socialLinks.website} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-[#fcf9f8] hover:bg-[#fde7f3] border border-[#e8e8e8] text-[#1c1b1b] rounded-xl text-xs font-bold flex items-center gap-2 transition-colors">
+                        <Globe className="w-4 h-4 text-[#b90064]" />
+                        <span>Website</span>
+                      </a>
+                    )}
+                    {buyerProfile.socialLinks.linkedin && (
+                      <a href={buyerProfile.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-[#0050d6]/5 hover:bg-[#0050d6]/10 text-[#0050d6] border border-[#0050d6]/10 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors">
+                        <ExternalLink className="w-4 h-4 text-[#0050d6]" />
+                        <span>LinkedIn</span>
+                      </a>
+                    )}
+                    {buyerProfile.socialLinks.instagram && (
+                      <a href={buyerProfile.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-pink-50/50 hover:bg-pink-50 text-[#b90064] border border-pink-200/50 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors">
+                        <ExternalLink className="w-4 h-4 text-[#b90064]" />
+                        <span>Instagram</span>
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+
+            </div>
+
+            {/* Right Column: Growth Network Partner Card & Actions */}
+            <div className="flex flex-col sm:flex-row lg:flex-col items-stretch sm:items-center lg:items-end gap-5 shrink-0 w-full lg:w-auto pt-4 lg:pt-0">
+              
+              {/* Premium Nexora Growth Network Partner Card */}
+              <div className="bg-gradient-to-br from-[#1c1b1b] to-[#3a202d] text-white rounded-2xl p-5 border border-[#44303b] shadow-lg w-full sm:max-w-xs relative overflow-hidden text-left z-20">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-[#b90064] opacity-10 rounded-full blur-xl" />
+                <div className="flex items-center gap-2.5 mb-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-[#b90064] flex items-center justify-center text-white shrink-0">
+                    <TrendingUp className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <span className="text-[9px] font-black tracking-widest text-[#e6007e] uppercase block">Nexora Luxe</span>
+                    <h4 className="text-xs font-black tracking-tight text-white uppercase">Growth Network Partner</h4>
+                  </div>
+                </div>
+                <p className="text-[11px] text-stone-300 leading-relaxed font-medium">
+                  Verified premium buyer status in India's leading beauty-industry procurement network.
+                </p>
+                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-stone-850 text-[10px] text-stone-300 font-bold justify-between">
+                  <span className="px-2 py-0.5 rounded bg-[#b90064]/20 border border-[#b90064]/40 text-[#e6007e]">Tier: Gold Member</span>
+                  <span>99.8% Response SLA</span>
+                </div>
+              </div>
+
+              {/* Action Buttons row cleanly stacked under the cover image, sitting next to details */}
+              <div className="flex items-center gap-3 flex-wrap sm:justify-end w-full lg:w-auto">
+                <button
+                  onClick={handleBuyerFollowToggle}
+                  className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5 border ${
+                    buyerFollowed
+                      ? 'bg-[#fde7f3] border-[#b90064] text-[#b90064] hover:bg-[#fbc5e3]'
+                      : 'bg-white border-[#e8e8e8] text-[#1c1b1b] hover:border-[#b90064] hover:text-[#b90064]'
+                  }`}
+                >
+                  {buyerFollowed ? (
+                    <>
+                      <Check className="w-4 h-4 text-[#b90064]" />
+                      <span>Following</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-4 h-4 text-[#8c7077]" />
+                      <span>Follow Profile</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={handleTriggerEditProfile}
+                  className="px-5 py-2.5 bg-white border border-[#e8e8e8] hover:border-[#b90064] text-[#1c1b1b] hover:text-[#b90064] rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
+                >
+                  <Settings className="w-4 h-4 text-[#b90064]" />
+                  <span>Edit Profile</span>
+                </button>
+
+                <button 
+                  onClick={onPostRFQ}
+                  className="px-6 py-2.5 bg-[#b90064] text-white rounded-xl text-xs font-extrabold shadow-md shadow-[#b90064]/25 hover:bg-[#8e004b] transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Post Requirement</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Facebook-Style Navigation Tabs */}
+          <div className="flex items-center gap-2 mt-6 border-t border-[#e8e8e8] pt-3 overflow-x-auto no-scrollbar">
+            {[
+              { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+              { id: 'about', label: 'About & Bio', icon: Users },
+              { id: 'rfqs', label: 'Posts & Sourcing', icon: ClipboardList },
+              { id: 'saved', label: 'Saved Suppliers', icon: Bookmark },
+              { id: 'social', label: 'Social Links', icon: Globe },
+              { id: 'activity', label: 'Activity Feed', icon: MessageSquare },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                  activeTab === tab.id
+                    ? 'bg-[#b90064] text-white shadow-sm shadow-[#b90064]/20'
+                    : 'bg-[#fcf9f8] text-[#594047] hover:bg-[#f0edec] hover:text-[#1c1b1b]'
+                }`}
+              >
+                <tab.icon className="w-4 h-4" />
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <main className="flex-1 p-4 md:p-8 lg:p-10">
         <div className="max-w-7xl mx-auto space-y-10">
           
-          {/* Profile Notice */}
-          {!profileComplete && (
-            <motion.div 
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white border border-[#b90064]/20 rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 relative overflow-hidden shadow-sm"
-            >
-              <div className="absolute top-0 left-0 w-1 h-full bg-[#b90064]" />
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-[#fde7f3] flex items-center justify-center text-[#b90064]">
-                  <ShieldCheck className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-[#1c1b1b]">Complete Your Buyer Profile</h3>
-                  <p className="text-xs text-[#594047] mt-0.5">Upload GST and Business Proof to gain "Nexora Trusted Buyer" status and get priority quotes.</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setIsEditProfileOpen(true)}
-                className="px-5 py-2.5 bg-[#1c1b1b] text-white rounded-xl text-xs font-bold hover:bg-black transition-all cursor-pointer shadow-xs"
-              >
-                Complete Verification
-              </button>
-            </motion.div>
-          )}
-
-          {/* KPI Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            {isLoading ? (
-              [1, 2, 3, 4].map((_, i) => <SkeletonCard key={i} />)
-            ) : (
-              stats.map((stat, idx) => (
-                <motion.div 
-                  key={idx}
-                  whileHover={{ scale: 1.02, y: -4 }}
-                  className="bg-white p-6 rounded-2xl border border-[#e8e8e8] shadow-xs hover:shadow-md transition-all relative overflow-hidden group"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="p-3 rounded-xl bg-[#fcf9f8] group-hover:bg-[#fde7f3] transition-colors">
-                      <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
-                    </div>
-                    {stat.badge && (
-                      <span className="flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-[#b90064] opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[#b90064]"></span>
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-3xl font-black text-[#1c1b1b] tracking-tight">{stat.value}</div>
-                  <div className="text-[11px] font-bold text-[#8c7077] uppercase tracking-widest mt-1">{stat.label}</div>
-                  <div className="mt-3 flex items-center gap-1.5 text-[10px] font-bold text-green-600">
-                    <TrendingUp className="w-3 h-3" />
-                    {stat.trend}
-                  </div>
-                </motion.div>
-              ))
-            )}
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-10">
-            {/* Primary Workflow Column */}
-            <div className="lg:col-span-2 space-y-10">
+          {/* TAB 1: OVERVIEW */}
+          {activeTab === 'overview' && (
+            <div className="space-y-10 animate-in fade-in-50 duration-200">
               
-              {/* Active RFQs Section */}
-              <section className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-black text-[#1c1b1b] tracking-tight">Active RFQs</h2>
-                    <span className="px-2 py-0.5 rounded-full bg-[#fde7f3] text-[#b90064] text-[10px] font-black uppercase">Live</span>
+              {/* Profile Notice */}
+              {!profileComplete && (
+                <div className="bg-white border border-[#b90064]/20 rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 relative overflow-hidden shadow-xs">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-[#b90064]" />
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-[#fde7f3] flex items-center justify-center text-[#b90064]">
+                      <ShieldCheck className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-[#1c1b1b]">Complete Your Buyer Profile</h3>
+                      <p className="text-xs text-[#594047] mt-0.5">Upload GST and Business Proof to gain "Nexora Trusted Buyer" status and get priority quotes.</p>
+                    </div>
                   </div>
-                  <button className="text-xs font-bold text-[#b90064] hover:underline flex items-center gap-1">
-                    Manage All <ArrowRight className="w-3 h-3" />
+                  <button 
+                    onClick={() => setIsEditProfileOpen(true)}
+                    className="px-5 py-2.5 bg-[#1c1b1b] text-white rounded-xl text-xs font-bold hover:bg-black transition-all cursor-pointer shadow-xs"
+                  >
+                    Complete Verification
                   </button>
                 </div>
+              )}
 
-                <div className="space-y-4">
-                  {BUYER_MOCK_RFQS.slice(0, 2).map((rfq) => (
+              {/* KPI Cards */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                {isLoading ? (
+                  [1, 2, 3, 4].map((_, i) => <SkeletonCard key={i} />)
+                ) : (
+                  stats.map((stat, idx) => (
                     <motion.div 
-                      key={rfq.id}
-                      whileHover={{ scale: 1.01 }}
-                      className="bg-white border border-[#e8e8e8] rounded-2xl p-6 shadow-xs hover:shadow-md transition-all"
+                      key={idx}
+                      whileHover={{ scale: 1.02, y: -4 }}
+                      onClick={() => stat.route && onNavigate(stat.route)}
+                      className="bg-white p-6 rounded-2xl border border-[#e8e8e8] shadow-xs hover:shadow-md transition-all relative overflow-hidden group cursor-pointer text-left"
                     >
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black border uppercase tracking-wider ${getStatusColor(rfq.status)}`}>
-                              {rfq.status}
-                            </span>
-                            <span className="text-[10px] font-bold text-[#8c7077] uppercase tracking-widest">{rfq.category}</span>
-                          </div>
-                          <h3 className="text-lg font-bold text-[#1c1b1b]">{rfq.title}</h3>
-                          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px] font-bold text-[#594047]">
-                            <div className="flex items-center gap-1.5">
-                              <Package className="w-3.5 h-3.5 text-[#b90064]" />
-                              Qty: {rfq.quantity}
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <Users className="w-3.5 h-3.5 text-[#0050d6]" />
-                              {rfq.responsesCount} Supplier Responses
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <BarChart3 className="w-3.5 h-3.5 text-purple-600" />
-                              03 Quotes Received
-                            </div>
-                          </div>
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="p-3 rounded-xl bg-[#fcf9f8] group-hover:bg-[#fde7f3] transition-colors">
+                          <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
                         </div>
-
-                        <div className="flex flex-row md:flex-col gap-2 pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-[#f0edec] md:pl-8 min-w-[140px]">
-                          <button className="flex-1 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-[11px] font-black text-[#1c1b1b] hover:bg-white transition-all">
-                            View RFQ
-                          </button>
-                          <button className="flex-1 py-2.5 bg-[#b90064] text-white rounded-xl text-[11px] font-black shadow-sm hover:bg-[#8e004b] transition-all">
-                            Compare Quotes
-                          </button>
-                        </div>
+                        {stat.badge && (
+                          <span className="flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-[#b90064] opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#b90064]"></span>
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-3xl font-black text-[#1c1b1b] tracking-tight">{stat.value}</div>
+                      <div className="text-[11px] font-bold text-[#8c7077] uppercase tracking-widest mt-1">{stat.label}</div>
+                      <div className="mt-3 flex items-center gap-1.5 text-[10px] font-bold text-green-600">
+                        <TrendingUp className="w-3 h-3" />
+                        {stat.trend}
                       </div>
                     </motion.div>
-                  ))}
-                </div>
-              </section>
+                  ))
+                )}
+              </div>
 
-              {/* Recent Enquiries Section */}
-              <section className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-black text-[#1c1b1b] tracking-tight">Recent Enquiries</h2>
-                  <button className="text-xs font-bold text-[#b90064] hover:underline flex items-center gap-1">
-                    Enquiry Log <ArrowRight className="w-3 h-3" />
+              {/* Grid: Left Intro & Right Recent Activity */}
+              <div className="grid lg:grid-cols-3 gap-10">
+                
+                {/* Left Sidebar Intro Box (Facebook Style) */}
+                <div className="space-y-6">
+                  <div className="bg-white border border-[#e8e8e8] rounded-2xl p-6 shadow-xs space-y-5">
+                    <h3 className="text-sm font-black text-[#1c1b1b] tracking-tight">Intro</h3>
+                    
+                    <p className="text-xs text-[#594047] leading-relaxed font-medium">
+                      {buyerProfile.bio}
+                    </p>
+
+                    <div className="space-y-3.5 pt-2 border-t border-[#f0edec] text-xs text-[#594047]">
+                      <div className="flex items-center gap-3">
+                        <Building2 className="w-4 h-4 text-[#b90064] shrink-0" />
+                        <div>
+                          <span className="font-bold text-[#1c1b1b]">{buyerProfile.businessName}</span>
+                          <div className="text-[10px] text-[#8c7077]">{buyerProfile.businessType}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <MapPin className="w-4 h-4 text-[#0050d6] shrink-0" />
+                        <div>
+                          <span className="font-bold text-[#1c1b1b]">Lives in {buyerProfile.city}, {buyerProfile.state}</span>
+                          <div className="text-[10px] text-[#8c7077]">{buyerProfile.pincode}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <Calendar className="w-4 h-4 text-purple-600 shrink-0" />
+                        <span>Joined {buyerProfile.joinedDate || 'January 2024'}</span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <ShieldCheck className="w-4 h-4 text-green-600 shrink-0" />
+                        <div>
+                          <span className="font-bold text-green-700">GSTIN Verified</span>
+                          <div className="font-mono text-[10px] text-[#8c7077]">{buyerProfile.gstin}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Social links in intro box */}
+                    {buyerProfile.socialLinks && (
+                      <div className="pt-3 border-t border-[#f0edec] space-y-2">
+                        <h4 className="text-[11px] font-bold text-[#8c7077] uppercase tracking-wider">Social Presence</h4>
+                        <div className="space-y-2">
+                          {buyerProfile.socialLinks.website && (
+                            <a href={buyerProfile.socialLinks.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs font-bold text-[#0050d6] hover:underline truncate">
+                              <Globe className="w-3.5 h-3.5 shrink-0" />
+                              <span className="truncate">{buyerProfile.socialLinks.website}</span>
+                            </a>
+                          )}
+                          {buyerProfile.socialLinks.linkedin && (
+                            <a href={buyerProfile.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs font-bold text-[#1c1b1b] hover:underline truncate">
+                              <ExternalLink className="w-3.5 h-3.5 shrink-0 text-[#0050d6]" />
+                              <span className="truncate">LinkedIn Profile</span>
+                            </a>
+                          )}
+                          {buyerProfile.socialLinks.instagram && (
+                            <a href={buyerProfile.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs font-bold text-[#1c1b1b] hover:underline truncate">
+                              <ExternalLink className="w-3.5 h-3.5 shrink-0 text-[#b90064]" />
+                              <span className="truncate">Instagram Page</span>
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={handleTriggerEditProfile}
+                      className="w-full py-2.5 bg-[#fcf9f8] hover:bg-[#f0edec] text-[#1c1b1b] rounded-xl text-xs font-bold transition-all cursor-pointer border border-[#e8e8e8]"
+                    >
+                      Edit Intro Details
+                    </button>
+                  </div>
+                </div>
+
+                {/* Right Main Column (Active RFQs & Activity Stream) */}
+                <div className="lg:col-span-2 space-y-8">
+                  
+                  {/* Active RFQs */}
+                  <section className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-xl font-black text-[#1c1b1b] tracking-tight">Active RFQs</h2>
+                        <span className="px-2 py-0.5 rounded-full bg-[#fde7f3] text-[#b90064] text-[10px] font-black uppercase">Live</span>
+                      </div>
+                      <button onClick={() => setActiveTab('rfqs')} className="text-xs font-bold text-[#b90064] hover:underline flex items-center gap-1">
+                        View All <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {BUYER_MOCK_RFQS.slice(0, 2).map((rfq) => (
+                        <motion.div 
+                          key={rfq.id}
+                          whileHover={{ scale: 1.01 }}
+                          className="bg-white border border-[#e8e8e8] rounded-2xl p-6 shadow-xs hover:shadow-md transition-all"
+                        >
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2">
+                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black border uppercase tracking-wider ${getStatusColor(rfq.status)}`}>
+                                  {rfq.status}
+                                </span>
+                                <span className="text-[10px] font-bold text-[#8c7077] uppercase tracking-widest">{rfq.category}</span>
+                              </div>
+                              <h3 className="text-lg font-bold text-[#1c1b1b]">{rfq.title}</h3>
+                              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px] font-bold text-[#594047]">
+                                <div className="flex items-center gap-1.5">
+                                  <Package className="w-3.5 h-3.5 text-[#b90064]" />
+                                  Qty: {rfq.quantity}
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <Users className="w-3.5 h-3.5 text-[#0050d6]" />
+                                  {rfq.responsesCount} Supplier Responses
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-row md:flex-col gap-2 pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-[#f0edec] md:pl-8 min-w-[140px]">
+                              <button onClick={() => setActiveTab('rfqs')} className="flex-1 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-[11px] font-black text-[#1c1b1b] hover:bg-white transition-all">
+                                View RFQ
+                              </button>
+                              <button onClick={() => setActiveTab('rfqs')} className="flex-1 py-2.5 bg-[#b90064] text-white rounded-xl text-[11px] font-black shadow-sm hover:bg-[#8e004b] transition-all">
+                                Compare Quotes
+                              </button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </section>
+
+                  {/* Recent Activity Stream */}
+                  <section className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-xl font-black text-[#1c1b1b] tracking-tight">Recent Activity Stream</h2>
+                      <button onClick={() => setActiveTab('activity')} className="text-xs font-bold text-[#b90064] hover:underline flex items-center gap-1">
+                        Timeline Feed <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
+
+                    {/* Upgraded Post Creation Box */}
+                    <div className="bg-white border border-[#e8e8e8] rounded-2xl p-5 shadow-xs space-y-4">
+                      <div className="flex gap-4">
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#b90064] to-[#e6007e] text-white font-bold flex items-center justify-center overflow-hidden shrink-0">
+                          {buyerProfile.avatarUrl ? <img src={buyerProfile.avatarUrl} alt={buyerProfile.fullName} className="w-full h-full object-cover" /> : buyerProfile.fullName[0]}
+                        </div>
+                        
+                        <form onSubmit={handleCreatePost} className="flex-1 space-y-3">
+                          <input
+                            type="file"
+                            ref={postPhotoInputRef}
+                            accept="image/jpeg,image/png,image/webp"
+                            className="hidden"
+                            onChange={handlePostPhotoSelect}
+                          />
+
+                          <div className="text-xs font-black text-[#1c1b1b] tracking-tight uppercase">Create Post / Share Update</div>
+                          
+                          <textarea
+                            rows={3}
+                            value={newPostText}
+                            onChange={e => setNewPostText(e.target.value)}
+                            placeholder="Share a beauty sourcing requirement, salon milestone, or private label request with the Nexora community..."
+                            className="w-full px-4 py-3 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-medium resize-none leading-relaxed"
+                          />
+
+                          {/* Active Media Toggle Options */}
+                          <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-[#f0edec]">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  postPhotoInputRef.current?.click();
+                                }}
+                                className={`px-3.5 py-1.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer border ${
+                                  mediaInputType === 'image'
+                                    ? 'bg-[#b90064] text-white border-[#b90064] shadow-sm'
+                                    : 'bg-[#fcf9f8] text-[#594047] border-[#e8e8e8] hover:bg-[#f0edec]'
+                                }`}
+                              >
+                                <Image className="w-3.5 h-3.5" />
+                                <span>{isUploadingPostPhoto ? 'Processing...' : mediaInputType === 'image' ? 'Change Photo' : 'Upload Photo'}</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMediaInputType(mediaInputType === 'video' ? 'none' : 'video');
+                                  if (mediaInputType !== 'video') setMediaUrlInput('');
+                                }}
+                                className={`px-3.5 py-1.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer border ${
+                                  mediaInputType === 'video'
+                                    ? 'bg-[#0050d6] text-white border-[#0050d6] shadow-sm'
+                                    : 'bg-[#fcf9f8] text-[#594047] border-[#e8e8e8] hover:bg-[#f0edec]'
+                                }`}
+                              >
+                                <Video className="w-3.5 h-3.5" />
+                                <span>Add Video URL</span>
+                              </button>
+                            </div>
+
+                            {/* Tag Dropdown choice */}
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-[#8c7077] uppercase tracking-wider">Tag:</span>
+                              <select
+                                value={postTag}
+                                onChange={e => setPostTag(e.target.value)}
+                                className="px-2.5 py-1.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-[11px] font-bold text-[#1c1b1b] focus:border-[#b90064] focus:outline-hidden"
+                              >
+                                <option value="Buyer Update">Buyer Update</option>
+                                <option value="Sourcing RFQ">Sourcing RFQ</option>
+                                <option value="Milestone">Milestone</option>
+                                <option value="Urgent">Urgent Requirement</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Expanding input field ONLY for Videos */}
+                          {mediaInputType === 'video' && (
+                            <div className="pt-3 border-t border-dashed border-[#e8e8e8] space-y-2 animate-in fade-in slide-in-from-top-1">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-bold text-[#8c7077] uppercase tracking-wider">
+                                  Enter Video URL (YouTube Watch Link or MP4 URL)
+                                </span>
+                                <button 
+                                  type="button" 
+                                  onClick={() => { setMediaInputType('none'); setMediaUrlInput(''); }} 
+                                  className="text-[10px] font-bold text-[#b90064] hover:underline"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                              <input
+                                type="url"
+                                value={mediaUrlInput}
+                                onChange={e => setMediaUrlInput(e.target.value)}
+                                placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                                className="w-full px-3.5 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-medium"
+                              />
+                            </div>
+                          )}
+
+                          {/* Live validated preview */}
+                          {mediaUrlInput.trim() !== '' && mediaInputType !== 'none' && (
+                            <div className="mt-4 p-3 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl space-y-2 animate-in zoom-in-95">
+                              <div className="flex items-center justify-between text-[10px] font-bold text-[#8c7077] uppercase tracking-wider pb-1.5 border-b border-[#e8e8e8]">
+                                <span>{mediaInputType === 'image' ? 'Uploaded Photo Preview' : 'Live Video Preview'}</span>
+                                <button 
+                                  type="button" 
+                                  onClick={() => { setMediaUrlInput(''); setMediaInputType('none'); }} 
+                                  className="text-red-500 hover:underline"
+                                >
+                                  Clear Attachment
+                                </button>
+                              </div>
+                              {mediaInputType === 'image' ? (
+                                <div className="relative rounded-lg overflow-hidden border border-[#e8e8e8] bg-white max-h-48 flex items-center justify-center">
+                                  <img 
+                                    src={mediaUrlInput} 
+                                    alt="Live preview" 
+                                    className="max-h-48 object-contain" 
+                                  />
+                                </div>
+                              ) : (
+                                <div className="rounded-lg overflow-hidden border border-[#e8e8e8] bg-black aspect-video max-h-48 flex items-center justify-center">
+                                  {getEmbeddableVideoUrl(mediaUrlInput).includes('youtube.com/embed') ? (
+                                    <iframe src={getEmbeddableVideoUrl(mediaUrlInput)} className="w-full h-full max-h-48" frameBorder="0" allowFullScreen />
+                                  ) : (
+                                    <video src={mediaUrlInput} controls className="w-full h-full max-h-48 object-contain" />
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Publish Submit Button */}
+                          <div className="pt-3 border-t border-[#f0edec] flex justify-end">
+                            <button
+                              type="submit"
+                              disabled={!newPostText.trim()}
+                              className={`px-6 py-2.5 bg-[#b90064] text-white rounded-xl text-xs font-extrabold shadow-md hover:bg-[#8e004b] transition-all cursor-pointer flex items-center gap-1.5 ${
+                                !newPostText.trim() ? 'opacity-50 cursor-not-allowed' : ''
+                              }`}
+                            >
+                              <Send className="w-3.5 h-3.5" />
+                              <span>Publish Update</span>
+                            </button>
+                          </div>
+
+                        </form>
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      {feedPosts.slice(0, 2).map(renderPostCard)}
+                    </div>
+                  </section>
+
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* TAB 2: ABOUT / BIO */}
+          {activeTab === 'about' && (
+            <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in-50 duration-200">
+              <div className="bg-white border border-[#e8e8e8] rounded-2xl p-8 shadow-xs space-y-6">
+                <div className="flex items-center justify-between border-b border-[#f0edec] pb-5">
+                  <div>
+                    <h2 className="text-xl font-black text-[#1c1b1b]">About & Professional Background</h2>
+                    <p className="text-xs text-[#594047] mt-0.5">Verified B2B profile and enterprise credentials</p>
+                  </div>
+                  <button
+                    onClick={handleTriggerEditProfile}
+                    className="px-4 py-2 bg-[#b90064] text-white rounded-xl text-xs font-bold hover:bg-[#8e004b] transition-all cursor-pointer"
+                  >
+                    Edit Bio & Details
                   </button>
                 </div>
 
-                <div className="bg-white border border-[#e8e8e8] rounded-2xl overflow-hidden shadow-xs">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                      <thead>
-                        <tr className="bg-[#fcf9f8] border-b border-[#e8e8e8]">
-                          <th className="px-6 py-4 text-[10px] font-black text-[#8c7077] uppercase tracking-widest">Product / Supplier</th>
-                          <th className="px-6 py-4 text-[10px] font-black text-[#8c7077] uppercase tracking-widest text-center">Status</th>
-                          <th className="px-6 py-4 text-[10px] font-black text-[#8c7077] uppercase tracking-widest text-center">Last Reply</th>
-                          <th className="px-6 py-4 text-[10px] font-black text-[#8c7077] uppercase tracking-widest">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#f0edec]">
-                        {BUYER_MOCK_ENQUIRIES.slice(0, 3).map((enq) => (
-                          <tr key={enq.id} className="hover:bg-[#fcf9f8]/50 transition-colors group">
-                            <td className="px-6 py-5">
-                              <div className="font-bold text-[13px] text-[#1c1b1b]">{enq.productName}</div>
-                              <div className="text-[11px] text-[#8c7077] font-medium mt-0.5">{enq.supplierName}</div>
-                            </td>
-                            <td className="px-6 py-5 text-center">
-                              <span className={`px-2.5 py-1 rounded-full text-[9px] font-black border uppercase tracking-wider ${getStatusColor(enq.status)}`}>
-                                {enq.status}
-                              </span>
-                            </td>
-                            <td className="px-6 py-5 text-center text-[11px] font-medium text-[#594047]">
-                              {enq.date}
-                            </td>
-                            <td className="px-6 py-5">
-                              <div className="flex items-center gap-2">
-                                <button className="p-2 text-[#8c7077] hover:text-[#b90064] hover:bg-[#fde7f3] rounded-lg transition-all" title="Message">
-                                  <MessageSquare className="w-3.5 h-3.5" />
-                                </button>
-                                <button 
-                                  onClick={() => onCallSupplier(enq.supplierName)}
-                                  className="p-2 text-[#8c7077] hover:text-[#0050d6] hover:bg-[#eef4ff] rounded-lg transition-all" title="Call"
-                                >
-                                  <Phone className="w-3.5 h-3.5" />
-                                </button>
-                                <button className="p-2 text-[#8c7077] hover:text-[#1c1b1b] hover:bg-[#f0edec] rounded-lg transition-all" title="View">
-                                  <ExternalLink className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                <div className="grid sm:grid-cols-2 gap-6 text-xs">
+                  <div className="space-y-1">
+                    <span className="text-[#8c7077] uppercase font-bold tracking-widest text-[10px]">Full Name</span>
+                    <div className="font-bold text-[#1c1b1b] text-sm">{buyerProfile.fullName}</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[#8c7077] uppercase font-bold tracking-widest text-[10px]">Designation / Role</span>
+                    <div className="font-bold text-[#1c1b1b] text-sm">{buyerProfile.designation}</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[#8c7077] uppercase font-bold tracking-widest text-[10px]">Enterprise Name</span>
+                    <div className="font-bold text-[#1c1b1b] text-sm">{buyerProfile.businessName}</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[#8c7077] uppercase font-bold tracking-widest text-[10px]">Business Classification</span>
+                    <div className="font-bold text-[#1c1b1b] text-sm">{buyerProfile.businessType}</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[#8c7077] uppercase font-bold tracking-widest text-[10px]">Official Email</span>
+                    <div className="font-bold text-[#1c1b1b] text-sm">{buyerProfile.email}</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[#8c7077] uppercase font-bold tracking-widest text-[10px]">Primary Mobile (WhatsApp)</span>
+                    <div className="font-bold text-[#1c1b1b] text-sm">{buyerProfile.phone}</div>
+                  </div>
+
+                  <div className="space-y-1 sm:col-span-2">
+                    <span className="text-[#8c7077] uppercase font-bold tracking-widest text-[10px]">Sourcing & Delivery Address</span>
+                    <div className="font-bold text-[#1c1b1b] text-sm">{buyerProfile.address}, {buyerProfile.city}, {buyerProfile.state} - {buyerProfile.pincode}</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[#8c7077] uppercase font-bold tracking-widest text-[10px]">GST Identification Number (GSTIN)</span>
+                    <div className="font-mono font-bold text-[#0050d6] text-sm">{buyerProfile.gstin}</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[#8c7077] uppercase font-bold tracking-widest text-[10px]">Annual Procurement Budget</span>
+                    <div className="font-bold text-[#1c1b1b] text-sm">{buyerProfile.annualProcurementBudget || '₹25 Lakhs - ₹1 Crore'}</div>
                   </div>
                 </div>
-              </section>
 
+                <div className="pt-4 border-t border-[#f0edec]">
+                  <h3 className="text-xs font-bold text-[#8c7077] uppercase tracking-widest mb-3">Primary Categories of Interest</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {buyerProfile.primaryCategories.map((cat, i) => (
+                      <span key={i} className="px-3 py-1 bg-[#fde7f3] text-[#b90064] rounded-lg text-xs font-bold">
+                        {cat}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
+          )}
 
-            {/* Side Information Column */}
-            <div className="space-y-10">
-              
-              {/* Quick Navigation Panel */}
-              <section className="bg-white border border-[#e8e8e8] rounded-2xl p-6 shadow-xs">
-                <h3 className="text-xs font-black text-[#8c7077] uppercase tracking-widest mb-6">Quick Navigation</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { label: 'Post RFQ', icon: FileText, color: '#b90064', action: onPostRFQ },
-                    { label: 'Find Supplier', icon: Users, color: '#0050d6', action: () => onNavigate('supplier-directory') },
-                    { label: 'Browse App', icon: LayoutGrid, color: '#1c1b1b', action: () => onNavigate('explore') },
-                    { label: 'Explore OEM', icon: ShoppingBag, color: '#e6007e', action: () => onNavigate('oem-hub') },
-                  ].map((btn, i) => (
-                    <button 
-                      key={i}
-                      onClick={btn.action}
-                      className="flex flex-col items-center justify-center p-4 rounded-xl border border-[#f0edec] hover:border-[#b90064]/30 hover:bg-[#fde7f3]/20 transition-all group"
-                    >
-                      <btn.icon className="w-5 h-5 mb-2 group-hover:scale-110 transition-transform" style={{ color: btn.color }} />
-                      <span className="text-[10px] font-black text-[#1c1b1b] uppercase tracking-wider text-center">{btn.label}</span>
-                    </button>
-                  ))}
+          {/* TAB 3: POSTS & SOURCING REQUESTS */}
+          {activeTab === 'rfqs' && (
+            <div className="space-y-6 max-w-5xl mx-auto animate-in fade-in-50 duration-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-black text-[#1c1b1b]">Posts & Sourcing Requests</h2>
+                  <p className="text-xs text-[#594047] mt-0.5">Manage your active RFQs and supplier quotations</p>
                 </div>
-              </section>
-
-              {/* Recent Messages */}
-              <section className="bg-white border border-[#e8e8e8] rounded-2xl overflow-hidden shadow-xs">
-                <div className="p-6 border-b border-[#f0edec] flex items-center justify-between">
-                  <h3 className="text-sm font-black text-[#1c1b1b] tracking-tight">Recent Messages</h3>
-                  <div className="w-5 h-5 rounded-full bg-[#b90064] text-white text-[10px] font-bold flex items-center justify-center">2</div>
-                </div>
-                <div className="divide-y divide-[#f0edec]">
-                  {BUYER_MOCK_ENQUIRIES.slice(0, 3).map((msg, i) => (
-                    <button 
-                      key={i}
-                      className="w-full p-5 text-left hover:bg-[#fcf9f8] transition-all flex items-center gap-4 group"
-                    >
-                      <div className="relative">
-                        <div className="w-10 h-10 rounded-xl bg-[#fde7f3] flex items-center justify-center text-[#b90064] font-bold text-sm">
-                          {msg.supplierName.charAt(0)}
-                        </div>
-                        {i === 0 && <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#b90064] rounded-full border-2 border-white" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-0.5">
-                          <span className="text-[13px] font-bold text-[#1c1b1b] truncate">{msg.supplierName}</span>
-                          <span className="text-[9px] font-medium text-[#8c7077]">2h ago</span>
-                        </div>
-                        <p className="text-[11px] text-[#594047] truncate pr-4 group-hover:text-[#1c1b1b] transition-colors">{msg.lastMessage}</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-                <button className="w-full py-4 bg-[#fcf9f8] text-[11px] font-black text-[#b90064] uppercase tracking-widest hover:bg-[#fde7f3] transition-all">
-                  Open Messenger Hub
+                <button
+                  onClick={onPostRFQ}
+                  className="px-5 py-2.5 bg-[#b90064] text-white rounded-xl text-xs font-extrabold shadow-md hover:bg-[#8e004b] transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Post New Requirement</span>
                 </button>
-              </section>
+              </div>
 
-              {/* Saved Items Preview (Bento Section) */}
-              <section className="space-y-4">
-                <h3 className="text-sm font-black text-[#1c1b1b] tracking-tight">Personal Shortlist</h3>
-                <div className="space-y-3">
-                  {/* Saved Supplier Card */}
-                  <div className="bg-white border border-[#e8e8e8] rounded-2xl p-4 shadow-xs hover:shadow-md transition-all group">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="w-8 h-8 rounded-lg bg-[#f0f4ff] flex items-center justify-center text-[#0050d6]">
-                        <Users className="w-4 h-4" />
+              <div className="space-y-4">
+                {BUYER_MOCK_RFQS.map((rfq) => (
+                  <div key={rfq.id} className="bg-white border border-[#e8e8e8] rounded-2xl p-6 shadow-xs space-y-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-black border uppercase tracking-wider ${getStatusColor(rfq.status)}`}>
+                            {rfq.status}
+                          </span>
+                          <span className="text-[10px] font-bold text-[#8c7077] uppercase tracking-widest">{rfq.category}</span>
+                          <span className="text-[10px] text-[#8c7077]">• Posted {rfq.postedDate}</span>
+                        </div>
+                        <h3 className="text-lg font-bold text-[#1c1b1b]">{rfq.title}</h3>
+                        <p className="text-xs text-[#594047]">{rfq.description}</p>
+                        <div className="flex flex-wrap items-center gap-6 text-xs font-bold text-[#594047] pt-2">
+                          <div className="flex items-center gap-1.5">
+                            <Package className="w-4 h-4 text-[#b90064]" /> Required Qty: {rfq.quantity}
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Users className="w-4 h-4 text-[#0050d6]" /> {rfq.responsesCount} Manufacturer Quotes Received
+                          </div>
+                        </div>
                       </div>
-                      <Bookmark className="w-3.5 h-3.5 text-[#b90064] fill-current" />
-                    </div>
-                    <h4 className="text-[13px] font-bold text-[#1c1b1b]">Aura Labs & Manufacturing</h4>
-                    <p className="text-[10px] text-[#8c7077] mb-3 flex items-center gap-1 font-medium">
-                      <MapPin className="w-3 h-3 opacity-60" /> Mumbai, Maharashtra
-                    </p>
-                    <button className="w-full py-2 bg-[#fcf9f8] rounded-lg text-[10px] font-black text-[#1c1b1b] uppercase tracking-wider hover:bg-[#f0edec] transition-all">
-                      View Business Profile
-                    </button>
-                  </div>
 
-                  {/* Saved Product Card */}
-                  <div className="bg-white border border-[#e8e8e8] rounded-2xl p-4 shadow-xs hover:shadow-md transition-all group">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="w-8 h-8 rounded-lg bg-[#fde7f3] flex items-center justify-center text-[#b90064]">
-                        <ShoppingBag className="w-4 h-4" />
+                      <div className="flex flex-col gap-2 shrink-0">
+                        <button className="px-5 py-2.5 bg-[#b90064] text-white rounded-xl text-xs font-extrabold shadow-sm hover:bg-[#8e004b] transition-all cursor-pointer">
+                          Compare Quotes (3)
+                        </button>
+                        <button className="px-5 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] text-[#1c1b1b] rounded-xl text-xs font-bold hover:bg-white transition-all cursor-pointer">
+                          Edit RFQ
+                        </button>
                       </div>
-                      <Bookmark className="w-3.5 h-3.5 text-[#b90064] fill-current" />
                     </div>
-                    <h4 className="text-[13px] font-bold text-[#1c1b1b]">Vitamin C Serum (Bulk)</h4>
-                    <div className="flex items-center justify-between mt-1 mb-3">
-                      <span className="text-[10px] font-black text-[#b90064]">From ₹145 / unit</span>
-                      <span className="text-[9px] font-bold text-[#8c7077]">MOQ: 500 Units</span>
-                    </div>
-                    <button className="w-full py-2 bg-[#1c1b1b] text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-black transition-all">
-                      View Product
-                    </button>
                   </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: SAVED SUPPLIERS */}
+          {activeTab === 'saved' && (
+            <div className="space-y-6 max-w-5xl mx-auto animate-in fade-in-50 duration-200">
+              <div>
+                <h2 className="text-xl font-black text-[#1c1b1b]">Saved Suppliers & Products</h2>
+                <p className="text-xs text-[#594047] mt-0.5">Your shortlisted B2B manufacturing partners and catalog items</p>
+              </div>
+
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {VERIFIED_SUPPLIERS.slice(0, 3).map((sup) => (
+                  <div key={sup.id} className="bg-white border border-[#e8e8e8] rounded-2xl p-6 shadow-xs hover:shadow-md transition-all space-y-4">
+                    <div className="flex items-start justify-between">
+                      <div className="w-12 h-12 rounded-xl bg-[#fde7f3] text-[#b90064] font-bold flex items-center justify-center text-lg">
+                        {sup.name[0]}
+                      </div>
+                      <span className="px-2.5 py-1 rounded bg-green-50 text-green-700 text-[10px] font-bold flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-green-600" /> Verified
+                      </span>
+                    </div>
+
+                    <div>
+                      <h3 className="font-bold text-sm text-[#1c1b1b]">{sup.name}</h3>
+                      <p className="text-xs text-[#8c7077] mt-0.5">{sup.type} • {sup.city}, {sup.state}</p>
+                      
+                      {/* Live Follower Count Badge */}
+                      <div className="flex items-center gap-1.5 mt-2.5 text-[11px] font-bold text-[#b90064] bg-[#fde7f3]/50 px-2 py-1 rounded-lg w-max border border-[#f5d6df]">
+                        <Users className="w-3.5 h-3.5 text-[#b90064]" />
+                        <span>{supplierFollowerCounts[mapSupplierId(sup.id)] || 482} Followers</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-[#f0edec] flex items-center gap-2">
+                      <button 
+                        onClick={() => onNavigate('supplier-profile', { supplierId: sup.id })}
+                        className="flex-1 py-2 bg-[#fcf9f8] border border-[#e8e8e8] hover:bg-white text-[#1c1b1b] rounded-xl text-xs font-bold transition-all cursor-pointer"
+                      >
+                        View Profile
+                      </button>
+                      <button 
+                        onClick={() => handleSupplierFollowToggle(mapSupplierId(sup.id))}
+                        className={`py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 border ${
+                          followedSuppliers[mapSupplierId(sup.id)]
+                            ? 'bg-[#fde7f3] text-[#b90064] border-[#e0bec6]'
+                            : 'bg-[#b90064] text-white border-transparent hover:bg-[#8e004b]'
+                        }`}
+                      >
+                        {followedSuppliers[mapSupplierId(sup.id)] ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-[#b90064]" />
+                            <span>Following</span>
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="w-3.5 h-3.5 text-white" />
+                            <span>Follow</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: SOCIAL LINKS */}
+          {activeTab === 'social' && (
+            <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in-50 duration-200">
+              <div className="bg-white border border-[#e8e8e8] rounded-2xl p-8 shadow-xs space-y-6">
+                <div className="flex items-center justify-between border-b border-[#f0edec] pb-5">
+                  <div>
+                    <h2 className="text-xl font-black text-[#1c1b1b]">Social Media & Digital Presence</h2>
+                    <p className="text-xs text-[#594047] mt-0.5">Connected social channels and official website links</p>
+                  </div>
+                  <button
+                    onClick={handleTriggerEditProfile}
+                    className="px-4 py-2 bg-[#b90064] text-white rounded-xl text-xs font-bold hover:bg-[#8e004b] transition-all cursor-pointer"
+                  >
+                    Update Social Handles
+                  </button>
                 </div>
-              </section>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {[
+                    { label: 'Official Website', url: buyerProfile.socialLinks?.website, icon: Globe, color: '#0050d6' },
+                    { label: 'LinkedIn Profile', url: buyerProfile.socialLinks?.linkedin, icon: ExternalLink, color: '#0050d6' },
+                    { label: 'Instagram Handle', url: buyerProfile.socialLinks?.instagram, icon: ExternalLink, color: '#b90064' },
+                    { label: 'Facebook Page', url: buyerProfile.socialLinks?.facebook, icon: ExternalLink, color: '#1877f2' },
+                    { label: 'YouTube Channel', url: buyerProfile.socialLinks?.youtube, icon: ExternalLink, color: '#ff0000' },
+                    { label: 'Twitter / X Profile', url: buyerProfile.socialLinks?.twitter, icon: ExternalLink, color: '#1da1f2' }
+                  ].map((item, idx) => (
+                    <div key={idx} className="p-4 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-white border border-[#e8e8e8] flex items-center justify-center" style={{ color: item.color }}>
+                          <item.icon className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-[#1c1b1b]">{item.label}</div>
+                          <div className="text-[11px] text-[#8c7077] truncate max-w-[200px]">{item.url || 'Not connected'}</div>
+                        </div>
+                      </div>
+                      {item.url ? (
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-white border border-[#e8e8e8] text-[#1c1b1b] hover:text-[#b90064] rounded-lg text-xs font-bold transition-all">
+                          Visit
+                        </a>
+                      ) : (
+                        <button onClick={handleTriggerEditProfile} className="text-xs font-bold text-[#b90064] hover:underline">
+                          Add Link
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 6: ACTIVITY FEED */}
+          {activeTab === 'activity' && (
+            <div className="space-y-6 max-w-3xl mx-auto animate-in fade-in-50 duration-200">
+              
+              {/* Upgraded Post Creation Box */}
+              <div className="bg-white border border-[#e8e8e8] rounded-2xl p-5 shadow-xs space-y-4">
+                <div className="flex gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#b90064] to-[#e6007e] text-white font-bold flex items-center justify-center overflow-hidden shrink-0">
+                    {buyerProfile.avatarUrl ? <img src={buyerProfile.avatarUrl} alt={buyerProfile.fullName} className="w-full h-full object-cover" /> : buyerProfile.fullName[0]}
+                  </div>
+                  
+                  <form onSubmit={handleCreatePost} className="flex-1 space-y-3">
+                    <input
+                      type="file"
+                      ref={postPhotoInputRef}
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={handlePostPhotoSelect}
+                    />
+
+                    <div className="text-xs font-black text-[#1c1b1b] tracking-tight uppercase">Create Post / Share Update</div>
+                    
+                    <textarea
+                      rows={3}
+                      value={newPostText}
+                      onChange={e => setNewPostText(e.target.value)}
+                      placeholder="Share a beauty sourcing requirement, salon milestone, or private label request with the Nexora community..."
+                      className="w-full px-4 py-3 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-medium resize-none leading-relaxed"
+                    />
+
+                    {/* Active Media Toggle Options */}
+                    <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-[#f0edec]">
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            postPhotoInputRef.current?.click();
+                          }}
+                          className={`px-3.5 py-1.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer border ${
+                            mediaInputType === 'image'
+                              ? 'bg-[#b90064] text-white border-[#b90064] shadow-sm'
+                              : 'bg-[#fcf9f8] text-[#594047] border-[#e8e8e8] hover:bg-[#f0edec]'
+                          }`}
+                        >
+                          <Image className="w-3.5 h-3.5" />
+                          <span>{isUploadingPostPhoto ? 'Processing...' : mediaInputType === 'image' ? 'Change Photo' : 'Upload Photo'}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMediaInputType(mediaInputType === 'video' ? 'none' : 'video');
+                            if (mediaInputType !== 'video') setMediaUrlInput('');
+                          }}
+                          className={`px-3.5 py-1.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer border ${
+                            mediaInputType === 'video'
+                              ? 'bg-[#0050d6] text-white border-[#0050d6] shadow-sm'
+                              : 'bg-[#fcf9f8] text-[#594047] border-[#e8e8e8] hover:bg-[#f0edec]'
+                          }`}
+                        >
+                          <Video className="w-3.5 h-3.5" />
+                          <span>Add Video URL</span>
+                        </button>
+                      </div>
+
+                      {/* Tag Dropdown choice */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-[#8c7077] uppercase tracking-wider">Tag:</span>
+                        <select
+                          value={postTag}
+                          onChange={e => setPostTag(e.target.value)}
+                          className="px-2.5 py-1.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-[11px] font-bold text-[#1c1b1b] focus:border-[#b90064] focus:outline-hidden"
+                        >
+                          <option value="Buyer Update">Buyer Update</option>
+                          <option value="Sourcing RFQ">Sourcing RFQ</option>
+                          <option value="Milestone">Milestone</option>
+                          <option value="Urgent">Urgent Requirement</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Expanding input field ONLY for Videos */}
+                    {mediaInputType === 'video' && (
+                      <div className="pt-3 border-t border-dashed border-[#e8e8e8] space-y-2 animate-in fade-in slide-in-from-top-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-[#8c7077] uppercase tracking-wider">
+                            Enter Video URL (YouTube Watch Link or MP4 URL)
+                          </span>
+                          <button 
+                            type="button" 
+                            onClick={() => { setMediaInputType('none'); setMediaUrlInput(''); }} 
+                            className="text-[10px] font-bold text-[#b90064] hover:underline"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                        <input
+                          type="url"
+                          value={mediaUrlInput}
+                          onChange={e => setMediaUrlInput(e.target.value)}
+                          placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                          className="w-full px-3.5 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-medium"
+                        />
+                      </div>
+                    )}
+
+                    {/* Live validated preview */}
+                    {mediaUrlInput.trim() !== '' && mediaInputType !== 'none' && (
+                      <div className="mt-4 p-3 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl space-y-2 animate-in zoom-in-95">
+                        <div className="flex items-center justify-between text-[10px] font-bold text-[#8c7077] uppercase tracking-wider pb-1.5 border-b border-[#e8e8e8]">
+                          <span>{mediaInputType === 'image' ? 'Uploaded Photo Preview' : 'Live Video Preview'}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => { setMediaUrlInput(''); setMediaInputType('none'); }} 
+                            className="text-red-500 hover:underline"
+                          >
+                            Clear Attachment
+                          </button>
+                        </div>
+                        {mediaInputType === 'image' ? (
+                          <div className="relative rounded-lg overflow-hidden border border-[#e8e8e8] bg-white max-h-48 flex items-center justify-center">
+                            <img 
+                              src={mediaUrlInput} 
+                              alt="Live preview" 
+                              className="max-h-48 object-contain" 
+                            />
+                          </div>
+                        ) : (
+                          <div className="rounded-lg overflow-hidden border border-[#e8e8e8] bg-black aspect-video max-h-48 flex items-center justify-center">
+                            {getEmbeddableVideoUrl(mediaUrlInput).includes('youtube.com/embed') ? (
+                              <iframe src={getEmbeddableVideoUrl(mediaUrlInput)} className="w-full h-full max-h-48" frameBorder="0" allowFullScreen />
+                            ) : (
+                              <video src={mediaUrlInput} controls className="w-full h-full max-h-48 object-contain" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Publish Submit Button */}
+                    <div className="pt-3 border-t border-[#f0edec] flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={!newPostText.trim()}
+                        className={`px-6 py-2.5 bg-[#b90064] text-white rounded-xl text-xs font-extrabold shadow-md hover:bg-[#8e004b] transition-all cursor-pointer flex items-center gap-1.5 ${
+                          !newPostText.trim() ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                        <span>Publish Update</span>
+                      </button>
+                    </div>
+
+                  </form>
+                </div>
+              </div>
+
+              {/* Timeline Feed Posts */}
+              <div className="space-y-6">
+                {feedPosts.length > 0 ? (
+                  feedPosts.map(renderPostCard)
+                ) : (
+                  <div className="bg-white border border-[#e8e8e8] rounded-2xl p-10 text-center text-xs text-[#8c7077] font-bold">
+                    No timeline posts yet. Be the first to share an update!
+                  </div>
+                )}
+              </div>
 
             </div>
-          </div>
+          )}
+
         </div>
       </main>
-
-      {/* Mobile Sticky CTA */}
-      <div className="md:hidden sticky bottom-6 left-0 right-0 px-4 z-40">
-        <button 
-          onClick={onPostRFQ}
-          className="w-full py-4 bg-[#b90064] text-white rounded-2xl font-black text-sm shadow-2xl shadow-[#b90064]/50 flex items-center justify-center gap-3 animate-bounce-subtle"
-        >
-          <Plus className="w-5 h-5" />
-          Post Requirement
-        </button>
-      </div>
 
       {/* Edit Profile & Business Settings Modal */}
       <EditProfileModal
@@ -534,16 +1722,6 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
         initialData={buyerProfile}
         onSave={handleSaveProfile}
       />
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes bounce-subtle {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-5px); }
-        }
-        .animate-bounce-subtle {
-          animation: bounce-subtle 3s infinite ease-in-out;
-        }
-      `}} />
     </div>
   );
 };

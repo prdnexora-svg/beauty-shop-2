@@ -384,11 +384,25 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
             </button>
 
             <button
-              onClick={() => setShowReelModal(true)}
-              className="flex-1 md:flex-none bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
+              onClick={() => {
+                setReelMediaType('reel_or_short');
+                setShowReelModal(true);
+              }}
+              className="flex-1 md:flex-none bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
             >
               <Film className="w-4 h-4" />
-              <span>Promote Reel Ad</span>
+              <span>Promote Reel (9:16)</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setReelMediaType('full_video');
+                setShowReelModal(true);
+              }}
+              className="flex-1 md:flex-none bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
+            >
+              <Video className="w-4 h-4" />
+              <span>Promote Full Video (16:9)</span>
             </button>
           </div>
         </div>
@@ -981,26 +995,26 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
 
               {/* RIGHT COLUMN: LIVE INTERACTIVE MULTI-PLACEMENT PREVIEW (5 cols) */}
               <div className="lg:col-span-5 space-y-4">
-                <div className="sticky top-0 bg-stone-900 text-white rounded-2xl p-4 shadow-xl border border-stone-800 space-y-4">
+                <div className="sticky top-0 bg-[#fdf8f8] text-[#1c1b1b] rounded-2xl p-4 shadow-sm border border-[#e8dfe3] space-y-4">
                   
                   {/* Preview Header & Tabs */}
-                  <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-                    <div className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-[#f7c5e0]">
+                  <div className="flex items-center justify-between border-b border-[#e8dfe3] pb-3">
+                    <div className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-[#b90064]">
                       <Eye className="w-4 h-4 text-[#b90064]" />
                       <span>Live Multi-Placement Preview</span>
                     </div>
-                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
+                    <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded font-bold">
                       Real-time
                     </span>
                   </div>
 
                   {/* Placement Switcher Tabs */}
-                  <div className="grid grid-cols-3 gap-1 bg-stone-800 p-1 rounded-xl text-[11px] font-bold">
+                  <div className="grid grid-cols-3 gap-1 bg-stone-100 p-1 rounded-xl text-[11px] font-bold border border-stone-200">
                     <button
                       type="button"
                       onClick={() => setPreviewTab('homepage')}
                       className={`py-1.5 rounded-lg transition-all cursor-pointer ${
-                        previewTab === 'homepage' ? 'bg-[#b90064] text-white shadow-sm' : 'text-stone-300 hover:text-white'
+                        previewTab === 'homepage' ? 'bg-[#b90064] text-white shadow-sm' : 'text-[#594047] hover:text-[#1c1b1b]'
                       }`}
                     >
                       Homepage
@@ -1009,7 +1023,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                       type="button"
                       onClick={() => setPreviewTab('search_results')}
                       className={`py-1.5 rounded-lg transition-all cursor-pointer ${
-                        previewTab === 'search_results' ? 'bg-[#b90064] text-white shadow-sm' : 'text-stone-300 hover:text-white'
+                        previewTab === 'search_results' ? 'bg-[#b90064] text-white shadow-sm' : 'text-[#594047] hover:text-[#1c1b1b]'
                       }`}
                     >
                       Search Result
@@ -1018,7 +1032,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                       type="button"
                       onClick={() => setPreviewTab('category_page')}
                       className={`py-1.5 rounded-lg transition-all cursor-pointer ${
-                        previewTab === 'category_page' ? 'bg-[#b90064] text-white shadow-sm' : 'text-stone-300 hover:text-white'
+                        previewTab === 'category_page' ? 'bg-[#b90064] text-white shadow-sm' : 'text-[#594047] hover:text-[#1c1b1b]'
                       }`}
                     >
                       Category Page
@@ -1026,7 +1040,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                   </div>
 
                   {/* PREVIEW CONTAINER BASED ON TAB */}
-                  <div className="bg-stone-950 p-3 rounded-xl border border-stone-800 min-h-[220px] flex items-center justify-center">
+                  <div className="bg-stone-100 p-3 rounded-xl border border-stone-200 min-h-[220px] flex items-center justify-center">
                     
                     {/* 1. HOMEPAGE MARQUEE CARD PREVIEW */}
                     {previewTab === 'homepage' && (
@@ -1125,14 +1139,14 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                   </div>
 
                   {/* Summary Notes */}
-                  <div className="text-[11px] text-stone-300 space-y-1 border-t border-stone-800 pt-3">
+                  <div className="text-[11px] text-[#594047] space-y-1 border-t border-[#e8dfe3] pt-3">
                     <p className="flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Linked Destination: <strong className="text-white">{formTargetType === 'product' ? 'Product Detail Page' : 'Supplier Profile'}</strong></span>
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Linked Destination: <strong className="text-[#1c1b1b]">{formTargetType === 'product' ? 'Product Detail Page' : 'Supplier Profile'}</strong></span>
                     </p>
                     <p className="flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Target Categories: <strong className="text-white">{formCategories.join(', ')}</strong></span>
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Target Categories: <strong className="text-[#1c1b1b]">{formCategories.join(', ')}</strong></span>
                     </p>
                   </div>
 
@@ -1327,18 +1341,20 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
         </div>
       )}
 
-      {/* REEL / SHORT VIDEO PUBLISHING MODAL */}
+      {/* REEL / FULL VIDEO PUBLISHING MODAL */}
       {showReelModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-stone-200 space-y-5 my-auto max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-stone-200">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
-                  <Film className="w-5 h-5" />
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold ${
+                  reelMediaType === 'full_video' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
+                }`}>
+                  {reelMediaType === 'full_video' ? <Video className="w-5 h-5" /> : <Film className="w-5 h-5" />}
                 </div>
                 <div>
                   <h3 className="text-base font-extrabold text-stone-900">
-                    Publish Reel / Short Video Ad
+                    {reelMediaType === 'full_video' ? 'Publish 16:9 Full Video Ad' : 'Publish 9:16 Reel / Short Video Ad'}
                   </h3>
                   <p className="text-xs text-stone-500 font-medium">
                     Import or paste video link from YouTube, Instagram, Facebook, X, or LinkedIn
@@ -1525,7 +1541,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                 className="px-5 py-2 bg-[#b90064] hover:bg-[#a00056] text-white text-xs font-extrabold rounded-xl transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
               >
                 <Sparkles className="w-4 h-4" />
-                <span>Publish Reel Ad</span>
+                <span>{reelMediaType === 'full_video' ? 'Publish Full Video Ad' : 'Publish Reel Ad'}</span>
               </button>
             </div>
           </div>

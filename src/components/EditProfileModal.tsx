@@ -45,6 +45,17 @@ export interface BuyerProfileData {
   isGstVerified: boolean;
   isBusinessVerified: boolean;
   avatarUrl?: string;
+  coverPhotoUrl?: string;
+  bio?: string;
+  joinedDate?: string;
+  socialLinks?: {
+    facebook?: string;
+    instagram?: string;
+    linkedin?: string;
+    youtube?: string;
+    twitter?: string;
+    website?: string;
+  };
 }
 
 interface EditProfileModalProps {
@@ -71,7 +82,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   initialData,
   onSave
 }) => {
-  const [activeTab, setActiveTab] = useState<'general' | 'business' | 'verification' | 'preferences'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'business' | 'verification' | 'preferences' | 'social'>('general');
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
@@ -96,7 +107,18 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     emailAlerts: initialData?.emailAlerts ?? true,
     isGstVerified: initialData?.isGstVerified ?? true,
     isBusinessVerified: initialData?.isBusinessVerified ?? true,
-    avatarUrl: initialData?.avatarUrl
+    avatarUrl: initialData?.avatarUrl,
+    coverPhotoUrl: initialData?.coverPhotoUrl || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80',
+    bio: initialData?.bio || 'Head of Procurement at Radiant Beauty Solutions. Sourcing premium salon formulations, organic serums, and advanced aesthetic equipment across India.',
+    joinedDate: initialData?.joinedDate || 'January 2024',
+    socialLinks: initialData?.socialLinks || {
+      facebook: 'https://facebook.com/radiantbeauty',
+      instagram: 'https://instagram.com/radiantbeauty_in',
+      linkedin: 'https://linkedin.com/company/radiant-beauty-solutions',
+      youtube: 'https://youtube.com/@radiantbeautytv',
+      twitter: 'https://twitter.com/radiantbeauty',
+      website: 'https://radiantbeauty.in'
+    }
   });
 
   const [gstVerifying, setGstVerifying] = useState(false);
@@ -104,7 +126,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   
   // Photo upload & auto-resize state
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const coverFileInputRef = useRef<HTMLInputElement>(null);
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
+  const [isProcessingCover, setIsProcessingCover] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [photoSuccessMsg, setPhotoSuccessMsg] = useState<string | null>(null);
 
@@ -127,7 +151,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      const img = new Image();
+      const img = new window.Image();
       img.onload = () => {
         // Auto resize image to max 400x400 while preserving aspect ratio
         const canvas = document.createElement('canvas');
@@ -169,6 +193,60 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     reader.onerror = () => {
       setPhotoError('Failed to read image file.');
       setIsProcessingPhoto(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCoverFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+      setPhotoError(`Selected cover banner is ${(file.size / (1024 * 1024)).toFixed(1)}MB. Max limit is 5MB.`);
+      setPhotoSuccessMsg(null);
+      return;
+    }
+
+    setPhotoError(null);
+    setIsProcessingCover(true);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          setFormData(prev => ({ ...prev, coverPhotoUrl: compressedDataUrl }));
+          setPhotoSuccessMsg(`Cover banner uploaded successfully! (${width}x${height}px)`);
+          setTimeout(() => setPhotoSuccessMsg(null), 3500);
+        }
+        setIsProcessingCover(false);
+      };
+      img.onerror = () => {
+        setPhotoError('Unable to process selected image file.');
+        setIsProcessingCover(false);
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => {
+      setPhotoError('Failed to read image file.');
+      setIsProcessingCover(false);
     };
     reader.readAsDataURL(file);
   };
@@ -292,6 +370,18 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
             <Sparkles className="w-3.5 h-3.5" />
             Sourcing & Alerts
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('social')}
+            className={`pb-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              activeTab === 'social'
+                ? 'border-[#b90064] text-[#b90064]'
+                : 'border-transparent text-[#594047] hover:text-[#1c1b1b]'
+            }`}
+          >
+            <Globe className="w-3.5 h-3.5" />
+            Social & Bio
+          </button>
         </div>
 
         {/* Modal Form Content */}
@@ -300,7 +390,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
           {/* TAB 1: General Info */}
           {activeTab === 'general' && (
             <div className="space-y-4 animate-in fade-in-50 duration-200">
-              {/* Hidden File Input */}
+              {/* Hidden File Inputs */}
               <input
                 type="file"
                 ref={fileInputRef}
@@ -308,7 +398,15 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 className="hidden"
                 onChange={handlePhotoFileSelect}
               />
+              <input
+                type="file"
+                ref={coverFileInputRef}
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleCoverFileSelect}
+              />
 
+              {/* Profile Photo Block */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-[#fcf9f8] rounded-xl border border-[#e8e8e8]">
                 <div className="relative shrink-0">
                   <div className="w-18 h-18 rounded-2xl bg-gradient-to-br from-[#b90064] to-[#e6007e] text-white flex items-center justify-center text-xl font-black shadow-md overflow-hidden border-2 border-white">
@@ -370,6 +468,65 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   <p className="text-[10px] text-[#8c7077] mt-1.5">
                     Supports JPEG, PNG up to <strong>5MB</strong>. Automatically resizes to optimal 400x400px.
                   </p>
+                </div>
+              </div>
+
+              {/* Cover Photo Block */}
+              <div className="flex flex-col gap-4 p-4 bg-[#fcf9f8] rounded-xl border border-[#e8e8e8]">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-black text-[#1c1b1b] uppercase tracking-tight">Cover Photo Banner</h4>
+                  <span className="text-[10px] text-[#8c7077] font-bold">Recommended: 1200 x 400px (Max 5MB)</span>
+                </div>
+
+                <div className="relative h-28 w-full rounded-xl border border-[#e8e8e8] bg-white overflow-hidden flex items-center justify-center">
+                  {formData.coverPhotoUrl ? (
+                    <img src={formData.coverPhotoUrl} alt="Cover Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="text-center p-4">
+                      <ImageIcon className="w-6 h-6 text-[#8c7077] mx-auto mb-1 opacity-55" />
+                      <span className="text-[10px] text-[#8c7077] font-bold block">No cover banner set</span>
+                    </div>
+                  )}
+                  <button 
+                    type="button" 
+                    title="Upload Cover Banner"
+                    onClick={() => coverFileInputRef.current?.click()}
+                    className="absolute bottom-2 right-2 px-3 py-1.5 bg-white/95 hover:bg-white text-[#1c1b1b] hover:text-[#b90064] border border-[#e8e8e8] rounded-xl text-[10px] font-black shadow-md flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
+                  >
+                    <Camera className="w-3.5 h-3.5 text-[#b90064]" />
+                    <span>Upload Banner</span>
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => coverFileInputRef.current?.click()}
+                    disabled={isProcessingCover}
+                    className="px-3 py-1.5 bg-white border border-[#e8e8e8] hover:border-[#b90064] text-[#b90064] rounded-lg text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    {isProcessingCover ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#b90064]" />
+                        <span>Resizing Banner...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Select Banner File</span>
+                      </>
+                    )}
+                  </button>
+
+                  {formData.coverPhotoUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, coverPhotoUrl: undefined }))}
+                      className="px-2.5 py-1.5 bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                    >
+                      Remove Banner
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -729,6 +886,105 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                     className="w-4 h-4 text-[#b90064] rounded focus:ring-[#b90064] accent-[#b90064] cursor-pointer"
                   />
                 </label>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: Social & Bio */}
+          {activeTab === 'social' && (
+            <div className="space-y-4 animate-in fade-in-50 duration-200">
+              <div>
+                <label className="block text-xs font-bold text-[#1c1b1b] mb-1.5">
+                  Professional Bio / About
+                </label>
+                <textarea
+                  rows={3}
+                  value={formData.bio || ''}
+                  onChange={e => setFormData({ ...formData, bio: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-medium resize-none"
+                  placeholder="Describe your salon, brand, or procurement focus..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#1c1b1b] mb-1.5">
+                  Cover Photo Banner URL
+                </label>
+                <input
+                  type="url"
+                  value={formData.coverPhotoUrl || ''}
+                  onChange={e => setFormData({ ...formData, coverPhotoUrl: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-medium"
+                  placeholder="https://images.unsplash.com/..."
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div>
+                  <label className="block text-xs font-bold text-[#1c1b1b] mb-1.5">Facebook Profile / Page</label>
+                  <input
+                    type="url"
+                    value={formData.socialLinks?.facebook || ''}
+                    onChange={e => setFormData({ ...formData, socialLinks: { ...formData.socialLinks, facebook: e.target.value } })}
+                    className="w-full px-3.5 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-medium"
+                    placeholder="https://facebook.com/yourbrand"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#1c1b1b] mb-1.5">Instagram Handle / Link</label>
+                  <input
+                    type="url"
+                    value={formData.socialLinks?.instagram || ''}
+                    onChange={e => setFormData({ ...formData, socialLinks: { ...formData.socialLinks, instagram: e.target.value } })}
+                    className="w-full px-3.5 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-medium"
+                    placeholder="https://instagram.com/yourbrand"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#1c1b1b] mb-1.5">LinkedIn Profile / Company</label>
+                  <input
+                    type="url"
+                    value={formData.socialLinks?.linkedin || ''}
+                    onChange={e => setFormData({ ...formData, socialLinks: { ...formData.socialLinks, linkedin: e.target.value } })}
+                    className="w-full px-3.5 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-medium"
+                    placeholder="https://linkedin.com/company/yourbrand"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#1c1b1b] mb-1.5">YouTube Channel</label>
+                  <input
+                    type="url"
+                    value={formData.socialLinks?.youtube || ''}
+                    onChange={e => setFormData({ ...formData, socialLinks: { ...formData.socialLinks, youtube: e.target.value } })}
+                    className="w-full px-3.5 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-medium"
+                    placeholder="https://youtube.com/@yourbrand"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#1c1b1b] mb-1.5">Twitter / X Profile</label>
+                  <input
+                    type="url"
+                    value={formData.socialLinks?.twitter || ''}
+                    onChange={e => setFormData({ ...formData, socialLinks: { ...formData.socialLinks, twitter: e.target.value } })}
+                    className="w-full px-3.5 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-medium"
+                    placeholder="https://twitter.com/yourbrand"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#1c1b1b] mb-1.5">Official Company Website</label>
+                  <input
+                    type="url"
+                    value={formData.socialLinks?.website || ''}
+                    onChange={e => setFormData({ ...formData, socialLinks: { ...formData.socialLinks, website: e.target.value } })}
+                    className="w-full px-3.5 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-medium"
+                    placeholder="https://yourbrand.in"
+                  />
+                </div>
               </div>
             </div>
           )}

@@ -34,6 +34,10 @@ interface ProductDetailPageProps {
   onNavigateToSupplierProfile?: (supplierId: string) => void;
   onCallSupplier: (name: string, phone: string) => void;
   onWhatsAppSupplier: (name: string, whatsapp: string) => void;
+  onOpenChat?: (
+    supplier: { id: string; name: string; location: string; isVerified: boolean },
+    product: { title: string; image: string; price?: string; moq?: string }
+  ) => void;
 }
 
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
@@ -45,6 +49,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   onNavigateToSupplierProfile,
   onCallSupplier,
   onWhatsAppSupplier,
+  onOpenChat,
 }) => {
   // Retrieve product details from DB
   const product: ProductDetailData | undefined = SPONSORED_PRODUCTS_DB[productId];
@@ -263,21 +268,44 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
               {/* Conversion CTAs */}
               <div className="space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <button
                     onClick={() => onOpenEnquiryModal({ name: product.title, supplierName: product.supplierName })}
-                    className="w-full py-3.5 px-4 rounded-xl bg-[#b90064] text-white font-extrabold text-sm hover:bg-[#a00056] transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                    className="w-full py-3.5 px-3 rounded-xl bg-[#b90064] text-white font-extrabold text-xs sm:text-sm hover:bg-[#a00056] transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-1.5"
                   >
                     <Send className="w-4 h-4" />
-                    Send Product Enquiry
+                    Enquiry
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      onOpenChat?.(
+                        {
+                          id: product.seller_id || 'sup-1',
+                          name: product.supplierName,
+                          location: product.supplierLocation || 'Mumbai, MH',
+                          isVerified: true
+                        },
+                        {
+                          title: product.title,
+                          image: product.images[0],
+                          price: product.priceRange,
+                          moq: product.moq
+                        }
+                      );
+                    }}
+                    className="w-full py-3.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-1.5"
+                  >
+                    <MessageCircle className="w-4 h-4 text-white" />
+                    Live Chat
                   </button>
 
                   <button
                     onClick={onOpenRFQModal}
-                    className="w-full py-3.5 px-4 rounded-xl bg-white border-2 border-[#b90064] text-[#b90064] font-extrabold text-sm hover:bg-[#fde7f3] transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3.5 px-3 rounded-xl bg-white border-2 border-[#b90064] text-[#b90064] font-extrabold text-xs sm:text-sm hover:bg-[#fde7f3] transition-all flex items-center justify-center gap-1.5"
                   >
                     <FileText className="w-4 h-4" />
-                    Request Bulk Quote
+                    Get Quote
                   </button>
                 </div>
 

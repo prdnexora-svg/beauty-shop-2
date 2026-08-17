@@ -67,6 +67,15 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
   // Local modal states
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
   const [isRfqModalOpen, setIsRfqModalOpen] = useState(false);
+  
+  // Claim listing states
+  const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
+  const [claimFormName, setClaimFormName] = useState('');
+  const [claimFormEmail, setClaimFormEmail] = useState('');
+  const [claimFormPhone, setClaimFormPhone] = useState('');
+  const [claimFormGst, setClaimFormGst] = useState('27AAAAA1111A1Z1');
+  const [claimFormDoc, setClaimFormDoc] = useState<string | null>(null);
+  const [claimStatus, setClaimStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
 
   // Compliance tab state
   const [activeComplianceCategory, setActiveComplianceCategory] = useState<'All' | 'ISO Certificates' | 'Lab Tests' | 'Audit Summaries'>('All');
@@ -316,9 +325,78 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
               </div>
             </div>
 
-            <p className="text-[14px] md:text-[15px] text-[#594047] mb-8 max-w-2xl mx-auto leading-relaxed font-medium">
+            <p className="text-[14px] md:text-[15px] text-[#594047] mb-6 max-w-2xl mx-auto leading-relaxed font-medium">
               Specializing in high-efficacy botanical serums and luxury foundations. Providing end-to-end OEM/ODM services for premier global brands.
             </p>
+
+            {/* Business Claim Profile Ribbon */}
+            <div className="mb-6 p-4 bg-amber-50/90 border border-amber-200 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 text-left max-w-3xl mx-auto shadow-3xs">
+              <div className="flex items-start gap-3">
+                <Building2 className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-[13px] font-black text-[#1c1b1b]">Are you the owner of Aura Beauty Labs?</h4>
+                  <p className="text-[11.5px] text-amber-900 font-medium mt-0.5">Claim this verified directory profile to directly manage your cosmetic listings, upload fresh lab reports, and respond to incoming buyer RFQs.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setClaimStatus('idle');
+                  setIsClaimModalOpen(true);
+                }}
+                className="bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-[12px] px-4.5 py-2.5 rounded-xl transition-all whitespace-nowrap cursor-pointer shadow-sm shrink-0 active:scale-95"
+              >
+                Claim Profile
+              </button>
+            </div>
+
+            {/* Prominent Trust & Compliance Badges Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto mb-8 text-left">
+              {/* Badge 1: Physical Address Verified */}
+              <div className="p-3.5 bg-[#f0f6ff] border border-[#d2e3fc] rounded-xl flex items-start gap-3 shadow-3xs transition-all hover:shadow-2xs">
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 border border-blue-200 text-[#0050d6]">
+                  <MapPin className="w-4 h-4 fill-blue-500/20 text-[#0050d6]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[11px] font-extrabold text-blue-950 uppercase tracking-wide">Physical Site</span>
+                    <span className="text-[9px] font-black text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-300">Verified</span>
+                  </div>
+                  <p className="text-[11px] text-blue-900/85 mt-1 leading-snug font-medium">SGS site auditor visit passed on Jun 12, 2026.</p>
+                  <p className="text-[9.5px] font-bold text-[#0050d6] mt-1 font-mono">ID: SGS-PV-2026-092</p>
+                </div>
+              </div>
+
+              {/* Badge 2: Registration (GST/CIN) */}
+              <div className="p-3.5 bg-[#f4fbf7] border border-[#d5f3df] rounded-xl flex items-start gap-3 shadow-3xs transition-all hover:shadow-2xs">
+                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 border border-emerald-200 text-emerald-800">
+                  <FileText className="w-4 h-4 text-emerald-700" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[11px] font-extrabold text-emerald-950 uppercase tracking-wide">Business Reg</span>
+                    <span className="text-[9px] font-black text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-300">Active</span>
+                  </div>
+                  <p className="text-[11px] text-emerald-900/85 mt-1 leading-snug font-mono">GSTIN: 27AAAAA1111A1Z1</p>
+                  <p className="text-[9.5px] font-bold text-emerald-800/80 font-mono mt-0.5">CIN: U24246MH2014PTC259218</p>
+                </div>
+              </div>
+
+              {/* Badge 3: Manufacturing License */}
+              <div className="p-3.5 bg-[#fef8f9] border border-[#fbdde1] rounded-xl flex items-start gap-3 shadow-3xs transition-all hover:shadow-2xs">
+                <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center shrink-0 border border-rose-200 text-[#b90064]">
+                  <Award className="w-4 h-4 text-[#b90064]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[11px] font-extrabold text-rose-950 uppercase tracking-wide">Mfg License</span>
+                    <span className="text-[9px] font-black text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-300">Approved</span>
+                  </div>
+                  <p className="text-[11px] text-rose-900/85 mt-1 leading-snug font-medium">FDA &amp; CDSCO certified formulation site.</p>
+                  <p className="text-[9.5px] font-bold text-[#b90064] mt-1 font-mono">No: M-COS/MH/100432</p>
+                </div>
+              </div>
+            </div>
 
             {/* KPI Cards Bar */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mb-8">
@@ -390,6 +468,14 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                 <MessageCircle className="w-4 h-4" />
                 <span>WhatsApp</span>
               </button>
+            </div>
+
+            {/* Response Time Badge */}
+            <div className="mt-5 flex items-center justify-center">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#fdf8f8] border border-[#e0bec6] rounded-full text-[12px] font-bold text-[#b90064] shadow-sm">
+                <Clock className="w-3.5 h-3.5" />
+                <span>Usually responds in &lt; 2 hours</span>
+              </div>
             </div>
 
             {/* Mobile Contact Visibility Barrier */}
@@ -2075,6 +2161,186 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
               </div>
 
             </div>
+
+          </div>
+        </div>
+      )}
+      {/* Premium Directory Claim Profile Flow Modal */}
+      {isClaimModalOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full border border-[#e8e8e8] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 text-left relative">
+            <button 
+              type="button"
+              onClick={() => setIsClaimModalOpen(false)}
+              className="absolute top-5 right-5 text-stone-400 hover:text-stone-700 transition-colors cursor-pointer z-10"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {claimStatus === 'idle' && (
+              <div className="p-6 md:p-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center border border-amber-200">
+                    <Building2 className="w-5 h-5 text-amber-700" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+                      Owner Verification Portal
+                    </span>
+                    <h3 className="text-lg font-black text-[#1c1b1b] mt-1">Claim Aura Beauty Labs</h3>
+                  </div>
+                </div>
+
+                <p className="text-[13px] text-[#594047] leading-relaxed mb-6 font-medium">
+                  Establish identity to gain administration rights for this directory listing. Verified owners can update pricing, MOQs, respond to RFQs, and chat with buyers.
+                </p>
+
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!claimFormName || !claimFormEmail || !claimFormPhone) {
+                      showToast("❌ Please complete all required fields");
+                      return;
+                    }
+                    setClaimStatus('submitting');
+                    setTimeout(() => {
+                      setClaimStatus('success');
+                      showToast("⚡ Listing claim registered!");
+                    }, 2500);
+                  }}
+                  className="space-y-4 text-[13px]"
+                >
+                  <div>
+                    <label className="block text-[#1c1b1b] font-bold mb-1.5">Authorized Sourcing Specialist Name *</label>
+                    <input 
+                      type="text"
+                      required
+                      value={claimFormName}
+                      onChange={(e) => setClaimFormName(e.target.value)}
+                      placeholder="e.g. Shalini Sen"
+                      className="w-full bg-[#fdfaf9] border border-[#e8d4d8] rounded-xl px-4 py-2.5 text-[#1c1b1b] placeholder:text-[#8c7077] focus:outline-none focus:ring-2 focus:ring-[#b90064] focus:border-[#b90064] font-medium"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[#1c1b1b] font-bold mb-1.5">Official Corporate Email *</label>
+                      <input 
+                        type="email"
+                        required
+                        value={claimFormEmail}
+                        onChange={(e) => setClaimFormEmail(e.target.value)}
+                        placeholder="shalini@aurabeautylabs.com"
+                        className="w-full bg-[#fdfaf9] border border-[#e8d4d8] rounded-xl px-4 py-2.5 text-[#1c1b1b] placeholder:text-[#8c7077] focus:outline-none focus:ring-2 focus:ring-[#b90064] focus:border-[#b90064] font-medium"
+                      />
+                      <span className="text-[10px] text-stone-500 block mt-1 font-medium">Must match official company domain.</span>
+                    </div>
+                    <div>
+                      <label className="block text-[#1c1b1b] font-bold mb-1.5">Direct Sourcing Contact Number *</label>
+                      <input 
+                        type="tel"
+                        required
+                        value={claimFormPhone}
+                        onChange={(e) => setClaimFormPhone(e.target.value)}
+                        placeholder="+91 98201 55443"
+                        className="w-full bg-[#fdfaf9] border border-[#e8d4d8] rounded-xl px-4 py-2.5 text-[#1c1b1b] placeholder:text-[#8c7077] focus:outline-none focus:ring-2 focus:ring-[#b90064] focus:border-[#b90064] font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[#1c1b1b] font-bold mb-1.5">GSTIN / Business Registration ID (for demo)</label>
+                    <input 
+                      type="text"
+                      value={claimFormGst}
+                      onChange={(e) => setClaimFormGst(e.target.value)}
+                      placeholder="e.g. 27AAAAA1111A1Z1"
+                      className="w-full bg-[#fdfaf9] border border-[#e8d4d8] rounded-xl px-4 py-2.5 text-[#1c1b1b] font-mono focus:outline-none focus:ring-2 focus:ring-[#b90064] focus:border-[#b90064] font-medium"
+                    />
+                  </div>
+
+                  {/* Drag-and-drop simulated file upload */}
+                  <div>
+                    <label className="block text-[#1c1b1b] font-bold mb-1.5">Upload Authority Proof (GST Certificate / MoA) *</label>
+                    <div 
+                      onClick={() => setClaimFormDoc("gst_cert_attachment.pdf")}
+                      className="border-2 border-dashed border-[#e8d4d8] hover:border-[#b90064] bg-[#fdfaf9] p-5 rounded-2xl text-center cursor-pointer transition-all"
+                    >
+                      <UploadCloud className="w-8 h-8 text-amber-600 mx-auto mb-2" />
+                      {claimFormDoc ? (
+                        <div>
+                          <span className="text-[12.5px] font-bold text-emerald-700">{claimFormDoc}</span>
+                          <p className="text-[10px] text-stone-500 mt-0.5">Click to replace file</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="font-bold text-[#1c1b1b] text-[12.5px]">Drag &amp; Drop or Click to Upload</p>
+                          <p className="text-[10.5px] text-[#8c7077] mt-0.5">Support PDF, PNG, JPG (Max 5MB)</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-[#f0edec] flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsClaimModalOpen(false)}
+                      className="bg-white hover:bg-[#f0edec] border border-[#e8e8e8] text-[#594047] font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="bg-amber-600 hover:bg-amber-700 text-white font-black px-6 py-2.5 rounded-xl transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Submit Secure Claim</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {claimStatus === 'submitting' && (
+              <div className="p-10 text-center space-y-4">
+                <RefreshCw className="w-10 h-10 text-amber-600 animate-spin mx-auto" />
+                <h3 className="text-base font-black text-[#1c1b1b]">Verifying Corporate Authority</h3>
+                <p className="text-[12.5px] text-[#594047] max-w-sm mx-auto leading-relaxed">
+                  Executing secure domain registry lookups and authenticating uploaded GST credentials against registrar databases...
+                </p>
+              </div>
+            )}
+
+            {claimStatus === 'success' && (
+              <div className="p-8 md:p-10 text-center">
+                <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-5 border border-emerald-200">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                </div>
+
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                  Claim Registered Successfully
+                </span>
+
+                <h3 className="text-xl font-black text-[#1c1b1b] mt-4 mb-2">Claim ID: NEX-CLAIM-99218</h3>
+                <p className="text-[13px] text-[#594047] leading-relaxed mb-6 max-w-md mx-auto">
+                  Aura Beauty Labs claim details have been successfully submitted for certification audit. Our legal onboarding cell will audit your authorized domain email (<strong className="text-[#1c1b1b] font-bold">{claimFormEmail}</strong>) and attached GST records within 24 hours.
+                </p>
+
+                <div className="bg-[#fcf9f8] rounded-xl p-4 border border-[#e8e8e8] text-left mb-6 space-y-1.5 text-[12px] text-[#594047]">
+                  <p>• Candidate: <strong className="text-[#1c1b1b] font-bold">{claimFormName}</strong></p>
+                  <p>• Sourcing line: <strong className="text-[#1c1b1b]">{claimFormPhone}</strong></p>
+                  <p>• Status: <span className="text-amber-700 font-extrabold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Pending Registrar Call</span></p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsClaimModalOpen(false)}
+                  className="w-full bg-[#1c1b1b] hover:bg-stone-800 text-white font-extrabold text-[13.5px] py-3 rounded-xl shadow-md transition-all cursor-pointer"
+                >
+                  Return to Supplier Profile
+                </button>
+              </div>
+            )}
 
           </div>
         </div>

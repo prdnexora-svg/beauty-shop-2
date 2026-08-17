@@ -6,6 +6,7 @@ interface OemPrivateLabelHubScreenProps {
   onOpenEnquiryModal: (productName: string, supplierName: string) => void;
   onOpenFacilityTour: (supplierName: string) => void;
   onNavigateToSuppliers: () => void;
+  onNavigateToSupplierProfile?: (supplierId: string) => void;
 }
 
 const MOCK_FORMULATION_TEMPLATE = [
@@ -18,6 +19,7 @@ const MOCK_FORMULATION_TEMPLATE = [
     ingredients: ['Ceramide NP', 'Palmitoyl Tripeptide-5', 'Hyaluronic Acid', 'Squalane'],
     description: 'A deeply hydrating, barrier-restoring emulsion formulation designed for premium dermacosmetic brands. Stability tested across extreme temperature thresholds.',
     supplier: 'Aura Beauty Labs',
+    supplierId: 'sup-1',
     estimatedPrice: '₹850 / Kg'
   },
   {
@@ -29,6 +31,7 @@ const MOCK_FORMULATION_TEMPLATE = [
     ingredients: ['Hydrolyzed Keratin', 'Rosemary Oil', 'Biotin', 'Argan Kernel Oil'],
     description: 'Sulfate-free scalp restoration therapeutic cleanser with excellent foaming profile and botanical extract suspension compatibility.',
     supplier: 'LuxeForm Organics',
+    supplierId: 'sup-2',
     estimatedPrice: '₹420 / Liter'
   },
   {
@@ -40,6 +43,7 @@ const MOCK_FORMULATION_TEMPLATE = [
     ingredients: ['PCR Acrylic', 'Aluminum Lid', 'Silicone Seal'],
     description: 'Eco-luxury dual-layer cosmetic containers with high product preservation thresholds and beautiful hot-stamping custom label areas.',
     supplier: 'CosmoPack Packaging Solutions',
+    supplierId: 'sup-3',
     estimatedPrice: '₹22 - ₹35 / Unit'
   },
   {
@@ -51,6 +55,7 @@ const MOCK_FORMULATION_TEMPLATE = [
     ingredients: ['Organic Castor Oil', 'Natural Iron Oxides', 'Carnauba Wax'],
     description: 'Long-wearing, water-resistant formulation with completely vegan, clean-label active ingredients. Available in 24 customizable shades.',
     supplier: 'Radiant Cosmeceuticals',
+    supplierId: 'sup-4',
     estimatedPrice: '₹85 / Unit'
   }
 ];
@@ -59,7 +64,8 @@ export const OemPrivateLabelHubScreen: React.FC<OemPrivateLabelHubScreenProps> =
   onOpenRFQModal,
   onOpenEnquiryModal,
   onOpenFacilityTour,
-  onNavigateToSuppliers
+  onNavigateToSuppliers,
+  onNavigateToSupplierProfile
 }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [customVolume, setCustomVolume] = useState('');
@@ -153,7 +159,12 @@ export const OemPrivateLabelHubScreen: React.FC<OemPrivateLabelHubScreenProps> =
 
                   <div>
                     <h3 className="font-extrabold text-sm text-zinc-950 leading-snug">{f.title}</h3>
-                    <p className="text-[11px] text-[#594047] font-semibold mt-0.5">By: {f.supplier}</p>
+                    <button 
+                      onClick={() => onNavigateToSupplierProfile?.(f.supplierId)}
+                      className="text-[11px] text-[#594047] font-semibold mt-0.5 hover:text-[#b90064] hover:underline transition-colors"
+                    >
+                      By: {f.supplier}
+                    </button>
                   </div>
 
                   <p className="text-xs text-[#594047] leading-relaxed line-clamp-3">

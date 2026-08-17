@@ -42,6 +42,7 @@ interface ProductListingScreenProps {
   onOpenRFQModal: () => void;
   onNavigateToExplore: () => void;
   onNavigateToSearch: (params?: any) => void;
+  onNavigateToProductDetail?: (productId: string) => void;
   onOpenProductComparison?: (products: SearchProduct[]) => void;
   onCallSupplier: (supplierName: string) => void;
   onWhatsAppSupplier: (supplierName: string) => void;
@@ -55,6 +56,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
   onOpenRFQModal,
   onNavigateToExplore,
   onNavigateToSearch,
+  onNavigateToProductDetail,
   onOpenProductComparison,
   onCallSupplier,
   onWhatsAppSupplier,
@@ -1053,6 +1055,14 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                               </button>
                             )}
                           </div>
+
+                          <button
+                            onClick={() => onNavigateToProductDetail?.(prod.id)}
+                            className="w-full mt-1 border border-[#e8e8e8] text-[#1c1b1b] hover:bg-[#f7f2f2] hover:border-[#b90064] py-2 rounded-lg text-[11px] font-bold transition-all shadow-2xs flex items-center justify-center gap-1.5"
+                          >
+                            <span>View Full Specifications</span>
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                          </button>
                         </div>
 
                       </div>

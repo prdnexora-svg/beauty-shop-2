@@ -6,6 +6,7 @@ interface BrandDirectoryDetailScreenProps {
   onOpenRFQModal: () => void;
   onOpenFacilityTour: (supplierName: string) => void;
   onNavigateToSuppliers: () => void;
+  onNavigateToSupplierProfile?: (supplierId: string) => void;
 }
 
 const MOCK_BRANDS = [
@@ -92,7 +93,8 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
   onOpenEnquiryModal,
   onOpenRFQModal,
   onOpenFacilityTour,
-  onNavigateToSuppliers
+  onNavigateToSuppliers,
+  onNavigateToSupplierProfile
 }) => {
   const [selectedBrand, setSelectedBrand] = useState<typeof MOCK_BRANDS[0] | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -300,6 +302,13 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                   </div>
 
                   <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => onNavigateToSupplierProfile?.(selectedBrand.id)}
+                      className="bg-white border border-[#b90064] text-[#b90064] hover:bg-[#fde7f3] text-xs font-bold px-4 py-2 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Building2 className="w-3.5 h-3.5" />
+                      <span>Visit Mini-Website</span>
+                    </button>
                     <button
                       onClick={() => {}}
                       className="border border-[#e8e8e8] text-[#594047] hover:border-[#b90064] hover:text-[#b90064] text-xs font-bold px-4 py-2 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"

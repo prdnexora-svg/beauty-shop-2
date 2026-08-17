@@ -4,7 +4,7 @@ import { X, CheckCircle2, ShieldCheck, ArrowRight, Building2, ShoppingBag, Spark
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (role: 'buyer' | 'supplier') => void;
+  onSuccess: (role: 'buyer' | 'supplier', isNewUser?: boolean) => void;
   initialMode?: 'login' | 'register';
 }
 
@@ -36,12 +36,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   };
 
   const handleReset = () => {
+    const isNew = mode === 'register';
     setOtpMode(false);
     setVerified(false);
     setOtp('');
     setPhoneOrEmail('');
     setBusinessName('');
-    onSuccess(role);
+    onSuccess(role, isNew);
     onClose();
   };
 

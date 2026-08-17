@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Film, Play, Sparkles } from 'lucide-react';
+import { Film, Play, Sparkles, Plus } from 'lucide-react';
 import { SponsoredVideoItem, VideoPlatform } from '../types';
 import { getStoredSponsoredReels, INITIAL_SPONSORED_REELS, validateSponsoredVideo } from '../data/sponsoredReelsData';
 import { recordSponsoredAnalyticsEvent } from '../data/sponsoredAnalyticsStore';
@@ -122,10 +122,10 @@ export const SponsoredReelsSection: React.FC<SponsoredReelsSectionProps> = ({
         {onOpenAdManager && (
           <button
             onClick={onOpenAdManager}
-            className="bg-[#fde7f3] hover:bg-[#fbcfe8] text-[#b90064] border border-[#f7c5e0] text-xs font-bold px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+            className="bg-[#b90064] hover:bg-[#a00056] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs"
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#b90064]" />
-            <span className="hidden sm:inline">Promote Reel</span>
+            <Plus className="w-3.5 h-3.5 text-white" />
+            <span>Manage / Create Ads</span>
           </button>
         )}
       </div>
@@ -152,17 +152,6 @@ export const SponsoredReelsSection: React.FC<SponsoredReelsSectionProps> = ({
 
               {/* Gradient Scrim for Contrast */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20 group-hover:from-black/95 transition-all" />
-
-              {/* Top Badges */}
-              <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1 z-10">
-                <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider text-white ${badge.bg} shadow-xs`}>
-                  {badge.label}
-                </span>
-
-                <span className="px-1.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-[#f7a0cd] text-[9px] font-bold uppercase tracking-wider">
-                  Ad
-                </span>
-              </div>
 
               {/* Center Play Icon Overlay */}
               <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">

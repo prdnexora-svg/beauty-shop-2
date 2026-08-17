@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Plus, Phone, MessageCircle, Send, ShieldCheck } from 'lucide-react';
 import { SponsoredAdItem } from '../types';
-import { validateSponsoredAd } from '../data/sponsoredProductsData';
+import { validateSponsoredAd, SPONSORED_PRODUCTS_DB } from '../data/sponsoredProductsData';
 import { getStoredCampaigns, recordAdClickInStore } from '../data/sponsoredCampaignsStore';
 import { recordSponsoredAnalyticsEvent } from '../data/sponsoredAnalyticsStore';
 
@@ -9,6 +9,10 @@ interface SponsoredImageAdsProps {
   onProductClick?: (ad: SponsoredAdItem) => void;
   onSupplierClick?: (supplierId: string) => void;
   onOpenAdManager?: () => void;
+  onOpenChat?: (
+    supplier: { id: string; name: string; location: string; isVerified: boolean },
+    product: { title: string; image: string; price?: string; moq?: string }
+  ) => void;
 }
 
 export const SPONSORED_ADS: SponsoredAdItem[] = [
@@ -127,7 +131,8 @@ export const SPONSORED_ADS: SponsoredAdItem[] = [
 export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({ 
   onProductClick, 
   onSupplierClick,
-  onOpenAdManager 
+  onOpenAdManager,
+  onOpenChat
 }) => {
   const [customCampaigns, setCustomCampaigns] = useState(() => getStoredCampaigns());
   const recordedImpressionsRef = useRef<Set<string>>(new Set());
@@ -142,7 +147,7 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
     };
   }, []);
 
-  // Combine static SPONSORED_ADS with dynamic user created campaigns that are active
+  // Combine static SPONSORED_ADS with dynamic user created campaigns that are active, fully synced with SPONSORED_PRODUCTS_DB
   const activeValidAds = useMemo(() => {
     const defaultValid = SPONSORED_ADS.filter((ad) => validateSponsoredAd(ad));
 
@@ -162,11 +167,23 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
       }))
       .filter((ad) => validateSponsoredAd(ad));
 
-    // Deduplicate by product_id/id so custom ads take precedence or append cleanly
+    // Deduplicate and sync with SPONSORED_PRODUCTS_DB
     const combinedMap = new Map<string, SponsoredAdItem>();
     [...customActive, ...defaultValid].forEach(ad => {
       if (!combinedMap.has(ad.id)) {
-        combinedMap.set(ad.id, ad);
+        const dbProduct = SPONSORED_PRODUCTS_DB[ad.product_id];
+        if (dbProduct) {
+          combinedMap.set(ad.id, {
+            ...ad,
+            supplierName: dbProduct.supplierName,
+            adTitle: dbProduct.title,
+            subtitle: dbProduct.description ? dbProduct.description.substring(0, 75) + '...' : ad.subtitle,
+            imageUrl: dbProduct.images[0] || ad.imageUrl,
+            seller_id: dbProduct.seller_id
+          });
+        } else {
+          combinedMap.set(ad.id, ad);
+        }
       }
     });
 
@@ -245,7 +262,7 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
             onClick={onOpenAdManager}
             className="bg-[#b90064] hover:bg-[#a00056] text-white text-xs font-bold px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0"
           >
-            <Sparkles className="w-3.5 h-3.5 text-white" />
+            <Plus className="w-3.5 h-3.5 text-white" />
             <span>Manage / Create Ads</span>
           </button>
         )}
@@ -273,40 +290,111 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
                 });
                 onProductClick?.(ad);
               }}
-              className="sponsored-image-ad-card group/card shrink-0 cursor-pointer bg-white border border-[#e8e8e8] hover:border-[#b90064]/40 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 relative flex flex-col justify-between
-                w-[220px] h-[140px] md:w-[320px] md:h-[200px]"
+              className="sponsored-image-ad-card group/card shrink-0 cursor-pointer bg-white border border-[#e8e8e8] hover:border-[#b90064]/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl relative flex flex-col justify-between
+                w-[280px] md:w-[340px]"
             >
-              {/* Background Product Banner Image */}
-              <div className="absolute inset-0 w-full h-full overflow-hidden bg-gray-100">
+              {/* Top: HD Product Banner Image */}
+              <div className="relative w-full h-[150px] md:h-[200px] overflow-hidden bg-stone-100">
                 <img
                   src={ad.imageUrl}
                   alt={ad.adTitle}
                   className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500 ease-out"
                   loading="lazy"
                 />
-                {/* Gradient Overlays for readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1c1b1b]/95 via-[#1c1b1b]/50 to-black/20" />
               </div>
 
-              {/* Top Bar: Sponsored Badge */}
-              <div className="relative z-10 p-2.5 md:p-3.5 flex items-center justify-between">
-                <span className="px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-md text-[#b90064] text-[9px] md:text-[10px] font-black uppercase tracking-wider shadow-xs border border-white/40 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#b90064] animate-pulse" />
-                  Sponsored
-                </span>
-              </div>
+              {/* Bottom: Company Name, Title, Subtitle, and Call/WhatsApp/Chat Buttons */}
+              <div className="p-3.5 md:p-4 flex flex-col justify-between space-y-3 bg-white">
+                <div>
+                  <div className="flex items-center justify-between text-[11px] font-bold text-[#8c7077] uppercase tracking-wider mb-1">
+                    <span 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSupplierClick?.(ad.seller_id);
+                      }}
+                      className="truncate flex items-center gap-1 text-[#b90064] hover:underline cursor-pointer"
+                      title="View Supplier Profile"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#b90064]" />
+                      {ad.supplierName}
+                    </span>
+                    <span className="text-[10px] bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-mono">B2B Verified</span>
+                  </div>
 
-              {/* Bottom Content: Supplier Name, Ad Title, Subtitle */}
-              <div className="relative z-10 p-2.5 md:p-3.5 text-white">
-                <p className="text-[10px] md:text-xs font-bold text-[#f7c5e0] truncate tracking-wide uppercase">
-                  {ad.supplierName}
-                </p>
-                <h3 className="text-xs md:text-sm font-extrabold text-white leading-tight truncate mt-0.5 group-hover/card:text-[#fde7f3] transition-colors">
-                  {ad.adTitle}
-                </h3>
-                <p className="text-[9px] md:text-[11px] text-gray-200/90 font-medium truncate mt-0.5">
-                  {ad.subtitle}
-                </p>
+                  <h3 className="text-sm font-extrabold text-zinc-950 leading-snug line-clamp-1 group-hover/card:text-[#b90064] transition-colors">
+                    {ad.adTitle}
+                  </h3>
+
+                  <p className="text-xs text-[#594047] font-medium line-clamp-1 mt-0.5">
+                    {ad.subtitle}
+                  </p>
+                </div>
+
+                {/* Direct Action Buttons: Call / WhatsApp / Chat */}
+                <div className="grid grid-cols-3 gap-1.5 pt-1 border-t border-stone-100">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const dbProduct = SPONSORED_PRODUCTS_DB[ad.product_id];
+                      const phone = dbProduct?.sellerDetails?.phone || '+91 98201 55443';
+                      const cleanPhone = phone.replace(/[^0-9+]/g, '');
+                      window.location.href = `tel:${cleanPhone}`;
+                    }}
+                    className="flex items-center justify-center gap-1 bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-800 text-[11px] font-bold py-2 rounded-xl transition-all cursor-pointer shadow-xs"
+                    title="Call Supplier"
+                  >
+                    <Phone className="w-3 h-3 text-[#b90064]" />
+                    <span>Call</span>
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const dbProduct = SPONSORED_PRODUCTS_DB[ad.product_id];
+                      const wa = dbProduct?.sellerDetails?.whatsapp || '919820155443';
+                      const msg = encodeURIComponent(`Hello ${ad.supplierName}, I found your sponsored listing for "${ad.adTitle}" on Nexora Luxe and would like to discuss bulk sourcing.`);
+                      window.open(`https://wa.me/${wa}?text=${msg}`, '_blank');
+                    }}
+                    className="flex items-center justify-center gap-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-[11px] font-bold py-2 rounded-xl transition-all cursor-pointer shadow-xs"
+                    title="WhatsApp Enquiry"
+                  >
+                    <MessageCircle className="w-3 h-3 text-emerald-600" />
+                    <span>WhatsApp</span>
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      recordSponsoredAnalyticsEvent('enquire_click', {
+                        ad_id: ad.id,
+                        seller_id: ad.seller_id,
+                        product_id: ad.product_id,
+                        media_type: 'image_ad',
+                        supplierName: ad.supplierName
+                      });
+                      const dbProduct = SPONSORED_PRODUCTS_DB[ad.product_id];
+                      onOpenChat?.(
+                        {
+                          id: ad.seller_id,
+                          name: ad.supplierName,
+                          location: dbProduct?.supplierLocation || 'Mumbai, MH',
+                          isVerified: true
+                        },
+                        {
+                          title: ad.adTitle,
+                          image: ad.imageUrl,
+                          price: dbProduct?.priceRange,
+                          moq: dbProduct?.moq
+                        }
+                      );
+                    }}
+                    className="flex items-center justify-center gap-1 bg-[#b90064] hover:bg-[#a00056] text-white text-[11px] font-extrabold py-2 rounded-xl transition-all cursor-pointer shadow-xs"
+                    title="Send Enquiry / Chat"
+                  >
+                    <Send className="w-3 h-3 text-white" />
+                    <span>Chat</span>
+                  </button>
+                </div>
               </div>
             </div>
           ))}

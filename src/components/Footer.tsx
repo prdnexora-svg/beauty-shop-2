@@ -6,9 +6,9 @@ interface FooterProps {
   onNavigate?: (screen: any) => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenRFQModal, onOpenAuthModal }) => {
   return (
-    <footer className="w-full py-12 md:py-16 border-t border-[#E8DFE3] bg-[#FFF7FA]">
+    <footer className="w-full py-12 md:py-16 border-t border-[#E8DFE3] bg-[#FFF7FA] hidden md:block">
       <div className="max-w-[1440px] mx-auto px-4 md:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
         <div className="col-span-1 md:col-span-1 mb-6 md:mb-0">
           <div className="font-serif text-[20px] font-bold text-[#500037] mb-3">
@@ -101,7 +101,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <ul className="space-y-2 text-[14px]">
             <li>
               <button
-                onClick={() => onNavigate?.('supplier-onboarding')}
+                onClick={() => onNavigate?.('onboarding')}
                 className="text-[#534249] hover:text-[#500037] hover:underline underline-offset-4 transition-colors cursor-pointer"
               >
                 Join as Supplier
@@ -109,7 +109,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </li>
             <li>
               <button
-                onClick={() => onNavigate?.('supplier-hub')}
+                onClick={() => onNavigate?.('supplier-portal')}
                 className="text-[#534249] hover:text-[#500037] hover:underline underline-offset-4 transition-colors cursor-pointer"
               >
                 Supplier Business Hub

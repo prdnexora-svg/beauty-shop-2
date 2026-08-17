@@ -935,7 +935,12 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                             >
                               Request Sample
                             </button>
-
+                            <button
+                              onClick={() => onNavigate('product-detail', { productId: prod.id })}
+                              className="w-full mt-2 bg-[#fcf9f8] border border-[#e8e8e8] hover:border-[#b90064] text-[#1c1b1b] font-bold text-[12px] py-2 rounded-xl transition-all cursor-pointer text-center"
+                            >
+                              View Full Specifications
+                            </button>
                           </div>
                         </motion.div>
                       );
@@ -1090,6 +1095,12 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                               <MessageCircle className="w-4 h-4" />
                             </button>
                           </div>
+                          <button
+                            onClick={() => onNavigate('supplier-profile', { supplierId: sup.id })}
+                            className="w-full mt-2 bg-[#fcf9f8] border border-[#e8e8e8] hover:border-[#b90064] text-[#1c1b1b] font-bold text-[12px] py-2 rounded-lg transition-all cursor-pointer text-center"
+                          >
+                            View Full Profile
+                          </button>
                         </motion.div>
                       );
                     })}

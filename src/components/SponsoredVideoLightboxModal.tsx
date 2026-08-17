@@ -39,7 +39,7 @@ export const SponsoredVideoLightboxModal: React.FC<SponsoredVideoLightboxModalPr
         supplierName: video.supplierName
       });
 
-      // Simulate play event & milestone timers
+      // Simulate play event & milestone timers (25%, 50%, 75%, complete)
       playTimerRef.current = setTimeout(() => {
         recordSponsoredAnalyticsEvent('video_play', {
           ad_id: video.video_ad_id,
@@ -51,11 +51,59 @@ export const SponsoredVideoLightboxModal: React.FC<SponsoredVideoLightboxModalPr
         });
         setHasRecordedPlay(true);
       }, 1000);
-    }
 
-    return () => {
-      if (playTimerRef.current) clearTimeout(playTimerRef.current);
-    };
+      const timer25 = setTimeout(() => {
+        recordSponsoredAnalyticsEvent('video_25_percent', {
+          ad_id: video.video_ad_id,
+          seller_id: video.seller_id,
+          product_id: video.product_id,
+          media_type: video.media_type,
+          platform: video.platform,
+          supplierName: video.supplierName
+        });
+      }, 3000);
+
+      const timer50 = setTimeout(() => {
+        recordSponsoredAnalyticsEvent('video_50_percent', {
+          ad_id: video.video_ad_id,
+          seller_id: video.seller_id,
+          product_id: video.product_id,
+          media_type: video.media_type,
+          platform: video.platform,
+          supplierName: video.supplierName
+        });
+      }, 6000);
+
+      const timer75 = setTimeout(() => {
+        recordSponsoredAnalyticsEvent('video_75_percent', {
+          ad_id: video.video_ad_id,
+          seller_id: video.seller_id,
+          product_id: video.product_id,
+          media_type: video.media_type,
+          platform: video.platform,
+          supplierName: video.supplierName
+        });
+      }, 9000);
+
+      const timer100 = setTimeout(() => {
+        recordSponsoredAnalyticsEvent('video_complete', {
+          ad_id: video.video_ad_id,
+          seller_id: video.seller_id,
+          product_id: video.product_id,
+          media_type: video.media_type,
+          platform: video.platform,
+          supplierName: video.supplierName
+        });
+      }, 12000);
+
+      return () => {
+        if (playTimerRef.current) clearTimeout(playTimerRef.current);
+        clearTimeout(timer25);
+        clearTimeout(timer50);
+        clearTimeout(timer75);
+        clearTimeout(timer100);
+      };
+    }
   }, [video]);
 
   useEffect(() => {

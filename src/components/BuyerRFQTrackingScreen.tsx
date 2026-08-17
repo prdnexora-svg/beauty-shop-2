@@ -15,7 +15,12 @@ import {
   ArrowRight,
   Download,
   Eye,
-  AlertCircle
+  AlertCircle,
+  X,
+  Scale,
+  Truck,
+  FlaskConical,
+  TrendingDown
 } from 'lucide-react';
 
 interface RFQTrackingScreenProps {
@@ -29,6 +34,7 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'quoted' | 'closed'>('all');
   const [selectedRfqId, setSelectedRfqId] = useState<string | null>(null);
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
 
   // Mock RFQ Data
   const MOCK_RFQS = [
@@ -274,8 +280,12 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                       Received Quotes
                       <span className="text-[12px] font-bold px-2 py-0.5 bg-[#fde7f3] text-[#b90064] rounded-full">3</span>
                     </h3>
-                    <button className="text-[12px] font-bold text-[#0050d6] hover:underline flex items-center gap-1">
-                      Compare Side-by-Side
+                    <button 
+                      onClick={() => setIsCompareModalOpen(true)}
+                      className="text-[12px] font-bold text-[#b90064] hover:text-[#8e004b] hover:underline flex items-center gap-1 cursor-pointer bg-[#fde7f3] px-3 py-1.5 rounded-xl border border-[#e0bec6] transition-all shadow-xs"
+                    >
+                      <Scale className="w-4 h-4" />
+                      <span>Compare Side-by-Side</span>
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
@@ -356,6 +366,223 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
         </div>
 
       </div>
+
+      {/* ------------------------------------------------------------- */}
+      {/* COMPARISON MATRIX MODAL */}
+      {isCompareModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-[#e8e8e8] rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col text-left">
+            
+            {/* Modal Header */}
+            <div className="p-6 border-b border-[#f0edec] bg-[#fcf9f8] flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#fde7f3] text-[#b90064] text-[10px] font-black uppercase tracking-wider">Procurement Matrix</span>
+                  <span className="text-xs text-[#8c7077] font-semibold">Comparing Quotes for: Vitamin C Brightening Serum (Bulk)</span>
+                </div>
+                <h3 className="text-xl font-black text-[#1c1b1b]">Side-by-Side Sourcing Comparison Matrix</h3>
+              </div>
+              <button 
+                onClick={() => setIsCompareModalOpen(false)}
+                className="p-2 rounded-xl hover:bg-gray-100 text-[#8c7077] transition-all cursor-pointer border border-[#e8e8e8] bg-white shadow-xs"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body / Comparison Grid */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              
+              {/* Informational Alert */}
+              <div className="bg-[#fdf8f8] border border-[#b90064]/10 rounded-2xl p-4 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-[#b90064] shrink-0 mt-0.5" />
+                <div className="text-xs text-[#594047] leading-relaxed">
+                  <strong className="text-[#1c1b1b]">Compare and Decisioning Helper:</strong> This side-by-side matrix compares chemical formulations, stability testing reports, batch price scalability, and logistics. Highlighting indicates the best metric in each class to assist your procurement team.
+                </div>
+              </div>
+
+              {/* Matrix Table */}
+              <div className="overflow-x-auto rounded-2xl border border-[#e8e8e8] shadow-sm bg-white">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-[#fcf9f8] border-b border-[#e8e8e8]">
+                      <th className="p-4 font-black text-[#1c1b1b] uppercase tracking-wider w-64">Comparison Metrics</th>
+                      <th className="p-4 font-black text-[#1c1b1b] uppercase tracking-wider bg-[#b90064]/5 border-x border-[#e8e8e8]">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4 text-[#b90064]" />
+                          <span>Aura Beauty Labs (QT-101)</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-600 block mt-0.5">Nexora Verified • Mumbai</span>
+                      </th>
+                      <th className="p-4 font-black text-[#1c1b1b] uppercase tracking-wider border-r border-[#e8e8e8]">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4 text-[#0050d6]" />
+                          <span>Dermaglow India (QT-102)</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-600 block mt-0.5">Nexora Verified • Ahmedabad</span>
+                      </th>
+                      <th className="p-4 font-black text-[#1c1b1b] uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4 text-[#594047]" />
+                          <span>Radiant Cosmeceuticals (QT-103)</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-stone-500 block mt-0.5">Self-Verified • Noida</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#e8e8e8] font-medium text-[#1c1b1b]">
+                    
+                    {/* SECTION 1: COMMERCIALS */}
+                    <tr className="bg-[#fcf9f8]/40">
+                      <td className="p-4 font-black text-[#8c7077] uppercase tracking-widest text-[10px]" colSpan={4}>Commercial Sourcing Metrics</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 text-[#594047] font-bold">Base Price (Target Qty)</td>
+                      <td className="p-4 bg-[#b90064]/5 border-x border-[#e8e8e8]">
+                        <span className="text-sm font-black text-[#b90064]">₹195 / unit</span>
+                        <span className="text-[10px] text-[#8c7077] block mt-0.5">(for 5,000 Units)</span>
+                      </td>
+                      <td className="p-4 border-r border-[#e8e8e8] bg-emerald-50 text-emerald-800">
+                        <span className="text-sm font-black text-emerald-700">₹188 / unit</span>
+                        <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold ml-2">Best Price</span>
+                        <span className="text-[10px] text-[#8c7077] block mt-0.5">(for 5,000 Units)</span>
+                      </td>
+                      <td className="p-4">
+                        <span className="text-sm font-black text-stone-700">₹210 / unit</span>
+                        <span className="text-[10px] text-[#8c7077] block mt-0.5">(for 5,000 Units)</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 text-[#594047] font-bold">Minimum Order Qty (MOQ)</td>
+                      <td className="p-4 bg-[#b90064]/5 border-x border-[#e8e8e8]">2,000 Units</td>
+                      <td className="p-4 border-r border-[#e8e8e8]">5,000 Units</td>
+                      <td className="p-4 bg-emerald-50 text-emerald-800">
+                        <span className="font-bold">1,000 Units</span>
+                        <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold ml-2">Lowest MOQ</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 text-[#594047] font-bold">Delivery Lead Time</td>
+                      <td className="p-4 bg-[#b90064]/5 border-x border-[#e8e8e8]">15 Days (Air/Express)</td>
+                      <td className="p-4 border-r border-[#e8e8e8]">25 Days (Road freight)</td>
+                      <td className="p-4 bg-emerald-50 text-emerald-800">
+                        <span className="font-bold">10 Days (Direct express)</span>
+                        <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold ml-2">Fastest</span>
+                      </td>
+                    </tr>
+
+                    {/* MOQ SLABS DETAIL */}
+                    <tr className="bg-[#fcf9f8]/40">
+                      <td className="p-4 font-black text-[#8c7077] uppercase tracking-widest text-[10px]" colSpan={4}>MOQ Price Slabs / Volume Scalability</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 text-[#594047] font-bold">1,000 Units Price Slab</td>
+                      <td className="p-4 bg-[#b90064]/5 border-x border-[#e8e8e8]">₹210 / unit</td>
+                      <td className="p-4 text-stone-400 border-r border-[#e8e8e8] italic">Not Available (MOQ 5k)</td>
+                      <td className="p-4 font-bold text-stone-800">₹215 / unit</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 text-[#594047] font-bold">5,000 Units Price Slab</td>
+                      <td className="p-4 bg-[#b90064]/5 border-x border-[#e8e8e8]">₹195 / unit</td>
+                      <td className="p-4 font-bold text-emerald-700 border-r border-[#e8e8e8]">₹188 / unit</td>
+                      <td className="p-4">₹210 / unit</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 text-[#594047] font-bold">10,000 Units Price Slab</td>
+                      <td className="p-4 bg-[#b90064]/5 border-x border-[#e8e8e8]">₹180 / unit</td>
+                      <td className="p-4 font-bold text-emerald-700 border-r border-[#e8e8e8] bg-emerald-50">₹175 / unit</td>
+                      <td className="p-4">₹198 / unit</td>
+                    </tr>
+
+                    {/* TECHNICAL SPECS */}
+                    <tr className="bg-[#fcf9f8]/40">
+                      <td className="p-4 font-black text-[#8c7077] uppercase tracking-widest text-[10px]" colSpan={4}>Technical & Formulation Specifications</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 text-[#594047] font-bold">Active Concentration</td>
+                      <td className="p-4 bg-[#b90064]/10 border-x border-[#e8e8e8] font-bold text-[#b90064]">
+                        10% Stable L-Ascorbic Acid + 2% Ferulic Acid + 1% Vitamin E
+                        <span className="block text-[9px] font-black text-[#e6007e] uppercase mt-1">★ Highly Recommended Formulation</span>
+                      </td>
+                      <td className="p-4 border-r border-[#e8e8e8]">8% Ethyl Ascorbic Acid + 1% Hyaluronic Acid</td>
+                      <td className="p-4">12% Sodium Ascorbyl Phosphate + Vitamin E</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 text-[#594047] font-bold">pH Range & Stability</td>
+                      <td className="p-4 bg-[#b90064]/5 border-x border-[#e8e8e8]">3.2 - 3.5 (Highly active, bioavailable)</td>
+                      <td className="p-4 border-r border-[#e8e8e8]">3.8 - 4.2 (Extremely gentle, non-sticky)</td>
+                      <td className="p-4">5.5 - 6.0 (Highly stable, mild skincare formulation)</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 text-[#594047] font-bold">Stability Reports</td>
+                      <td className="p-4 bg-[#b90064]/5 border-x border-[#e8e8e8] text-emerald-700">Passed 90-day accelerated oven stability testing</td>
+                      <td className="p-4 border-r border-[#e8e8e8]">Standard real-time shelf life study (In-Progress)</td>
+                      <td className="p-4">Passed 180-day ambient temperature testing</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 text-[#594047] font-bold">Facility Certifications</td>
+                      <td className="p-4 bg-[#b90064]/5 border-x border-[#e8e8e8]">WHO-GMP, ISO 22716, Halal Certified</td>
+                      <td className="p-4 border-r border-[#e8e8e8]">GMP, ISO 9001, Cruelty-Free certified</td>
+                      <td className="p-4">Ayush Premium Certified, WHO-GMP, Vegan</td>
+                    </tr>
+
+                    {/* TERMS AND SAMPLES */}
+                    <tr className="bg-[#fcf9f8]/40">
+                      <td className="p-4 font-black text-[#8c7077] uppercase tracking-widest text-[10px]" colSpan={4}>Logistics, Shipping & Sample Policies</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 text-[#594047] font-bold">Custom Sample Policy</td>
+                      <td className="p-4 bg-emerald-50 text-emerald-800 border-x border-[#e8e8e8]">
+                        <span className="font-bold">Free Custom Sample</span>
+                        <span className="block text-[9px] text-[#8c7077] mt-0.5">(Buyer only pays actual courier charges)</span>
+                      </td>
+                      <td className="p-4 border-r border-[#e8e8e8]">Reimbursed on first production run (₹1,500 upfront)</td>
+                      <td className="p-4">Paid custom sample (Deducted from final commercial order)</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 text-[#594047] font-bold">Logistic Terms</td>
+                      <td className="p-4 bg-[#b90064]/5 border-x border-[#e8e8e8]">FOB JNPT Port (Mumbai MH)</td>
+                      <td className="p-4 border-r border-[#e8e8e8]">EXW Factory (Ahmedabad GJ)</td>
+                      <td className="p-4 bg-emerald-50 text-emerald-800">
+                        <span className="font-bold">CIF Destination (PAN India shipping)</span>
+                        <span className="block text-[9px] text-[#8c7077] mt-0.5">(In-transit insurance & clearance handled by supplier)</span>
+                      </td>
+                    </tr>
+                    
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+
+            {/* Modal Footer actions */}
+            <div className="p-6 border-t border-[#f0edec] bg-[#fcf9f8] flex flex-col sm:flex-row items-center justify-between gap-4">
+              <span className="text-xs text-[#594047] font-semibold">
+                Direct procurement integration powered by Nexora Luxe trust engines.
+              </span>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <button
+                  onClick={() => setIsCompareModalOpen(false)}
+                  className="flex-1 sm:flex-none px-5 py-2.5 bg-white border border-[#e8e8e8] text-xs font-black text-[#1c1b1b] rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+                >
+                  Close Matrix
+                </button>
+                <button
+                  onClick={() => {
+                    setIsCompareModalOpen(false);
+                    onNavigateToChat('Aura Beauty Labs');
+                  }}
+                  className="flex-1 sm:flex-none px-6 py-2.5 bg-[#b90064] text-white text-xs font-black rounded-xl hover:bg-[#8e004b] transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Negotiate & Chat (Aura Labs)</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 };

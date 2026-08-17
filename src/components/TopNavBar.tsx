@@ -133,18 +133,6 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="hidden sm:flex items-center gap-2 text-[#500037]">
             <button 
-              aria-label="Buyer Dashboard"
-              title="Buyer Dashboard & RFQ Inquiries"
-              onClick={() => handleNavClick('buyer-dashboard')}
-              className={`px-3 py-2 hover:bg-[#FAF1F5] rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 text-[13px] font-semibold ${
-                currentScreen === 'buyer-dashboard' ? 'bg-[#FAF1F5] text-[#B90064]' : 'text-[#534249]'
-              }`}
-            >
-              <Mail className="w-4 h-4 text-[#B90064]" />
-              <span className="hidden xl:inline">Workspace</span>
-            </button>
-
-            <button 
               aria-label="Supplier Portal & Ad Campaigns"
               title="Supplier Admin Portal & Sponsored Ad Manager"
               onClick={() => handleNavClick('supplier-portal')}

@@ -23,6 +23,9 @@ import {
   Sparkles,
   ArrowRight,
   Factory,
+  Mail,
+  Lock,
+  Unlock,
   Package,
   Clock,
   TrendingUp,
@@ -34,7 +37,9 @@ import {
   Download,
   Info,
   Video,
-  Star
+  Star,
+  Check,
+  FlaskConical
 } from 'lucide-react';
 import { VerifiedSupplier } from '../types';
 import { VERIFIED_SUPPLIERS } from '../data/mockData';
@@ -50,6 +55,7 @@ interface SupplierDirectoryScreenProps {
   onOpenFacilityTour?: (supplier: VerifiedSupplier) => void;
   onNavigateToExplore?: () => void;
   onNavigateToSupplierProfile?: (supplierId: string) => void;
+  onNavigateToProductDetail?: (productId: string) => void;
   onOpenComparisonModal?: (selectedSuppliers: VerifiedSupplier[]) => void;
   onCallSupplier: (supplierName: string) => void;
   onWhatsAppSupplier: (supplierName: string) => void;
@@ -65,6 +71,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
   onOpenFacilityTour,
   onNavigateToExplore,
   onNavigateToSupplierProfile,
+  onNavigateToProductDetail,
   onOpenComparisonModal,
   onCallSupplier,
   onWhatsAppSupplier
@@ -116,6 +123,10 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
   // Phone Reveal State (per supplier ID)
   const [revealedPhones, setRevealedPhones] = useState<{ [key: string]: boolean }>({});
 
+  // Paywall & Sourcing Credit Reveal System States
+  const [userCredits, setUserCredits] = useState<number>(120);
+  const [paywallModalSupplier, setPaywallModalSupplier] = useState<any | null>(null);
+
   // Assets Dropdown Open State (per supplier ID)
   const [openAssetsId, setOpenAssetsId] = useState<string | null>(null);
 
@@ -129,7 +140,32 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
     setToastMessage(msg);
     setTimeout(() => {
       setToastMessage(null);
-    }, 3000);
+    }, 3500);
+  };
+
+  const handlePhoneRevealClick = (sup: any) => {
+    if (revealedPhones[sup.id]) {
+      setRevealedPhones((prev) => ({
+        ...prev,
+        [sup.id]: false
+      }));
+    } else {
+      setPaywallModalSupplier(sup);
+    }
+  };
+
+  const confirmUnlockSupplier = (id: string, name: string) => {
+    if (userCredits < 10) {
+      showToast("❌ Insufficient Sourcing Credits! Please top up your wallet.");
+      return;
+    }
+    setUserCredits(prev => prev - 10);
+    setRevealedPhones(prev => ({
+      ...prev,
+      [id]: true
+    }));
+    setPaywallModalSupplier(null);
+    showToast(`🔓 Successfully unlocked full contacts for ${name}! (-10 Credits)`);
   };
 
   const togglePhoneReveal = (id: string) => {
@@ -197,6 +233,15 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
   // Filtered Suppliers List
   const filteredSuppliers = useMemo(() => {
     return VERIFIED_SUPPLIERS.filter((supplier) => {
+      // Geographic City & Industrial Hub Filter
+      if (selectedCity && selectedCity.trim() !== '') {
+        const queryCity = selectedCity.toLowerCase();
+        const matchesCity = supplier.city.toLowerCase().includes(queryCity) || 
+                            supplier.state.toLowerCase().includes(queryCity) || 
+                            (supplier.locationDetails?.industrialZone && supplier.locationDetails.industrialZone.toLowerCase().includes(queryCity));
+        if (!matchesCity) return false;
+      }
+
       // Text Search
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -367,6 +412,41 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                   />
                   <span>{type}</span>
                 </label>
+              ))}
+            </div>
+          </div>
+
+          {/* City & Industrial Hubs Filter */}
+          <div className="mb-6 pb-6 border-b border-[#f0edec]">
+            <h3 className="text-[11px] font-bold text-[#1c1b1b] mb-3 uppercase tracking-widest text-[#8c7077] flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-[#b90064]" />
+              <span>City &amp; Industrial Hubs</span>
+            </h3>
+            <div className="flex flex-col gap-2">
+              {[
+                { name: 'All India', value: '' },
+                { name: 'Mumbai (Taloja MIDC)', value: 'Mumbai' },
+                { name: 'Baddi (Himachal Hub)', value: 'Baddi' },
+                { name: 'Delhi NCR (IMT Manesar)', value: 'Delhi' },
+                { name: 'Ahmedabad (Sanand)', value: 'Ahmedabad' },
+                { name: 'Bengaluru (Peenya Hub)', value: 'Bengaluru' }
+              ].map((hub) => (
+                <button
+                  key={hub.name}
+                  type="button"
+                  onClick={() => {
+                    setSelectedCity(hub.value);
+                    showToast(`Filtering for suppliers in ${hub.name}`);
+                  }}
+                  className={`text-left px-2.5 py-1.5 rounded-lg text-[12px] transition-all font-bold flex justify-between items-center cursor-pointer ${
+                    selectedCity === hub.value
+                      ? 'bg-[#fde7f3] text-[#b90064] border border-[#e0bec6]'
+                      : 'bg-transparent text-[#594047] hover:bg-[#f0edec] hover:text-[#1c1b1b]'
+                  }`}
+                >
+                  <span>{hub.name}</span>
+                  {selectedCity === hub.value && <Check className="w-3.5 h-3.5 text-[#b90064]" />}
+                </button>
               ))}
             </div>
           </div>
@@ -626,6 +706,40 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                 );
               })}
             </div>
+
+            {/* Mobile Geographic Hub Filter */}
+            <div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1 no-scrollbar text-[12px] md:hidden">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#8c7077] shrink-0 flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-[#b90064]" />
+                <span>Hubs:</span>
+              </span>
+              {[
+                { name: 'All India', value: '' },
+                { name: 'Mumbai (Taloja)', value: 'Mumbai' },
+                { name: 'Baddi (Himachal)', value: 'Baddi' },
+                { name: 'Delhi NCR (Manesar)', value: 'Delhi' },
+                { name: 'Ahmedabad (Sanand)', value: 'Ahmedabad' },
+                { name: 'Bengaluru (Peenya)', value: 'Bengaluru' }
+              ].map((hub) => {
+                const isSelected = selectedCity === hub.value;
+                return (
+                  <button
+                    key={hub.name}
+                    onClick={() => {
+                      setSelectedCity(hub.value);
+                      showToast(`Filtering for suppliers in ${hub.name}`);
+                    }}
+                    className={`px-3 py-1 rounded-full text-[12px] font-bold border transition-all whitespace-nowrap cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#b90064] border-[#b90064] text-white font-extrabold shadow-sm'
+                        : 'bg-white border-[#e8e8e8] text-[#594047] hover:border-[#b90064]'
+                    }`}
+                  >
+                    {hub.name}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Directory Header Summary & Toolbar */}
@@ -732,6 +846,44 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                 className="text-[#b90064] font-bold hover:underline ml-2 cursor-pointer text-[12px]"
               >
                 Clear All
+              </button>
+            </div>
+          </div>
+
+          {/* Sourcing Credit Wallet Banner */}
+          <div className="mb-8 flex flex-col md:flex-row items-center justify-between p-5 bg-white border border-[#e0bec6] rounded-2xl gap-5 shadow-3xs relative overflow-hidden">
+            {/* Background subtle visual accent */}
+            <div className="absolute right-0 top-0 bottom-0 w-24 bg-[#fde7f3] opacity-20 rounded-r-2xl transform skew-x-12 pointer-events-none"></div>
+            
+            <div className="flex items-center gap-4 relative z-10 text-left">
+              <div className="w-12 h-12 bg-[#fde7f3] rounded-full flex items-center justify-center shrink-0 border border-[#b90064]/20">
+                <Unlock className="w-6 h-6 text-[#b90064] animate-pulse" />
+              </div>
+              <div>
+                <p className="text-[10px] font-extrabold text-[#b90064] uppercase tracking-widest bg-[#fde7f3] px-2.5 py-0.5 rounded-full inline-block">
+                  Verified Buyer Wallet
+                </p>
+                <h4 className="text-[15px] font-extrabold text-[#1c1b1b] mt-1 flex items-center gap-2">
+                  <span>Direct Contact Balance:</span>
+                  <span className="text-[#b90064] text-lg font-black">{userCredits} Sourcing Credits</span>
+                </h4>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto relative z-10">
+              <div className="text-right sm:pr-2 hidden sm:block">
+                <p className="text-[11.5px] font-bold text-[#1c1b1b]">Unlock verified suppliers instantly</p>
+                <p className="text-[10px] font-bold text-[#8c7077]">10 credits per verified contact unlock</p>
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  setUserCredits(prev => prev + 50);
+                  showToast("⚡ Wallet Refilled! Added 50 Premium Sourcing Credits.");
+                }}
+                className="bg-[#b90064] hover:bg-[#8e004b] text-white font-extrabold text-[12px] px-5 py-3 rounded-xl transition-all shadow-sm hover:shadow-md cursor-pointer text-center whitespace-nowrap"
+              >
+                + Top-Up 50 Credits (Demo)
               </button>
             </div>
           </div>
@@ -852,45 +1004,72 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                             </div>
 
                             <div className="flex items-center gap-2 flex-wrap mb-2.5">
+                              {/* Multiple descriptive B2B Business Type Tags */}
                               {(() => {
                                 const t = sup.type.toLowerCase();
+                                const tags = [];
+                                
+                                if (t.includes('manufacturer') || t.includes('formulator')) {
+                                  tags.push(
+                                    <span key="mfg" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10.5px] font-black bg-indigo-50 text-indigo-800 border border-indigo-200 shadow-3xs uppercase tracking-wider">
+                                      <Factory className="w-3.5 h-3.5 text-indigo-700" />
+                                      Contract Manufacturer
+                                    </span>
+                                  );
+                                }
+                                if (t.includes('oem') || t.includes('private label') || sup.categories.some(c => c.toLowerCase().includes('oem') || c.toLowerCase().includes('private label'))) {
+                                  tags.push(
+                                    <span key="oem" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10.5px] font-black bg-purple-50 text-purple-800 border border-purple-200 shadow-3xs uppercase tracking-wider">
+                                      <Sparkles className="w-3.5 h-3.5 text-purple-700" />
+                                      OEM / Private Label
+                                    </span>
+                                  );
+                                }
                                 if (t.includes('wholesaler') || t.includes('stockist')) {
-                                  return (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
+                                  tags.push(
+                                    <span key="wh" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10.5px] font-black bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-3xs uppercase tracking-wider">
                                       <Package className="w-3.5 h-3.5 text-emerald-700" />
-                                      {sup.type}
+                                      Wholesaler &amp; Stockist
+                                    </span>
+                                  );
+                                }
+                                if (t.includes('raw material') || sup.categories.some(c => c.toLowerCase().includes('raw material') || c.toLowerCase().includes('actives'))) {
+                                  tags.push(
+                                    <span key="raw" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10.5px] font-black bg-teal-50 text-teal-800 border border-teal-200 shadow-3xs uppercase tracking-wider">
+                                      <FlaskConical className="w-3.5 h-3.5 text-teal-700" />
+                                      Raw Materials
                                     </span>
                                   );
                                 }
                                 if (t.includes('distributor')) {
-                                  return (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11.5px] font-bold bg-blue-50 text-[#0050d6] border border-blue-200 shadow-2xs">
+                                  tags.push(
+                                    <span key="dist" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10.5px] font-black bg-blue-50 text-[#0050d6] border border-blue-200 shadow-3xs uppercase tracking-wider">
                                       <Building2 className="w-3.5 h-3.5 text-[#0050d6]" />
+                                      Distributor
+                                    </span>
+                                  );
+                                }
+                                
+                                if (tags.length === 0) {
+                                  tags.push(
+                                    <span key="generic" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10.5px] font-black bg-rose-50 text-[#b90064] border border-rose-200 shadow-3xs uppercase tracking-wider">
+                                      <Factory className="w-3.5 h-3.5 text-[#b90064]" />
                                       {sup.type}
                                     </span>
                                   );
                                 }
-                                if (t.includes('oem') || t.includes('private label')) {
-                                  return (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11.5px] font-bold bg-purple-50 text-purple-800 border border-purple-200 shadow-2xs">
-                                      <Sparkles className="w-3.5 h-3.5 text-purple-700" />
-                                      {sup.type}
-                                    </span>
-                                  );
-                                }
-                                return (
-                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11.5px] font-bold bg-[#fde7f3] text-[#b90064] border border-[#e0bec6] shadow-2xs">
-                                    <Factory className="w-3.5 h-3.5 text-[#b90064]" />
-                                    {sup.type}
-                                  </span>
-                                );
+                                return tags;
                               })()}
-                              <span className="text-[#8c7077]">•</span>
-                              <span className="flex items-center gap-1 text-[13px] text-[#594047] font-medium">
+
+                              <span className="text-[#8c7077] hidden sm:inline">•</span>
+                              
+                              <span className="flex items-center gap-1 text-[11.5px] text-[#594047] font-bold bg-[#fcf9f8] border border-[#e8e8e8] px-2.5 py-1 rounded-md">
                                 <MapPin className="w-3.5 h-3.5 text-[#b90064]" />
-                                {sup.city}, {sup.state}
+                                <span className="text-[#1c1b1b] font-extrabold">{sup.city}</span>, {sup.state}
                               </span>
                             </div>
+                          </div>
+                        </div>
 
                             {/* Compliance Badges */}
                             <div className="flex flex-wrap gap-1.5 mb-2">
@@ -919,8 +1098,6 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                                 </span>
                               )}
                             </div>
-                          </div>
-                        </div>
 
                         {/* Performance Metrics Bar */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-3.5 px-4 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl mb-4 text-[12px]">
@@ -941,6 +1118,59 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                             <p className="font-bold text-[#1c1b1b]">15-30 Days</p>
                           </div>
                         </div>
+
+                        {/* Paywall Differentiated Contact UI Block */}
+                        <div className="mt-3.5 mb-4 p-4 rounded-xl border border-dashed transition-all bg-[#fdfaf9] border-[#e8d4d8] flex flex-col md:flex-row flex-wrap md:items-center justify-between gap-4">
+                          <div className="flex flex-wrap items-center gap-4 text-[12.5px] text-[#594047]">
+                            <div className="flex items-center gap-2">
+                              <Phone className="w-3.5 h-3.5 text-[#b90064] shrink-0" />
+                              <span className="font-bold">Phone:</span>
+                              {isPhoneRevealed ? (
+                                <span className="font-semibold text-[#1c1b1b] font-mono select-all bg-white px-1.5 py-0.5 rounded border border-[#e8e8e8]">{sup.phone}</span>
+                              ) : (
+                                <span className="font-medium text-stone-400 select-none tracking-widest">+91 98201 •••••</span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <Mail className="w-3.5 h-3.5 text-[#b90064] shrink-0" />
+                              <span className="font-bold">Email:</span>
+                              {isPhoneRevealed ? (
+                                <span className="font-semibold text-[#1c1b1b] font-mono select-all bg-white px-1.5 py-0.5 rounded border border-[#e8e8e8]">
+                                  {sup.name.toLowerCase().replace(/[^a-z0-9]/g, '')}@sourcing.nexoraluxe.com
+                                </span>
+                              ) : (
+                                <span className="font-medium text-stone-400 select-none tracking-widest">contact@•••••••.com</span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-2 w-full md:w-auto">
+                              <MapPin className="w-3.5 h-3.5 text-[#b90064] shrink-0" />
+                              <span className="font-bold">Plant Address:</span>
+                              {isPhoneRevealed ? (
+                                <span className="font-semibold text-[#1c1b1b]">{sup.locationDetails?.fullAddress || `${sup.city}, India`}</span>
+                              ) : (
+                                <span className="font-medium text-stone-400 select-none">MIDC Industrial Zone, Plot C-•••</span>
+                              )}
+                            </div>
+                          </div>
+
+                          {isPhoneRevealed ? (
+                            <span className="text-[11px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1">
+                              <Unlock className="w-3 h-3 text-emerald-600" />
+                              <span>Unlocked Contact Card</span>
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => handlePhoneRevealClick(sup)}
+                              className="text-[11.5px] font-black text-[#b90064] hover:text-[#8e004b] bg-white border border-[#b90064] hover:bg-[#fde7f3] px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer shadow-3xs"
+                            >
+                              <Lock className="w-3 h-3 text-[#b90064]" />
+                              <span>Unlock Supplier Details (10 Credits)</span>
+                            </button>
+                          )}
+                        </div>
+
                       </div>
 
                       {/* Action Buttons Row */}
@@ -970,11 +1200,15 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                         </button>
 
                         <button
-                          onClick={() => onCallSupplier(sup.name)}
-                          className="bg-white border border-[#b90064] text-[#b90064] hover:bg-[#fde7f3] font-bold px-3.5 py-2 rounded-xl text-[13px] flex items-center gap-1.5 transition-colors cursor-pointer"
+                          onClick={() => handlePhoneRevealClick(sup)}
+                          className={`border font-bold px-3.5 py-2 rounded-xl text-[13px] flex items-center gap-1.5 transition-colors cursor-pointer ${
+                            isPhoneRevealed 
+                              ? 'bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100' 
+                              : 'bg-white border-[#b90064] text-[#b90064] hover:bg-[#fde7f3]'
+                          }`}
                         >
-                          <Phone className="w-3.5 h-3.5" />
-                          <span>{isPhoneRevealed ? sup.phone : 'Show Number'}</span>
+                          {isPhoneRevealed ? <Unlock className="w-3.5 h-3.5" /> : <Phone className="w-3.5 h-3.5" />}
+                          <span>{isPhoneRevealed ? 'Hide Number' : 'Show Number'}</span>
                         </button>
 
                         {onOpenFacilityTour && (
@@ -1044,12 +1278,16 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                         </div>
 
                         <button
-                          onClick={() =>
-                            onOpenEnquiryModal({
-                              title: `${sup.name} Full Profile Inspection`,
-                              supplierName: sup.name
-                            })
-                          }
+                          onClick={() => {
+                            if (onNavigateToSupplierProfile) {
+                              onNavigateToSupplierProfile(sup.id);
+                            } else {
+                              onOpenEnquiryModal({
+                                title: `${sup.name} Full Profile Inspection`,
+                                supplierName: sup.name
+                              });
+                            }
+                          }}
                           className="text-[#0050d6] hover:underline font-bold text-[12.5px] ml-auto flex items-center gap-1 cursor-pointer"
                         >
                           <span>View Profile</span>
@@ -1096,15 +1334,19 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                         ).map((prod) => (
                           <div
                             key={prod.id}
-                            onClick={() =>
-                              onOpenEnquiryModal({
-                                title: prod.name,
-                                supplierName: sup.name,
-                                image: prod.image,
-                                priceRange: prod.price,
-                                moq: prod.moq
-                              })
-                            }
+                            onClick={() => {
+                              if (onNavigateToProductDetail) {
+                                onNavigateToProductDetail(prod.id);
+                              } else {
+                                onOpenEnquiryModal({
+                                  title: prod.name,
+                                  supplierName: sup.name,
+                                  image: prod.image,
+                                  priceRange: prod.price,
+                                  moq: prod.moq
+                                });
+                              }
+                            }}
                             className="bg-white rounded-xl border border-[#e8e8e8] hover:border-[#b90064] aspect-square relative group/thumb overflow-hidden cursor-pointer p-1 transition-all"
                             title={`Enquire about ${prod.name}`}
                           >
@@ -1281,6 +1523,87 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                 className="flex-1 py-3 bg-[#b90064] text-white rounded-xl text-[13px] font-bold"
               >
                 Apply Filters
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Premium Contact Reveal Paywall Modal */}
+      {paywallModalSupplier && (
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full border border-[#e8e8e8] shadow-2xl p-6 md:p-8 animate-in zoom-in-95 duration-200 relative text-center">
+            <button 
+              type="button"
+              onClick={() => setPaywallModalSupplier(null)}
+              className="absolute top-4 right-4 text-stone-400 hover:text-stone-700 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="w-14 h-14 bg-[#fde7f3] text-[#b90064] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#e0bec6]/30">
+              <Lock className="w-6 h-6 text-[#b90064]" />
+            </div>
+
+            <span className="text-[10px] font-black uppercase tracking-widest text-[#b90064] bg-[#fde7f3] px-3 py-1 rounded-full">
+              Premium B2B Directory Unlock
+            </span>
+
+            <h3 className="text-lg font-black text-[#1c1b1b] mt-3 mb-2">
+              Unlock Contact Details
+            </h3>
+            <p className="text-[12.5px] text-[#594047] leading-relaxed mb-5">
+              Confirm spending credits to unlock the direct mobile sourcing lines, executive emails, and registered factory plant address for <strong className="text-[#1c1b1b] font-extrabold">{paywallModalSupplier.name}</strong>.
+            </p>
+
+            {/* Credit Ledger Breakdown */}
+            <div className="bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl p-4 text-left mb-6 text-[12.5px] space-y-2.5">
+              <div className="flex justify-between font-medium">
+                <span className="text-[#594047]">Your Sourcing Wallet:</span>
+                <span className="font-bold text-[#1c1b1b]">{userCredits} Credits</span>
+              </div>
+              <div className="flex justify-between font-medium text-amber-700">
+                <span>Unlock Sourcing Fee:</span>
+                <span className="font-extrabold">-10 Credits</span>
+              </div>
+              <div className="w-full h-px bg-[#e8e8e8]"></div>
+              <div className="flex justify-between font-bold text-[#b90064]">
+                <span>Remaining Balance:</span>
+                <span>{userCredits - 10} Credits</span>
+              </div>
+            </div>
+
+            {/* Benefits locked badges */}
+            <div className="grid grid-cols-3 gap-2.5 mb-6 text-[10.5px] font-bold text-[#594047]">
+              <div className="p-2 bg-[#fdfaf9] rounded-lg border border-[#e8d4d8] flex flex-col items-center">
+                <Phone className="w-4 h-4 text-[#b90064] mb-1" />
+                <span>Direct Mobile</span>
+              </div>
+              <div className="p-2 bg-[#fdfaf9] rounded-lg border border-[#e8d4d8] flex flex-col items-center">
+                <Mail className="w-4 h-4 text-[#b90064] mb-1" />
+                <span>Corp Email</span>
+              </div>
+              <div className="p-2 bg-[#fdfaf9] rounded-lg border border-[#e8d4d8] flex flex-col items-center">
+                <MapPin className="w-4 h-4 text-[#b90064] mb-1" />
+                <span>Full Address</span>
+              </div>
+            </div>
+
+            <div className="space-y-2.5">
+              <button
+                type="button"
+                onClick={() => confirmUnlockSupplier(paywallModalSupplier.id, paywallModalSupplier.name)}
+                className="w-full bg-[#b90064] hover:bg-[#8e004b] text-white font-extrabold text-[13.5px] py-3 rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <Unlock className="w-4 h-4" />
+                <span>Unlock with 10 Credits</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaywallModalSupplier(null)}
+                className="w-full bg-white hover:bg-[#f0edec] text-[#594047] font-bold text-[13px] py-2.5 rounded-xl transition-colors cursor-pointer"
+              >
+                Cancel
               </button>
             </div>
           </div>

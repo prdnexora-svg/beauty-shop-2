@@ -29,6 +29,7 @@ import {
   ArrowLeft,
   Calendar,
   Users,
+  UserPlus,
   Layers,
   ShoppingBag,
   Zap,
@@ -78,6 +79,41 @@ export const SellerProfileScreen: React.FC<SellerProfileScreenProps> = ({
   const [phoneRevealed, setPhoneRevealed] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [selectedCertForPreview, setSelectedCertForPreview] = useState<string | null>(null);
+
+  // Dynamic Follower Tracking & State Persistence
+  const followKey = `follow_${profile.id}`;
+  const countKey = `follower_count_${profile.id}`;
+
+  const [isFollowed, setIsFollowed] = useState<boolean>(() => {
+    return localStorage.getItem(followKey) === 'true';
+  });
+
+  const [followerCount, setFollowerCount] = useState<number>(() => {
+    const saved = localStorage.getItem(countKey);
+    if (saved) return parseInt(saved, 10);
+    // Consistent, realistic starting follower counts
+    let hash = 0;
+    for (let i = 0; i < profile.name.length; i++) {
+      hash = (hash << 5) - hash + profile.name.charCodeAt(i);
+    }
+    return Math.abs(hash % 400) + 250; // realistic starting number between 250 and 650
+  });
+
+  const handleFollowToggle = () => {
+    const nextFollowed = !isFollowed;
+    const nextCount = followerCount + (nextFollowed ? 1 : -1);
+    setIsFollowed(nextFollowed);
+    setFollowerCount(nextCount);
+    localStorage.setItem(followKey, String(nextFollowed));
+    localStorage.setItem(countKey, String(nextCount));
+
+    // Dispatch a custom event to sync across the application
+    window.dispatchEvent(new CustomEvent('supplier-follow-updated', {
+      detail: { supplierId: profile.id, isFollowed: nextFollowed, followerCount: nextCount }
+    }));
+
+    showToast(nextFollowed ? `You are now following ${profile.name}!` : `You have unfollowed ${profile.name}.`);
+  };
 
   // RFQ Direct Form state inside Contact tab
   const [rfqProductName, setRfqProductName] = useState(sellerProducts[0]?.title || 'Custom Formulations');
@@ -145,11 +181,32 @@ export const SellerProfileScreen: React.FC<SellerProfileScreenProps> = ({
 
           <div className="flex items-center gap-3">
             <button
+              onClick={handleFollowToggle}
+              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all cursor-pointer ${
+                isFollowed
+                  ? 'bg-[#fde7f3] text-[#b90064] border-[#e0bec6]'
+                  : 'bg-white text-[#594047] border-[#e0bec6] hover:bg-[#fcf9f8]'
+              }`}
+            >
+              {isFollowed ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-[#b90064]" />
+                  <span>Following</span>
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-3.5 h-3.5 text-[#8c7077]" />
+                  <span>Follow</span>
+                </>
+              )}
+            </button>
+
+            <button
               onClick={() => {
                 setIsBookmarked(!isBookmarked);
                 showToast(isBookmarked ? 'Removed from saved suppliers' : 'Supplier saved to your workspace');
               }}
-              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
+              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all cursor-pointer ${
                 isBookmarked
                   ? 'bg-[#fde7f3] text-[#b90064] border-[#e0bec6]'
                   : 'bg-white text-[#594047] border-[#e0bec6] hover:bg-[#fcf9f8]'
@@ -206,6 +263,10 @@ export const SellerProfileScreen: React.FC<SellerProfileScreenProps> = ({
                 <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-semibold">
                   {profile.trustTier} Trust Tier
                 </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-pink-500/25 text-pink-200 border border-pink-500/30 text-[11px] font-bold flex items-center gap-1.5 transition-all">
+                  <Users className="w-3.5 h-3.5 text-pink-300" />
+                  <span>{followerCount} Followers</span>
+                </span>
               </div>
 
               <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight mb-1">
@@ -243,8 +304,29 @@ export const SellerProfileScreen: React.FC<SellerProfileScreenProps> = ({
             {/* Quick Action Box */}
             <div className="w-full md:w-auto bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/15 flex flex-col sm:flex-row md:flex-col gap-2.5 shrink-0">
               <button
+                onClick={handleFollowToggle}
+                className={`w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-bold text-xs shadow-md transition-all border cursor-pointer ${
+                  isFollowed
+                    ? 'bg-[#fde7f3] text-[#b90064] border-[#e0bec6] hover:bg-[#fbc5e3]'
+                    : 'bg-[#b90064] hover:bg-[#9e0055] text-white border-transparent'
+                }`}
+              >
+                {isFollowed ? (
+                  <>
+                    <Check className="w-4 h-4 text-[#b90064]" />
+                    <span>Following Supplier</span>
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-4 h-4 text-white animate-pulse" />
+                    <span>Follow Supplier</span>
+                  </>
+                )}
+              </button>
+
+              <button
                 onClick={() => onWhatsAppSupplier(profile.name)}
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs shadow-md transition-all"
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs shadow-md transition-all cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4 fill-white" />
                 <span>WhatsApp Business</span>
@@ -255,7 +337,7 @@ export const SellerProfileScreen: React.FC<SellerProfileScreenProps> = ({
                   setPhoneRevealed(true);
                   onCallSupplier(profile.name);
                 }}
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-white hover:bg-stone-100 text-[#1c1b1b] font-bold text-xs shadow-md transition-all"
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-white hover:bg-stone-100 text-[#1c1b1b] font-bold text-xs shadow-md transition-all cursor-pointer"
               >
                 <Phone className="w-4 h-4 text-[#b90064]" />
                 <span>{phoneRevealed ? profile.phone : `Call Supplier (${profile.phone.slice(0, 7)}***)`}</span>
@@ -263,16 +345,16 @@ export const SellerProfileScreen: React.FC<SellerProfileScreenProps> = ({
 
               <button
                 onClick={() => onOpenQuoteModal ? onOpenQuoteModal(profile.name) : setActiveTab('contact')}
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-[#b90064] hover:bg-[#9e0055] text-white font-bold text-xs shadow-md transition-all"
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs shadow-md transition-all cursor-pointer"
               >
-                <Send className="w-3.5 h-3.5" />
+                <Send className="w-3.5 h-3.5 text-[#e6007e]" />
                 <span>Request Custom Bulk Quote</span>
               </button>
             </div>
           </div>
 
           {/* Key Metrics Dashboard Strip */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8 pt-6 border-t border-white/15">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-8 pt-6 border-t border-white/15">
             <div className="bg-white/5 rounded-xl p-3.5 border border-white/10">
               <div className="flex items-center gap-2 text-[#e6007e] mb-1">
                 <Clock className="w-4 h-4" />
@@ -297,10 +379,19 @@ export const SellerProfileScreen: React.FC<SellerProfileScreenProps> = ({
                 <span className="text-xs font-bold text-stone-300">Buyer Rating</span>
               </div>
               <p className="text-lg font-extrabold text-white">{profile.overallRating} / 5.0</p>
-              <p className="text-[11px] text-stone-400">Based on {profile.totalReviewsCount} verified reviews</p>
+              <p className="text-[11px] text-stone-400">Based on {profile.totalReviewsCount} reviews</p>
             </div>
 
             <div className="bg-white/5 rounded-xl p-3.5 border border-white/10">
+              <div className="flex items-center gap-2 text-pink-400 mb-1">
+                <Users className="w-4 h-4 text-pink-400" />
+                <span className="text-xs font-bold text-stone-300">B2B Followers</span>
+              </div>
+              <p className="text-lg font-extrabold text-white transition-all duration-300 scale-100 hover:scale-105">{followerCount}</p>
+              <p className="text-[11px] text-stone-400">Active beauty buyers</p>
+            </div>
+
+            <div className="bg-white/5 rounded-xl p-3.5 border border-white/10 col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 text-emerald-400 mb-1">
                 <ShieldCheck className="w-4 h-4" />
                 <span className="text-xs font-bold text-stone-300">Min Order Value</span>

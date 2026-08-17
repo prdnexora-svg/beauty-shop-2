@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Building2, Sparkles, ShieldCheck, Mail, ArrowRight, Settings, Plus, FileText, 
-  TrendingUp, BarChart3, Users, CheckCircle2, ChevronRight, Edit3, Trash2, Check, Upload, Award, RefreshCw 
+  TrendingUp, BarChart3, Users, CheckCircle2, ChevronRight, Edit3, Trash2, Check, Upload, Award, RefreshCw,
+  Eye, MousePointer, Play, Film, Send, ExternalLink, Activity, MessageSquare
 } from 'lucide-react';
 import { SponsoredAdManager } from './SponsoredAdManager';
+import { getStoredSponsoredAnalyticsEvents, SponsoredAnalyticsEvent } from '../data/sponsoredAnalyticsStore';
+import { getStoredChatThreads, supplierReplyMessage, ChatThread } from '../data/chatStore';
 
 // Mock initial listings
 const INITIAL_PRODUCTS = [
@@ -26,7 +29,32 @@ const MOCK_ENQUIRIES = [
 ];
 
 export const SupplierAdminPortal: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'sponsored-ads' | 'enquiries' | 'rfqs' | 'verification'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'sponsored-ads' | 'analytics' | 'enquiries' | 'rfqs' | 'verification' | 'chat-hub'>('dashboard');
+  const [analyticsEvents, setAnalyticsEvents] = useState<SponsoredAnalyticsEvent[]>([]);
+  const [chatThreads, setChatThreads] = useState<ChatThread[]>([]);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [portalReplyText, setPortalReplyText] = useState('');
+
+  useEffect(() => {
+    const loadEvents = () => {
+      setAnalyticsEvents(getStoredSponsoredAnalyticsEvents());
+    };
+    const loadChats = () => {
+      const threads = getStoredChatThreads();
+      setChatThreads(threads);
+      if (!selectedChatId && threads.length > 0) {
+        setSelectedChatId(threads[0].id);
+      }
+    };
+    loadEvents();
+    loadChats();
+    window.addEventListener('nexora_analytics_event_recorded', loadEvents);
+    window.addEventListener('nexora_chat_updated', loadChats);
+    return () => {
+      window.removeEventListener('nexora_analytics_event_recorded', loadEvents);
+      window.removeEventListener('nexora_chat_updated', loadChats);
+    };
+  }, []);
 
   // Supplier Onboarding & Profile Verification states
   const [supplierGst, setSupplierGst] = useState('07AABCU9603R1ZM');
@@ -135,6 +163,21 @@ export const SupplierAdminPortal: React.FC = () => {
           </button>
 
           <button
+            onClick={() => setActiveTab('analytics')}
+            className={`flex items-center justify-between px-4 py-3 rounded-lg text-left transition-all cursor-pointer ${
+              activeTab === 'analytics' ? 'bg-[#fde7f3] text-[#b90064]' : 'hover:bg-neutral-50'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <BarChart3 className="w-4.5 h-4.5 text-[#b90064]" />
+              <span>Ad Analytics (Screen 25)</span>
+            </div>
+            <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-full font-bold uppercase">
+              Live
+            </span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('enquiries')}
             className={`flex items-center gap-2.5 px-4 py-3 rounded-lg text-left transition-all cursor-pointer ${
               activeTab === 'enquiries' ? 'bg-[#fde7f3] text-[#b90064]' : 'hover:bg-neutral-50'
@@ -163,11 +206,130 @@ export const SupplierAdminPortal: React.FC = () => {
             <ShieldCheck className="w-4.5 h-4.5" />
             <span>Verification Hub</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('chat-hub')}
+            className={`flex items-center justify-between px-4 py-3 rounded-lg text-left transition-all cursor-pointer ${
+              activeTab === 'chat-hub' ? 'bg-[#fde7f3] text-[#b90064]' : 'hover:bg-neutral-50'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <MessageSquare className="w-4.5 h-4.5 text-[#b90064]" />
+              <span>Inquiries / Chat Hub</span>
+            </div>
+            <span className="text-[9px] bg-[#b90064] text-white px-1.5 py-0.5 rounded-full font-bold">
+              {chatThreads.length}
+            </span>
+          </button>
         </nav>
       </div>
 
       {/* MAIN WORKSPACE CONTENT */}
       <div className="flex-1 p-6 md:p-10 space-y-8 overflow-y-auto">
+        
+        {/* ================== CHAT HUB TAB ================== */}
+        {activeTab === 'chat-hub' && (
+          <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden flex flex-col md:flex-row h-[70vh]">
+            <div className="w-full md:w-80 border-r border-stone-200 bg-stone-50 flex flex-col shrink-0">
+              <div className="p-4 border-b border-stone-200 bg-white flex items-center justify-between">
+                <h3 className="text-sm font-extrabold text-stone-900">Buyer Chat Threads</h3>
+                <span className="text-[10px] bg-pink-100 text-[#b90064] px-2 py-0.5 rounded-full font-bold">
+                  {chatThreads.length} Active
+                </span>
+              </div>
+              <div className="overflow-y-auto flex-1 divide-y divide-stone-100">
+                {chatThreads.map(thread => {
+                  const lastMsg = thread.messages[thread.messages.length - 1];
+                  const isSelected = thread.id === selectedChatId;
+                  return (
+                    <div
+                      key={thread.id}
+                      onClick={() => setSelectedChatId(thread.id)}
+                      className={`p-3.5 cursor-pointer transition-colors ${
+                        isSelected ? 'bg-[#fde7f3] border-l-4 border-[#b90064]' : 'hover:bg-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold text-stone-900 truncate">Buyer Thread #{thread.id.slice(-4)}</span>
+                        <span className="text-[10px] text-stone-400">{lastMsg?.timestamp || ''}</span>
+                      </div>
+                      <p className="text-[11px] text-stone-600 truncate font-medium">{lastMsg?.text || 'No messages'}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex-1 flex flex-col bg-white">
+              {(() => {
+                const currentThread = chatThreads.find(t => t.id === selectedChatId) || chatThreads[0];
+                if (!currentThread) {
+                  return (
+                    <div className="flex-1 flex items-center justify-center text-stone-400 text-xs">
+                      No chat threads available.
+                    </div>
+                  );
+                }
+                return (
+                  <>
+                    <div className="p-4 border-b border-stone-200 bg-white flex items-center justify-between">
+                      <div>
+                        <h4 className="text-xs font-extrabold text-stone-900">Live Buyer Sourcing Conversation</h4>
+                        <p className="text-[10px] text-emerald-600 font-bold mt-0.5">● Connected with Verified B2B Buyer</p>
+                      </div>
+                    </div>
+
+                    <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#fdf8f8]">
+                      {currentThread.messages.map(m => (
+                        <div key={m.id} className={`flex flex-col ${m.sender === 'supplier' ? 'items-end' : 'items-start'}`}>
+                          <span className="text-[9px] text-stone-400 mb-0.5">{m.senderName} • {m.timestamp}</span>
+                          <div className={`p-3 rounded-xl text-xs max-w-md ${
+                            m.sender === 'supplier' ? 'bg-[#b90064] text-white' : 'bg-white border border-stone-200 text-stone-900'
+                          }`}>
+                            {m.productContext && (
+                              <div className="mb-2 p-2 bg-black/10 rounded text-[11px]">
+                                <b>Inquiry Product:</b> {m.productContext.title}
+                              </div>
+                            )}
+                            <p>{m.text}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="p-3.5 border-t border-stone-200 bg-white flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={portalReplyText}
+                        onChange={(e) => setPortalReplyText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && portalReplyText.trim()) {
+                            supplierReplyMessage(currentThread.id, portalReplyText);
+                            setPortalReplyText('');
+                            setChatThreads(getStoredChatThreads());
+                          }
+                        }}
+                        placeholder="Type reply as Aura Beauty Labs Sales Desk..."
+                        className="flex-1 bg-stone-100 border border-stone-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-[#b90064]"
+                      />
+                      <button
+                        onClick={() => {
+                          if (!portalReplyText.trim()) return;
+                          supplierReplyMessage(currentThread.id, portalReplyText);
+                          setPortalReplyText('');
+                          setChatThreads(getStoredChatThreads());
+                        }}
+                        className="bg-[#b90064] text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-[#a00056] cursor-pointer"
+                      >
+                        Send Reply
+                      </button>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        )}
         
         {/* UPPER STATUS STRIP */}
         <div className="bg-white border border-[#e8e8e8] p-4.5 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -352,6 +514,219 @@ export const SupplierAdminPortal: React.FC = () => {
             supplierId="seller_aura_001"
             supplierName="Aura Beauty Labs"
           />
+        )}
+
+        {/* ================== SCREEN 25 — SUPPLIER ANALYTICS & PERFORMANCE ================== */}
+        {activeTab === 'analytics' && (
+          <div className="space-y-6">
+            {/* Header & Controls */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white border border-[#e8e8e8] p-5 rounded-2xl shadow-xs">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-black text-lg text-zinc-950">Ad Analytics & Performance</h3>
+                  <span className="bg-[#fde7f3] text-[#b90064] text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border border-[#f7c5e0]">
+                    Screen 25 Live
+                  </span>
+                </div>
+                <p className="text-xs text-[#594047] mt-0.5">
+                  Real-time impression, video completion funnel, and enquiry conversion analytics across sponsored placements
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setAnalyticsEvents(getStoredSponsoredAnalyticsEvents())}
+                  className="bg-white border border-[#e8e8e8] hover:border-[#b90064] text-[#1c1b1b] text-xs font-bold px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                >
+                  <RefreshCw className="w-3.5 h-3.5 text-[#b90064]" />
+                  <span>Refresh Data</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('sponsored-ads')}
+                  className="bg-[#b90064] hover:bg-[#a00056] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                >
+                  <Plus className="w-3.5 h-3.5 text-white" />
+                  <span>New Ad Campaign</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Key Performance Indicators */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white border border-[#e8e8e8] p-4.5 rounded-2xl space-y-1">
+                <div className="flex items-center justify-between text-[#8c7077]">
+                  <span className="text-[10px] uppercase font-extrabold tracking-wider">Ad Impressions</span>
+                  <Eye className="w-4 h-4 text-[#b90064]" />
+                </div>
+                <span className="text-2xl font-black text-zinc-950 block">
+                  {analyticsEvents.filter(e => e.eventType === 'ad_impression').length}
+                </span>
+                <span className="text-[10px] text-emerald-600 font-bold block">Verified 50%+ Viewport</span>
+              </div>
+
+              <div className="bg-white border border-[#e8e8e8] p-4.5 rounded-2xl space-y-1">
+                <div className="flex items-center justify-between text-[#8c7077]">
+                  <span className="text-[10px] uppercase font-extrabold tracking-wider">Video Plays</span>
+                  <Play className="w-4 h-4 text-purple-600" />
+                </div>
+                <span className="text-2xl font-black text-purple-950 block">
+                  {analyticsEvents.filter(e => e.eventType === 'video_play').length}
+                </span>
+                <span className="text-[10px] text-purple-600 font-bold block">
+                  {analyticsEvents.filter(e => e.eventType === 'video_open').length} Lightbox Opens
+                </span>
+              </div>
+
+              <div className="bg-white border border-[#e8e8e8] p-4.5 rounded-2xl space-y-1">
+                <div className="flex items-center justify-between text-[#8c7077]">
+                  <span className="text-[10px] uppercase font-extrabold tracking-wider">Product & Profile Clicks</span>
+                  <MousePointer className="w-4 h-4 text-blue-600" />
+                </div>
+                <span className="text-2xl font-black text-blue-950 block">
+                  {analyticsEvents.filter(e => e.eventType === 'product_click' || e.eventType === 'supplier_click').length}
+                </span>
+                <span className="text-[10px] text-blue-600 font-bold block">
+                  {analyticsEvents.filter(e => e.eventType === 'product_click').length} Prod • {analyticsEvents.filter(e => e.eventType === 'supplier_click').length} Supp
+                </span>
+              </div>
+
+              <div className="bg-white border border-[#e8e8e8] p-4.5 rounded-2xl space-y-1">
+                <div className="flex items-center justify-between text-[#8c7077]">
+                  <span className="text-[10px] uppercase font-extrabold tracking-wider">Direct Enquiries</span>
+                  <Send className="w-4 h-4 text-emerald-600" />
+                </div>
+                <span className="text-2xl font-black text-emerald-700 block">
+                  {analyticsEvents.filter(e => e.eventType === 'enquire_click').length}
+                </span>
+                <span className="text-[10px] text-emerald-600 font-bold block">Conversions</span>
+              </div>
+            </div>
+
+            {/* Video Completion & Engagement Retention Funnel */}
+            <div className="bg-white border border-[#e8e8e8] p-5 rounded-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-extrabold text-sm text-zinc-950 flex items-center gap-2">
+                  <Film className="w-4 h-4 text-[#b90064]" />
+                  <span>Video Retention & Milestone Funnel</span>
+                </h4>
+                <span className="text-xs text-[#594047] font-semibold">
+                  Total Video Opens: {analyticsEvents.filter(e => e.eventType === 'video_open').length}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-2">
+                <div className="bg-[#fcf9f8] border border-[#e8e8e8] p-3.5 rounded-xl text-center space-y-1">
+                  <span className="text-[10px] font-bold text-[#8c7077] uppercase block">Played (0%)</span>
+                  <span className="text-lg font-black text-zinc-900 block">
+                    {analyticsEvents.filter(e => e.eventType === 'video_play').length}
+                  </span>
+                  <div className="w-full bg-stone-200 h-1.5 rounded-full overflow-hidden mt-2">
+                    <div className="bg-[#b90064] h-full w-full" />
+                  </div>
+                </div>
+
+                <div className="bg-[#fcf9f8] border border-[#e8e8e8] p-3.5 rounded-xl text-center space-y-1">
+                  <span className="text-[10px] font-bold text-[#8c7077] uppercase block">25% Watched</span>
+                  <span className="text-lg font-black text-purple-900 block">
+                    {analyticsEvents.filter(e => e.eventType === 'video_25_percent').length}
+                  </span>
+                  <div className="w-full bg-stone-200 h-1.5 rounded-full overflow-hidden mt-2">
+                    <div className="bg-purple-600 h-full w-[80%]" />
+                  </div>
+                </div>
+
+                <div className="bg-[#fcf9f8] border border-[#e8e8e8] p-3.5 rounded-xl text-center space-y-1">
+                  <span className="text-[10px] font-bold text-[#8c7077] uppercase block">50% Watched</span>
+                  <span className="text-lg font-black text-blue-900 block">
+                    {analyticsEvents.filter(e => e.eventType === 'video_50_percent').length}
+                  </span>
+                  <div className="w-full bg-stone-200 h-1.5 rounded-full overflow-hidden mt-2">
+                    <div className="bg-blue-600 h-full w-[65%]" />
+                  </div>
+                </div>
+
+                <div className="bg-[#fcf9f8] border border-[#e8e8e8] p-3.5 rounded-xl text-center space-y-1">
+                  <span className="text-[10px] font-bold text-[#8c7077] uppercase block">75% Watched</span>
+                  <span className="text-lg font-black text-amber-900 block">
+                    {analyticsEvents.filter(e => e.eventType === 'video_75_percent').length}
+                  </span>
+                  <div className="w-full bg-stone-200 h-1.5 rounded-full overflow-hidden mt-2">
+                    <div className="bg-amber-500 h-full w-[50%]" />
+                  </div>
+                </div>
+
+                <div className="bg-emerald-50 border border-emerald-200 p-3.5 rounded-xl text-center space-y-1">
+                  <span className="text-[10px] font-bold text-emerald-800 uppercase block">100% Completed</span>
+                  <span className="text-lg font-black text-emerald-900 block">
+                    {analyticsEvents.filter(e => e.eventType === 'video_complete').length}
+                  </span>
+                  <div className="w-full bg-emerald-200 h-1.5 rounded-full overflow-hidden mt-2">
+                    <div className="bg-emerald-600 h-full w-[40%]" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Live Event Stream Log */}
+            <div className="bg-white border border-[#e8e8e8] rounded-2xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-extrabold text-sm text-zinc-950 flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-[#b90064]" />
+                  <span>Live Event Log Stream ({analyticsEvents.length} Recorded Events)</span>
+                </h4>
+                <span className="text-xs text-[#594047]">Real-time Event Stream</span>
+              </div>
+
+              {analyticsEvents.length === 0 ? (
+                <div className="p-8 text-center bg-[#fcf9f8] border border-dashed border-[#e8e8e8] rounded-xl space-y-2">
+                  <Activity className="w-8 h-8 text-stone-400 mx-auto" />
+                  <p className="text-xs font-bold text-zinc-800">No Analytics Events Recorded Yet</p>
+                  <p className="text-[11px] text-[#594047]">
+                    Interact with sponsored banners, reels, or video ads on the homepage to generate live events.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-[#e8e8e8] bg-[#fcf9f8] text-[#8c7077] font-extrabold uppercase text-[10px] tracking-wider">
+                        <th className="p-3">Time</th>
+                        <th className="p-3">Event Type</th>
+                        <th className="p-3">Ad ID</th>
+                        <th className="p-3">Media Type</th>
+                        <th className="p-3">Platform</th>
+                        <th className="p-3">Supplier Name</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#e8e8e8]">
+                      {analyticsEvents.slice(0, 15).map((evt) => (
+                        <tr key={evt.id} className="hover:bg-stone-50 transition-colors">
+                          <td className="p-3 font-mono text-[11px] text-stone-500">
+                            {new Date(evt.timestamp).toLocaleTimeString()}
+                          </td>
+                          <td className="p-3 font-bold">
+                            <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-extrabold ${
+                              evt.eventType === 'ad_impression' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                              evt.eventType === 'video_play' ? 'bg-purple-50 text-purple-700 border border-purple-200' :
+                              evt.eventType === 'enquire_click' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                              evt.eventType === 'product_click' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                              'bg-stone-100 text-stone-700'
+                            }`}>
+                              {evt.eventType.replace(/_/g, ' ')}
+                            </span>
+                          </td>
+                          <td className="p-3 font-mono text-[11px] text-zinc-900 font-bold">{evt.ad_id}</td>
+                          <td className="p-3 capitalize text-stone-600">{evt.media_type.replace(/_/g, ' ')}</td>
+                          <td className="p-3 text-stone-600">{evt.platform || 'Nexora'}</td>
+                          <td className="p-3 font-semibold text-zinc-900">{evt.supplierName || 'Aura Beauty Labs'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
         )}
         {activeTab === 'enquiries' && (
           <div className="space-y-4">

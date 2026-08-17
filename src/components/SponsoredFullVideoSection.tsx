@@ -1,17 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Tv, Sparkles, ExternalLink, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Tv, Sparkles, Plus, ExternalLink, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SponsoredVideoItem } from '../types';
 import { getStoredSponsoredFullVideos, validateSponsoredVideo } from '../data/sponsoredReelsData';
 import { recordSponsoredAnalyticsEvent } from '../data/sponsoredAnalyticsStore';
 import { SponsoredVideoLightboxModal } from './SponsoredVideoLightboxModal';
 
 interface SponsoredFullVideoSectionProps {
+  onOpenAdManager?: () => void;
   onViewProduct?: (productId: string, sellerId: string) => void;
   onViewSupplier?: (sellerId: string) => void;
   onEnquire?: (productId: string | undefined, sellerId: string, supplierName: string) => void;
 }
 
 export const SponsoredFullVideoSection: React.FC<SponsoredFullVideoSectionProps> = ({
+  onOpenAdManager,
   onViewProduct,
   onViewSupplier,
   onEnquire
@@ -116,8 +118,18 @@ export const SponsoredFullVideoSection: React.FC<SponsoredFullVideoSectionProps>
           </div>
         </div>
 
-        {/* Scroll Buttons */}
+        {/* Header Actions: Manage Ads & Scroll Buttons */}
         <div className="flex items-center gap-2">
+          {onOpenAdManager && (
+            <button
+              onClick={onOpenAdManager}
+              className="bg-[#b90064] hover:bg-[#a00056] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs mr-1"
+            >
+              <Plus className="w-3.5 h-3.5 text-white" />
+              <span>Manage / Create Ads</span>
+            </button>
+          )}
+
           <button
             onClick={() => handleScroll('left')}
             aria-label="Scroll left"
@@ -158,16 +170,6 @@ export const SponsoredFullVideoSection: React.FC<SponsoredFullVideoSectionProps>
               
               {/* Subtle Gradient Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-
-              {/* Top Left: Platform Badge */}
-              <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
-                <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider shadow-xs ${getPlatformBadgeColor(video.platform)}`}>
-                  {video.platform}
-                </span>
-                <span className="px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-xs text-[#f7a0cd] text-[9px] font-bold uppercase tracking-wider">
-                  Ad
-                </span>
-              </div>
 
               {/* Top Right: Duration */}
               {video.duration && (
