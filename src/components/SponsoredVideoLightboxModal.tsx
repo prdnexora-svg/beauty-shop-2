@@ -97,7 +97,10 @@ export const SponsoredVideoLightboxModal: React.FC<SponsoredVideoLightboxModalPr
       }, 12000);
 
       return () => {
-        if (playTimerRef.current) clearTimeout(playTimerRef.current);
+        if (playTimerRef.current) {
+          clearTimeout(playTimerRef.current);
+          playTimerRef.current = null;
+        }
         clearTimeout(timer25);
         clearTimeout(timer50);
         clearTimeout(timer75);
