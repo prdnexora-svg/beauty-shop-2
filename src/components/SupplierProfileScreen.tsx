@@ -241,6 +241,15 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
   const [isAttaching, setIsAttaching] = useState(false);
   const [attachProgress, setAttachProgress] = useState(0);
   const [attachedFileName, setAttachedFileName] = useState<string | null>(null);
+  const attachIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (attachIntervalRef.current) {
+        clearInterval(attachIntervalRef.current);
+      }
+    };
+  }, []);
 
   // RFQ Modal form state
   const [rfqProductInterest, setRfqProductInterest] = useState('Skincare • Serum Base');
@@ -854,11 +863,17 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                           setIsAttaching(true);
                           setAttachProgress(0);
                           let currentProgress = 0;
-                          const interval = setInterval(() => {
+                          if (attachIntervalRef.current) {
+                            clearInterval(attachIntervalRef.current);
+                          }
+                          attachIntervalRef.current = setInterval(() => {
                             currentProgress += 20;
                             setAttachProgress(currentProgress);
                             if (currentProgress >= 100) {
-                              clearInterval(interval);
+                              if (attachIntervalRef.current) {
+                                clearInterval(attachIntervalRef.current);
+                                attachIntervalRef.current = null;
+                              }
                               setIsAttaching(false);
                               const defaultFiles: Record<string, string> = {
                                 'Stability Testing': 'accelerated_stability_profile_B-PEP.pdf',
