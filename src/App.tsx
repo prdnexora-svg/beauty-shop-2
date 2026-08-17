@@ -1,103 +1,114 @@
 import React, { useState } from 'react';
 import { TopNavBar } from './components/TopNavBar';
 import { HeroSection } from './components/HeroSection';
-import { TrustStrip } from './components/TrustStrip';
-import { LiveSourcingRequests } from './components/LiveSourcingRequests';
 import { CategoryGrid } from './components/CategoryGrid';
-import { FeaturedDeals } from './components/FeaturedDeals';
-import { TrendingProducts } from './components/TrendingProducts';
-import { VerifiedSuppliersSection } from './components/VerifiedSuppliersSection';
+import { TrendingCategories } from './components/TrendingCategories';
+import { QuickRFQSection } from './components/QuickRFQSection';
+import { MarketplaceColumns } from './components/MarketplaceColumns';
+import { SponsoredImageAds } from './components/SponsoredImageAds';
+import { SponsoredReelsSection } from './components/SponsoredReelsSection';
+import { SponsoredFullVideoSection } from './components/SponsoredFullVideoSection';
+import { OEMSpotlight } from './components/OEMSpotlight';
+import { SellerGrowthSection } from './components/SellerGrowthSection';
 import { Footer } from './components/Footer';
-import { RFQModal } from './components/RFQModal';
+import { DirectoryHubScreen } from './components/DirectoryHubScreen';
 import { EnquiryModal } from './components/EnquiryModal';
-import { QuoteModal } from './components/QuoteModal';
 import { AuthModal } from './components/AuthModal';
-import { LiveChatWidget } from './components/LiveChatWidget';
-import { SearchFilterScreen } from './components/SearchFilterScreen';
 import { ProductListingScreen } from './components/ProductListingScreen';
+import { SearchFilterScreen } from './components/SearchFilterScreen';
 import { SupplierDirectoryScreen } from './components/SupplierDirectoryScreen';
 import { SupplierProfileScreen } from './components/SupplierProfileScreen';
+import { SellerProfileScreen } from './components/SellerProfileScreen';
+import { SupplierOnboardingScreen } from './components/SupplierOnboardingScreen';
 import { BrandDirectoryDetailScreen } from './components/BrandDirectoryDetailScreen';
 import { OemPrivateLabelHubScreen } from './components/OemPrivateLabelHubScreen';
-import { PostRequirementScreen } from './components/PostRequirementScreen';
-import { WorkspaceScreen } from './components/WorkspaceScreen';
-import { SourcingTrendsDashboard } from './components/SourcingTrendsDashboard';
-import { SavedSuppliersSection } from './components/SavedSuppliersSection';
-import { SupplierComparisonModal } from './components/SupplierComparisonModal';
-import { ProductCompareModal } from './components/ProductCompareModal';
-import { SupplierMapModal } from './components/SupplierMapModal';
-import { VirtualFacilityTourModal } from './components/VirtualFacilityTourModal';
-import { useSavedSuppliers } from './hooks/useSavedSuppliers';
-import { NegotiationInboxScreen } from './components/NegotiationInboxScreen';
 import { SupplierAdminPortal } from './components/SupplierAdminPortal';
-import { PackagingCustomizerScreen } from './components/PackagingCustomizerScreen';
-
+import { BuyerDashboard } from './components/BuyerDashboard';
+import { BuyerRFQTrackingScreen } from './components/BuyerRFQTrackingScreen';
+import { SampleRequestScreen } from './components/SampleRequestScreen';
+import { EditProfileModal, BuyerProfileData } from './components/EditProfileModal';
+import { ProductDetailPage } from './components/ProductDetailPage';
 import {
   CATEGORIES,
-  LIVE_RFQS,
-  FEATURED_DEALS,
   TRENDING_PRODUCTS,
-  VERIFIED_SUPPLIERS,
-  SEARCH_PRODUCTS
+  VERIFIED_SUPPLIERS
 } from './data/mockData';
 import { RFQItem, DealProduct, TrendingProduct, VerifiedSupplier, SearchProduct } from './types';
 import { CheckCircle2 } from 'lucide-react';
 
 export function App() {
-  const [currentScreen, setCurrentScreen] = useState<'explore' | 'search' | 'plp' | 'suppliers' | 'supplier-profile' | 'brands' | 'oem' | 'rfq' | 'workspace' | 'inbox' | 'supplier-portal' | 'packaging-studio'>('explore');
+  const [currentScreen, setCurrentScreen] = useState<'explore' | 'directory' | 'supplier-directory' | 'plp' | 'product-detail' | 'search-results' | 'brands' | 'oem-hub' | 'supplier-profile' | 'onboarding' | 'supplier-portal' | 'buyer-dashboard' | 'rfq-tracking' | 'sample-request'>('explore');
+  const [selectedProductId, setSelectedProductId] = useState<string>('product_vitc_101');
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string>('seller_aura_001');
   const [selectedLocation, setSelectedLocation] = useState('All');
   
-  // Search parameters for Screen 02
+  // Persistent Auth State
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    const stored = localStorage.getItem('nexora_is_logged_in');
+    return stored === null ? true : stored === 'true'; // Default to logged in as per prompt
+  });
+
+  const [userRole, setUserRole] = useState<'buyer' | 'supplier' | null>(() => {
+    const stored = localStorage.getItem('nexora_user_role');
+    return (stored as 'buyer' | 'supplier') || 'buyer';
+  });
+
+  // Persistent Buyer Profile State
+  const [buyerProfile, setBuyerProfile] = useState<BuyerProfileData>(() => {
+    const stored = localStorage.getItem('nexora_buyer_profile');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (e) {
+        // Fallback
+      }
+    }
+    return {
+      fullName: 'Priya Sharma',
+      businessName: 'Radiant Beauty Solutions',
+      businessType: 'Salon / Spa Chain',
+      designation: 'Head of Procurement',
+      email: 'priya.procurement@radiantbeauty.in',
+      phone: '+91 98201 54321',
+      alternatePhone: '+91 22 2650 4321',
+      gstin: '27AAACR1234F1Z5',
+      pancard: 'AAACR1234F',
+      address: 'Plot No. 42, Bandra-Kurla Complex',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      pincode: '400051',
+      annualProcurementBudget: '₹25 Lakhs - ₹1 Crore',
+      primaryCategories: ['Skincare & Serums', 'Haircare & Treatments'],
+      preferredDeliveryTimeline: '3 - 7 Days',
+      whatsappAlerts: true,
+      emailAlerts: true,
+      isGstVerified: true,
+      isBusinessVerified: true
+    };
+  });
+
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  
+  // Search parameters
   const [searchParams, setSearchParams] = useState({
-    query: 'Professional Hair Serum',
-    category: 'Haircare',
-    location: 'Mumbai, Maharashtra (+50 km)',
+    query: '',
+    category: 'All',
+    location: 'All India',
     tab: 'products' as 'products' | 'suppliers' | 'oem'
   });
   
   // Modals state
-  const [isRFQModalOpen, setIsRFQModalOpen] = useState(false);
-  const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
-  const [targetEnquiryItem, setTargetEnquiryItem] = useState<any | null>(null);
-  
-  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
-  const [targetQuoteRFQ, setTargetQuoteRFQ] = useState<RFQItem | null>(null);
-
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
-  // Interactive Logistics Map Modal State
-  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
-  const [targetMapSupplier, setTargetMapSupplier] = useState<any | null>(null);
+  const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
+  const [targetEnquiryItem, setTargetEnquiryItem] = useState<any | null>(null);
 
-  // Virtual Facility Tour Video Modal State
-  const [isFacilityTourModalOpen, setIsFacilityTourModalOpen] = useState(false);
-  const [targetFacilitySupplier, setTargetFacilitySupplier] = useState<VerifiedSupplier | null>(null);
-
-  const handleOpenFacilityTour = (supplier?: VerifiedSupplier) => {
-    setTargetFacilitySupplier(supplier || VERIFIED_SUPPLIERS[0]);
-    setIsFacilityTourModalOpen(true);
-  };
-
-  // Product Spec Comparison Modal State
-  const [isProductCompareModalOpen, setIsProductCompareModalOpen] = useState(false);
-  const [comparedProductsList, setComparedProductsList] = useState<SearchProduct[]>([
-    SEARCH_PRODUCTS[0],
-    SEARCH_PRODUCTS[1]
-  ]);
+  const [isCallModalOpen, setIsCallModalOpen] = useState(false);
+  const [targetSupplierName, setTargetSupplierName] = useState('');
 
   // Interactive Toast Notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [isSavedPulsing, setIsSavedPulsing] = useState(false);
-
-  // Local Storage Saved Suppliers Hook
-  const {
-    savedSuppliersList,
-    savedCount,
-    toggleSaveSupplier,
-    isSupplierSaved,
-    clearAllSavedSuppliers
-  } = useSavedSuppliers();
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
@@ -106,83 +117,44 @@ export function App() {
     }, 4000);
   };
 
-  const handleToggleSaveSupplier = (supplierId: string, supplierName?: string) => {
-    const isNowSaved = toggleSaveSupplier(supplierId, supplierName);
-    if (isNowSaved) {
-      triggerToast(`Saved ${supplierName || 'supplier'} to My Saved list`);
-      setIsSavedPulsing(true);
-      setTimeout(() => {
-        setIsSavedPulsing(false);
-      }, 1400);
+  const handleSaveProfile = (updated: BuyerProfileData) => {
+    setBuyerProfile(updated);
+    localStorage.setItem('nexora_buyer_profile', JSON.stringify(updated));
+    triggerToast('Profile & Business Details updated successfully!');
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUserRole(null);
+    localStorage.setItem('nexora_is_logged_in', 'false');
+    localStorage.removeItem('nexora_user_role');
+    triggerToast('You have signed out successfully.');
+  };
+
+  const handleLoginSuccess = (role: 'buyer' | 'supplier') => {
+    setIsLoggedIn(true);
+    setUserRole(role);
+    localStorage.setItem('nexora_is_logged_in', 'true');
+    localStorage.setItem('nexora_user_role', role);
+    setIsAuthModalOpen(false);
+    triggerToast(`Welcome back! Logged in as ${role === 'buyer' ? 'Buyer' : 'Supplier'}.`);
+    if (role === 'buyer') {
+      handleNavigate('buyer-dashboard');
     } else {
-      triggerToast(`Removed ${supplierName || 'supplier'} from My Saved list`);
+      handleNavigate('supplier-portal');
     }
   };
-
-  const handleScrollToSaved = () => {
-    if (currentScreen !== 'explore') {
-      setCurrentScreen('explore');
-    }
-    setTimeout(() => {
-      const el = document.getElementById('my-saved-suppliers');
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-  };
-
-  // Side-by-Side Supplier Comparison state (Max 3)
-  const [isComparisonModalOpen, setIsComparisonModalOpen] = useState(false);
-  const [selectedComparisonIds, setSelectedComparisonIds] = useState<string[]>(['sup-1', 'sup-2']);
-
-  const handleToggleComparison = (supplier: VerifiedSupplier) => {
-    if (selectedComparisonIds.includes(supplier.id)) {
-      setSelectedComparisonIds((prev) => prev.filter((id) => id !== supplier.id));
-      triggerToast(`Removed ${supplier.name} from comparison`);
-    } else {
-      if (selectedComparisonIds.length >= 3) {
-        triggerToast('You can compare up to 3 suppliers at a time. Remove one to add another.');
-        return;
-      }
-      setSelectedComparisonIds((prev) => [...prev, supplier.id]);
-      triggerToast(`Added ${supplier.name} to comparison (${selectedComparisonIds.length + 1}/3)`);
-    }
-  };
-
-  const handleAddComparisonSupplier = (supplier: VerifiedSupplier) => {
-    if (selectedComparisonIds.includes(supplier.id)) return;
-    if (selectedComparisonIds.length >= 3) {
-      triggerToast('Maximum 3 suppliers can be compared simultaneously.');
-      return;
-    }
-    setSelectedComparisonIds((prev) => [...prev, supplier.id]);
-  };
-
-  const handleRemoveComparisonSupplier = (supplierId: string) => {
-    setSelectedComparisonIds((prev) => prev.filter((id) => id !== supplierId));
-  };
-
-  const handleClearComparison = () => {
-    setSelectedComparisonIds([]);
-    triggerToast('Cleared comparison list');
-  };
-
-  const handleOpenComparisonModal = () => {
-    if (selectedComparisonIds.length === 0 && VERIFIED_SUPPLIERS.length >= 2) {
-      // Auto pre-select top 2 suppliers if none selected yet for immediate utility
-      setSelectedComparisonIds([VERIFIED_SUPPLIERS[0].id, VERIFIED_SUPPLIERS[1].id]);
-    }
-    setIsComparisonModalOpen(true);
-  };
-
-  const comparedSuppliersList = VERIFIED_SUPPLIERS.filter((s) =>
-    selectedComparisonIds.includes(s.id)
-  );
 
   // Handlers
-  const handleNavigate = (screen: 'explore' | 'search' | 'plp' | 'suppliers' | 'supplier-profile' | 'brands' | 'oem' | 'rfq' | 'workspace' | 'inbox' | 'supplier-portal' | 'packaging-studio', params?: any) => {
+  const handleNavigate = (screen: any, params?: any) => {
     setCurrentScreen(screen);
     if (params) {
+      if (params.productId) {
+        setSelectedProductId(params.productId);
+      }
+      if (params.supplierId) {
+        setSelectedSupplierId(params.supplierId);
+      }
       setSearchParams((prev) => ({
         ...prev,
         ...params
@@ -191,13 +163,13 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleOpenRFQModal = () => {
-    setIsRFQModalOpen(true);
-  };
-
   const handleOpenAuthModal = (mode: 'login' | 'register') => {
-    setAuthMode(mode);
-    setIsAuthModalOpen(true);
+    if (mode === 'register') {
+      handleNavigate('onboarding');
+    } else {
+      setAuthMode(mode);
+      setIsAuthModalOpen(true);
+    }
   };
 
   const handleOpenEnquiry = (item: any) => {
@@ -205,17 +177,39 @@ export function App() {
     setIsEnquiryModalOpen(true);
   };
 
-  const handleSubmitQuote = (rfq: RFQItem) => {
-    setTargetQuoteRFQ(rfq);
-    setIsQuoteModalOpen(true);
-  };
-
   const handleCallSupplier = (supplierName: string) => {
-    triggerToast(`Connecting call to verified supplier: ${supplierName}`);
+    if (!isLoggedIn) {
+      setAuthMode('login');
+      setIsAuthModalOpen(true);
+      triggerToast('Please login to view verified business contact details.');
+      return;
+    }
+
+    const supplier = VERIFIED_SUPPLIERS.find(s => s.name === supplierName);
+    const phone = supplier?.phone || '+919820155443';
+    const cleanPhone = phone.replace(/[^0-9+]/g, '');
+    
+    // Direct native dialer trigger
+    window.location.href = `tel:${cleanPhone}`;
+    triggerToast(`Opening native dialer to contact ${supplierName}`);
   };
 
   const handleWhatsAppSupplier = (supplierName: string) => {
-    triggerToast(`Initiating direct B2B WhatsApp channel with: ${supplierName}`);
+    if (!isLoggedIn) {
+      setAuthMode('login');
+      setIsAuthModalOpen(true);
+      triggerToast('Please login to contact suppliers via WhatsApp.');
+      return;
+    }
+
+    const supplier = VERIFIED_SUPPLIERS.find(s => s.name === supplierName);
+    const whatsapp = supplier?.whatsapp || '919820155443'; // Default if not found
+    const nameToUse = supplierName || supplier?.name || 'Supplier';
+    const message = encodeURIComponent(`Hello ${nameToUse}, I found your business on Nexora Luxe and I am interested in your products. Can we discuss a potential enquiry?`);
+    
+    // Direct WhatsApp redirect
+    window.open(`https://wa.me/${whatsapp}?text=${message}`, '_blank');
+    triggerToast(`Opening direct WhatsApp channel with ${nameToUse}`);
   };
 
   const handleSearchSubmit = (params: any) => {
@@ -225,48 +219,29 @@ export function App() {
       location: params.location !== 'Any Location' ? params.location : 'All India',
       tab: params.scope || 'products'
     });
-    setCurrentScreen('search');
+    setCurrentScreen('search-results');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCategorySelect = (categoryName: string) => {
-    if (categoryName.toLowerCase().includes('hair')) {
-      setCurrentScreen('plp');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
     setSearchParams({
       query: '',
       category: categoryName,
       location: 'All India',
-      tab: categoryName.includes('OEM') ? 'oem' : 'products'
+      tab: 'products'
     });
-    setCurrentScreen('search');
+    setCurrentScreen('search-results');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleTagClick = (tag: string) => {
-    if (tag.toLowerCase().includes('hair') || tag.toLowerCase().includes('serum')) {
-      setCurrentScreen('plp');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
     setSearchParams((prev) => ({
       ...prev,
       query: tag,
       tab: 'products'
     }));
-    setCurrentScreen('search');
+    setCurrentScreen('search-results');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleOpenProductComparison = (products: SearchProduct[]) => {
-    setComparedProductsList(products);
-    setIsProductCompareModalOpen(true);
-  };
-
-  const handleRemoveProductFromComparison = (productId: string) => {
-    setComparedProductsList((prev) => prev.filter((p) => p.id !== productId));
   };
 
   return (
@@ -284,250 +259,319 @@ export function App() {
       <TopNavBar
         currentScreen={currentScreen}
         onNavigate={handleNavigate}
-        onOpenRFQModal={handleOpenRFQModal}
-        selectedLocation={selectedLocation}
-        onLocationChange={setSelectedLocation}
+        onOpenRFQModal={() => handleNavigate('onboarding')}
         onOpenAuthModal={handleOpenAuthModal}
-        savedSuppliersCount={savedCount}
-        isSavedPulsing={isSavedPulsing}
-        onScrollToSaved={handleScrollToSaved}
+        isLoggedIn={isLoggedIn}
+        userRole={userRole}
+        userProfile={buyerProfile}
+        onOpenEditProfile={() => setIsEditProfileOpen(true)}
+        onLogout={handleLogout}
       />
 
-      {/* Screen 01: Homepage / Explore Hub */}
-      {currentScreen === 'explore' && (
-        <main className="flex-1">
-          {/* Hero Section with Search and Advanced Filters */}
-          <HeroSection
-            onOpenRFQModal={handleOpenRFQModal}
-            onSearchSubmit={handleSearchSubmit}
-            onTagClick={handleTagClick}
-          />
+      {/* Main Content Area with Top Spacing to Clear the Fixed Header */}
+      <div className="flex-1 flex flex-col pt-20">
+        {/* Screen 01: Homepage / Explore Hub */}
+        {currentScreen === 'explore' && (
+          <main className="flex-1">
+            <HeroSection
+              onSearch={(q, cat) => {
+                handleSearchSubmit({ query: q, location: cat !== 'All Categories' ? cat : 'All' });
+              }}
+              onTabChange={(tab) => {
+                if (tab === 'Suppliers') {
+                  handleNavigate('supplier-directory');
+                } else if (tab === 'Brands') {
+                  handleNavigate('brands');
+                } else if (tab === 'OEM') {
+                  handleSearchSubmit({ query: 'OEM', location: 'All India' });
+                } else {
+                  handleNavigate('plp');
+                }
+              }}
+            />
+            
+            <div className="max-w-[1440px] mx-auto px-4 md:px-8 flex flex-col gap-6">
+              {/* Trending Categories Section */}
+              <TrendingCategories
+                onCategoryClick={(catName) => {
+                  if (catName === 'OEM / Private Label' || catName === 'Private Label' || catName === 'OEM') {
+                    handleSearchSubmit({ query: 'OEM', location: 'All India' });
+                  } else {
+                    handleSearchSubmit({ query: catName, location: 'All India' });
+                  }
+                }}
+                onViewAll={() => handleNavigate('plp')}
+              />
 
-          {/* 4 Pillars Trust Strip */}
-          <TrustStrip />
+              {/* Marketplace Discovery Blocks (Featured Suppliers & Trending Sourcing) */}
+              <MarketplaceColumns
+                onSupplierClick={() => handleNavigate('supplier-profile')}
+                onProductClick={() => handleNavigate('plp')}
+                onEnquiryClick={(data) => {
+                  handleOpenEnquiry({
+                    id: 'enq-' + Date.now(),
+                    title: data.title,
+                    supplierName: data.supplier,
+                    type: data.type === 'supplier' ? 'supplier' : 'product',
+                  });
+                }}
+                onViewAllSuppliers={() => handleNavigate('supplier-directory')}
+                onViewAllProducts={() => handleNavigate('plp')}
+              />
 
-          {/* Dedicated 'My Saved' Suppliers Section */}
-          <SavedSuppliersSection
-            savedSuppliers={savedSuppliersList}
-            onToggleSave={handleToggleSaveSupplier}
-            onClearAll={() => {
-              clearAllSavedSuppliers();
-              triggerToast('Cleared all saved suppliers');
-            }}
-            onOpenEnquiry={handleOpenEnquiry}
-            onOpenMapModal={(supplier) => {
-              setTargetMapSupplier(supplier);
-              setIsMapModalOpen(true);
-            }}
-            onCallSupplier={handleCallSupplier}
-            onWhatsAppSupplier={handleWhatsAppSupplier}
-            onExploreMore={() => {
-              const el = document.getElementById('suppliers');
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }}
-          />
+              {/* Sponsored Beauty Showcase (10 Sponsored Image Ads Marquee) */}
+              <SponsoredImageAds
+                onProductClick={(ad) => {
+                  handleNavigate('product-detail', { productId: ad.product_id, supplierId: ad.seller_id });
+                }}
+                onOpenAdManager={() => handleNavigate('supplier-portal')}
+              />
 
-          {/* Live Sourcing Requests (RFQ Ticker) */}
-          <LiveSourcingRequests
-            rfqs={LIVE_RFQS}
-            onSubmitQuote={handleSubmitQuote}
-            onOpenRFQModal={handleOpenRFQModal}
-          />
+              {/* Reels & Shorts (5 Sponsored 9:16 Video Ads) */}
+              <SponsoredReelsSection
+                onOpenAdManager={() => handleNavigate('supplier-portal')}
+                onViewProduct={(productId, sellerId) => {
+                  handleNavigate('product-detail', { productId, supplierId: sellerId });
+                }}
+                onViewSupplier={(sellerId) => {
+                  handleNavigate('supplier-profile', { supplierId: sellerId });
+                }}
+                onEnquire={(productId, sellerId, supplierName) => {
+                  handleOpenEnquiry({
+                    id: 'enq-' + Date.now(),
+                    title: 'Enquiry for ' + supplierName,
+                    supplierName,
+                    type: productId ? 'product' : 'supplier',
+                  });
+                }}
+              />
 
-          {/* 12-Segment Category Grid */}
-          <CategoryGrid
-            categories={CATEGORIES}
-            onSelectCategory={handleCategorySelect}
-          />
+              {/* Full Video Ads (5 Sponsored 16:9 Video Ads) */}
+              <SponsoredFullVideoSection
+                onViewProduct={(productId, sellerId) => {
+                  handleNavigate('product-detail', { productId, supplierId: sellerId });
+                }}
+                onViewSupplier={(sellerId) => {
+                  handleNavigate('supplier-profile', { supplierId: sellerId });
+                }}
+                onEnquire={(productId, sellerId, supplierName) => {
+                  handleOpenEnquiry({
+                    id: 'enq-' + Date.now(),
+                    title: 'Enquiry for ' + supplierName,
+                    supplierName,
+                    type: productId ? 'product' : 'supplier',
+                  });
+                }}
+              />
 
-          {/* 6-Month Sourcing Trends & Category Demand Dashboard */}
-          <SourcingTrendsDashboard
-            onOpenRFQModal={handleOpenRFQModal}
-            onNavigateToCategory={handleCategorySelect}
-          />
+              {/* OEM / Private Label Spotlight */}
+              <OEMSpotlight
+                onExploreSolutions={() => handleNavigate('plp')}
+                onPostRequirement={() => handleNavigate('onboarding')}
+              />
 
-          {/* Featured B2B Deals */}
-          <FeaturedDeals
-            deals={FEATURED_DEALS}
-            onOpenEnquiry={handleOpenEnquiry}
-            onCallSupplier={handleCallSupplier}
-            onWhatsAppSupplier={handleWhatsAppSupplier}
-          />
+              {/* Seller / Supplier Growth Block */}
+              <SellerGrowthSection
+                onJoinSupplier={() => handleNavigate('onboarding')}
+                onSupplierLogin={() => handleOpenAuthModal('login')}
+              />
+            </div>
+          </main>
+        )}
 
-          {/* Trending B2B Products */}
-          <TrendingProducts
-            products={TRENDING_PRODUCTS}
-            onOpenEnquiry={handleOpenEnquiry}
-            onCallSupplier={handleCallSupplier}
-            onWhatsAppSupplier={handleWhatsAppSupplier}
-            onNavigateToPLP={() => handleNavigate('plp')}
-          />
+        {/* Screen 03: Product Listing Page (PLP) */}
+        {currentScreen === 'plp' && (
+          <main className="flex-1">
+            <ProductListingScreen
+              isLoggedIn={isLoggedIn}
+              onOpenEnquiryModal={handleOpenEnquiry}
+              onOpenQuoteModal={() => {}}
+              onOpenRFQModal={() => handleNavigate('onboarding')}
+              onNavigateToExplore={() => handleNavigate('explore')}
+              onNavigateToSearch={handleNavigate}
+              onOpenProductComparison={() => {}}
+              onCallSupplier={handleCallSupplier}
+              onWhatsAppSupplier={handleWhatsAppSupplier}
+              onOpenAuth={() => handleOpenAuthModal('login')}
+            />
+          </main>
+        )}
 
-          {/* Verified Manufacturing Partners */}
-          <VerifiedSuppliersSection
-            suppliers={VERIFIED_SUPPLIERS}
-            isSaved={isSupplierSaved}
-            onToggleSave={handleToggleSaveSupplier}
-            selectedComparisonIds={selectedComparisonIds}
-            onToggleComparison={handleToggleComparison}
-            onOpenComparisonModal={handleOpenComparisonModal}
-            onClearComparison={handleClearComparison}
-            onOpenEnquiry={handleOpenEnquiry}
-            onOpenMapModal={(supplier) => {
-              setTargetMapSupplier(supplier);
-              setIsMapModalOpen(true);
-            }}
-            onOpenFacilityTour={handleOpenFacilityTour}
-            onCallSupplier={handleCallSupplier}
-            onWhatsAppSupplier={handleWhatsAppSupplier}
-          />
-        </main>
-      )}
+        {/* Screen 02: Global Search & Filter Results (Unified) */}
+        {currentScreen === 'search-results' && (
+          <main className="flex-1">
+            <SearchFilterScreen
+              initialQuery={searchParams.query}
+              initialCategory={searchParams.category}
+              initialLocation={searchParams.location}
+              onOpenEnquiryModal={handleOpenEnquiry}
+              onOpenQuoteModal={() => {}}
+              onOpenRFQModal={() => handleNavigate('onboarding')}
+              onNavigateToExplore={() => handleNavigate('explore')}
+              onCallSupplier={handleCallSupplier}
+              onWhatsAppSupplier={handleWhatsAppSupplier}
+              onNavigate={handleNavigate}
+            />
+          </main>
+        )}
 
-      {/* Screen 02: Global Search & Filter Results */}
-      {currentScreen === 'search' && (
-        <main className="flex-1">
-          <SearchFilterScreen
-            initialQuery={searchParams.query}
-            initialCategory={searchParams.category}
-            initialLocation={searchParams.location}
-            isSupplierSaved={isSupplierSaved}
-            onToggleSaveSupplier={handleToggleSaveSupplier}
-            onOpenEnquiryModal={handleOpenEnquiry}
-            onOpenQuoteModal={handleSubmitQuote}
-            onOpenRFQModal={handleOpenRFQModal}
-            onOpenMapModal={(supplier) => {
-              setTargetMapSupplier(supplier);
-              setIsMapModalOpen(true);
-            }}
-            onNavigateToExplore={() => handleNavigate('explore')}
-          />
-        </main>
-      )}
+        {/* Screen 04: Product Detail Page */}
+        {currentScreen === 'product-detail' && (
+          <main className="flex-1">
+            <ProductDetailPage
+              productId={selectedProductId}
+              onBack={() => handleNavigate('explore')}
+              onOpenEnquiryModal={(item) => {
+                handleOpenEnquiry({
+                  id: 'enq-' + Date.now(),
+                  title: item.name,
+                  supplierName: item.supplierName,
+                  type: 'product'
+                });
+              }}
+              onOpenRFQModal={() => handleNavigate('onboarding')}
+              onNavigateToSampleRequest={() => handleNavigate('sample-request')}
+              onNavigateToSupplierProfile={(supplierId) => {
+                handleNavigate('supplier-profile', { supplierId });
+              }}
+              onCallSupplier={(name) => handleCallSupplier(name)}
+              onWhatsAppSupplier={(name) => handleWhatsAppSupplier(name)}
+            />
+          </main>
+        )}
 
-      {/* Screen 03: Product Listing Page (PLP) */}
-      {currentScreen === 'plp' && (
-        <main className="flex-1">
-          <ProductListingScreen
-            onOpenEnquiryModal={handleOpenEnquiry}
-            onOpenQuoteModal={handleSubmitQuote}
-            onOpenRFQModal={handleOpenRFQModal}
-            onNavigateToExplore={() => handleNavigate('explore')}
-            onNavigateToSearch={handleNavigate}
-            onOpenProductComparison={handleOpenProductComparison}
-          />
-        </main>
-      )}
+        {/* Screen 06: Directory Hub */}
+        {currentScreen === 'directory' && (
+          <main className="flex-1">
+            <DirectoryHubScreen
+              onNavigate={handleNavigate}
+              onOpenRFQModal={() => handleNavigate('onboarding')}
+            />
+          </main>
+        )}
 
-      {/* Screen 06: Supplier Directory */}
-      {currentScreen === 'suppliers' && (
-        <main className="flex-1">
-          <SupplierDirectoryScreen
-            isSupplierSaved={isSupplierSaved}
-            onToggleSaveSupplier={handleToggleSaveSupplier}
-            onOpenEnquiryModal={handleOpenEnquiry}
-            onOpenQuoteModal={handleSubmitQuote}
-            onOpenRFQModal={handleOpenRFQModal}
-            onOpenMapModal={(supplier) => {
-              setTargetMapSupplier(supplier);
-              setIsMapModalOpen(true);
-            }}
-            onOpenFacilityTour={handleOpenFacilityTour}
-            onNavigateToExplore={() => handleNavigate('explore')}
-            onOpenComparisonModal={handleOpenComparisonModal}
-          />
-        </main>
-      )}
+        {/* Screen 06 List: Supplier Directory */}
+        {currentScreen === 'supplier-directory' && (
+          <main className="flex-1">
+            <SupplierDirectoryScreen
+              onOpenEnquiryModal={handleOpenEnquiry}
+              onOpenQuoteModal={() => {}}
+              onOpenRFQModal={() => handleNavigate('onboarding')}
+              onNavigateToExplore={() => handleNavigate('explore')}
+              onCallSupplier={handleCallSupplier}
+              onWhatsAppSupplier={handleWhatsAppSupplier}
+            />
+          </main>
+        )}
 
-      {/* Screen 07: Supplier Profile Page */}
-      {currentScreen === 'supplier-profile' && (
-        <main className="flex-1">
-          <SupplierProfileScreen
-            onOpenEnquiryModal={handleOpenEnquiry}
-            onOpenQuoteModal={handleSubmitQuote}
-            onOpenRFQModal={handleOpenRFQModal}
-            onOpenFacilityTour={handleOpenFacilityTour}
-            onNavigateToDirectory={() => handleNavigate('suppliers')}
-          />
-        </main>
-      )}
+        {/* Screen 07: Dedicated Seller Profile / Mini-Website Page */}
+        {currentScreen === 'supplier-profile' && (
+          <main className="flex-1">
+            <SellerProfileScreen
+              sellerId={selectedSupplierId || searchParams.supplierId}
+              isLoggedIn={isLoggedIn}
+              onBack={() => handleNavigate('explore')}
+              onNavigateToProductDetail={(productId) => handleNavigate('product-detail', { productId })}
+              onOpenAuth={() => handleOpenAuthModal('login')}
+              onOpenEnquiryModal={handleOpenEnquiry}
+              onOpenQuoteModal={(suppName) => handleNavigate('onboarding', { supplierName: suppName })}
+              onCallSupplier={(name) => handleCallSupplier(name)}
+              onWhatsAppSupplier={(name) => handleWhatsAppSupplier(name)}
+            />
+          </main>
+        )}
 
-      {/* Screen 08: Brand Directory & Brand Detail */}
-      {currentScreen === 'brands' && (
-        <main className="flex-1">
-          <BrandDirectoryDetailScreen
-            onOpenEnquiryModal={handleOpenEnquiry}
-            onOpenRFQModal={handleOpenRFQModal}
-            onOpenFacilityTour={handleOpenFacilityTour}
-            onNavigateToSuppliers={() => handleNavigate('suppliers')}
-          />
-        </main>
-      )}
+        {/* Screen 08: Brand Directory */}
+        {currentScreen === 'brands' && (
+          <main className="flex-1">
+            <BrandDirectoryDetailScreen
+              onOpenEnquiryModal={(prodName, suppName) => {
+                handleOpenEnquiry({ name: prodName, supplierName: suppName });
+              }}
+              onOpenRFQModal={() => handleNavigate('onboarding')}
+              onOpenFacilityTour={() => {}}
+              onNavigateToSuppliers={() => handleNavigate('supplier-directory')}
+            />
+          </main>
+        )}
 
-      {/* Screen 09: OEM / Private Label Hub */}
-      {currentScreen === 'oem' && (
-        <main className="flex-1">
-          <OemPrivateLabelHubScreen
-            onOpenRFQModal={handleOpenRFQModal}
-            onOpenEnquiryModal={handleOpenEnquiry}
-            onOpenFacilityTour={handleOpenFacilityTour}
-            onNavigateToSuppliers={() => handleNavigate('suppliers')}
-          />
-        </main>
-      )}
+        {/* Screen 09: OEM / Private Label Hub */}
+        {currentScreen === 'oem-hub' && (
+          <main className="flex-1">
+            <OemPrivateLabelHubScreen
+              onOpenRFQModal={() => handleNavigate('onboarding')}
+              onOpenEnquiryModal={(prodName, suppName) => {
+                handleOpenEnquiry({ name: prodName, supplierName: suppName });
+              }}
+              onOpenFacilityTour={() => {}}
+              onNavigateToSuppliers={() => handleNavigate('supplier-directory')}
+            />
+          </main>
+        )}
 
-      {/* Screen 10 / 10.1: Post Requirement / Public RFQ Form */}
-      {currentScreen === 'rfq' && (
-        <main className="flex-1">
-          <PostRequirementScreen
-            onNavigateToExplore={() => handleNavigate('explore')}
-            onNavigateToRFQs={() => handleNavigate('explore')}
-          />
-        </main>
-      )}
+        {/* Phase B: Supplier Onboarding Flow */}
+        {currentScreen === 'onboarding' && (
+          <main className="flex-1">
+            <SupplierOnboardingScreen
+              onComplete={() => {
+                triggerToast('Business listing created! Redirecting to Portal...');
+                handleNavigate('supplier-portal');
+              }}
+              onNavigateToExplore={() => handleNavigate('explore')}
+            />
+          </main>
+        )}
 
-      {/* Screen 12/13/14: Buyer Sourcing & Transaction Workspace */}
-      {currentScreen === 'workspace' && (
-        <main className="flex-1">
-          <WorkspaceScreen
-            onOpenRFQModal={handleOpenRFQModal}
-            onNavigateToExplore={() => handleNavigate('explore')}
-          />
-        </main>
-      )}
+        {/* Phase B: Supplier Admin Portal */}
+        {currentScreen === 'supplier-portal' && (
+          <main className="flex-1">
+            <SupplierAdminPortal />
+          </main>
+        )}
 
-      {/* Screen 15: Direct Sourcing Chat & Counter-Quote Engine */}
-      {currentScreen === 'inbox' && (
-        <main className="flex-1">
-          <NegotiationInboxScreen />
-        </main>
-      )}
+        {/* Screen 12: Buyer Dashboard */}
+        {currentScreen === 'buyer-dashboard' && (
+          <main className="flex-1">
+            <BuyerDashboard 
+              isLoggedIn={isLoggedIn}
+              onNavigate={handleNavigate}
+              onPostRFQ={() => handleNavigate('onboarding')}
+              onCallSupplier={handleCallSupplier}
+              onWhatsAppSupplier={handleWhatsAppSupplier}
+              onOpenAuth={() => handleOpenAuthModal('login')}
+              buyerProfile={buyerProfile}
+              onSaveProfile={handleSaveProfile}
+              onOpenEditProfile={() => setIsEditProfileOpen(true)}
+            />
+          </main>
+        )}
 
-      {/* Screen 18: Supplier & Manufacturer Admin Portal with Freight Calculator */}
-      {currentScreen === 'supplier-portal' && (
-        <main className="flex-1">
-          <SupplierAdminPortal />
-        </main>
-      )}
+        {/* Screen 13: Buyer RFQ Tracking & Quote Comparison */}
+        {currentScreen === 'rfq-tracking' && (
+          <main className="flex-1">
+            <BuyerRFQTrackingScreen
+              onBack={() => handleNavigate('buyer-dashboard')}
+              onNavigateToChat={(supplierId) => {
+                triggerToast(`Opening chat with supplier: ${supplierId}`);
+                // Chat integration will be Screen 15
+              }}
+            />
+          </main>
+        )}
 
-      {/* Interactive Visual Packaging & Bottle Design Studio */}
-      {currentScreen === 'packaging-studio' && (
-        <main className="flex-1">
-          <PackagingCustomizerScreen />
-        </main>
-      )}
-
-      {/* Shared Footer */}
-      <Footer
-        onOpenRFQModal={handleOpenRFQModal}
-        onOpenAuthModal={handleOpenAuthModal}
-      />
-
-      {/* Screen 01 & Screen 03 Interactive Modals */}
-      <RFQModal
-        isOpen={isRFQModalOpen}
-        onClose={() => setIsRFQModalOpen(false)}
-      />
+        {/* Sample Request Screen */}
+        {currentScreen === 'sample-request' && (
+          <main className="flex-1">
+            <SampleRequestScreen 
+              onBack={() => handleNavigate('search-results')}
+              onSubmit={(data) => {
+                console.log('Sample Request Submitted:', data);
+                handleNavigate('buyer-dashboard');
+              }}
+            />
+          </main>
+        )}
+      </div>
 
       <EnquiryModal
         isOpen={isEnquiryModalOpen}
@@ -540,84 +584,29 @@ export function App() {
         onWhatsAppSupplier={handleWhatsAppSupplier}
         onNavigateToDashboard={() => {
           setIsEnquiryModalOpen(false);
-          setCurrentScreen('search');
-          triggerToast('Navigated to Workspace & Enquiry Tracking');
+          handleNavigate('buyer-dashboard');
         }}
-      />
-
-      <QuoteModal
-        isOpen={isQuoteModalOpen}
-        onClose={() => {
-          setIsQuoteModalOpen(false);
-          setTargetQuoteRFQ(null);
-        }}
-        rfq={targetQuoteRFQ}
       />
 
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={handleLoginSuccess}
         initialMode={authMode}
       />
 
-      {/* Side-by-Side Supplier Comparison Modal */}
-      <SupplierComparisonModal
-        isOpen={isComparisonModalOpen}
-        onClose={() => setIsComparisonModalOpen(false)}
-        selectedSuppliers={comparedSuppliersList}
-        allSuppliers={VERIFIED_SUPPLIERS}
-        onAddSupplier={handleAddComparisonSupplier}
-        onRemoveSupplier={handleRemoveComparisonSupplier}
-        onClearAll={handleClearComparison}
-        onOpenEnquiry={(sup) => {
-          setIsComparisonModalOpen(false);
-          handleOpenEnquiry(sup);
-        }}
-        onCallSupplier={handleCallSupplier}
-        onWhatsAppSupplier={handleWhatsAppSupplier}
+      <EditProfileModal
+        isOpen={isEditProfileOpen}
+        onClose={() => setIsEditProfileOpen(false)}
+        initialData={buyerProfile}
+        onSave={handleSaveProfile}
       />
 
-      {/* Side-by-Side Product Spec Comparison Modal */}
-      <ProductCompareModal
-        isOpen={isProductCompareModalOpen}
-        onClose={() => setIsProductCompareModalOpen(false)}
-        products={comparedProductsList}
-        onRemoveProduct={handleRemoveProductFromComparison}
-        onOpenEnquiry={(prod) => {
-          setIsProductCompareModalOpen(false);
-          handleOpenEnquiry(prod);
-        }}
-      />
-
-      {/* Interactive Supplier Location & Logistics Proximity Map Modal */}
-      <SupplierMapModal
-        isOpen={isMapModalOpen}
-        onClose={() => {
-          setIsMapModalOpen(false);
-          setTargetMapSupplier(null);
-        }}
-        supplier={targetMapSupplier}
-        onOpenEnquiry={(sup) => {
-          setIsMapModalOpen(false);
-          handleOpenEnquiry(sup);
-        }}
-      />
-
-      {/* 15-Second Virtual Facility Tour Video Modal */}
-      <VirtualFacilityTourModal
-        isOpen={isFacilityTourModalOpen}
-        onClose={() => {
-          setIsFacilityTourModalOpen(false);
-          setTargetFacilitySupplier(null);
-        }}
-        supplier={targetFacilitySupplier}
-        onOpenEnquiryModal={handleOpenEnquiry}
-      />
-
-      {/* Floating Live Chat & Sourcing AI Assistant */}
-      <LiveChatWidget
-        onOpenRFQModal={handleOpenRFQModal}
-        onOpenEnquiryModal={handleOpenEnquiry}
+      {/* Shared Footer */}
+      <Footer
+        onNavigate={handleNavigate}
+        onOpenAuthModal={handleOpenAuthModal}
+        onOpenRFQModal={() => handleNavigate('onboarding')}
       />
 
     </div>

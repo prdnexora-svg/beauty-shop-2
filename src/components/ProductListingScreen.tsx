@@ -27,28 +27,38 @@ import {
   SlidersHorizontal,
   Info,
   CheckCircle2,
-  Share2
+  Share2,
+  Phone,
+  Star
 } from 'lucide-react';
 import { SearchProduct, RFQItem } from '../types';
 import { SEARCH_PRODUCTS, LIVE_RFQS } from '../data/mockData';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ProductListingScreenProps {
+  isLoggedIn: boolean;
   onOpenEnquiryModal: (item: any) => void;
   onOpenQuoteModal: (rfq: RFQItem) => void;
   onOpenRFQModal: () => void;
   onNavigateToExplore: () => void;
   onNavigateToSearch: (params?: any) => void;
   onOpenProductComparison?: (products: SearchProduct[]) => void;
+  onCallSupplier: (supplierName: string) => void;
+  onWhatsAppSupplier: (supplierName: string) => void;
+  onOpenAuth: () => void;
 }
 
 export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
+  isLoggedIn,
   onOpenEnquiryModal,
   onOpenQuoteModal,
   onOpenRFQModal,
   onNavigateToExplore,
   onNavigateToSearch,
-  onOpenProductComparison
+  onOpenProductComparison,
+  onCallSupplier,
+  onWhatsAppSupplier,
+  onOpenAuth
 }) => {
   // Filter States
   const [selectedCategory, setSelectedCategory] = useState<string>('Haircare');
@@ -890,6 +900,14 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                       <div className="p-4 flex flex-col flex-1">
                         
                         {/* Title & Supplier */}
+                        <div className="flex items-center gap-1 mb-1">
+                          <div className="flex items-center gap-0.5">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                              <Star key={s} className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                            ))}
+                          </div>
+                          <span className="text-[10px] font-bold text-[#8c7077]">4.9 (85+)</span>
+                        </div>
                         <h3 className="font-bold text-[14px] text-[#1c1b1b] leading-snug mb-1 group-hover:text-[#b90064] transition-colors line-clamp-2">
                           {prod.title}
                         </h3>
@@ -972,34 +990,28 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                           </button>
 
                           <div className="flex gap-2">
-                            {/* Sample Request Button */}
+                            {/* Call Button */}
                             <button
-                              onClick={() => {
-                                onOpenEnquiryModal({
-                                  ...prod,
-                                  title: `[Sample Lab Request] ${prod.title}`
-                                });
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onCallSupplier(prod.supplierName);
                               }}
                               className="flex-1 py-1.5 border border-[#b90064] text-[#b90064] hover:bg-[#fde7f3] rounded-lg text-xs font-bold transition-colors flex justify-center items-center gap-1 shadow-2xs"
-                              title="Request formulation lab sample"
                             >
-                              <FlaskConical className="w-3.5 h-3.5" />
-                              Sample
+                              <Phone className="w-3.5 h-3.5" />
+                              {isLoggedIn ? 'Call' : 'View Number'}
                             </button>
 
-                            {/* Chat Button */}
+                            {/* WhatsApp Button */}
                             <button
-                              onClick={() => {
-                                onOpenEnquiryModal({
-                                  ...prod,
-                                  title: `[Direct Buyer Inquiry] ${prod.title}`
-                                });
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onWhatsAppSupplier(prod.supplierName);
                               }}
-                              className="flex-1 py-1.5 border border-[#e8e8e8] text-[#594047] hover:border-[#b90064] hover:text-[#b90064] rounded-lg text-xs font-bold transition-colors flex justify-center items-center gap-1 shadow-2xs"
-                              title="Initiate direct supplier chat"
+                              className="flex-1 py-1.5 border border-[#25D366] text-[#25D366] hover:bg-emerald-50 rounded-lg text-xs font-bold transition-colors flex justify-center items-center gap-1 shadow-2xs"
                             >
                               <MessageSquare className="w-3.5 h-3.5" />
-                              Chat
+                              WhatsApp
                             </button>
 
                             {/* Add to Compare Checkbox */}
@@ -1019,6 +1031,27 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                               />
                               <ArrowLeftRight className="w-3.5 h-3.5" />
                             </label>
+                          </div>
+
+                          {/* Visible Contact Number & Verification Barrier */}
+                          <div className="flex items-center justify-between px-1 py-1">
+                            <div className="flex items-center gap-1.5">
+                              <Phone className="w-3 h-3 text-[#8c7077]" />
+                              <span className="text-[11px] font-bold text-[#1c1b1b]">
+                                {isLoggedIn ? '+91 98201 55443' : '+91 98XXX XXXXX'}
+                              </span>
+                            </div>
+                            {!isLoggedIn && (
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onOpenAuth();
+                                }}
+                                className="text-[10px] font-bold text-[#b90064] hover:underline"
+                              >
+                                Login to reveal
+                              </button>
+                            )}
                           </div>
                         </div>
 

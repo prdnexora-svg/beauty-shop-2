@@ -1,6 +1,6 @@
 {
   "name": "Nexora Luxe",
-  "description": "India's Premium B2B Beauty Sourcing Network connecting professional buyers with verified manufacturers, wholesalers, distributors, and OEM private label partners.",
+  "description": "Premium B2B Beauty Discovery & Supplier Network connecting professional buyers with verified manufacturers, wholesalers, and OEM private label partners.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

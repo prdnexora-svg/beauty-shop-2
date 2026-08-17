@@ -33,10 +33,12 @@ import {
   CheckCircle2,
   Download,
   Info,
-  Video
+  Video,
+  Star
 } from 'lucide-react';
 import { VerifiedSupplier } from '../types';
 import { VERIFIED_SUPPLIERS } from '../data/mockData';
+import { VerifiedBadge } from './VerifiedBadge';
 
 interface SupplierDirectoryScreenProps {
   isSupplierSaved?: (id: string) => boolean;
@@ -47,7 +49,10 @@ interface SupplierDirectoryScreenProps {
   onOpenMapModal?: (supplier: VerifiedSupplier) => void;
   onOpenFacilityTour?: (supplier: VerifiedSupplier) => void;
   onNavigateToExplore?: () => void;
+  onNavigateToSupplierProfile?: (supplierId: string) => void;
   onOpenComparisonModal?: (selectedSuppliers: VerifiedSupplier[]) => void;
+  onCallSupplier: (supplierName: string) => void;
+  onWhatsAppSupplier: (supplierName: string) => void;
 }
 
 export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = ({
@@ -59,7 +64,10 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
   onOpenMapModal,
   onOpenFacilityTour,
   onNavigateToExplore,
-  onOpenComparisonModal
+  onNavigateToSupplierProfile,
+  onOpenComparisonModal,
+  onCallSupplier,
+  onWhatsAppSupplier
 }) => {
   // Search & Top Filters State
   const [searchQuery, setSearchQuery] = useState('');
@@ -71,7 +79,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
   // Quick Filters
   const [quickFilters, setQuickFilters] = useState<{ [key: string]: boolean }>({
-    verifiedOnly: true,
+    verifiedOnly: false,
     oemPrivateLabel: false,
     readyToSupply: false,
     topRated: false,
@@ -81,16 +89,16 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
   });
 
   // Sidebar Filters State
-  const [businessTypeFilters, setBusinessTypeFilters] = useState<string[]>(['Wholesaler']);
-  const [selectedCategory, setSelectedCategory] = useState('Haircare');
-  const [selectedSubcategory, setSelectedSubcategory] = useState('Serums');
+  const [businessTypeFilters, setBusinessTypeFilters] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('');
   const [moqValue, setMoqValue] = useState<number>(5000);
   const [capacityFilter, setCapacityFilter] = useState('Any Capacity');
   const [leadTimeFilter, setLeadTimeFilter] = useState('Any Lead Time');
 
   // Compliance Checkboxes
   const [complianceFilters, setComplianceFilters] = useState<{ [key: string]: boolean }>({
-    gst: true,
+    gst: false,
     iso: false,
     gmp: false,
     fda: false,
@@ -201,18 +209,36 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
       // Business Type Tab
       if (activeBusinessType !== 'All') {
-        if (activeBusinessType === 'Manufacturers' && !supplier.type.toLowerCase().includes('manufacturer')) {
+        if (activeBusinessType === 'Manufacturers' && !supplier.type.toLowerCase().includes('manufacturer') && !supplier.type.toLowerCase().includes('formulator')) {
           return false;
         }
-        if (activeBusinessType === 'Wholesalers' && !supplier.type.toLowerCase().includes('wholesaler')) {
+        if (activeBusinessType === 'Wholesalers' && !supplier.type.toLowerCase().includes('wholesaler') && !supplier.type.toLowerCase().includes('stockist')) {
           return false;
         }
         if (activeBusinessType === 'Distributors' && !supplier.type.toLowerCase().includes('distributor')) {
           return false;
         }
-        if (activeBusinessType === 'OEM / Private Label' && !supplier.type.toLowerCase().includes('oem')) {
+        if (activeBusinessType === 'OEM / Private Label' && !supplier.type.toLowerCase().includes('oem') && !supplier.type.toLowerCase().includes('private label') && !supplier.type.toLowerCase().includes('formulator')) {
           return false;
         }
+      }
+
+      // Sidebar Business Type Checkboxes
+      if (businessTypeFilters.length > 0) {
+        const matchesAny = businessTypeFilters.some((bt) => {
+          if (bt === 'Manufacturer' && (supplier.type.toLowerCase().includes('manufacturer') || supplier.type.toLowerCase().includes('formulator'))) return true;
+          if (bt === 'Wholesaler' && (supplier.type.toLowerCase().includes('wholesaler') || supplier.type.toLowerCase().includes('stockist'))) return true;
+          if (bt === 'Distributor' && supplier.type.toLowerCase().includes('distributor')) return true;
+          if (bt === 'OEM/ODM' && (supplier.type.toLowerCase().includes('oem') || supplier.type.toLowerCase().includes('private label'))) return true;
+          return supplier.type.toLowerCase().includes(bt.toLowerCase());
+        });
+        if (!matchesAny) return false;
+      }
+
+      // Category Selection
+      if (selectedCategory) {
+        const catMatch = supplier.categories.some((c) => c.toLowerCase().includes(selectedCategory.toLowerCase()));
+        if (!catMatch) return false;
       }
 
       // Quick Filter
@@ -227,7 +253,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
       return true;
     });
-  }, [searchQuery, activeBusinessType, quickFilters, complianceFilters]);
+  }, [searchQuery, activeBusinessType, businessTypeFilters, selectedCategory, quickFilters, complianceFilters]);
 
   const selectedSuppliersObjects = useMemo(() => {
     return VERIFIED_SUPPLIERS.filter((s) => selectedComparisonIds.includes(s.id));
@@ -244,7 +270,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
       )}
 
       {/* Top Search & Location Header Bar */}
-      <section className="bg-white border-b border-[#e8e8e8] sticky top-[72px] z-30 shadow-2xs">
+      <section className="bg-white border-b border-[#e8e8e8] sticky top-20 z-30 shadow-2xs">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10 py-3.5">
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center bg-[#f0edec] rounded-xl border border-[#e8e8e8] focus-within:ring-2 focus-within:ring-[#b90064] transition-all p-1.5 gap-2">
             
@@ -311,7 +337,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
       <div className="max-w-[1440px] mx-auto w-full flex flex-col md:flex-row">
         
         {/* Left Sticky Sidebar Filters (Desktop) */}
-        <aside className="hidden md:flex flex-col p-6 bg-white sticky top-[150px] h-[calc(100vh-150px)] w-72 border-r border-[#e8e8e8] shrink-0 overflow-y-auto">
+        <aside className="hidden md:flex flex-col p-6 bg-white sticky top-[152px] h-[calc(100vh-152px)] w-72 border-r border-[#e8e8e8] shrink-0 overflow-y-auto">
           <div className="mb-5 flex justify-between items-center pb-3 border-b border-[#f0edec]">
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-[#b90064]" />
@@ -517,32 +543,54 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
         </aside>
 
         {/* Main Directory Canvas */}
-        <main className="flex-1 p-4 md:p-8 bg-[#fdf8f8] min-h-[calc(100vh-150px)]">
+        <main className="flex-1 p-4 md:p-8 bg-[#fdf8f8] min-h-[calc(100vh-152px)]">
           
           {/* Top Sticky Business Type Pills & Quick Filters Bar */}
-          <div className="sticky top-[145px] z-20 bg-[#fdf8f8]/95 backdrop-blur-md py-3 mb-6 border-b border-[#e8e8e8]">
+          <div className="sticky top-[152px] z-20 bg-[#fdf8f8]/95 backdrop-blur-md py-3 mb-6 border-b border-[#e8e8e8]">
             {/* Primary Business Type Tabs */}
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
               {[
-                'All Suppliers',
-                'Manufacturers',
-                'Wholesalers',
-                'Distributors',
-                'Importers',
-                'OEM / Private Label'
+                { label: 'All Suppliers', key: 'All', count: VERIFIED_SUPPLIERS.length },
+                {
+                  label: 'Verified Manufacturers',
+                  key: 'Manufacturers',
+                  count: VERIFIED_SUPPLIERS.filter((s) => s.type.toLowerCase().includes('manufacturer') || s.type.toLowerCase().includes('formulator')).length
+                },
+                {
+                  label: 'Wholesalers & Stockists',
+                  key: 'Wholesalers',
+                  count: VERIFIED_SUPPLIERS.filter((s) => s.type.toLowerCase().includes('wholesaler') || s.type.toLowerCase().includes('stockist')).length
+                },
+                {
+                  label: 'National Distributors',
+                  key: 'Distributors',
+                  count: VERIFIED_SUPPLIERS.filter((s) => s.type.toLowerCase().includes('distributor')).length
+                },
+                {
+                  label: 'OEM / Private Label',
+                  key: 'OEM / Private Label',
+                  count: VERIFIED_SUPPLIERS.filter((s) => s.type.toLowerCase().includes('oem') || s.type.toLowerCase().includes('private label') || s.type.toLowerCase().includes('formulator')).length
+                }
               ].map((typeTab) => {
-                const isActive = activeBusinessType === (typeTab === 'All Suppliers' ? 'All' : typeTab);
+                const isActive = activeBusinessType === typeTab.key;
                 return (
                   <button
-                    key={typeTab}
-                    onClick={() => setActiveBusinessType(typeTab === 'All Suppliers' ? 'All' : typeTab)}
-                    className={`px-4 py-1.5 rounded-full text-[13px] font-bold transition-all whitespace-nowrap cursor-pointer ${
+                    key={typeTab.key}
+                    onClick={() => setActiveBusinessType(typeTab.key)}
+                    className={`px-4 py-1.5 rounded-full text-[13px] font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-2 ${
                       isActive
                         ? 'bg-[#b90064] text-white shadow-xs'
                         : 'bg-white border border-[#e8e8e8] text-[#1c1b1b] hover:border-[#b90064] hover:text-[#b90064]'
                     }`}
                   >
-                    {typeTab}
+                    <span>{typeTab.label}</span>
+                    <span
+                      className={`text-[11px] px-2 py-0.2 rounded-full font-extrabold ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-[#f0edec] text-[#8c7077]'
+                      }`}
+                    >
+                      {typeTab.count}
+                    </span>
                   </button>
                 );
               })}
@@ -585,13 +633,17 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-4">
               <div>
                 <h1 className="text-xl font-bold tracking-tight text-[#1c1b1b] flex items-center gap-2.5 flex-wrap">
-                  <span>{filteredSuppliers.length} Verified Suppliers found for '{selectedCategory}'</span>
+                  <span>
+                    {filteredSuppliers.length} Verified Suppliers
+                    {selectedCategory ? ` for '${selectedCategory}'` : ''}
+                    {activeBusinessType !== 'All' ? ` (${activeBusinessType})` : ''}
+                  </span>
                   <span className="bg-[#fde7f3] text-[#b90064] text-[11px] px-2.5 py-0.5 rounded-full font-bold">
-                    3 Active Filters
+                    {activeBusinessType !== 'All' ? activeBusinessType : 'Verified Hub'}
                   </span>
                 </h1>
                 <p className="text-[13px] text-[#594047] mt-1 font-medium">
-                  Verified beauty &amp; cosmetic suppliers in {selectedCity} ({distanceRadius})
+                  Verified beauty &amp; cosmetic manufacturers, wholesalers &amp; distributors across India
                 </p>
               </div>
 
@@ -773,11 +825,24 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
                           <div>
                             <div className="flex items-center gap-2 mb-1 flex-wrap pr-16">
-                              <h3 className="text-xl font-bold tracking-tight text-[#1c1b1b]">{sup.name}</h3>
-                              <span className="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 border border-amber-200">
-                                <Award className="w-3 h-3 text-amber-700" />
-                                Gold Supplier
-                              </span>
+                              <h3
+                                onClick={() => onNavigateToSupplierProfile?.(sup.id)}
+                                className="text-xl font-bold tracking-tight text-[#1c1b1b] hover:text-[#b90064] cursor-pointer transition-colors"
+                              >
+                                {sup.name}
+                              </h3>
+                              
+                              {/* Rating Widget */}
+                              <div className="flex items-center gap-1 bg-[#fff8e6] px-2 py-0.5 rounded-full border border-[#ffe082]">
+                                <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                                <span className="text-[11px] font-black text-amber-900">{sup.overallRating || 4.9}</span>
+                              </div>
+
+                              <VerifiedBadge
+                                trustScore={sup.trustScore}
+                                overallRating={sup.overallRating}
+                                size="sm"
+                              />
                               {sup.isVerified && (
                                 <span className="flex items-center gap-1 text-[#b90064] text-[12px] font-bold" title="Nexora Verified Partner">
                                   <ShieldCheck className="w-4 h-4 fill-[#b90064] text-white" />
@@ -786,17 +851,46 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                               )}
                             </div>
 
-                            <p className="text-[13px] text-[#594047] flex items-center gap-2 flex-wrap mb-2.5 font-medium">
-                              <span className="flex items-center gap-1 text-[#1c1b1b] font-semibold">
-                                <Factory className="w-3.5 h-3.5 text-[#b90064]" />
-                                {sup.type}
-                              </span>
+                            <div className="flex items-center gap-2 flex-wrap mb-2.5">
+                              {(() => {
+                                const t = sup.type.toLowerCase();
+                                if (t.includes('wholesaler') || t.includes('stockist')) {
+                                  return (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
+                                      <Package className="w-3.5 h-3.5 text-emerald-700" />
+                                      {sup.type}
+                                    </span>
+                                  );
+                                }
+                                if (t.includes('distributor')) {
+                                  return (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11.5px] font-bold bg-blue-50 text-[#0050d6] border border-blue-200 shadow-2xs">
+                                      <Building2 className="w-3.5 h-3.5 text-[#0050d6]" />
+                                      {sup.type}
+                                    </span>
+                                  );
+                                }
+                                if (t.includes('oem') || t.includes('private label')) {
+                                  return (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11.5px] font-bold bg-purple-50 text-purple-800 border border-purple-200 shadow-2xs">
+                                      <Sparkles className="w-3.5 h-3.5 text-purple-700" />
+                                      {sup.type}
+                                    </span>
+                                  );
+                                }
+                                return (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11.5px] font-bold bg-[#fde7f3] text-[#b90064] border border-[#e0bec6] shadow-2xs">
+                                    <Factory className="w-3.5 h-3.5 text-[#b90064]" />
+                                    {sup.type}
+                                  </span>
+                                );
+                              })()}
                               <span className="text-[#8c7077]">•</span>
-                              <span className="flex items-center gap-1 text-[#594047]">
+                              <span className="flex items-center gap-1 text-[13px] text-[#594047] font-medium">
                                 <MapPin className="w-3.5 h-3.5 text-[#b90064]" />
                                 {sup.city}, {sup.state}
                               </span>
-                            </p>
+                            </div>
 
                             {/* Compliance Badges */}
                             <div className="flex flex-wrap gap-1.5 mb-2">
@@ -868,7 +962,15 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                         </button>
 
                         <button
-                          onClick={() => togglePhoneReveal(sup.id)}
+                          onClick={() => onNavigateToSupplierProfile?.(sup.id)}
+                          className="bg-stone-100 hover:bg-stone-200 text-[#1c1b1b] font-bold px-3.5 py-2 rounded-xl text-[13px] flex items-center gap-1.5 transition-colors cursor-pointer border border-stone-200"
+                        >
+                          <Building2 className="w-3.5 h-3.5 text-[#b90064]" />
+                          <span>View Profile</span>
+                        </button>
+
+                        <button
+                          onClick={() => onCallSupplier(sup.name)}
                           className="bg-white border border-[#b90064] text-[#b90064] hover:bg-[#fde7f3] font-bold px-3.5 py-2 rounded-xl text-[13px] flex items-center gap-1.5 transition-colors cursor-pointer"
                         >
                           <Phone className="w-3.5 h-3.5" />
@@ -886,15 +988,13 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                           </button>
                         )}
 
-                        <a
-                          href={`https://wa.me/${sup.whatsapp}?text=Hello%20${encodeURIComponent(sup.name)},%20I%20found%20you%20on%20Nexora%20Luxe`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
+                          onClick={() => onWhatsAppSupplier(sup.name)}
                           className="bg-[#25D366]/10 text-[#075E54] border border-[#25D366]/30 px-3 py-2 rounded-xl hover:bg-[#25D366]/20 transition-colors flex items-center justify-center cursor-pointer"
                           title="Chat on WhatsApp"
                         >
                           <MessageSquare className="w-4 h-4" />
-                        </a>
+                        </button>
 
                         {/* Assets Dropdown Menu */}
                         <div className="relative">

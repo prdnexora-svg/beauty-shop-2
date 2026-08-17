@@ -120,10 +120,10 @@ export const FeaturedDeals: React.FC<FeaturedDealsProps> = ({
                     {/* Primary Send Enquiry Button (3 cols) */}
                     <button
                       onClick={() => onOpenEnquiry(deal)}
-                      className="col-span-3 bg-[#b90064] hover:bg-[#8e004b] text-white text-[12px] font-bold py-2.5 rounded-lg shadow-2xs transition-all flex items-center justify-center gap-1.5 active:scale-98"
+                      className="col-span-3 bg-[#b90064] hover:bg-[#8e004b] text-white text-[12px] font-bold py-2.5 rounded-lg shadow-2xs transition-all flex items-center justify-center gap-1.5 active:scale-98 cursor-pointer"
                     >
                       <Send className="w-3.5 h-3.5" />
-                      <span>Enquiry</span>
+                      <span>Get Best Price</span>
                     </button>
 
                     {/* Direct Call Button (1 col) */}

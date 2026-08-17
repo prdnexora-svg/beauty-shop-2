@@ -29,6 +29,9 @@ import {
 import { SearchProduct, SearchSupplier, OEMFormulation } from '../types';
 import { SEARCH_PRODUCTS, SEARCH_SUPPLIERS, SEARCH_OEM_FORMULATIONS } from '../data/mockData';
 import { ProductCompareModal } from './ProductCompareModal';
+import { SupplierComparisonModal } from './SupplierComparisonModal';
+import { FilterPanel } from './FilterPanel';
+import { VerifiedBadge } from './VerifiedBadge';
 
 interface SearchFilterScreenProps {
   initialQuery?: string;
@@ -41,6 +44,9 @@ interface SearchFilterScreenProps {
   onOpenRFQModal: () => void;
   onOpenMapModal?: (supplier: any) => void;
   onNavigateToExplore: () => void;
+  onCallSupplier: (name: string) => void;
+  onWhatsAppSupplier: (name: string) => void;
+  onNavigate: (screen: any, params?: any) => void;
 }
 
 export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
@@ -53,7 +59,10 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
   onOpenQuoteModal,
   onOpenRFQModal,
   onOpenMapModal,
-  onNavigateToExplore
+  onNavigateToExplore,
+  onCallSupplier,
+  onWhatsAppSupplier,
+  onNavigate
 }) => {
   // Search inputs
   const [searchQuery, setSearchQuery] = useState(initialQuery);
@@ -62,19 +71,39 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
   // Tab state
   const [activeTab, setActiveTab] = useState<'products' | 'suppliers' | 'oem'>('products');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sortBy, setSortBy] = useState<'verified' | 'price_asc' | 'price_desc' | 'moq_asc' | 'response'>('verified');
+  const [sortBy, setSortBy] = useState<string>('relevance');
 
   // Filter states
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    initialCategory !== 'All' ? [initialCategory] : ['Haircare', 'Skincare']
+    initialCategory !== 'All' ? [initialCategory] : ['Haircare']
   );
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
+  const [selectedSupplierTypes, setSelectedSupplierTypes] = useState<string[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<string>('All');
-  const [selectedMoqTier, setSelectedMoqTier] = useState<'all' | 'lt_100' | '100_500' | 'gt_500'>('100_500');
-  const [isGstOnly, setIsGstOnly] = useState(true);
+  const [selectedDistance, setSelectedDistance] = useState<string>('Pan India');
+  const [selectedMoqTier, setSelectedMoqTier] = useState<'all' | 'lt_100' | '100_500' | 'gt_500'>('all');
+  const [isGstOnly, setIsGstOnly] = useState(false);
   const [isIsoOnly, setIsIsoOnly] = useState(false);
   const [isNexoraVerifiedOnly, setIsNexoraVerifiedOnly] = useState(false);
+  const [isBusinessVerifiedOnly, setIsBusinessVerifiedOnly] = useState(false);
   const [maxPrice, setMaxPrice] = useState<number>(5000);
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
+
+  // Category & Subcategory Data
+  const CATEGORIES = [
+    { name: 'Haircare', subcategories: ['Hair Serum', 'Hair Oil', 'Hair Mask', 'Keratin Treatment', 'Shampoo', 'Conditioner'] },
+    { name: 'Skincare', subcategories: ['Facial Kit', 'Serum', 'Moisturizer', 'Sunscreen', 'Cleanser'] },
+    { name: 'Professional Treatments', subcategories: ['Chemical Peel', 'Meso Solutions', 'Botox Alternatives'] },
+    { name: 'Salon Products', subcategories: ['Furniture', 'Hair Styling Tools', 'Spa Equipment'] },
+    { name: 'OEM / Private Label', subcategories: ['Custom Formulation', 'Packaging Solutions', 'Contract Manufacturing'] }
+  ];
+
+  const availableSubcategories = useMemo(() => {
+    if (selectedCategories.length === 0) return [];
+    return CATEGORIES
+      .filter(cat => selectedCategories.includes(cat.name))
+      .flatMap(cat => cat.subcategories);
+  }, [selectedCategories]);
 
   // Mobile Filter Drawer
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
@@ -82,6 +111,9 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
   // Comparison State
   const [comparedProductIds, setComparedProductIds] = useState<string[]>(['sp-1', 'sp-2']);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+
+  const [comparedSupplierIds, setComparedSupplierIds] = useState<string[]>([]);
+  const [isSupplierCompareModalOpen, setIsSupplierCompareModalOpen] = useState(false);
 
   // Active filter chips list
   const activeChips = useMemo(() => {
@@ -95,6 +127,22 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
       });
     });
 
+    selectedSubcategories.forEach((sub) => {
+      chips.push({
+        id: `sub-${sub}`,
+        label: sub,
+        onRemove: () => setSelectedSubcategories((prev) => prev.filter((s) => s !== sub))
+      });
+    });
+
+    selectedSupplierTypes.forEach((type) => {
+      chips.push({
+        id: `type-${type}`,
+        label: type,
+        onRemove: () => setSelectedSupplierTypes((prev) => prev.filter((t) => t !== type))
+      });
+    });
+
     if (selectedLocation && selectedLocation !== 'All') {
       chips.push({
         id: 'filter-selected-loc',
@@ -104,11 +152,13 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
           setLocationQuery('All India');
         }
       });
-    } else if (locationQuery && locationQuery.trim() && !locationQuery.toLowerCase().includes('all india')) {
+    }
+
+    if (selectedDistance && selectedDistance !== 'Pan India') {
       chips.push({
-        id: 'filter-loc-query',
-        label: `📍 ${locationQuery.split(',')[0]}`,
-        onRemove: () => setLocationQuery('All India')
+        id: 'filter-dist',
+        label: selectedDistance,
+        onRemove: () => setSelectedDistance('Pan India')
       });
     }
 
@@ -140,40 +190,63 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
       });
     }
 
-    if (isIsoOnly) {
-      chips.push({
-        id: 'filter-iso',
-        label: 'ISO/GMP Certified',
-        onRemove: () => setIsIsoOnly(false)
-      });
-    }
-
     if (isNexoraVerifiedOnly) {
       chips.push({
         id: 'filter-tier1',
-        label: 'Tier-1 Audited',
+        label: 'Nexora Verified',
         onRemove: () => setIsNexoraVerifiedOnly(false)
       });
     }
 
+    if (isBusinessVerifiedOnly) {
+      chips.push({
+        id: 'filter-biz-ver',
+        label: 'Business Verified',
+        onRemove: () => setIsBusinessVerifiedOnly(false)
+      });
+    }
+
     return chips;
-  }, [selectedCategories, selectedLocation, selectedMoqTier, isGstOnly, isIsoOnly, isNexoraVerifiedOnly, locationQuery]);
+  }, [selectedCategories, selectedSubcategories, selectedSupplierTypes, selectedLocation, selectedDistance, selectedMoqTier, isGstOnly, isNexoraVerifiedOnly, isBusinessVerifiedOnly]);
 
   const handleClearAllFilters = () => {
     setSelectedCategories([]);
+    setSelectedSubcategories([]);
+    setSelectedSupplierTypes([]);
     setSelectedLocation('All');
+    setSelectedDistance('Pan India');
     setSelectedMoqTier('all');
     setIsGstOnly(false);
     setIsIsoOnly(false);
     setIsNexoraVerifiedOnly(false);
+    setIsBusinessVerifiedOnly(false);
     setMaxPrice(5000);
     setLocationQuery('All India');
     setSearchQuery('');
   };
 
   const toggleCategory = (cat: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+    setSelectedCategories((prev) => {
+      const isRemoving = prev.includes(cat);
+      if (isRemoving) {
+        // Also remove subcategories belonging to this category
+        const subcatsToRemove = CATEGORIES.find(c => c.name === cat)?.subcategories || [];
+        setSelectedSubcategories(s => s.filter(sub => !subcatsToRemove.includes(sub)));
+        return prev.filter((c) => c !== cat);
+      }
+      return [...prev, cat];
+    });
+  };
+
+  const toggleSubcategory = (sub: string) => {
+    setSelectedSubcategories((prev) =>
+      prev.includes(sub) ? prev.filter((s) => s !== sub) : [...prev, sub]
+    );
+  };
+
+  const toggleSupplierType = (type: string) => {
+    setSelectedSupplierTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     );
   };
 
@@ -194,9 +267,26 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
     });
   };
 
+  const toggleSupplierCompare = (id: string) => {
+    setComparedSupplierIds((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((item) => item !== id);
+      }
+      if (prev.length >= 3) {
+        alert('You can compare a maximum of 3 suppliers at a time.');
+        return prev;
+      }
+      return [...prev, id];
+    });
+  };
+
   const comparedProducts = useMemo(() => {
     return SEARCH_PRODUCTS.filter((p) => comparedProductIds.includes(p.id));
   }, [comparedProductIds]);
+
+  const comparedSuppliers = useMemo(() => {
+    return SEARCH_SUPPLIERS.filter((s) => comparedSupplierIds.includes(s.id));
+  }, [comparedSupplierIds]);
 
   // Filtered Products
   const filteredProducts = useMemo(() => {
@@ -223,9 +313,14 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
 
       // Category match
       if (selectedCategories.length > 0) {
-        if (!selectedCategories.some((c) => p.category.toLowerCase().includes(c.toLowerCase()))) {
-          return false;
-        }
+        const matchesCat = selectedCategories.some((c) => p.category.toLowerCase().includes(c.toLowerCase()));
+        if (!matchesCat) return false;
+      }
+
+      // Subcategory match
+      if (selectedSubcategories.length > 0) {
+        const matchesSub = selectedSubcategories.some((s) => p.title.toLowerCase().includes(s.toLowerCase()));
+        if (!matchesSub) return false;
       }
 
       if (selectedMoqTier === 'lt_100' && p.moqNumber >= 100) return false;
@@ -293,9 +388,16 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
         if (!matchesCat) return false;
       }
 
+      // Supplier Type match
+      if (selectedSupplierTypes.length > 0) {
+        const matchesType = selectedSupplierTypes.some((type) => s.type.toLowerCase().includes(type.toLowerCase()));
+        if (!matchesType) return false;
+      }
+
       if (isGstOnly && !s.isGstVerified) return false;
       if (isIsoOnly && !s.isIsoCertified) return false;
       if (isNexoraVerifiedOnly && !s.isNexoraVerified) return false;
+      if (isBusinessVerifiedOnly && !s.isBusinessVerified) return false;
 
       return true;
     }).sort((a, b) => {
@@ -364,7 +466,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
     <div className="bg-[#fdf8f8] min-h-screen text-[#1c1b1b] flex flex-col pb-28">
       
       {/* Sticky Search & Filter Header */}
-      <div className="bg-[#fcf9f8]/95 backdrop-blur-sm sticky top-[72px] z-30 border-b border-[#e8e8e8] py-4 shadow-2xs">
+      <div className="bg-[#fcf9f8]/95 backdrop-blur-sm sticky top-20 z-30 border-b border-[#e8e8e8] py-4 shadow-2xs">
         <div className="max-w-[1440px] mx-auto px-5 md:px-10 flex flex-col gap-3">
           
           {/* Search Inputs Row */}
@@ -463,179 +565,36 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
         
         {/* Sidebar Filters (Desktop) */}
         <aside className="hidden md:block w-64 shrink-0">
-          <div className="sticky top-[180px] flex flex-col gap-6 max-h-[calc(100vh-200px)] overflow-y-auto pb-8 pr-2">
-            
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-[#1c1b1b]">Filters</h2>
-              <SlidersHorizontal className="w-4 h-4 text-[#594047]" />
-            </div>
-
-            {/* Category Filter */}
-            <div className="flex flex-col gap-3 border-t border-[#e8e8e8] pt-4">
-              <h3 className="text-[13px] font-bold uppercase tracking-wider text-[#594047]">Category</h3>
-              <div className="flex flex-col gap-2.5">
-                {[
-                  { name: 'Haircare', count: 120 },
-                  { name: 'Skincare', count: 85 },
-                  { name: 'Body Care', count: 43 },
-                  { name: 'Salon Equipment', count: 28 },
-                  { name: 'Packaging', count: 64 },
-                  { name: 'Raw Materials', count: 35 }
-                ].map((item) => (
-                  <label key={item.name} className="flex items-center justify-between cursor-pointer group select-none">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedCategories.includes(item.name)}
-                        onChange={() => toggleCategory(item.name)}
-                        className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
-                      />
-                      <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
-                        {item.name}
-                      </span>
-                    </div>
-                    <span className="text-[11px] text-[#8c7077]">({item.count})</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Manufacturing Hubs / Location Filter */}
-            <div className="flex flex-col gap-3 border-t border-[#e8e8e8] pt-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-[13px] font-bold uppercase tracking-wider text-[#594047]">Manufacturing Hub</h3>
-                {selectedLocation !== 'All' && (
-                  <button
-                    onClick={() => {
-                      setSelectedLocation('All');
-                      setLocationQuery('All India');
-                    }}
-                    className="text-[11px] text-[#b90064] hover:underline font-semibold"
-                  >
-                    Reset
-                  </button>
-                )}
-              </div>
-              <div className="flex flex-col gap-2">
-                {[
-                  { id: 'All', label: 'All India Hubs' },
-                  { id: 'Mumbai', label: 'Mumbai, Maharashtra' },
-                  { id: 'Delhi', label: 'Delhi NCR' },
-                  { id: 'Pune', label: 'Pune, Maharashtra' },
-                  { id: 'Ahmedabad', label: 'Ahmedabad, Gujarat' },
-                  { id: 'Bengaluru', label: 'Bengaluru, Karnataka' }
-                ].map((hub) => (
-                  <label key={hub.id} className="flex items-center gap-2 cursor-pointer group select-none">
-                    <input
-                      type="radio"
-                      name="hub-location"
-                      checked={selectedLocation === hub.id}
-                      onChange={() => {
-                        setSelectedLocation(hub.id);
-                        setLocationQuery(hub.id === 'All' ? 'All India' : hub.label);
-                      }}
-                      className="border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
-                    />
-                    <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
-                      {hub.label}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Target Price Filter Slider */}
-            <div className="flex flex-col gap-3 border-t border-[#e8e8e8] pt-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-[13px] font-bold uppercase tracking-wider text-[#594047]">Max Price (₹/unit)</h3>
-                <span className="text-[12px] font-bold text-[#b90064]">₹{maxPrice >= 5000 ? '5,000+' : maxPrice}</span>
-              </div>
-              <input
-                type="range"
-                min="50"
-                max="5000"
-                step="50"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-full accent-[#b90064] cursor-pointer"
-              />
-              <div className="flex justify-between text-[11px] font-medium text-[#8c7077]">
-                <span>₹50</span>
-                <span>₹2,500</span>
-                <span>₹5,000+</span>
-              </div>
-            </div>
-
-            {/* MOQ Filter Radios */}
-            <div className="flex flex-col gap-3 border-t border-[#e8e8e8] pt-4">
-              <h3 className="text-[13px] font-bold uppercase tracking-wider text-[#594047]">Min. Order Quantity (MOQ)</h3>
-              <div className="flex flex-col gap-2.5">
-                {[
-                  { id: 'all', label: 'All MOQs' },
-                  { id: 'lt_100', label: '< 100 units (Sample Ready)' },
-                  { id: '100_500', label: '100 - 500 units' },
-                  { id: 'gt_500', label: '500+ units (Direct Factory)' }
-                ].map((tier) => (
-                  <label key={tier.id} className="flex items-center gap-2 cursor-pointer group select-none">
-                    <input
-                      type="radio"
-                      name="moq-filter"
-                      checked={selectedMoqTier === tier.id}
-                      onChange={() => setSelectedMoqTier(tier.id as any)}
-                      className="border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
-                    />
-                    <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
-                      {tier.label}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Verification & Trust */}
-            <div className="flex flex-col gap-3 border-t border-[#e8e8e8] pt-4">
-              <h3 className="text-[13px] font-bold uppercase tracking-wider text-[#594047]">Verification &amp; Trust</h3>
-              <div className="flex flex-col gap-2.5">
-                <label className="flex items-center gap-2 cursor-pointer group select-none">
-                  <input
-                    type="checkbox"
-                    checked={isGstOnly}
-                    onChange={(e) => setIsGstOnly(e.target.checked)}
-                    className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
-                  />
-                  <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
-                    GST Verified Only
-                  </span>
-                </label>
-
-                <label className="flex items-center gap-2 cursor-pointer group select-none">
-                  <input
-                    type="checkbox"
-                    checked={isIsoOnly}
-                    onChange={(e) => setIsIsoOnly(e.target.checked)}
-                    className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
-                  />
-                  <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
-                    ISO 9001 / GMP Certified
-                  </span>
-                </label>
-
-                <label className="flex items-center gap-2 cursor-pointer group select-none">
-                  <input
-                    type="checkbox"
-                    checked={isNexoraVerifiedOnly}
-                    onChange={(e) => setIsNexoraVerifiedOnly(e.target.checked)}
-                    className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
-                  />
-                  <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
-                    Tier-1 Audited Partners
-                  </span>
-                </label>
-              </div>
-            </div>
+          <div className="sticky top-[180px] flex flex-col gap-6 max-h-[calc(100vh-200px)] overflow-y-auto pb-8 pr-2 custom-scrollbar">
+            <FilterPanel
+              categories={CATEGORIES}
+              selectedCategories={selectedCategories}
+              toggleCategory={toggleCategory}
+              availableSubcategories={availableSubcategories}
+              selectedSubcategories={selectedSubcategories}
+              toggleSubcategory={toggleSubcategory}
+              selectedLocation={selectedLocation}
+              setSelectedLocation={setSelectedLocation}
+              setLocationQuery={setLocationQuery}
+              selectedDistance={selectedDistance}
+              setSelectedDistance={setSelectedDistance}
+              selectedSupplierTypes={selectedSupplierTypes}
+              toggleSupplierType={toggleSupplierType}
+              selectedMoqTier={selectedMoqTier}
+              setSelectedMoqTier={setSelectedMoqTier}
+              isGstOnly={isGstOnly}
+              setIsGstOnly={setIsGstOnly}
+              isNexoraVerifiedOnly={isNexoraVerifiedOnly}
+              setIsNexoraVerifiedOnly={setIsNexoraVerifiedOnly}
+              isBusinessVerifiedOnly={isBusinessVerifiedOnly}
+              setIsBusinessVerifiedOnly={setIsBusinessVerifiedOnly}
+              maxPrice={maxPrice}
+              setMaxPrice={setMaxPrice}
+              onClearAll={handleClearAllFilters}
+            />
 
             {/* Live Market Demand Widget */}
-            <div className="bg-[#f7f2f2] border border-[#e8e8e8] rounded-xl p-4 relative overflow-hidden group hover:border-[#b90064]/50 transition-colors shadow-2xs">
+            <div className="bg-[#f7f2f2] border border-[#e8e8e8] rounded-xl p-4 relative overflow-hidden group hover:border-[#b90064]/50 transition-colors shadow-2xs mt-4">
               <div className="flex items-center gap-2 mb-2">
                 <span className="w-2 h-2 rounded-full bg-[#b90064] animate-pulse"></span>
                 <h4 className="text-[12px] font-bold uppercase tracking-wider text-[#b90064]">Live Market Demand</h4>
@@ -658,13 +617,49 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                 Submit Quote
               </button>
             </div>
-
           </div>
         </aside>
 
         {/* Right Main Results Area */}
         <div className="flex-1 flex flex-col min-w-0">
           
+          {/* Result Summary Bar */}
+          <div className="mb-6 bg-white border border-[#e8e8e8] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
+            <div className="flex flex-col gap-1">
+              <h2 className="text-[18px] font-extrabold text-[#1c1b1b]">
+                {activeTab === 'products' ? filteredProducts.length : activeTab === 'suppliers' ? filteredSuppliers.length : filteredOem.length} results for <span className="text-[#b90064]">“{searchQuery}”</span>
+              </h2>
+              <div className="flex items-center gap-2 text-[12px] font-bold text-[#594047]">
+                <MapPin className="w-3.5 h-3.5 text-[#b90064]" />
+                <span>{locationQuery}</span>
+                <span className="mx-1 opacity-40">•</span>
+                <span>Sorted by: {
+                  activeTab === 'products' ? 
+                    (sortBy === 'relevance' ? 'Relevance' : sortBy === 'most_enquired' ? 'Most Enquired' : sortBy === 'newest' ? 'Newest' : sortBy === 'price_asc' ? 'Price: Low to High' : sortBy === 'price_desc' ? 'Price: High to Low' : 'Lowest MOQ') :
+                  activeTab === 'suppliers' ?
+                    (sortBy === 'relevance' ? 'Relevance' : sortBy === 'verified' ? 'Verified First' : sortBy === 'fast_response' ? 'Fastest Response' : 'Most Products') :
+                    (sortBy === 'relevance' ? 'Relevance' : sortBy === 'verified' ? 'Verified First' : sortBy === 'moq_asc' ? 'Lowest MOQ' : 'Fastest Lead Time')
+                }</span>
+              </div>
+            </div>
+
+            {activeChips.length > 0 && (
+              <div className="flex flex-wrap gap-2 items-center">
+                <span className="text-[11px] font-bold text-[#8c7077] uppercase mr-1">Active Filters:</span>
+                {activeChips.map((chip) => (
+                  <button
+                    key={chip.id}
+                    onClick={chip.onRemove}
+                    className="flex items-center gap-1.5 bg-[#f7f2f2] border border-[#e8e8e8] px-2.5 py-1 rounded-lg text-[11px] font-bold text-[#594047] hover:border-[#b90064] hover:text-[#b90064] transition-all group"
+                  >
+                    {chip.label}
+                    <X className="w-3 h-3 opacity-60 group-hover:opacity-100" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Tabs & Sorting Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#e8e8e8] pb-4 mb-6 gap-4">
             
@@ -706,6 +701,26 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
 
             {/* Sorting & View Mode Switcher */}
             <div className="flex items-center gap-3 shrink-0">
+              {activeTab === 'products' && comparedProductIds.length > 0 && (
+                <button
+                  onClick={() => setIsCompareModalOpen(true)}
+                  className="bg-[#fde7f3] hover:bg-[#fbd0e8] text-[#b90064] text-[12px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all shadow-2xs border border-[#b90064]/20"
+                >
+                  <ArrowLeftRight className="w-3.5 h-3.5" />
+                  <span>Compare ({comparedProductIds.length})</span>
+                </button>
+              )}
+
+              {activeTab === 'suppliers' && comparedSupplierIds.length > 0 && (
+                <button
+                  onClick={() => setIsSupplierCompareModalOpen(true)}
+                  className="bg-[#fde7f3] hover:bg-[#fbd0e8] text-[#b90064] text-[12px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all shadow-2xs border border-[#b90064]/20"
+                >
+                  <ArrowLeftRight className="w-3.5 h-3.5" />
+                  <span>Compare ({comparedSupplierIds.length})</span>
+                </button>
+              )}
+
               <div className="flex items-center border border-[#e8e8e8] rounded-lg bg-white p-1">
                 <button
                   onClick={() => setViewMode('grid')}
@@ -730,14 +745,35 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
               <div className="relative">
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  className="bg-white border border-[#e8e8e8] hover:border-[#8c7077] rounded-lg px-3 py-1.5 text-[12px] font-semibold text-[#1c1b1b] focus:outline-none focus:border-[#b90064] cursor-pointer"
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="bg-white border border-[#e8e8e8] hover:border-[#8c7077] rounded-lg px-3 py-1.5 text-[12px] font-semibold text-[#1c1b1b] focus:outline-none focus:border-[#b90064] cursor-pointer appearance-none pr-8"
                 >
-                  <option value="verified">Sort: Verified First</option>
-                  <option value="price_asc">Price: Low to High</option>
-                  <option value="price_desc">Price: High to Low</option>
-                  <option value="moq_asc">MOQ: Lowest First</option>
+                  {activeTab === 'products' ? (
+                    <>
+                      <option value="relevance">Relevance</option>
+                      <option value="most_enquired">Most Enquired</option>
+                      <option value="newest">Newest</option>
+                      <option value="price_asc">Price: Low to High</option>
+                      <option value="price_desc">Price: High to Low</option>
+                      <option value="moq_asc">Lowest MOQ</option>
+                    </>
+                  ) : activeTab === 'suppliers' ? (
+                    <>
+                      <option value="relevance">Relevance</option>
+                      <option value="verified">Verified First</option>
+                      <option value="fast_response">Fastest Response</option>
+                      <option value="most_products">Most Products</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="relevance">Relevance</option>
+                      <option value="verified">Verified First</option>
+                      <option value="moq_asc">Lowest MOQ</option>
+                      <option value="fast_lead">Fastest Lead Time</option>
+                    </>
+                  )}
                 </select>
+                <ChevronDown className="w-3.5 h-3.5 text-[#594047] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             </div>
 
@@ -869,25 +905,36 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                             </div>
 
                             {/* Action CTAs */}
-                            <div className="flex flex-col gap-2 mt-auto">
+                            <div className="flex gap-2 mt-auto">
                               <button
                                 onClick={() => onOpenEnquiryModal(prod)}
-                                className="w-full bg-[#b90064] hover:bg-[#8e004b] text-white font-bold text-[13px] py-2.5 rounded-xl shadow-xs transition-opacity cursor-pointer text-center"
+                                className="flex-1 bg-[#b90064] hover:bg-[#8e004b] text-white font-bold text-[13px] py-2.5 rounded-xl shadow-xs transition-opacity cursor-pointer text-center"
                               >
-                                Get Quick Quote
+                                Get Quote
                               </button>
-                              <button
-                                onClick={() => {
-                                  onOpenEnquiryModal({
-                                    ...prod,
-                                    title: `[Sample Request] ${prod.title}`
-                                  });
-                                }}
-                                className="w-full border border-[#e8e8e8] hover:border-[#b90064] hover:text-[#b90064] text-[#594047] font-bold text-[13px] py-2.5 rounded-xl transition-all cursor-pointer text-center bg-transparent"
-                              >
-                                Request Sample
-                              </button>
+                              <div className="flex gap-1.5">
+                                <button
+                                  onClick={() => onCallSupplier(prod.supplierName)}
+                                  className="px-3 py-2.5 border border-[#e8e8e8] text-[#594047] hover:bg-[#f7f2f2] rounded-xl transition-colors flex items-center justify-center"
+                                  title="Call Supplier"
+                                >
+                                  <Phone className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => onWhatsAppSupplier(prod.supplierName)}
+                                  className="px-3 py-2.5 border border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white rounded-xl transition-colors flex items-center justify-center"
+                                  title="WhatsApp Direct"
+                                >
+                                  <MessageCircle className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
+                            <button
+                              onClick={() => onNavigate('sample-request')}
+                              className="w-full mt-2 border border-[#e8e8e8] hover:border-[#b90064] hover:text-[#b90064] text-[#594047] font-bold text-[12px] py-2 rounded-xl transition-all cursor-pointer text-center bg-transparent"
+                            >
+                              Request Sample
+                            </button>
 
                           </div>
                         </motion.div>
@@ -973,6 +1020,20 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                                     {saved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
                                   </button>
                                 )}
+                                <label className="flex items-center gap-1.5 bg-[#fcf9f8] px-2 py-1.5 rounded-lg border border-[#e8e8e8] cursor-pointer hover:bg-[#fde7f3]/50 transition-all select-none">
+                                  <input
+                                    type="checkbox"
+                                    checked={comparedSupplierIds.includes(sup.id)}
+                                    onChange={() => toggleSupplierCompare(sup.id)}
+                                    className="w-3.5 h-3.5 accent-[#b90064] rounded cursor-pointer"
+                                  />
+                                  <span className="text-[11px] font-bold text-[#594047]">Compare</span>
+                                </label>
+                                <VerifiedBadge
+                                  trustScore={sup.trustScore}
+                                  overallRating={sup.overallRating}
+                                  size="sm"
+                                />
                                 <span className="text-[11px] font-bold text-[#b90064] bg-[#fde7f3] px-2 py-0.5 rounded-full block">
                                   {sup.trustScore}/100 Trust
                                 </span>
@@ -1012,17 +1073,22 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                               className="flex-1 bg-[#b90064] hover:bg-[#8e004b] text-white font-bold text-[12px] py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5"
                             >
                               <Send className="w-3.5 h-3.5" />
-                              Contact Supplier
+                              Contact
                             </button>
-                            <a
-                              href={`https://wa.me/${sup.whatsapp}?text=Hi%20${encodeURIComponent(sup.name)},%20I%20found%20your%20verified%20profile%20on%20Nexora%20Luxe.`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-3 py-2 border border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white rounded-lg transition-colors flex items-center justify-center gap-1 text-[12px] font-bold"
+                            <button
+                              onClick={() => onCallSupplier(sup.name)}
+                              className="px-3 py-2 border border-[#e8e8e8] text-[#594047] hover:bg-[#f7f2f2] rounded-lg transition-colors flex items-center justify-center"
+                              title="Call Supplier"
                             >
+                              <Phone className="w-4 h-4" />
+                            </button>
+                             <button
+                               onClick={() => onWhatsAppSupplier(sup.name)}
+                               className="px-3 py-2 border border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white rounded-lg transition-colors flex items-center justify-center gap-1 text-[12px] font-bold"
+                               title="WhatsApp Direct"
+                             >
                               <MessageCircle className="w-4 h-4" />
-                              WhatsApp
-                            </a>
+                            </button>
                           </div>
                         </motion.div>
                       );
@@ -1093,28 +1159,55 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                           </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row md:flex-col items-end gap-2 w-full md:w-auto shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[#e8e8e8]">
+                        <div className="flex flex-col sm:flex-row md:flex-col items-end gap-3 w-full md:w-auto shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[#e8e8e8]">
                           <div className="text-right">
                             <span className="text-[11px] text-[#8c7077] block">Target Unit Cost</span>
                             <strong className="text-[15px] font-bold text-[#b90064]">{oem.targetPrice}</strong>
                             <span className="text-[10px] text-[#594047] block">MOQ: {oem.moq}</span>
                           </div>
-                          <button
-                            onClick={() =>
-                              onOpenEnquiryModal({
-                                title: `OEM Private Label Inquiry: ${oem.title}`,
-                                supplierName: oem.developer,
-                                supplierLocation: oem.location,
-                                moq: oem.moq,
-                                price: oem.targetPrice,
-                                image: oem.image
-                              })
-                            }
-                            className="w-full sm:w-auto bg-[#b90064] hover:bg-[#8e004b] text-white font-bold text-[12px] px-5 py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
-                          >
-                            <FlaskConical className="w-3.5 h-3.5" />
-                            Request OEM Dossier &amp; Sample
-                          </button>
+                          <div className="flex flex-col gap-2 w-full">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => onNavigate('sample-request')}
+                                className="flex-1 bg-[#1c1b1b] text-white font-bold text-[12px] px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 hover:bg-[#313030]"
+                              >
+                                <FlaskConical className="w-3.5 h-3.5" />
+                                Request Sample
+                              </button>
+                              <button
+                                onClick={() =>
+                                  onOpenEnquiryModal({
+                                    title: `OEM Private Label Inquiry: ${oem.title}`,
+                                    supplierName: oem.developer,
+                                    supplierLocation: oem.location,
+                                    moq: oem.moq,
+                                    price: oem.targetPrice,
+                                    image: oem.image
+                                  })
+                                }
+                                className="flex-1 bg-[#b90064] hover:bg-[#8e004b] text-white font-bold text-[12px] px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+                              >
+                                <Send className="w-3.5 h-3.5" />
+                                Contact
+                              </button>
+                            </div>
+                            <div className="flex gap-1.5">
+                              <button
+                                onClick={() => onCallSupplier(oem.developer)}
+                                className="flex-1 py-2 border border-[#e8e8e8] text-[#594047] hover:bg-[#f7f2f2] rounded-lg transition-colors flex items-center justify-center gap-2"
+                              >
+                                <Phone className="w-3.5 h-3.5" />
+                                <span className="text-[11px] font-bold">Call Lab</span>
+                              </button>
+                              <button
+                                onClick={() => onWhatsAppSupplier(oem.developer)}
+                                className="flex-1 py-2 border border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+                              >
+                                <MessageCircle className="w-3.5 h-3.5" />
+                                <span className="text-[11px] font-bold">WhatsApp</span>
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </motion.div>
                     ))}
@@ -1128,8 +1221,8 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
 
       </main>
 
-      {/* Floating Comparison Dock */}
-      {comparedProducts.length > 0 && (
+      {/* Floating Comparison Dock (Products) */}
+      {comparedProducts.length > 0 && activeTab === 'products' && (
         <div
           id="floating-compare-dock"
           className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white border border-[#e8e8e8] rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-5 py-3.5 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-[92%] max-w-3xl animate-in slide-in-from-bottom-5 duration-200"
@@ -1141,12 +1234,6 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                 {comparedProducts.length}/4 Selected
               </span>
             </div>
-            <button
-              onClick={() => setComparedProductIds([])}
-              className="sm:hidden text-[12px] font-semibold text-[#8c7077] hover:text-red-600"
-            >
-              Clear
-            </button>
           </div>
 
           <div className="flex items-center gap-2.5 flex-1 overflow-x-auto no-scrollbar py-1">
@@ -1165,32 +1252,71 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                 </button>
               </div>
             ))}
+          </div>
 
-            {/* Empty Slots */}
-            {Array.from({ length: Math.max(0, 4 - comparedProducts.length) }).map((_, idx) => (
+          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+            <button
+              onClick={() => setComparedProductIds([])}
+              className="text-[12px] font-semibold text-[#594047] hover:text-red-600 transition-colors px-2 py-1"
+            >
+              Clear
+            </button>
+            <button
+              onClick={() => setIsCompareModalOpen(true)}
+              className="w-full sm:w-auto bg-[#0050d6] hover:bg-[#0040ab] text-white font-bold text-[13px] px-5 py-2.5 rounded-xl shadow-xs transition-colors whitespace-nowrap flex items-center justify-center gap-1.5"
+            >
+              <ArrowLeftRight className="w-4 h-4" />
+              Compare Specs
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Comparison Dock (Suppliers) */}
+      {comparedSupplierIds.length > 0 && activeTab === 'suppliers' && (
+        <div
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white border border-[#e8e8e8] rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-5 py-3.5 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-[92%] max-w-3xl animate-in slide-in-from-bottom-5 duration-200"
+        >
+          <div className="flex items-center justify-between w-full sm:w-auto sm:block shrink-0">
+            <div>
+              <span className="font-bold text-[14px] text-[#1c1b1b] block">Compare Suppliers</span>
+              <span className="text-[12px] font-semibold text-[#b90064]">
+                {comparedSupplierIds.length}/3 Selected
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 flex-1 overflow-x-auto no-scrollbar py-1">
+            {comparedSuppliers.map((sup) => (
               <div
-                key={idx}
-                className="w-12 h-12 rounded-lg border border-dashed border-[#e0bec6] flex items-center justify-center text-[#8c7077] shrink-0"
+                key={sup.id}
+                className="w-12 h-12 rounded-lg border border-[#e8e8e8] overflow-hidden relative group shrink-0 shadow-2xs bg-[#fdf8f8] flex items-center justify-center"
               >
-                <span className="text-xs">+</span>
+                <div className="text-[10px] font-bold text-[#b90064] truncate px-1">{sup.name.split(' ')[0]}</div>
+                <button
+                  onClick={() => toggleSupplierCompare(sup.id)}
+                  className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center text-white transition-opacity"
+                  title="Remove"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </div>
             ))}
           </div>
 
           <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
             <button
-              onClick={() => setComparedProductIds([])}
-              className="hidden sm:block text-[12px] font-semibold text-[#594047] hover:text-red-600 transition-colors px-2 py-1"
+              onClick={() => setComparedSupplierIds([])}
+              className="text-[12px] font-semibold text-[#594047] hover:text-red-600 transition-colors px-2 py-1"
             >
               Clear
             </button>
             <button
-              id="open-compare-specs-btn"
-              onClick={() => setIsCompareModalOpen(true)}
-              className="w-full sm:w-auto bg-[#0050d6] hover:bg-[#0040ab] text-white font-bold text-[13px] px-5 py-2.5 rounded-xl shadow-xs transition-colors whitespace-nowrap flex items-center justify-center gap-1.5"
+              onClick={() => setIsSupplierCompareModalOpen(true)}
+              className="w-full sm:w-auto bg-[#b90064] hover:bg-[#8e004b] text-white font-bold text-[13px] px-5 py-2.5 rounded-xl shadow-xs transition-colors whitespace-nowrap flex items-center justify-center gap-1.5"
             >
               <ArrowLeftRight className="w-4 h-4" />
-              Compare Specs
+              Compare Business Stats
             </button>
           </div>
         </div>
@@ -1205,72 +1331,81 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
         onOpenEnquiry={(product) => onOpenEnquiryModal(product)}
       />
 
+      {/* Supplier Comparison Modal */}
+      <SupplierComparisonModal
+        isOpen={isSupplierCompareModalOpen}
+        onClose={() => setIsSupplierCompareModalOpen(false)}
+        selectedSuppliers={comparedSuppliers}
+        allSuppliers={SEARCH_SUPPLIERS}
+        onAddSupplier={(s) => toggleSupplierCompare(s.id)}
+        onRemoveSupplier={(id) => toggleSupplierCompare(id)}
+        onClearAll={() => setComparedSupplierIds([])}
+        onOpenEnquiry={(s) => onOpenEnquiryModal({ supplierName: s.name, supplierLocation: s.city })}
+        onCallSupplier={onCallSupplier}
+        onWhatsAppSupplier={onWhatsAppSupplier}
+      />
+
       {/* Mobile Filter Drawer Overlay */}
       {isMobileFilterOpen && (
-        <div className="fixed inset-0 z-50 flex bg-black/50 backdrop-blur-xs md:hidden animate-in fade-in">
-          <div className="bg-white w-[85%] max-w-sm h-full p-6 flex flex-col justify-between overflow-y-auto">
-            <div>
-              <div className="flex items-center justify-between pb-4 border-b border-[#e8e8e8] mb-4">
-                <h3 className="font-bold text-lg text-[#1c1b1b]">Filter Products</h3>
-                <button onClick={() => setIsMobileFilterOpen(false)} className="p-1 text-[#8c7077]">
-                  <X className="w-5 h-5" />
-                </button>
+        <div className="fixed inset-0 z-[100] flex bg-black/60 backdrop-blur-sm md:hidden animate-in fade-in">
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="ml-auto w-[85%] max-w-sm h-full bg-white flex flex-col shadow-2xl"
+          >
+            <div className="flex items-center justify-between p-5 border-b border-[#e8e8e8]">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="w-4 h-4 text-[#b90064]" />
+                <h2 className="text-lg font-bold text-[#1c1b1b]">Filters</h2>
               </div>
-
-              {/* Category mobile checkboxes */}
-              <div className="space-y-3 mb-6">
-                <h4 className="text-xs font-bold uppercase text-[#8c7077]">Categories</h4>
-                {['Haircare', 'Skincare', 'Body Care', 'Salon Equipment', 'Packaging'].map((cat) => (
-                  <label key={cat} className="flex items-center gap-2 text-sm text-[#1c1b1b]">
-                    <input
-                      type="checkbox"
-                      checked={selectedCategories.includes(cat)}
-                      onChange={() => toggleCategory(cat)}
-                      className="rounded text-[#b90064] accent-[#b90064]"
-                    />
-                    {cat}
-                  </label>
-                ))}
-              </div>
-
-              {/* MOQ radio options */}
-              <div className="space-y-3 mb-6">
-                <h4 className="text-xs font-bold uppercase text-[#8c7077]">MOQ Tier</h4>
-                {[
-                  { id: 'all', label: 'All MOQs' },
-                  { id: 'lt_100', label: '< 100 units' },
-                  { id: '100_500', label: '100 - 500 units' },
-                  { id: 'gt_500', label: '500+ units' }
-                ].map((tier) => (
-                  <label key={tier.id} className="flex items-center gap-2 text-sm text-[#1c1b1b]">
-                    <input
-                      type="radio"
-                      name="m-moq"
-                      checked={selectedMoqTier === tier.id}
-                      onChange={() => setSelectedMoqTier(tier.id as any)}
-                      className="text-[#b90064] accent-[#b90064]"
-                    />
-                    {tier.label}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-[#e8e8e8] flex gap-2">
-              <button
-                onClick={handleClearAllFilters}
-                className="flex-1 py-2.5 border border-[#e8e8e8] rounded-xl text-xs font-bold text-[#594047]"
-              >
-                Reset
-              </button>
               <button
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="flex-1 py-2.5 bg-[#b90064] text-white rounded-xl text-xs font-bold"
+                className="p-2 hover:bg-[#f7f2f2] rounded-full transition-colors"
               >
-                Apply Filters
+                <X className="w-5 h-5 text-[#594047]" />
               </button>
             </div>
-          </div>
+
+            <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
+              <FilterPanel
+                categories={CATEGORIES}
+                selectedCategories={selectedCategories}
+                toggleCategory={toggleCategory}
+                availableSubcategories={availableSubcategories}
+                selectedSubcategories={selectedSubcategories}
+                toggleSubcategory={toggleSubcategory}
+                selectedLocation={selectedLocation}
+                setSelectedLocation={setSelectedLocation}
+                setLocationQuery={setLocationQuery}
+                selectedDistance={selectedDistance}
+                setSelectedDistance={setSelectedDistance}
+                selectedSupplierTypes={selectedSupplierTypes}
+                toggleSupplierType={toggleSupplierType}
+                selectedMoqTier={selectedMoqTier}
+                setSelectedMoqTier={setSelectedMoqTier}
+                isGstOnly={isGstOnly}
+                setIsGstOnly={setIsGstOnly}
+                isNexoraVerifiedOnly={isNexoraVerifiedOnly}
+                setIsNexoraVerifiedOnly={setIsNexoraVerifiedOnly}
+                isBusinessVerifiedOnly={isBusinessVerifiedOnly}
+                setIsBusinessVerifiedOnly={setIsBusinessVerifiedOnly}
+                maxPrice={maxPrice}
+                setMaxPrice={setMaxPrice}
+                onClearAll={handleClearAllFilters}
+              />
+            </div>
+
+            <div className="p-5 border-t border-[#e8e8e8] bg-[#fcf9f8]">
+              <button
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="w-full bg-[#b90064] hover:bg-[#8e004b] text-white font-bold py-3.5 rounded-xl shadow-xs transition-all active:scale-98 flex items-center justify-center gap-2"
+              >
+                Show Results
+              </button>
+            </div>
+          </motion.div>
         </div>
       )}
 

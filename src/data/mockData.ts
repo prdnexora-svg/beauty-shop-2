@@ -1,4 +1,59 @@
-import { RFQItem, DealProduct, TrendingProduct, VerifiedSupplier, CategoryItem, SearchProduct, SearchSupplier, OEMFormulation } from '../types';
+import { RFQItem, DealProduct, TrendingProduct, VerifiedSupplier, CategoryItem, SearchProduct, SearchSupplier, OEMFormulation, BuyerEnquiry, BuyerRFQ } from '../types';
+
+export const BUYER_MOCK_ENQUIRIES: BuyerEnquiry[] = [
+  {
+    id: 'enq-101',
+    productName: 'Professional Argan Repair Hair Serum',
+    supplierName: 'Aura Beauty Labs',
+    date: '2026-08-14',
+    status: 'Responded',
+    subject: 'Bulk enquiry for 200 units',
+    lastMessage: 'We have sent the formal quote to your email. Looking forward to your response.'
+  },
+  {
+    id: 'enq-102',
+    productName: 'Peptide Barrier Repair Cream',
+    supplierName: 'Dermaglow India',
+    date: '2026-08-15',
+    status: 'Pending',
+    subject: 'Sample request for formulation testing',
+    lastMessage: 'Your enquiry is being processed by our team.'
+  },
+  {
+    id: 'enq-103',
+    productName: 'Luxury Dropper Bottles',
+    supplierName: 'LuxeForm Packaging',
+    date: '2026-08-10',
+    status: 'Quoted',
+    subject: 'Custom branding enquiry',
+    lastMessage: 'Quote #LF-8892 generated. Valid for 7 days.'
+  }
+];
+
+export const BUYER_MOCK_RFQS: BuyerRFQ[] = [
+  {
+    id: 'my-rfq-1',
+    title: 'Requirement for 500L Organic Shampoo Base',
+    category: 'Haircare',
+    quantity: '500 Liters',
+    postedDate: '2026-08-01',
+    expiryDate: '2026-08-31',
+    responsesCount: 12,
+    status: 'Active',
+    description: 'Looking for sulfate-free organic shampoo base with aloe vera extracts.'
+  },
+  {
+    id: 'my-rfq-2',
+    title: 'Custom Glass Jars for Night Cream',
+    category: 'Packaging',
+    quantity: '10,000 Units',
+    postedDate: '2026-07-20',
+    expiryDate: '2026-08-20',
+    responsesCount: 8,
+    status: 'Converted',
+    description: 'Frosted finish 50g glass jars with rose gold lids.'
+  }
+];
 
 
 export const CATEGORIES: CategoryItem[] = [
@@ -760,6 +815,292 @@ export const VERIFIED_SUPPLIERS: VerifiedSupplier[] = [
       coldChainAvailable: true,
       transitAdvantage: 'Heavy chemical infrastructure belt with direct rail link to Mundra Port'
     }
+  },
+  {
+    id: 'sup-5',
+    name: 'Apex Cosmetics Wholesalers',
+    shortCode: 'ACW',
+    type: 'Wholesaler & Stockist',
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    isVerified: true,
+    isGstVerified: true,
+    isIsoCertified: true,
+    isGmpCertified: false,
+    isFdaRegistered: true,
+    categories: ['Wholesale Salon Kits', 'Keratin Bulk Packs', 'Hair Colorants & Bleach'],
+    specialties: ['Bulk Ready Stock', 'Same-Day Dispatch', 'Tiered Volume Discounts'],
+    phone: '+91 98205 66778',
+    whatsapp: '919820566778',
+    responseRate: '99% within 30 mins',
+    trustScore: 97,
+    reliabilityRating: 98,
+    productQualityRating: 96,
+    overallRating: 4.9,
+    totalReviewsCount: 210,
+    responseScore: 99,
+    responseTimeText: '< 30 mins',
+    exportReadiness: 90,
+    exportCertifications: 'GST Verified • Direct Brand Authorized',
+    establishedYear: '2010 (16 yrs)',
+    minOrderValue: '₹15,000 / 25 units',
+    sampleLeadTime: 'Same Day Dispatch',
+    monthlyCapacity: '500,000 Units/mo',
+    facilityArea: '50,000 sq.ft Central Warehouse',
+    certificationsList: ['GST Verified Wholesaler', 'ISO 9001:2015', 'Authorized National Distributor', 'FSSAI / FDA Compliant'],
+    portfolioProducts: [
+      {
+        id: 'acw-port-1',
+        name: 'Professional Brazilian Keratin 1L Salon Pack',
+        image: 'https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=400&q=80',
+        price: '₹1,450 / Pack',
+        moq: '12 Packs'
+      },
+      {
+        id: 'acw-port-2',
+        name: 'Bulk Salon Hydrating Shampoo 5L Canister',
+        image: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=400&q=80',
+        price: '₹680 / Canister',
+        moq: '10 Canisters'
+      },
+      {
+        id: 'acw-port-3',
+        name: 'Professional Bleach Powder 500g Tub',
+        image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80',
+        price: '₹340 / Tub',
+        moq: '24 Tubs'
+      }
+    ],
+    locationDetails: {
+      industrialZone: 'Bhiwandi Central Logistics & Warehousing Hub',
+      fullAddress: 'Warehouse Bldg D-4, Mumbai-Nashik Expressway, Bhiwandi, MH 421302',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      lat: 19.2968,
+      lng: 73.0631,
+      shippingHubs: [
+        {
+          id: 'hub-51',
+          name: 'Bhiwandi Logistics Express Hub',
+          type: 'Corridor',
+          distanceKm: 2,
+          transitTime: '5 mins direct access',
+          description: 'Largest overnight distribution corridor covering 18 Indian states',
+          coords: { x: 50, y: 50 }
+        }
+      ],
+      rawMaterialSources: [],
+      customsStatus: 'GST E-Way Bill Auto-Cleared',
+      dispatchTurnaround: 'Dispatched within 4 hours of payment verification',
+      coldChainAvailable: false,
+      transitAdvantage: 'Hub location provides next-day delivery to major Indian metro cities'
+    }
+  },
+  {
+    id: 'sup-6',
+    name: 'LuxeForm Packaging & National Distributors',
+    shortCode: 'LPD',
+    type: 'Distributor',
+    city: 'Ahmedabad',
+    state: 'Gujarat',
+    isVerified: true,
+    isGstVerified: true,
+    isIsoCertified: true,
+    isGmpCertified: true,
+    isFdaRegistered: true,
+    categories: ['Cosmetic Glassware', 'Airless Dispensers', 'Packaging Distribution'],
+    specialties: ['Custom Silk Screen Printing', 'Ready-to-Ship Inventory', 'Zero Defect Guarantee'],
+    phone: '+91 98790 44556',
+    whatsapp: '919879044556',
+    responseRate: '98% within 1 hr',
+    trustScore: 99,
+    reliabilityRating: 99,
+    productQualityRating: 99,
+    overallRating: 5.0,
+    totalReviewsCount: 185,
+    responseScore: 98,
+    responseTimeText: '< 1 hr',
+    exportReadiness: 95,
+    exportCertifications: 'ISO 9001 • US-FDA Compliant Glass',
+    establishedYear: '2012 (14 yrs)',
+    minOrderValue: '₹20,000 / 1,000 units',
+    sampleLeadTime: '1 - 2 Days',
+    monthlyCapacity: '1,200,000 Units/mo',
+    facilityArea: '75,000 sq.ft Distribution Depot',
+    certificationsList: ['ISO 9001:2015', 'FDA Food & Cosmetic Grade', 'Heavy Metal Free Glass', 'RoHS Compliant'],
+    portfolioProducts: [
+      {
+        id: 'lpd-port-1',
+        name: '30ml Amber Glass Dropper Bottle with Pipette',
+        image: 'https://images.unsplash.com/photo-1608248597359-994b633bfd8a?auto=format&fit=crop&w=400&q=80',
+        price: '₹14 / Piece',
+        moq: '1,000 Pieces'
+      },
+      {
+        id: 'lpd-port-2',
+        name: '50ml Double-Wall Acrylic Cream Jar with Gold Rim',
+        image: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=400&q=80',
+        price: '₹28 / Piece',
+        moq: '500 Pieces'
+      },
+      {
+        id: 'lpd-port-3',
+        name: '15ml Matte Black Airless Serum Pump Bottle',
+        image: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=400&q=80',
+        price: '₹22 / Piece',
+        moq: '1,000 Pieces'
+      }
+    ],
+    locationDetails: {
+      industrialZone: 'Changodar GIDC Logistics Hub',
+      fullAddress: 'Plot 112, Changodar Industrial Estate, Ahmedabad, GJ 382213',
+      city: 'Ahmedabad',
+      state: 'Gujarat',
+      lat: 22.9234,
+      lng: 72.4412,
+      shippingHubs: [
+        {
+          id: 'hub-61',
+          name: 'Ahmedabad Rail Cargo Terminal',
+          type: 'Corridor',
+          distanceKm: 18,
+          transitTime: '30 mins',
+          description: 'High-speed dedicated cargo rail linking western ports',
+          coords: { x: 50, y: 50 }
+        }
+      ],
+      rawMaterialSources: [],
+      customsStatus: 'Direct Port Clearance',
+      dispatchTurnaround: 'Daily dispatches across all Indian pin codes',
+      coldChainAvailable: false,
+      transitAdvantage: 'Direct manufacturer distribution contracts with tier-1 pricing'
+    }
+  },
+  {
+    id: 'sup-7',
+    name: 'Radiant Bulk Beauty Wholesale',
+    shortCode: 'RBW',
+    type: 'Wholesaler & Stockist',
+    city: 'Delhi NCR',
+    state: 'Delhi',
+    isVerified: true,
+    isGstVerified: true,
+    isIsoCertified: true,
+    isGmpCertified: false,
+    isFdaRegistered: false,
+    categories: ['Pure Essential Oils', 'Organic Carrier Oils', 'Raw Cosmetic Clays'],
+    specialties: ['Bulk Drums Supply', 'GC-MS Lab Tested Purity', 'Ready Inventory'],
+    phone: '+91 98118 99887',
+    whatsapp: '919811899887',
+    responseRate: '97% within 1 hr',
+    trustScore: 96,
+    reliabilityRating: 97,
+    productQualityRating: 98,
+    overallRating: 4.8,
+    totalReviewsCount: 140,
+    responseScore: 97,
+    responseTimeText: '< 1 hr',
+    exportReadiness: 88,
+    exportCertifications: 'Certificate of Analysis (COA) with Every Batch',
+    establishedYear: '2015 (11 yrs)',
+    minOrderValue: '₹10,000 / 5kg',
+    sampleLeadTime: '1 Day',
+    monthlyCapacity: '50,000 kg/mo',
+    facilityArea: '22,000 sq.ft Warehouse',
+    certificationsList: ['GST Verified', 'ISO 9001:2015', 'COA Batch Certified', 'Cruelty-Free Actives'],
+    portfolioProducts: [
+      {
+        id: 'rbw-port-1',
+        name: 'Pure Moroccan Argan Oil Cold Pressed (Bulk)',
+        image: 'https://images.unsplash.com/photo-1608248597359-52e1eb704179?auto=format&fit=crop&w=400&q=80',
+        price: '₹1,150 / Liter',
+        moq: '10 Liters'
+      },
+      {
+        id: 'rbw-port-2',
+        name: '100% Pure Steam Distilled Rosemary Essential Oil',
+        image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=80',
+        price: '₹2,400 / kg',
+        moq: '5 kg'
+      }
+    ],
+    locationDetails: {
+      industrialZone: 'Okhla Phase III Wholesale Hub',
+      fullAddress: 'B-21, Okhla Industrial Area Phase III, New Delhi 110020',
+      city: 'Delhi NCR',
+      state: 'Delhi',
+      lat: 28.5355,
+      lng: 77.2684,
+      shippingHubs: [],
+      rawMaterialSources: [],
+      customsStatus: 'GST Cleared',
+      dispatchTurnaround: 'Same day dispatch for orders before 2 PM',
+      coldChainAvailable: true,
+      transitAdvantage: 'Central Delhi wholesale hub with immediate local delivery'
+    }
+  },
+  {
+    id: 'sup-8',
+    name: 'Prime Beauty Distribution Network',
+    shortCode: 'PBD',
+    type: 'Distributor',
+    city: 'Bengaluru',
+    state: 'Karnataka',
+    isVerified: true,
+    isGstVerified: true,
+    isIsoCertified: true,
+    isGmpCertified: false,
+    isFdaRegistered: true,
+    categories: ['Aesthetic Salon Devices', 'Hair Steamers', 'Professional Derma Rollers'],
+    specialties: ['1-Year Replacement Warranty', 'On-Site Demo & Training', 'Pan-India Service Network'],
+    phone: '+91 98450 11992',
+    whatsapp: '919845011992',
+    responseRate: '96% within 2 hrs',
+    trustScore: 98,
+    reliabilityRating: 98,
+    productQualityRating: 99,
+    overallRating: 4.9,
+    totalReviewsCount: 175,
+    responseScore: 96,
+    responseTimeText: '< 2 hrs',
+    exportReadiness: 92,
+    exportCertifications: 'CE Certified • ISO 13485 Equipment Standard',
+    establishedYear: '2013 (13 yrs)',
+    minOrderValue: '₹35,000 / 2 units',
+    sampleLeadTime: 'Demo on Request',
+    monthlyCapacity: '2,500 Machines/mo',
+    facilityArea: '35,000 sq.ft Service & Stock Hub',
+    certificationsList: ['CE Certified Equipment', 'ISO 9001:2015', 'Authorized Pan-India Distributor', 'BIS Approved'],
+    portfolioProducts: [
+      {
+        id: 'pbd-port-1',
+        name: 'Digital Ozone Micro-Mist Hair Spa Machine',
+        image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80',
+        price: '₹18,500 / Unit',
+        moq: '2 Units'
+      },
+      {
+        id: 'pbd-port-2',
+        name: 'Hydraulic Heavy Duty Salon Styling Chair',
+        image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80',
+        price: '₹9,800 / Unit',
+        moq: '4 Units'
+      }
+    ],
+    locationDetails: {
+      industrialZone: 'Peenya Industrial Estate Phase I',
+      fullAddress: 'Plot 44, 2nd Cross, Peenya Industrial Area, Bengaluru, KA 560058',
+      city: 'Bengaluru',
+      state: 'Karnataka',
+      lat: 13.0285,
+      lng: 77.5197,
+      shippingHubs: [],
+      rawMaterialSources: [],
+      customsStatus: 'AEO Certified',
+      dispatchTurnaround: '24-48 hrs dispatch with insured logistics',
+      coldChainAvailable: false,
+      transitAdvantage: 'South India primary equipment stocking & service center'
+    }
   }
 ];
 
@@ -773,6 +1114,7 @@ export const SEARCH_PRODUCTS: SearchProduct[] = [
     isGstVerified: true,
     isIsoCertified: true,
     isNexoraVerified: true,
+    isBusinessVerified: true,
     moq: '50 Units',
     moqNumber: 50,
     priceRange: '₹350 - ₹450',
@@ -1005,6 +1347,7 @@ export const SEARCH_SUPPLIERS: SearchSupplier[] = [
     isGstVerified: true,
     isIsoCertified: true,
     isNexoraVerified: true,
+    isBusinessVerified: true,
     exportReady: true,
     categories: ['Haircare', 'Keratin Treatments', 'Hair Serums', 'Private Label'],
     totalProductsCount: 42,

@@ -34,24 +34,35 @@ import {
   Trash2,
   Printer,
   Lock,
-  RefreshCw
+  RefreshCw,
+  Phone,
+  MessageCircle
 } from 'lucide-react';
 import { VERIFIED_SUPPLIERS } from '../data/mockData';
+import { VerifiedBadge } from './VerifiedBadge';
 
 interface SupplierProfileScreenProps {
+  isLoggedIn: boolean;
+  onOpenAuth: () => void;
   onOpenEnquiryModal?: (item: any) => void;
   onOpenQuoteModal?: (rfq?: any) => void;
   onOpenRFQModal?: () => void;
   onOpenFacilityTour?: (supplier?: any) => void;
   onNavigateToDirectory?: () => void;
+  onCallSupplier: (supplierName: string) => void;
+  onWhatsAppSupplier: (supplierName: string) => void;
 }
 
 export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
+  isLoggedIn,
+  onOpenAuth,
   onOpenEnquiryModal,
   onOpenQuoteModal,
   onOpenRFQModal,
   onOpenFacilityTour,
-  onNavigateToDirectory
+  onNavigateToDirectory,
+  onCallSupplier,
+  onWhatsAppSupplier
 }) => {
   // Local modal states
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
@@ -274,14 +285,36 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
         <div className="relative z-10 w-full max-w-[1440px] px-4 md:px-10 mx-auto">
           <div className="bg-white/85 backdrop-blur-md rounded-2xl p-6 md:p-12 max-w-4xl mx-auto text-center border border-white/60 shadow-2xl">
             {/* Verified Badge */}
-            <div className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-[#fde7f3] text-[#e6007e] font-bold text-[12px] uppercase tracking-wider mb-5 border border-[#e0bec6]">
-              <ShieldCheck className="w-4 h-4 fill-[#b90064] text-white" />
-              <span>Verified Premium Manufacturer</span>
+            <div className="flex items-center justify-center gap-2 mb-5 flex-wrap">
+              <VerifiedBadge trustScore={98} overallRating={4.9} size="md" />
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#fde7f3] text-[#e6007e] font-bold text-[11px] uppercase tracking-wider border border-[#e0bec6]">
+                <ShieldCheck className="w-3.5 h-3.5 fill-[#b90064] text-white" />
+                <span>Nexora Verified Partner</span>
+              </div>
             </div>
 
-            <h1 className="text-2xl md:text-4xl font-extrabold text-[#1c1b1b] mb-3 tracking-tight">
+            <h1 className="text-2xl md:text-4xl font-extrabold text-[#1c1b1b] mb-1 tracking-tight">
               Aura Labs &amp; Manufacturing
             </h1>
+
+            {/* Star Rating Component */}
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="flex items-center gap-0.5">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star 
+                    key={star} 
+                    className="w-4 h-4 fill-amber-400 text-amber-400" 
+                  />
+                ))}
+              </div>
+              <div className="flex items-center gap-1.5 ml-1">
+                <span className="text-[15px] font-bold text-[#1c1b1b]">4.9</span>
+                <span className="text-[15px] text-[#8c7077]">•</span>
+                <span className="text-[13px] font-semibold text-[#594047] hover:text-[#b90064] cursor-pointer underline-offset-4 hover:underline transition-colors">
+                  128 Verified Business Reviews
+                </span>
+              </div>
+            </div>
 
             <p className="text-[14px] md:text-[15px] text-[#594047] mb-8 max-w-2xl mx-auto leading-relaxed font-medium">
               Specializing in high-efficacy botanical serums and luxury foundations. Providing end-to-end OEM/ODM services for premier global brands.
@@ -310,7 +343,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
             </div>
 
             {/* Hero Action CTA Buttons */}
-            <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4">
+            <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4 flex-wrap">
               <button
                 onClick={() => {
                   if (onOpenRFQModal) onOpenRFQModal();
@@ -341,23 +374,37 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
 
               <button
                 onClick={() => {
-                  if (onOpenFacilityTour) {
-                    onOpenFacilityTour(VERIFIED_SUPPLIERS[0]);
-                  }
+                  if (isLoggedIn) onCallSupplier('Aura Labs & Manufacturing');
+                  else onOpenAuth();
                 }}
-                className="bg-[#fde7f3] border border-[#b90064] text-[#b90064] px-7 py-3.5 rounded-xl font-bold text-[13.5px] hover:bg-[#b90064] hover:text-white transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                className="bg-white border border-[#0050d6] text-[#0050d6] px-7 py-3.5 rounded-xl font-bold text-[13.5px] hover:bg-[#eef4ff] transition-colors flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Video className="w-4 h-4" />
-                <span>View Facility (15s Tour)</span>
+                <Phone className="w-4 h-4" />
+                <span>{isLoggedIn ? 'Call Directly' : 'View Contact Number'}</span>
               </button>
 
               <button
-                onClick={() => setIsDocModalOpen(true)}
-                className="bg-white/80 border border-[#e8e8e8] text-[#594047] px-7 py-3.5 rounded-xl font-bold text-[13.5px] hover:bg-[#f0edec] transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                onClick={() => onWhatsAppSupplier('Aura Labs & Manufacturing')}
+                className="bg-[#25D366] text-white px-7 py-3.5 rounded-xl font-bold text-[13.5px] hover:bg-[#128C7E] transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
               >
-                <Download className="w-4 h-4 text-[#b90064]" />
-                <span>Corporate Brochure</span>
+                <MessageCircle className="w-4 h-4" />
+                <span>WhatsApp</span>
               </button>
+            </div>
+
+            {/* Mobile Contact Visibility Barrier */}
+            <div className="mt-6 pt-6 border-t border-[#f0edec] flex flex-col items-center">
+              <div className="flex items-center gap-2 mb-2">
+                <Phone className="w-4 h-4 text-[#8c7077]" />
+                <span className="text-lg font-black text-[#1c1b1b] tracking-tight">
+                  {isLoggedIn ? '+91 98201 55443' : '+91 98XXX XXXXX'}
+                </span>
+              </div>
+              {!isLoggedIn && (
+                <p className="text-[12px] text-[#594047] font-medium">
+                  Verified Business Number. <button onClick={onOpenAuth} className="text-[#b90064] font-bold hover:underline">Login to reveal</button>
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -1362,6 +1409,16 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
         >
           <Mail className="w-4 h-4" />
           <span>Request Quote</span>
+        </button>
+        <button
+          onClick={() => {
+            const message = encodeURIComponent('Hello Aura Labs & Manufacturing, I found your profile on Nexora Luxe. I would like to discuss a potential B2B enquiry.');
+            window.open(`https://wa.me/919820155443?text=${message}`, '_blank');
+          }}
+          className="p-3 bg-[#25D366] text-white rounded-xl hover:bg-[#20bd5a] transition-colors flex items-center justify-center shadow-xs cursor-pointer"
+          title="WhatsApp Supplier"
+        >
+          <MessageCircle className="w-5 h-5" />
         </button>
         <button
           onClick={() => {

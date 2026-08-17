@@ -13,6 +13,7 @@ import {
   Bookmark,
   BookmarkCheck,
   Scale,
+  Factory,
   Plus,
   Check,
   X,
@@ -36,6 +37,8 @@ import { VerifiedSupplier, ComplianceReport } from '../types';
 
 interface VerifiedSuppliersSectionProps {
   suppliers: VerifiedSupplier[];
+  isLoggedIn: boolean;
+  onOpenAuth: () => void;
   isSaved?: (supplierId: string) => boolean;
   onToggleSave?: (supplierId: string, supplierName?: string) => void;
   selectedComparisonIds?: string[];
@@ -51,6 +54,8 @@ interface VerifiedSuppliersSectionProps {
 
 export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> = ({
   suppliers,
+  isLoggedIn,
+  onOpenAuth,
   isSaved,
   onToggleSave,
   selectedComparisonIds = [],
@@ -334,17 +339,23 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
       <div className="max-w-[1440px] mx-auto px-5 md:px-10">
         
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold uppercase tracking-widest text-[#b90064]">VERIFIED NETWORK</span>
-              <span className="text-[10px] font-bold bg-[#dbe1ff] text-[#0050d6] px-2 py-0.5 rounded-full">FACILITY AUDITED</span>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-6">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#fde7f3] text-[#b90064] text-[10px] font-black uppercase tracking-widest border border-[#f5b8d6]">
+                <ShieldCheck className="w-3 h-3" />
+                Verified Network
+              </div>
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#dbe1ff] text-[#0050d6] text-[10px] font-black uppercase tracking-widest border border-[#a5c0ff]">
+                <Factory className="w-3 h-3" />
+                Facility Audited
+              </div>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#1c1b1b] mt-1 tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-black text-[#1c1b1b] tracking-tight mb-4">
               Verified Manufacturing Partners
             </h2>
-            <p className="text-[13px] text-[#594047] mt-1">
-              Direct connection to registered labs, contract formulators and OEM plants. Select up to 3 for side-by-side comparison.
+            <p className="text-[15px] text-[#594047] leading-relaxed">
+              Direct connection to audited cosmetic laboratories, active extract suppliers, and high-capacity packaging lines. Every facility listed has passed our **24-point professional audit**.
             </p>
           </div>
 
@@ -353,21 +364,17 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={onOpenComparisonModal}
-                className={`text-[13px] font-bold px-4 py-2.5 rounded-xl border transition-all flex items-center gap-2 shadow-2xs ${
+                className={`text-[13px] font-black px-6 py-3.5 rounded-xl border transition-all flex items-center gap-2 shadow-sm ${
                   selectedComparisonIds.length > 0
                     ? 'bg-[#b90064] border-[#b90064] text-white hover:bg-[#8e004b]'
-                    : 'bg-white border-[#e8e8e8] text-[#594047] hover:border-[#b90064] hover:text-[#b90064]'
+                    : 'bg-white border-[#e8e8e8] text-[#1c1b1b] hover:border-[#b90064] hover:text-[#b90064]'
                 }`}
               >
-                <Scale className="w-4 h-4" />
-                <span>Compare Suppliers</span>
-                {selectedComparisonIds.length > 0 ? (
-                  <span className="bg-white text-[#b90064] text-[11px] font-extrabold px-1.5 py-0.2 rounded-full">
+                <Scale className="w-4.5 h-4.5" />
+                <span>Compare Manufacturers</span>
+                {selectedComparisonIds.length > 0 && (
+                  <span className="bg-white text-[#b90064] text-[11px] font-black px-2 py-0.5 rounded-full ml-1">
                     {selectedComparisonIds.length}/3
-                  </span>
-                ) : (
-                  <span className="text-[11px] text-[#8c7077] font-normal">
-                    (Max 3)
                   </span>
                 )}
               </button>
@@ -1033,12 +1040,15 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                     className="col-span-3 bg-[#b90064] hover:bg-[#8e004b] text-white text-[13px] font-bold py-2.5 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-2xs active:scale-98"
                   >
                     <Send className="w-3.5 h-3.5" />
-                    <span>Contact Supplier</span>
+                    <span>{isLoggedIn ? 'Contact Supplier' : 'Login to Connect'}</span>
                   </button>
 
                   <button
-                    onClick={() => onCallSupplier(sup.name)}
-                    title="Call Phone"
+                    onClick={() => {
+                      if (isLoggedIn) onCallSupplier(sup.name);
+                      else onOpenAuth();
+                    }}
+                    title={isLoggedIn ? "Call Phone" : "Login to Call"}
                     className="col-span-1 bg-white hover:bg-[#f7f2f2] border border-[#e8e8e8] text-[#594047] hover:text-[#1c1b1b] rounded-lg transition-colors flex items-center justify-center"
                   >
                     <Phone className="w-4 h-4" />
@@ -1047,11 +1057,29 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                   <button
                     onClick={() => onWhatsAppSupplier(sup.name)}
                     title="WhatsApp Direct"
-                    className="col-span-1 bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 text-[#128C7E] rounded-lg transition-colors flex items-center justify-center"
+                    className="col-span-1 bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 text-[#128C7E] rounded-lg transition-colors flex items-center justify-center cursor-pointer"
                   >
                     <MessageCircle className="w-4 h-4" />
                   </button>
 
+                </div>
+
+                {/* Visible Contact Number & Verification Barrier */}
+                <div className="mt-3 flex items-center justify-between px-1">
+                  <div className="flex items-center gap-1.5">
+                    <Phone className="w-3 h-3 text-[#8c7077]" />
+                    <span className="text-[11px] font-bold text-[#1c1b1b]">
+                      {isLoggedIn ? (sup.phone || '+91 98201 55443') : '+91 98XXX XXXXX'}
+                    </span>
+                  </div>
+                  {!isLoggedIn && (
+                    <button 
+                      onClick={onOpenAuth}
+                      className="text-[10px] font-bold text-[#b90064] hover:underline"
+                    >
+                      Login to reveal
+                    </button>
+                  )}
                 </div>
 
               </div>

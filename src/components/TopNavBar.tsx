@@ -1,268 +1,417 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, PlusCircle, User, ShieldCheck, Search, Bookmark, BookmarkCheck } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  User, 
+  Menu, 
+  X, 
+  Mail, 
+  Building2, 
+  Sparkles, 
+  Package, 
+  Layers, 
+  PlusCircle, 
+  CheckCircle2, 
+  Settings, 
+  LogOut, 
+  ShieldCheck, 
+  ChevronDown, 
+  Edit3,
+  ExternalLink,
+  Briefcase
+} from 'lucide-react';
+import { BuyerProfileData } from './EditProfileModal';
 
 interface TopNavBarProps {
-  currentScreen: 'explore' | 'search' | 'plp' | 'suppliers' | 'supplier-profile' | 'brands' | 'oem' | 'rfq' | 'workspace' | 'inbox' | 'supplier-portal' | 'packaging-studio';
-  onNavigate: (screen: 'explore' | 'search' | 'plp' | 'suppliers' | 'supplier-profile' | 'brands' | 'oem' | 'rfq' | 'workspace' | 'inbox' | 'supplier-portal' | 'packaging-studio', params?: any) => void;
+  currentScreen: any;
+  onNavigate: (screen: any, params?: any) => void;
   onOpenRFQModal: () => void;
-  selectedLocation: string;
-  onLocationChange: (loc: string) => void;
   onOpenAuthModal: (mode: 'login' | 'register') => void;
-  savedSuppliersCount?: number;
-  isSavedPulsing?: boolean;
-  onScrollToSaved?: () => void;
+  isLoggedIn: boolean;
+  userRole: 'buyer' | 'supplier' | null;
+  userProfile?: BuyerProfileData;
+  onOpenEditProfile: () => void;
+  onLogout: () => void;
 }
 
 export const TopNavBar: React.FC<TopNavBarProps> = ({
   currentScreen,
   onNavigate,
   onOpenRFQModal,
-  selectedLocation,
-  onLocationChange,
   onOpenAuthModal,
-  savedSuppliersCount = 0,
-  isSavedPulsing = false,
-  onScrollToSaved,
+  isLoggedIn,
+  userRole,
+  userProfile,
+  onOpenEditProfile,
+  onLogout
 }) => {
-  const [isHeartbeating, setIsHeartbeating] = useState(false);
-  const prevCountRef = useRef(savedSuppliersCount);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Trigger heartbeat pulse when savedSuppliersCount increases or isSavedPulsing is true
+  const navItems = [
+    { id: 'explore', label: 'Explore' },
+    { id: 'plp', label: 'Products' },
+    { id: 'supplier-directory', label: 'Suppliers Directory' },
+    { id: 'brands', label: 'Brand Directory' },
+    { id: 'oem-hub', label: 'OEM / Private Label' },
+  ];
+
+  // Close dropdown on click outside
   useEffect(() => {
-    if (isSavedPulsing || savedSuppliersCount > prevCountRef.current) {
-      setIsHeartbeating(true);
-      const timer = setTimeout(() => {
-        setIsHeartbeating(false);
-      }, 1400);
-      prevCountRef.current = savedSuppliersCount;
-      return () => clearTimeout(timer);
-    }
-    prevCountRef.current = savedSuppliersCount;
-  }, [savedSuppliersCount, isSavedPulsing]);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleNavClick = (screenId: string) => {
+    onNavigate(screenId as any);
+    setMobileMenuOpen(false);
+    setProfileDropdownOpen(false);
+  };
+
+  const displayName = userProfile?.fullName || (userRole === 'supplier' ? 'Aura Beauty Labs' : 'Priya Sharma');
+  const displayEmail = userProfile?.email || (userRole === 'supplier' ? 'contact@aurabeauty.in' : 'priya.procurement@radiantbeauty.in');
+  const displayCompany = userProfile?.businessName || (userRole === 'supplier' ? 'Aura Beauty Labs Pvt Ltd' : 'Radiant Beauty Solutions');
+  const initials = displayName
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  // Profile completion calculation (e.g. 85%)
+  const profileCompletion = userProfile?.isGstVerified ? 90 : 70;
+
   return (
-    <header className="sticky top-0 z-40 bg-[#fdf8f8]/95 backdrop-blur-md border-b border-[#e8e8e8]">
-      <div className="max-w-[1440px] mx-auto px-5 md:px-10 h-20 flex items-center justify-between">
-        
+    <header className="fixed top-0 z-50 w-full bg-[#FFFDFC]/90 backdrop-blur-xl border-b border-[#E8DFE3] shadow-xs">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-8 h-20 flex items-center justify-between">
         {/* Brand & Logo */}
         <div
-          onClick={() => onNavigate('explore')}
-          className="flex items-center gap-3 cursor-pointer group"
+          onClick={() => handleNavClick('explore')}
+          className="flex items-center gap-2.5 cursor-pointer group"
         >
-          <div className="w-10 h-10 rounded-lg bg-[#b90064] flex items-center justify-center shadow-sm text-white overflow-hidden p-1.5 transition-transform group-hover:scale-105">
-            {/* Nexora stylized logo mark */}
-            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-white">
-              <path d="M25 20V80M25 20H35V80H25M25 35L70 75M70 20V80M70 20H80V80H70" stroke="currentColor" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>
-              <circle cx="75" cy="30" r="10" stroke="currentColor" strokeWidth="6"/>
-            </svg>
+          <div className="w-9 h-9 bg-gradient-to-br from-[#B90064] to-[#500037] rounded-xl flex items-center justify-center shadow-md shadow-[#B90064]/20 transition-transform group-hover:scale-105">
+            <span className="text-white font-serif font-bold text-xl leading-none">N</span>
           </div>
           <div>
-            <span className="font-bold text-2xl tracking-tight text-[#b90064] font-sans">Nexora Luxe</span>
-            <span className="hidden sm:inline-block ml-2 text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-[#fde7f3] text-[#b90064]">B2B SOURCING</span>
+            <span className="font-serif text-xl font-bold tracking-tight text-[#1C1B1B] block leading-none">
+              Nexora<span className="text-[#B90064] ml-1 font-sans text-lg font-light">Luxe</span>
+            </span>
+            <span className="text-[10px] font-bold tracking-widest uppercase text-[#8D8087] block mt-0.5">
+              B2B Beauty Marketplace
+            </span>
           </div>
         </div>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-8">
-          <button
-            onClick={() => onNavigate('explore')}
-            className={`text-[13px] font-semibold pb-1 transition-all ${
-              currentScreen === 'explore'
-                ? 'text-[#b90064] border-b-2 border-[#b90064]'
-                : 'text-[#594047] hover:text-[#b90064]'
-            }`}
-          >
-            Explore
-          </button>
-          <button
-            onClick={() => onNavigate('plp')}
-            className={`text-[13px] font-semibold pb-1 transition-all ${
-              currentScreen === 'plp'
-                ? 'text-[#b90064] border-b-2 border-[#b90064]'
-                : 'text-[#594047] hover:text-[#b90064]'
-            }`}
-          >
-            Products
-          </button>
-          <button
-            onClick={() => onNavigate('suppliers')}
-            className={`text-[13px] font-semibold pb-1 transition-all ${
-              currentScreen === 'suppliers'
-                ? 'text-[#b90064] border-b-2 border-[#b90064]'
-                : 'text-[#594047] hover:text-[#b90064]'
-            }`}
-          >
-            Suppliers
-          </button>
-          <button
-            onClick={() => onNavigate('brands')}
-            className={`text-[13px] font-semibold pb-1 transition-all ${
-              currentScreen === 'brands'
-                ? 'text-[#b90064] border-b-2 border-[#b90064]'
-                : 'text-[#594047] hover:text-[#b90064]'
-            }`}
-          >
-            Brands
-          </button>
-          <button
-            onClick={() => onNavigate('oem')}
-            className={`text-[13px] font-semibold pb-1 transition-all ${
-              currentScreen === 'oem'
-                ? 'text-[#b90064] border-b-2 border-[#b90064]'
-                : 'text-[#594047] hover:text-[#b90064]'
-            }`}
-          >
-            OEM Hub
-          </button>
-          <button
-            onClick={() => onNavigate('inbox')}
-            className={`text-[13px] font-semibold pb-1 transition-all flex items-center gap-1 ${
-              currentScreen === 'inbox'
-                ? 'text-[#b90064] border-b-2 border-[#b90064]'
-                : 'text-[#594047] hover:text-[#b90064]'
-            }`}
-          >
-            <span>B2B Inbox</span>
-            <span className="text-[9.5px] bg-[#e6007e] text-white px-1.5 py-0.2 rounded-full font-bold">Negotiate</span>
-          </button>
-          <button
-            onClick={() => onNavigate('packaging-studio')}
-            className={`text-[13px] font-semibold pb-1 transition-all ${
-              currentScreen === 'packaging-studio'
-                ? 'text-[#b90064] border-b-2 border-[#b90064]'
-                : 'text-[#594047] hover:text-[#b90064]'
-            }`}
-          >
-            Bottle Studio
-          </button>
-          <button
-            onClick={() => onNavigate('supplier-portal')}
-            className={`text-[13px] font-semibold pb-1 transition-all flex items-center gap-1 ${
-              currentScreen === 'supplier-portal'
-                ? 'text-[#b90064] border-b-2 border-[#b90064]'
-                : 'text-[#594047] hover:text-[#b90064]'
-            }`}
-          >
-            <span>Supplier Portal</span>
-            <span className="text-[9.5px] bg-[#0050d6] text-white px-1.5 py-0.2 rounded-full font-bold">Admin</span>
-          </button>
-          <button
-            onClick={() => onNavigate('workspace')}
-            className={`text-[13px] font-semibold pb-1 transition-all flex items-center gap-1.5 ${
-              currentScreen === 'workspace'
-                ? 'text-[#b90064] border-b-2 border-[#b90064]'
-                : 'text-[#594047] hover:text-[#b90064]'
-            }`}
-          >
-            <span>Transaction Hub</span>
-            <span className="text-[9.5px] bg-[#0050d6] text-white px-2 py-0.2 rounded-full font-bold uppercase tracking-wider">PI/PO</span>
-          </button>
-          <button
-            onClick={() => {
-              onNavigate('explore');
-              setTimeout(() => {
-                const el = document.getElementById('sourcing-trends-dashboard');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }, 100);
-            }}
-            className="text-[13px] font-semibold text-[#594047] hover:text-[#b90064] pb-1 transition-colors flex items-center gap-1"
-          >
-            <span>Sourcing Trends</span>
-            <span className="w-2 h-2 rounded-full bg-[#e6007e] animate-pulse"></span>
-          </button>
-          <button
-            onClick={() => {
-              if (onScrollToSaved) {
-                onScrollToSaved();
-              } else {
-                onNavigate('explore');
-                setTimeout(() => {
-                  const el = document.getElementById('my-saved-suppliers');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-              }
-            }}
-            className={`text-[13px] font-semibold pb-1 transition-all flex items-center gap-1.5 ${
-              isHeartbeating ? 'text-[#b90064]' : 'text-[#594047] hover:text-[#b90064]'
-            }`}
-            title="View saved suppliers"
-          >
-            <span className="relative inline-flex items-center justify-center">
-              <Bookmark
-                className={`w-3.5 h-3.5 text-[#b90064] transition-transform ${
-                  isHeartbeating ? 'animate-heartbeat fill-[#b90064]' : ''
-                }`}
-              />
-              {isHeartbeating && (
-                <span className="absolute inset-0 rounded-full bg-[#e6007e]/20 animate-ping pointer-events-none" />
-              )}
-            </span>
-            <span>My Saved</span>
-            {savedSuppliersCount > 0 && (
-              <span
-                className={`text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full transition-all duration-300 ${
-                  isHeartbeating
-                    ? 'bg-[#e6007e] scale-110 shadow-xs ring-2 ring-[#ffd9e2]'
-                    : 'bg-[#b90064]'
+        <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
+          {navItems.map((item) => {
+            const isActive = currentScreen === item.id || (item.id === 'supplier-directory' && currentScreen === 'directory');
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleNavClick(item.id)}
+                className={`text-[14px] py-1.5 transition-all cursor-pointer relative font-medium ${
+                  isActive
+                    ? 'text-[#B90064] font-bold'
+                    : 'text-[#534249] hover:text-[#B90064]'
                 }`}
               >
-                {savedSuppliersCount}
-              </span>
-            )}
-          </button>
+                {item.label}
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#B90064] rounded-full animate-in fade-in duration-200"></span>
+                )}
+              </button>
+            );
+          })}
         </nav>
 
+        {/* Actions & Interactive User Profile */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="hidden sm:flex items-center gap-2 text-[#500037]">
+            <button 
+              aria-label="Buyer Dashboard"
+              title="Buyer Dashboard & RFQ Inquiries"
+              onClick={() => handleNavClick('buyer-dashboard')}
+              className={`px-3 py-2 hover:bg-[#FAF1F5] rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 text-[13px] font-semibold ${
+                currentScreen === 'buyer-dashboard' ? 'bg-[#FAF1F5] text-[#B90064]' : 'text-[#534249]'
+              }`}
+            >
+              <Mail className="w-4 h-4 text-[#B90064]" />
+              <span className="hidden xl:inline">Workspace</span>
+            </button>
 
-        {/* Trailing Actions */}
-        <div className="flex items-center gap-4">
+            <button 
+              aria-label="Supplier Portal & Ad Campaigns"
+              title="Supplier Admin Portal & Sponsored Ad Manager"
+              onClick={() => handleNavClick('supplier-portal')}
+              className={`px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-[13px] font-bold ${
+                currentScreen === 'supplier-portal' 
+                  ? 'bg-[#B90064] text-white shadow-sm' 
+                  : 'bg-[#fde7f3] hover:bg-[#fbcfe8] text-[#b90064] border border-[#f7c5e0]'
+              }`}
+            >
+              <Sparkles className="w-4 h-4 text-[#b90064]" />
+              <span className="hidden md:inline">Supplier Portal & Ads</span>
+            </button>
+
+            {/* Profile Dropdown or Sign In Button */}
+            {isLoggedIn ? (
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  aria-label="User Profile Menu"
+                  title="Profile & Settings"
+                  onClick={() => setProfileDropdownOpen(prev => !prev)}
+                  className="flex items-center gap-2 p-1.5 pl-2 pr-2.5 bg-[#fcf9f8] hover:bg-[#FAF1F5] border border-[#E8DFE3] hover:border-[#b90064] rounded-xl transition-all cursor-pointer shadow-2xs group"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#b90064] to-[#e6007e] text-white flex items-center justify-center font-bold text-xs shadow-xs overflow-hidden">
+                    {userProfile?.avatarUrl ? (
+                      <img src={userProfile.avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                    ) : (
+                      initials
+                    )}
+                  </div>
+                  <div className="hidden md:flex flex-col text-left">
+                    <span className="text-[12px] font-bold text-[#1c1b1b] leading-tight group-hover:text-[#b90064] truncate max-w-[110px]">
+                      {displayName.split(' ')[0]}
+                    </span>
+                    <span className="text-[10px] text-[#8c7077] leading-none capitalize">
+                      {userRole || 'Buyer'}
+                    </span>
+                  </div>
+                  <ChevronDown className={`w-3.5 h-3.5 text-[#8c7077] transition-transform ${profileDropdownOpen ? 'rotate-180 text-[#b90064]' : ''}`} />
+                </button>
+
+                {/* Floating Profile Dropdown Menu */}
+                {profileDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl border border-[#e8e8e8] shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
+                    {/* User Header Summary */}
+                    <div className="p-4 bg-[#fcf9f8] border-b border-[#e8e8e8]">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#b90064] to-[#e6007e] text-white flex items-center justify-center font-bold text-base shadow-sm overflow-hidden shrink-0">
+                          {userProfile?.avatarUrl ? (
+                            <img src={userProfile.avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                          ) : (
+                            initials
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-xs font-bold text-[#1c1b1b] truncate">{displayName}</h4>
+                          <p className="text-[11px] text-[#594047] truncate">{displayEmail}</p>
+                          <div className="flex items-center gap-1 mt-1">
+                            <span className="px-1.5 py-0.5 rounded bg-[#fde7f3] text-[#b90064] text-[9px] font-bold">
+                              {userRole === 'supplier' ? 'Verified Supplier' : 'Verified Buyer'}
+                            </span>
+                            {userProfile?.isGstVerified && (
+                              <span className="flex items-center gap-0.5 text-[9px] font-bold text-green-700">
+                                <CheckCircle2 className="w-2.5 h-2.5 text-green-600" /> GST Active
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Profile Strength Progress */}
+                      <div className="mt-3 pt-2.5 border-t border-[#f0edec]">
+                        <div className="flex justify-between text-[10px] font-bold text-[#594047] mb-1">
+                          <span>Profile Strength</span>
+                          <span className="text-[#b90064]">{profileCompletion}%</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-[#e8e8e8] rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-[#b90064] to-[#e6007e] rounded-full transition-all duration-300"
+                            style={{ width: `${profileCompletion}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Menu Actions */}
+                    <div className="p-2 space-y-1">
+                      <button
+                        onClick={() => {
+                          setProfileDropdownOpen(false);
+                          onOpenEditProfile();
+                        }}
+                        className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#FAF1F5] text-xs font-bold text-[#1c1b1b] hover:text-[#b90064] flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <Edit3 className="w-4 h-4 text-[#b90064]" />
+                        <span>Edit Profile & Business Details</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setProfileDropdownOpen(false);
+                          handleNavClick('supplier-portal');
+                        }}
+                        className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#FAF1F5] text-xs font-bold text-[#b90064] flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <Sparkles className="w-4 h-4 text-[#b90064]" />
+                        <span>Supplier Portal & Ad Campaigns</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setProfileDropdownOpen(false);
+                          handleNavClick('buyer-dashboard');
+                        }}
+                        className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#FAF1F5] text-xs font-semibold text-[#594047] hover:text-[#1c1b1b] flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <Briefcase className="w-4 h-4 text-[#8c7077]" />
+                        <span>Buyer RFQ & Sourcing Dashboard</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setProfileDropdownOpen(false);
+                          onOpenEditProfile();
+                        }}
+                        className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#FAF1F5] text-xs font-semibold text-[#594047] hover:text-[#1c1b1b] flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <Settings className="w-4 h-4 text-[#8c7077]" />
+                        <span>Account & Security Settings</span>
+                      </button>
+
+                      <div className="pt-1.5 mt-1.5 border-t border-[#f0edec]">
+                        <button
+                          onClick={() => {
+                            setProfileDropdownOpen(false);
+                            onLogout();
+                          }}
+                          className="w-full px-3 py-2 text-left rounded-xl hover:bg-red-50 text-xs font-bold text-red-600 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <LogOut className="w-4 h-4 text-red-500" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                aria-label="Profile"
+                title="Supplier / Buyer Sign In"
+                onClick={() => onOpenAuthModal('login')}
+                className="p-2 hover:bg-[#FAF1F5] text-[#534249] hover:text-[#B90064] rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+              >
+                <User className="w-5 h-5" />
+                <span className="hidden md:inline">Sign In</span>
+              </button>
+            )}
+          </div>
           
-          {/* Location Selector */}
-          <div className="hidden md:flex items-center gap-1.5 border-r border-[#e8e8e8] pr-4 text-[#594047]">
-            <MapPin className="w-4 h-4 text-[#b90064]" />
-            <select
-              value={selectedLocation}
-              onChange={(e) => onLocationChange(e.target.value)}
-              className="bg-transparent text-[13px] font-medium text-[#594047] focus:outline-none cursor-pointer pr-2"
-            >
-              <option value="All">All Locations</option>
-              <option value="Mumbai">Mumbai</option>
-              <option value="Delhi">Delhi NCR</option>
-              <option value="Bengaluru">Bengaluru</option>
-              <option value="Ahmedabad">Ahmedabad</option>
-              <option value="Hyderabad">Hyderabad</option>
-            </select>
-          </div>
-
-          {/* Login / Register */}
-          <div className="hidden sm:flex items-center gap-2 text-[#594047]">
-            <button
-              onClick={() => onOpenAuthModal('login')}
-              className="text-[13px] font-semibold px-3 py-2 hover:text-[#b90064] transition-colors"
-            >
-              Login
-            </button>
-            <button
-              onClick={() => onOpenAuthModal('register')}
-              className="text-[13px] font-semibold px-3 py-2 hover:text-[#b90064] transition-colors"
-            >
-              Register
-            </button>
-          </div>
-
-          {/* Primary CTA: Post Requirement */}
           <button
-            onClick={() => onNavigate('rfq')}
-            className={`text-[13px] font-bold px-5 py-2.5 rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2 active:scale-98 cursor-pointer ${
-              currentScreen === 'rfq'
-                ? 'bg-[#8e004b] text-white ring-2 ring-[#ffd9e2]'
-                : 'bg-[#b90064] hover:bg-[#8e004b] text-white'
-            }`}
+            onClick={onOpenRFQModal}
+            className="bg-[#B90064] hover:bg-[#A00057] active:scale-[0.98] text-white text-[13px] font-bold px-4 sm:px-5 py-2.5 rounded-xl transition-all duration-200 shadow-sm shadow-[#B90064]/25 cursor-pointer flex items-center gap-1.5"
           >
-            <PlusCircle className="w-4 h-4" />
-            <span>Post Requirement</span>
+            <PlusCircle className="w-4 h-4 shrink-0" />
+            <span className="whitespace-nowrap">Post Requirement</span>
+          </button>
+
+          {/* Mobile Menu Button */}
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden p-2 rounded-xl hover:bg-[#FAF1F5] text-[#500037] cursor-pointer"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
-
       </div>
+
+      {/* Mobile Drawer Navigation Menu */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden border-t border-[#E8DFE3] bg-[#FFFDFC] shadow-xl px-4 py-4 animate-in slide-in-from-top-2 duration-200">
+          <div className="flex flex-col gap-1.5">
+            {navItems.map((item) => {
+              const isActive = currentScreen === item.id || (item.id === 'supplier-directory' && currentScreen === 'directory');
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item.id)}
+                  className={`text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold transition-colors flex items-center justify-between ${
+                    isActive
+                      ? 'bg-[#FAF1F5] text-[#B90064]'
+                      : 'text-[#1C1B1B] hover:bg-[#FAF5F7]'
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  {isActive && <CheckCircle2 className="w-4 h-4 text-[#B90064]" />}
+                </button>
+              );
+            })}
+
+            <div className="pt-3 mt-2 border-t border-[#F0E8EB] flex flex-col gap-2">
+              {isLoggedIn ? (
+                <>
+                  <div className="p-3 bg-[#fcf9f8] rounded-xl flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#b90064] to-[#e6007e] text-white flex items-center justify-center font-bold text-sm">
+                      {initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-bold text-[#1c1b1b] truncate">{displayName}</div>
+                      <div className="text-[11px] text-[#594047] truncate">{displayEmail}</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onOpenEditProfile();
+                    }}
+                    className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#b90064] bg-[#FAF1F5] flex items-center gap-2"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    <span>Edit Profile & Business Settings</span>
+                  </button>
+                  <button
+                    onClick={() => handleNavClick('buyer-dashboard')}
+                    className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#534249] hover:bg-[#FAF1F5] flex items-center gap-2"
+                  >
+                    <Mail className="w-4 h-4 text-[#B90064]" />
+                    <span>Buyer Workspace & Enquiries</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onLogout();
+                    }}
+                    className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => handleNavClick('buyer-dashboard')}
+                    className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#534249] hover:bg-[#FAF1F5] flex items-center gap-2"
+                  >
+                    <Mail className="w-4 h-4 text-[#B90064]" />
+                    <span>Buyer Workspace & Enquiries</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onOpenAuthModal('login');
+                    }}
+                    className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#534249] hover:bg-[#FAF1F5] flex items-center gap-2"
+                  >
+                    <User className="w-4 h-4 text-[#B90064]" />
+                    <span>Supplier / Buyer Sign In</span>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };
+
+

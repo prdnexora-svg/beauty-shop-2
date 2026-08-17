@@ -97,6 +97,7 @@ export interface VerifiedSupplier {
   isVerified: boolean;
   isGstVerified: boolean;
   isIsoCertified: boolean;
+  isBusinessVerified?: boolean;
   isGmpCertified?: boolean;
   isFdaRegistered?: boolean;
   categories: string[];
@@ -135,6 +136,7 @@ export interface SearchProduct {
   isGstVerified: boolean;
   isIsoCertified: boolean;
   isNexoraVerified?: boolean;
+  isBusinessVerified?: boolean;
   moq: string;
   moqNumber: number;
   priceRange: string;
@@ -169,6 +171,7 @@ export interface SearchSupplier {
   isGstVerified: boolean;
   isIsoCertified: boolean;
   isNexoraVerified: boolean;
+  isBusinessVerified?: boolean;
   exportReady: boolean;
   categories: string[];
   totalProductsCount: number;
@@ -202,6 +205,103 @@ export interface CategoryItem {
   itemCount?: string;
   subtitle?: string;
   isHighlighted?: boolean;
+}
+
+export interface BuyerEnquiry {
+  id: string;
+  productName: string;
+  supplierName: string;
+  date: string;
+  status: 'Pending' | 'Responded' | 'Quoted' | 'Closed';
+  subject: string;
+  lastMessage?: string;
+}
+
+export interface BuyerRFQ {
+  id: string;
+  title: string;
+  category: string;
+  quantity: string;
+  postedDate: string;
+  expiryDate: string;
+  responsesCount: number;
+  status: 'Active' | 'Paused' | 'Expired' | 'Converted';
+  description?: string;
+}
+
+export type VideoPlatform = 'YouTube' | 'Instagram' | 'Facebook' | 'X' | 'LinkedIn';
+
+export interface SponsoredVideoItem {
+  video_ad_id: string;
+  advertiser_id: string;
+  seller_id: string;
+  product_id?: string;
+  platform: VideoPlatform;
+  source_url: string;
+  media_type: 'reel_or_short' | 'full_video';
+  poster_url: string;
+  display_title: string;
+  display_description: string;
+  supplierName: string;
+  duration?: string;
+  status: 'active' | 'disabled' | 'paused' | 'draft' | 'paused_product_unavailable';
+  embed_url?: string;
+}
+
+export type SponsoredReelItem = SponsoredVideoItem;
+
+export interface SponsoredAdItem {
+  id: string;
+  advertiser_id: string;
+  seller_id: string;
+  product_id: string;
+  supplierName: string;
+  adTitle: string;
+  subtitle: string;
+  imageUrl: string;
+  status: 'active' | 'disabled' | 'paused' | 'draft';
+}
+
+export interface ProductDetailData {
+  id: string;
+  seller_id: string;
+  advertiser_id?: string;
+  title: string;
+  supplierName: string;
+  supplierLocation: string;
+  supplierType: string;
+  isGstVerified: boolean;
+  isIsoCertified: boolean;
+  isNexoraVerified: boolean;
+  isBusinessVerified: boolean;
+  isPublished: boolean;
+  isSuspended?: boolean;
+  moq: string;
+  priceRange: string;
+  priceMin: number;
+  priceMax: number;
+  bulkTiers: { quantityRange: string; unitPrice: string }[];
+  category: string;
+  subcategory?: string;
+  description: string;
+  images: string[];
+  specs: {
+    formulationBase?: string;
+    packagingType?: string;
+    shelfLife?: string;
+    sampleLeadTime?: string;
+    productionCapacity?: string;
+    certifications?: string[];
+  };
+  sellerDetails: {
+    phone: string;
+    whatsapp: string;
+    email: string;
+    trustScore: number;
+    responseRate: string;
+    establishedYear: string;
+    facilityArea: string;
+  };
 }
 
 

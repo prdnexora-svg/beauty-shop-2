@@ -23,6 +23,7 @@ import {
   Scale
 } from 'lucide-react';
 import { VerifiedSupplier } from '../types';
+import { VerifiedBadge } from './VerifiedBadge';
 
 interface SupplierComparisonModalProps {
   isOpen: boolean;
@@ -254,13 +255,15 @@ export const SupplierComparisonModal: React.FC<SupplierComparisonModalProps> = (
                       </div>
 
                       {/* Location & Trust Pill */}
-                      <div className="flex items-center justify-between gap-1 mt-2">
+                      <div className="flex items-center justify-between gap-1 mt-2 flex-wrap">
                         <span className="text-[11px] text-[#594047]">
                           📍 {supplier.city}{supplier.state ? `, ${supplier.state}` : ''}
                         </span>
-                        <span className="text-[11px] font-extrabold text-[#b90064] bg-[#fde7f3] px-2 py-0.5 rounded-full">
-                          {supplier.trustScore}/100 Trust
-                        </span>
+                        <VerifiedBadge
+                          trustScore={supplier.trustScore}
+                          overallRating={supplier.overallRating}
+                          size="sm"
+                        />
                       </div>
                     </div>
 

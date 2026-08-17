@@ -1,743 +1,572 @@
 import React, { useState } from 'react';
-import {
-  Building2,
-  Cpu,
-  TrendingUp,
-  Truck,
-  Box,
-  MapPin,
-  Clock,
-  Sparkles,
-  Search,
-  CheckCircle2,
-  FileCheck2,
-  PlusCircle,
-  Coins,
-  AlertCircle,
-  Trash2,
-  ChevronRight,
-  Calculator,
-  Compass,
-  FileText
+import { 
+  Building2, Sparkles, ShieldCheck, Mail, ArrowRight, Settings, Plus, FileText, 
+  TrendingUp, BarChart3, Users, CheckCircle2, ChevronRight, Edit3, Trash2, Check, Upload, Award, RefreshCw 
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { SponsoredAdManager } from './SponsoredAdManager';
 
-interface RFQLead {
-  id: string;
-  product: string;
-  buyer: string;
-  volumeNeeded: string;
-  category: string;
-  leadTimeRequested: string;
-  budgetEstimated: string;
-  status: 'open' | 'quoted';
-}
+// Mock initial listings
+const INITIAL_PRODUCTS = [
+  { id: 'sp1', name: 'Peptide Skin Barrier Repair Cream', price: '₹145 - ₹180', moq: '2,000 Units', category: 'Skincare', status: 'Active' },
+  { id: 'sp2', name: 'Clinical Vitamin C Infused Glow Serum', price: '₹190 - ₹220', moq: '3,000 Units', category: 'Skincare', status: 'Active' },
+  { id: 'sp3', name: 'Salicylic Acid Overnight Blemish Gel', price: '₹110 - ₹135', moq: '5,000 Units', category: 'Skincare', status: 'Draft' }
+];
+
+// Mock public buyer requirements
+const MOCK_RFQ_MARKETPLACE = [
+  { id: 'RFQ-99512', title: 'Aerosol Cold-Sprayed Hair Dry Shampoo', qty: '5,000 Spray Bottles', location: 'Mumbai, MH', urgency: 'Immediate (Next 7 days)', date: 'Just now' },
+  { id: 'RFQ-99508', title: 'Organic Rosemary Scalp Cleansing Base', qty: '2,000 Liters (Bulk)', location: 'Bengaluru, KA', urgency: 'Standard (30 days)', date: '1 hour ago' },
+  { id: 'RFQ-99488', title: '30ml Premium Glass Dropper Assemblies', qty: '25,000 Sets', location: 'Delhi NCR', urgency: 'Urgent', date: 'Yesterday' }
+];
+
+// Mock incoming buyer leads / enquiries
+const MOCK_ENQUIRIES = [
+  { id: 'ENQ-8110', buyer: 'Aura Cosmetics Ltd', product: 'Clinical Vitamin C Infused Glow Serum', qty: '3,000 Units', message: 'Do you offer customized biological enzyme suspensions for stable formulations?', date: 'Just now', status: 'Unread' },
+  { id: 'ENQ-8105', buyer: 'GreenBeauty Startups', product: 'Peptide Skin Barrier Repair Cream', qty: '10,000 Units', message: 'Looking for 100% biodegradable squeeze tubes. Can we schedule a consulting call?', date: 'Yesterday', status: 'Responded' }
+];
 
 export const SupplierAdminPortal: React.FC = () => {
-  const [activeSubTab, setActiveSubTab] = useState<'capacity' | 'catalog' | 'leads' | 'logistics'>('capacity');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'sponsored-ads' | 'enquiries' | 'rfqs' | 'verification'>('dashboard');
 
-  const showLocalToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+  // Supplier Onboarding & Profile Verification states
+  const [supplierGst, setSupplierGst] = useState('07AABCU9603R1ZM');
+  const [gstVerified, setGstVerified] = useState(true);
+  const [isVerifying, setIsVerifying] = useState(false);
+  
+  // Product creation state (Screen 20)
+  const [products, setProducts] = useState(INITIAL_PRODUCTS);
+  const [newProdName, setNewProdName] = useState('');
+  const [newProdPrice, setNewProdPrice] = useState('');
+  const [newProdMoq, setNewProdMoq] = useState('');
+  const [newProdCat, setNewProdCat] = useState('Skincare');
+  const [showMobileToBuyers, setShowMobileToBuyers] = useState(true);
+
+  // Quote form state (Screen 23)
+  const [selectedRfq, setSelectedRfq] = useState<typeof MOCK_RFQ_MARKETPLACE[0] | null>(null);
+  const [quotePrice, setQuotePrice] = useState('');
+  const [quoteLeadTime, setQuoteLeadTime] = useState('');
+  const [quoteSubmitted, setQuoteSubmitted] = useState(false);
+
+  const handleVerifyGst = () => {
+    if (!supplierGst.trim()) return;
+    setIsVerifying(true);
+    setTimeout(() => {
+      setIsVerifying(false);
+      setGstVerified(true);
+    }, 1200);
   };
 
-  // 1. Plant Capacity States
-  const [plantCapacity, setPlantCapacity] = useState({
-    activeBatchCapacity: 84, // percentage
-    compoundingLiquidOutput: 4500, // Liters per day
-    packagingLinesActive: 3, // out of 4
-    sterilizationLevel: '100% Class 10,000 ISO Cleanroom Verified'
-  });
+  const handleAddProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProdName || !newProdPrice || !newProdMoq) return;
 
-  const [capacityLogs, setCapacityLogs] = useState([
-    { id: 'log-1', timestamp: '10:15 AM', type: 'Sterilization', message: 'Cleanroom HVAC pressure system calibrated. Ambient moisture 42%.' },
-    { id: 'log-2', timestamp: '08:30 AM', type: 'Batch Release', message: 'Batch AR-229 (Retinol Serum Base) passed NABL laboratory assay tests.' }
-  ]);
-
-  const [newLogType, setNewLogType] = useState('Production');
-  const [newLogMsg, setNewLogMsg] = useState('');
-
-  const handleAddCapacityLog = () => {
-    if (!newLogMsg.trim()) return;
-    const newLog = {
-      id: `log-${Date.now()}`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      type: newLogType,
-      message: newLogMsg.trim()
+    const newProduct = {
+      id: `sp-${Date.now()}`,
+      name: newProdName,
+      price: newProdPrice,
+      moq: newProdMoq,
+      category: newProdCat,
+      status: 'Active'
     };
-    setCapacityLogs([newLog, ...capacityLogs]);
-    setNewLogMsg('');
-    showLocalToast('Plant capacity log registered successfully.');
+
+    setProducts([newProduct, ...products]);
+    setNewProdName('');
+    setNewProdPrice('');
+    setNewProdMoq('');
   };
 
-  // 2. Bulk Catalog States
-  const [catalogItems, setCatalogItems] = useState([
-    { id: 'cat-1', name: 'Niacinamide 10% + Zinc 1% Formulation Base', priceRange: '₹140 - ₹180', moq: '1,000 Liters', plantHub: 'Ahmedabad Plant' },
-    { id: 'cat-2', name: 'Hydrating Botanical Cleanser Base (SLS Free)', priceRange: '₹85 - ₹120', moq: '500 Liters', plantHub: 'Mumbai Plant' }
-  ]);
-
-  const [newItemName, setNewItemName] = useState('');
-  const [newItemPrice, setNewItemPrice] = useState('');
-  const [newItemMoq, setNewItemMoq] = useState('');
-  const [newItemHub, setNewItemHub] = useState('Mumbai Plant');
-
-  const handleAddCatalogItem = () => {
-    if (!newItemName || !newItemPrice || !newItemMoq) {
-      showLocalToast('Please fill all catalog parameters.');
-      return;
-    }
-    const item = {
-      id: `cat-${Date.now()}`,
-      name: newItemName,
-      priceRange: newItemPrice,
-      moq: newItemMoq,
-      plantHub: newItemHub
-    };
-    setCatalogItems([...catalogItems, item]);
-    setNewItemName('');
-    setNewItemPrice('');
-    setNewItemMoq('');
-    showLocalToast('New product catalog specification compiled!');
-  };
-
-  const handleDeleteCatalogItem = (id: string) => {
-    setCatalogItems(catalogItems.filter(i => i.id !== id));
-    showLocalToast('Catalog specification unlisted.');
-  };
-
-  // 3. Live RFQs Pipeline
-  const [rfqLeads, setRfqLeads] = useState<RFQLead[]>([
-    { id: 'rfq-2210', product: 'Private Label Organic Sunscreen SPF 50', buyer: 'Glitz & Glow Cosmetics (New Delhi)', volumeNeeded: '5,000 Tubes (50ml)', category: 'OEM Sunscreens', leadTimeRequested: '20 Days', budgetEstimated: '₹4,50,000', status: 'open' },
-    { id: 'rfq-2211', product: 'Keratin Nourishing Hair Masque Base', buyer: 'Vogue Salon Group (Mumbai)', volumeNeeded: '2,000 Liters (Bulk Drums)', category: 'Haircare Formulations', leadTimeRequested: '15 Days', budgetEstimated: '₹6,00,000', status: 'open' }
-  ]);
-
-  const handleQuoteRfq = (id: string) => {
-    setRfqLeads(rfqLeads.map(r => r.id === id ? { ...r, status: 'quoted' } : r));
-    showLocalToast('Commercial quote compiled and sent to buyer!');
-  };
-
-  // 4. Logistics & Freight Calculator States
-  const [originHub, setOriginHub] = useState('Mumbai Plant');
-  const [destinationCity, setDestinationCity] = useState('Bangalore, KA');
-  const [shippingTier, setShippingTier] = useState<'Air' | 'Surface' | 'Ocean'>('Air');
-  const [sourcingWeight, setSourcingWeight] = useState(1500); // Kilograms
-  const [calculatedFreight, setCalculatedFreight] = useState<{
-    baseRate: number;
-    surcharges: number;
-    fuelTax: number;
-    grandTotal: number;
-    transitDays: string;
-    co2Estimate: string;
-    logisticsPartner: string;
-  } | null>(null);
-
-  const handleCalculateFreight = () => {
-    // Standard calculation simulation
-    let perKgRate = 35; // base rate per kg
-    let logisticsPartner = 'Delhivery B2B Express Cargo';
-    let transitDays = '5-6 Days';
-    let co2 = '112 kg CO2 (Green Settle)';
-
-    if (shippingTier === 'Air') {
-      perKgRate = 120;
-      logisticsPartner = 'Blue Dart Premium Air Aviation';
-      transitDays = '2-3 Days';
-      co2 = '420 kg CO2 (High Velocity)';
-    } else if (shippingTier === 'Ocean') {
-      perKgRate = 18;
-      logisticsPartner = 'Maersk B2B Sea Carrier Hub';
-      transitDays = '10-12 Days';
-      co2 = '45 kg CO2 (Lowest footprint)';
-    }
-
-    const baseRate = perKgRate * sourcingWeight;
-    const surcharges = Math.round(baseRate * 0.08); // 8% octroi / plant gate passes
-    const fuelTax = Math.round(baseRate * 0.18); // 18% GST & fuel adjustment
-    const grandTotal = baseRate + surcharges + fuelTax;
-
-    setCalculatedFreight({
-      baseRate,
-      surcharges,
-      fuelTax,
-      grandTotal,
-      transitDays,
-      co2Estimate: co2,
-      logisticsPartner
-    });
-    showLocalToast('Freight freight rates computed via NSDL cargo routing!');
+  const handleSendQuote = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quotePrice || !quoteLeadTime) return;
+    setQuoteSubmitted(true);
+    setTimeout(() => {
+      setQuoteSubmitted(false);
+      setSelectedRfq(null);
+      setQuotePrice('');
+      setQuoteLeadTime('');
+      alert('Your formal commercial quote has been securely sent to the buyer. You will receive notifications upon response.');
+    }, 1500);
   };
 
   return (
-    <div className="py-8 px-4 md:px-10 max-w-[1440px] mx-auto">
+    <div className="bg-[#fdf8f8] min-h-screen flex flex-col md:flex-row">
       
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-22 right-6 z-50 bg-[#1c1b1b] text-white px-4 py-3 rounded-xl shadow-xl border border-[#313030] flex items-center gap-2.5 animate-in slide-in-from-bottom-5 duration-200">
-          <CheckCircle2 className="w-4 h-4 text-[#e6007e]" />
-          <span className="text-[13px] font-medium">{toastMessage}</span>
-        </div>
-      )}
-
-      {/* Screen Header */}
-      <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      {/* SIDEBAR NAVIGATION */}
+      <div className="w-full md:w-64 border-r border-[#e8e8e8] bg-white p-6 space-y-8 shrink-0">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#eee7ea] text-[#1c1b1b] font-bold text-[11px] uppercase tracking-wider mb-2">
-            <Building2 className="w-3.5 h-3.5 text-[#b90064]" />
-            <span>Supplier &amp; Manufacturer Workspace</span>
-          </div>
-          <h1 className="text-3xl font-black text-[#1c1b1b] tracking-tight">
-            Enterprise Sourcing Hub
-          </h1>
-          <p className="text-[14px] text-[#594047] font-semibold mt-1">
-            Track active aseptic compounding capacity, update raw material catalogs, bid on incoming RFQs, and compute logistics freight routing.
-          </p>
+          <span className="text-sm font-black text-[#b90064] tracking-tight block">Nexora Luxe</span>
+          <span className="text-[10px] text-[#8c7077] uppercase font-bold tracking-wider">Manufacturer Admin Suite</span>
         </div>
 
-        <div className="flex items-center gap-2.5 bg-[#fdf8f8] border border-[#e8e8e8] px-4 py-3 rounded-xl">
-          <div className="w-2.5 h-2.5 bg-emerald-600 rounded-full animate-ping"></div>
-          <span className="text-[12.5px] font-bold text-zinc-950">Plant Status: <span className="text-emerald-700 font-black">NABL Certified &amp; Operational</span></span>
-        </div>
-      </div>
-
-      {/* Dashboard Sub-Tabs Navigation */}
-      <div className="flex border-b border-[#e8e8e8] mb-6 overflow-x-auto whitespace-nowrap scrollbar-none">
-        <button
-          onClick={() => setActiveSubTab('capacity')}
-          className={`pb-4 px-1 text-[13.5px] font-bold mr-8 transition-all flex items-center gap-2 cursor-pointer ${
-            activeSubTab === 'capacity'
-              ? 'text-[#b90064] border-b-2 border-[#b90064]'
-              : 'text-[#594047] hover:text-[#1c1b1b]'
-          }`}
-        >
-          <Cpu className="w-4 h-4" />
-          <span>Plant Compounding Capacity</span>
-        </button>
-
-        <button
-          onClick={() => setActiveSubTab('catalog')}
-          className={`pb-4 px-1 text-[13.5px] font-bold mr-8 transition-all flex items-center gap-2 cursor-pointer ${
-            activeSubTab === 'catalog'
-              ? 'text-[#b90064] border-b-2 border-[#b90064]'
-              : 'text-[#594047] hover:text-[#1c1b1b]'
-          }`}
-        >
-          <Box className="w-4 h-4" />
-          <span>Bulk Catalog Specifications</span>
-        </button>
-
-        <button
-          onClick={() => setActiveSubTab('leads')}
-          className={`pb-4 px-1 text-[13.5px] font-bold mr-8 transition-all flex items-center gap-2 cursor-pointer ${
-            activeSubTab === 'leads'
-              ? 'text-[#b90064] border-b-2 border-[#b90064]'
-              : 'text-[#594047] hover:text-[#1c1b1b]'
-          }`}
-        >
-          <TrendingUp className="w-4 h-4" />
-          <span>Live RFQ Lead Pipeline</span>
-          <span className="text-[10px] bg-[#fde7f3] text-[#b90064] px-1.5 py-0.5 rounded-full font-bold">
-            {rfqLeads.filter(r => r.status === 'open').length} New
-          </span>
-        </button>
-
-        <button
-          onClick={() => setActiveSubTab('logistics')}
-          className={`pb-4 px-1 text-[13.5px] font-bold mr-8 transition-all flex items-center gap-2 cursor-pointer ${
-            activeSubTab === 'logistics'
-              ? 'text-[#b90064] border-b-2 border-[#b90064]'
-              : 'text-[#594047] hover:text-[#1c1b1b]'
-          }`}
-        >
-          <Truck className="w-4 h-4" />
-          <span>Freight &amp; Logistics Calculator</span>
-        </button>
-      </div>
-
-      {/* SUB-TAB CONTENTS */}
-
-      {/* 1. PLANT CAPACITY */}
-      {activeSubTab === 'capacity' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            
-            {/* Status Gauges */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white border border-[#e8e8e8] p-5 rounded-2xl text-left">
-                <span className="text-[11px] font-extrabold text-[#8c7077] uppercase">Aseptic Batch Capacity</span>
-                <div className="text-3xl font-black text-[#b90064] mt-1.5">{plantCapacity.activeBatchCapacity}%</div>
-                <div className="w-full bg-zinc-100 h-2 rounded-full overflow-hidden mt-3">
-                  <div className="bg-[#b90064] h-2 rounded-full" style={{ width: `${plantCapacity.activeBatchCapacity}%` }}></div>
-                </div>
-                <span className="text-[10.5px] text-[#594047] font-semibold mt-2.5 block">16% Available compounding headroom</span>
-              </div>
-
-              <div className="bg-white border border-[#e8e8e8] p-5 rounded-2xl text-left">
-                <span className="text-[11px] font-extrabold text-[#8c7077] uppercase">Daily Liquid Out-Turn</span>
-                <div className="text-3xl font-black text-zinc-950 mt-1.5">{plantCapacity.compoundingLiquidOutput.toLocaleString()} L</div>
-                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full inline-block mt-3 uppercase tracking-wider">
-                  NABL Standards
-                </span>
-                <span className="text-[10.5px] text-[#594047] font-semibold mt-2.5 block">Liquid cosmetics and emulsification</span>
-              </div>
-
-              <div className="bg-white border border-[#e8e8e8] p-5 rounded-2xl text-left">
-                <span className="text-[11px] font-extrabold text-[#8c7077] uppercase">Packaging Line Status</span>
-                <div className="text-3xl font-black text-[#0050d6] mt-1.5">{plantCapacity.packagingLinesActive} / 4</div>
-                <div className="flex gap-1.5 mt-3">
-                  {[1, 2, 3, 4].map((line) => (
-                    <span key={line} className={`w-3.5 h-3.5 rounded-sm inline-block ${
-                      line <= plantCapacity.packagingLinesActive ? 'bg-[#0050d6]' : 'bg-zinc-200'
-                    }`} />
-                  ))}
-                </div>
-                <span className="text-[10.5px] text-[#594047] font-semibold mt-2.5 block">Lines 1, 2, 3: Aseptic tube packing</span>
-              </div>
-            </div>
-
-            {/* Compliance details banner */}
-            <div className="p-4 rounded-xl border bg-amber-50 border-amber-200/70 text-[12.5px] text-amber-900 font-semibold flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-amber-700 shrink-0" />
-              <span>Plant facility matches: <strong className="text-amber-950">{plantCapacity.sterilizationLevel}</strong>. Continuous environmental tracking enabled.</span>
-            </div>
-
-            {/* Machinery Maintenance & Plant Logs */}
-            <div className="bg-white border border-[#e8e8e8] p-6 rounded-2xl space-y-4">
-              <h3 className="font-bold text-base text-zinc-950">Cleanroom Sourcing &amp; Plant Operations Log</h3>
-              
-              <div className="space-y-3">
-                {capacityLogs.map((log) => (
-                  <div key={log.id} className="p-3.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-[12.5px] flex items-start justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10.5px] font-mono font-bold text-zinc-950 bg-white border px-1.5 py-0.5 rounded uppercase">
-                          {log.type}
-                        </span>
-                        <span className="text-[11px] text-[#8c7077] font-semibold">{log.timestamp}</span>
-                      </div>
-                      <p className="text-[#594047] font-medium">{log.message}</p>
-                    </div>
-                    <span className="text-[10.5px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold uppercase">
-                      Pass
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
-
-          {/* Add Sourcing Plant Log Form */}
-          <div className="bg-[#fcf9f8] border border-[#e8e8e8] p-5 rounded-2xl space-y-4 h-fit">
-            <h4 className="font-bold text-[14px] text-zinc-950 uppercase tracking-wider">
-              Register Plant Operation Log
-            </h4>
-
-            <div className="space-y-4 text-[12.5px]">
-              <div className="space-y-1.5">
-                <label className="font-bold text-zinc-950">Log Classification</label>
-                <select
-                  value={newLogType}
-                  onChange={(e) => setNewLogType(e.target.value)}
-                  className="w-full bg-white border border-[#e8e8e8] p-2 rounded-lg font-semibold"
-                >
-                  <option value="Production">Batch Compounding Settle</option>
-                  <option value="Sterilization">ISO Cleanroom Humidification</option>
-                  <option value="Packaging">Line 3 Tube Calibration</option>
-                  <option value="NABL Assay">Swiss Formulation Validation</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="font-bold text-zinc-950">Sourcing Log Message</label>
-                <textarea
-                  value={newLogMsg}
-                  onChange={(e) => setNewLogMsg(e.target.value)}
-                  rows={4}
-                  placeholder="Enter precise calibration details or batch safety metrics..."
-                  className="w-full bg-white border border-[#e8e8e8] focus:border-[#b90064] p-3 rounded-xl outline-none font-medium text-zinc-950 resize-none"
-                />
-              </div>
-
-              <button
-                onClick={handleAddCapacityLog}
-                className="w-full py-2.5 bg-[#b90064] hover:bg-[#8e004b] text-white font-extrabold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>Submit Sourcing Log</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 2. BULK CATALOG SPECIFICATIONS */}
-      {activeSubTab === 'catalog' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <nav className="flex flex-col gap-1 text-xs font-bold text-[#594047]">
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`flex items-center gap-2.5 px-4 py-3 rounded-lg text-left transition-all cursor-pointer ${
+              activeTab === 'dashboard' ? 'bg-[#fde7f3] text-[#b90064]' : 'hover:bg-neutral-50'
+            }`}
+          >
+            <BarChart3 className="w-4.5 h-4.5" />
+            <span>Suite Dashboard</span>
+          </button>
           
-          {/* Main List */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-[11px] font-extrabold text-[#8c7077] uppercase tracking-wider">Currently Listed Formulations ({catalogItems.length})</span>
-              <span className="text-[11px] text-[#0050d6] font-bold">Listed on Nexora B2B Grid</span>
+          <button
+            onClick={() => setActiveTab('products')}
+            className={`flex items-center gap-2.5 px-4 py-3 rounded-lg text-left transition-all cursor-pointer ${
+              activeTab === 'products' ? 'bg-[#fde7f3] text-[#b90064]' : 'hover:bg-neutral-50'
+            }`}
+          >
+            <Plus className="w-4.5 h-4.5" />
+            <span>My Catalog ({products.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('sponsored-ads')}
+            className={`flex items-center justify-between px-4 py-3 rounded-lg text-left transition-all cursor-pointer ${
+              activeTab === 'sponsored-ads' ? 'bg-[#fde7f3] text-[#b90064]' : 'hover:bg-neutral-50'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <Sparkles className="w-4.5 h-4.5 text-[#b90064]" />
+              <span>Ad Campaigns</span>
+            </div>
+            <span className="text-[9px] bg-[#b90064] text-white px-1.5 py-0.5 rounded-full font-bold uppercase">
+              Promote
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('enquiries')}
+            className={`flex items-center gap-2.5 px-4 py-3 rounded-lg text-left transition-all cursor-pointer ${
+              activeTab === 'enquiries' ? 'bg-[#fde7f3] text-[#b90064]' : 'hover:bg-neutral-50'
+            }`}
+          >
+            <Mail className="w-4.5 h-4.5" />
+            <span>Buyer Enquiries ({MOCK_ENQUIRIES.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('rfqs')}
+            className={`flex items-center gap-2.5 px-4 py-3 rounded-lg text-left transition-all cursor-pointer ${
+              activeTab === 'rfqs' ? 'bg-[#fde7f3] text-[#b90064]' : 'hover:bg-neutral-50'
+            }`}
+          >
+            <FileText className="w-4.5 h-4.5" />
+            <span>RFQ Marketplace ({MOCK_RFQ_MARKETPLACE.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('verification')}
+            className={`flex items-center gap-2.5 px-4 py-3 rounded-lg text-left transition-all cursor-pointer ${
+              activeTab === 'verification' ? 'bg-[#fde7f3] text-[#b90064]' : 'hover:bg-neutral-50'
+            }`}
+          >
+            <ShieldCheck className="w-4.5 h-4.5" />
+            <span>Verification Hub</span>
+          </button>
+        </nav>
+      </div>
+
+      {/* MAIN WORKSPACE CONTENT */}
+      <div className="flex-1 p-6 md:p-10 space-y-8 overflow-y-auto">
+        
+        {/* UPPER STATUS STRIP */}
+        <div className="bg-white border border-[#e8e8e8] p-4.5 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h2 className="text-base font-black text-zinc-900 flex items-center gap-1.5">
+              Aura Beauty Labs
+              <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded font-bold uppercase tracking-wider">GST Verified</span>
+            </h2>
+            <p className="text-xs text-[#594047] mt-0.5">Primary Manufacturing Plant: Mumbai High Tech Cosmetic Zone • Est: 2012</p>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <span className="text-[11px] text-[#594047] font-semibold">Live Traffic Analytics:</span>
+            <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">98% conversion rating</span>
+          </div>
+        </div>
+
+        {/* ================== SUITE DASHBOARD TAB ================== */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-4.5 bg-white border border-[#e8e8e8] rounded-xl space-y-1.5 text-center md:text-left">
+                <span className="text-[10px] text-[#8c7077] uppercase font-bold tracking-wider">Catalog Listings</span>
+                <span className="text-2xl font-black text-zinc-950 block">{products.length}</span>
+              </div>
+              <div className="p-4.5 bg-white border border-[#e8e8e8] rounded-xl space-y-1.5 text-center md:text-left">
+                <span className="text-[10px] text-[#8c7077] uppercase font-bold tracking-wider">Active Buyer Leads</span>
+                <span className="text-2xl font-black text-[#b90064] block">12</span>
+              </div>
+              <div className="p-4.5 bg-white border border-[#e8e8e8] rounded-xl space-y-1.5 text-center md:text-left">
+                <span className="text-[10px] text-[#8c7077] uppercase font-bold tracking-wider">Response Speed</span>
+                <span className="text-2xl font-black text-zinc-950 block text-emerald-600">3.5 hrs</span>
+              </div>
+              <div className="p-4.5 bg-white border border-[#e8e8e8] rounded-xl space-y-1.5 text-center md:text-left">
+                <span className="text-[10px] text-[#8c7077] uppercase font-bold tracking-wider">Monthly Views</span>
+                <span className="text-2xl font-black text-zinc-950 block">4,810</span>
+              </div>
             </div>
 
-            {catalogItems.map((item) => (
-              <div key={item.id} className="bg-white border border-[#e8e8e8] rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition-shadow">
-                <div>
-                  <h3 className="text-base font-bold text-zinc-950 tracking-tight">{item.name}</h3>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <span className="text-[10.5px] bg-[#f0edec] text-[#594047] font-extrabold uppercase px-2 py-0.5 rounded">
-                      Plant: {item.plantHub}
-                    </span>
-                    <span className="text-[10.5px] bg-[#e6f0ff] text-[#0050d6] font-extrabold uppercase px-2 py-0.5 rounded">
-                      MOQ: {item.moq}
-                    </span>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              
+              {/* Sourcing Demand Forecast Chart */}
+              <div className="bg-white border border-[#e8e8e8] rounded-xl p-5 space-y-4">
+                <h3 className="font-extrabold text-xs text-[#8c7077] uppercase tracking-wider">Sourcing Demand Forecast</h3>
+                <div className="h-40 bg-zinc-50 border border-zinc-100 rounded-lg flex items-center justify-center">
+                  <span className="text-xs text-[#594047] font-semibold italic">Monthly volume demand chart in progress...</span>
+                </div>
+              </div>
+
+              {/* Manufacturing capacity index */}
+              <div className="bg-white border border-[#e8e8e8] rounded-xl p-5 space-y-4">
+                <h3 className="font-extrabold text-xs text-[#8c7077] uppercase tracking-wider">Production Capacity &amp; Batches</h3>
+                <div className="space-y-4 text-xs">
+                  <div>
+                    <div className="flex justify-between font-semibold text-zinc-800 mb-1">
+                      <span>Lab Stability Queue</span>
+                      <span>85% active</span>
+                    </div>
+                    <div className="w-full bg-zinc-100 h-2 rounded-full overflow-hidden">
+                      <div className="bg-[#b90064] h-full w-[85%]"></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between font-semibold text-zinc-800 mb-1">
+                      <span>Contract Bulk Formulation</span>
+                      <span>60% capacity occupied</span>
+                    </div>
+                    <div className="w-full bg-zinc-100 h-2 rounded-full overflow-hidden">
+                      <div className="bg-[#0050d6] h-full w-[60%]"></div>
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex items-center gap-4 self-stretch sm:self-auto justify-between border-t sm:border-t-0 pt-3 sm:pt-0 border-zinc-100">
-                  <div className="text-right">
-                    <span className="text-[10px] text-[#8c7077] font-bold block uppercase">Estimated Wholesaling Rate</span>
-                    <strong className="text-base font-black text-[#b90064]">{item.priceRange} / L</strong>
-                  </div>
+            </div>
+          </div>
+        )}
 
+        {/* ================== CATALOG MANAGEMENT TAB (Screen 19 / 20) ================== */}
+        {activeTab === 'products' && (
+          <div className="space-y-6">
+            
+            {/* Create Product Form (Screen 20) */}
+            <div className="bg-white border border-[#e8e8e8] rounded-xl p-5 space-y-5">
+              <h3 className="font-black text-sm text-zinc-950">Add Formulation Private Label to Catalog</h3>
+              <form onSubmit={handleAddProduct} className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                <div>
+                  <label className="block font-bold text-[#594047] uppercase tracking-wider mb-1.5">Formulation Title</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Ceramide Eye Gel Base"
+                    value={newProdName}
+                    onChange={(e) => setNewProdName(e.target.value)}
+                    className="w-full bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#594047] uppercase tracking-wider mb-1.5">Estimated Price (INR)</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. ₹120 - ₹150 / unit"
+                    value={newProdPrice}
+                    onChange={(e) => setNewProdPrice(e.target.value)}
+                    className="w-full bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#594047] uppercase tracking-wider mb-1.5">Min Order Qty (MOQ)</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 2,000 Bottles"
+                    value={newProdMoq}
+                    onChange={(e) => setNewProdMoq(e.target.value)}
+                    className="w-full bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg"
+                  />
+                </div>
+
+                <div className="flex items-end">
                   <button
-                    onClick={() => handleDeleteCatalogItem(item.id)}
-                    className="p-2 text-zinc-400 hover:text-[#b90064] hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                    title="Unlist item"
+                    type="submit"
+                    className="w-full py-3 bg-[#b90064] hover:bg-[#8e004b] text-white font-extrabold uppercase tracking-wider rounded-lg shadow-sm transition-all cursor-pointer"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    Publish to Catalog
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Catalog list */}
+            <div className="bg-white border border-[#e8e8e8] rounded-xl overflow-hidden">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-[#e8e8e8] text-[#8c7077] font-bold uppercase tracking-wider bg-zinc-50">
+                    <th className="p-4">Formulation Name</th>
+                    <th className="p-4">Est Price Unit</th>
+                    <th className="p-4">Minimum MOQ</th>
+                    <th className="p-4">Audit Status</th>
+                    <th className="p-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#e8e8e8] text-[#594047]">
+                  {products.map((p) => (
+                    <tr key={p.id}>
+                      <td className="p-4 font-extrabold text-zinc-950">{p.name}</td>
+                      <td className="p-4">{p.price}</td>
+                      <td className="p-4">{p.moq}</td>
+                      <td className="p-4">
+                        <span className={`px-2 py-0.5 rounded font-bold text-[9.5px] uppercase tracking-wider ${
+                          p.status === 'Active'
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'bg-zinc-100 text-zinc-700'
+                        }`}>
+                          {p.status}
+                        </span>
+                      </td>
+                      <td className="p-4 text-right">
+                        <button 
+                          onClick={() => setProducts(products.filter(item => item.id !== p.id))}
+                          className="text-red-500 hover:text-red-700 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        )}
+
+        {/* ================== SPONSORED AD CAMPAIGN MANAGER ================== */}
+        {activeTab === 'sponsored-ads' && (
+          <SponsoredAdManager
+            supplierId="seller_aura_001"
+            supplierName="Aura Beauty Labs"
+          />
+        )}
+        {activeTab === 'enquiries' && (
+          <div className="space-y-4">
+            <h3 className="font-black text-sm text-zinc-950">Active Buyer Sourcing Enquiries</h3>
+            {MOCK_ENQUIRIES.map((enq) => (
+              <div key={enq.id} className="bg-white border border-[#e8e8e8] rounded-xl p-5 space-y-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[10px] text-zinc-400 font-mono block">Enquiry REF: {enq.id}</span>
+                    <h4 className="font-extrabold text-sm text-zinc-950 mt-0.5">{enq.buyer}</h4>
+                  </div>
+                  <span className={`text-[9.5px] px-2 py-0.5 rounded font-bold uppercase ${
+                    enq.status === 'Unread'
+                      ? 'bg-[#fde7f3] text-[#b90064] border border-[#e0bec6]'
+                      : 'bg-zinc-100 text-zinc-600'
+                  }`}>
+                    {enq.status}
+                  </span>
+                </div>
+
+                <div className="bg-[#fcf9f8] p-3 rounded-lg border border-[#e8e8e8] text-xs">
+                  <p className="font-semibold text-zinc-800 mb-1">Product: {enq.product} (Target: {enq.qty})</p>
+                  <p className="italic">"{enq.message}"</p>
+                </div>
+
+                <div className="flex justify-end gap-2 text-xs">
+                  <button className="border border-[#e8e8e8] hover:border-zinc-400 text-zinc-800 font-bold px-3 py-2 rounded-lg cursor-pointer">
+                    Chat with Buyer
+                  </button>
+                  <button className="bg-[#b90064] text-white font-extrabold px-3 py-2 rounded-lg hover:bg-[#8e004b] transition-colors cursor-pointer">
+                    Draft Proposal Bid
                   </button>
                 </div>
               </div>
             ))}
           </div>
+        )}
 
-          {/* Add New Sourcing Specification Form */}
-          <div className="bg-[#fcf9f8] border border-[#e8e8e8] p-5 rounded-2xl space-y-4 h-fit">
-            <h4 className="font-bold text-[14px] text-zinc-950 uppercase tracking-wider">
-              List Bulk Formulation Specification
-            </h4>
-
-            <div className="space-y-4 text-[12.5px]">
-              <div className="space-y-1.5">
-                <label className="font-bold text-zinc-950">Formulation / Base Chemical Name</label>
-                <input
-                  type="text"
-                  value={newItemName}
-                  onChange={(e) => setNewItemName(e.target.value)}
-                  placeholder="E.g., Salicylic Acid 2% Exfoliating Cleanser"
-                  className="w-full bg-white border border-[#e8e8e8] p-2.5 rounded-lg font-semibold text-zinc-950 outline-none focus:border-[#b90064]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="font-bold text-zinc-950">Price Range (Litre)</label>
-                  <input
-                    type="text"
-                    value={newItemPrice}
-                    onChange={(e) => setNewItemPrice(e.target.value)}
-                    placeholder="E.g., ₹120 - ₹150"
-                    className="w-full bg-white border border-[#e8e8e8] p-2.5 rounded-lg font-semibold text-zinc-950 outline-none focus:border-[#b90064]"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="font-bold text-zinc-950">Minimum Order Size</label>
-                  <input
-                    type="text"
-                    value={newItemMoq}
-                    onChange={(e) => setNewItemMoq(e.target.value)}
-                    placeholder="E.g., 500 Liters"
-                    className="w-full bg-white border border-[#e8e8e8] p-2.5 rounded-lg font-semibold text-zinc-950 outline-none focus:border-[#b90064]"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="font-bold text-zinc-950">Target Sourcing Compounding Plant</label>
-                <select
-                  value={newItemHub}
-                  onChange={(e) => setNewItemHub(e.target.value)}
-                  className="w-full bg-white border border-[#e8e8e8] p-2 rounded-lg font-semibold"
-                >
-                  <option value="Mumbai Plant">Mumbai Plant Hub (Cosmeceuticals)</option>
-                  <option value="Ahmedabad Plant">Ahmedabad Plant Hub (Actives &amp; Serums)</option>
-                  <option value="Delhi NCR Plant">Delhi NCR Plant Hub (Packaging &amp; Aerosols)</option>
-                </select>
-              </div>
-
-              <button
-                onClick={handleAddCatalogItem}
-                className="w-full py-2.5 bg-[#b90064] hover:bg-[#8e004b] text-white font-extrabold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>List Product Catalog Specification</span>
-              </button>
+        {/* ================== RFQ PUBLIC MARKETPLACE (Screen 22 / 23) ================== */}
+        {activeTab === 'rfqs' && (
+          <div className="space-y-6">
+            <div className="space-y-1">
+              <h3 className="font-black text-sm text-zinc-950">Active Public Sourcing RFQ Directory</h3>
+              <p className="text-xs text-[#594047]">Verified beauty product requirements posted by buyers seeking manufacturers, private label labs, and custom chemical formulators.</p>
             </div>
-          </div>
 
-        </div>
-      )}
-
-      {/* 3. LIVE RFQ LEADS */}
-      {activeSubTab === 'leads' && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <span className="text-[11px] font-extrabold text-[#8c7077] uppercase tracking-wider">Broadcasting RFQs Matching Category ({rfqLeads.length})</span>
-            <span className="text-[11.5px] text-[#0050d6] font-bold">Auto-matched from New Delhi &amp; Mumbai Sourcing desks</span>
-          </div>
-
-          <div className="space-y-4">
-            {rfqLeads.map((rfq) => (
-              <div key={rfq.id} className="bg-white border border-[#e8e8e8] rounded-2xl p-6 shadow-sm">
-                <div className="flex flex-col md:flex-row justify-between items-start gap-4 pb-4 border-b border-[#f0edec]">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10.5px] font-mono font-bold text-[#8c7077] bg-[#f0edec] px-2 py-0.5 rounded">
-                        LEAD ID: {rfq.id}
-                      </span>
-                      <span className="text-[11px] font-extrabold uppercase text-[#0050d6] tracking-wider">
-                        {rfq.category}
-                      </span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {MOCK_RFQ_MARKETPLACE.map((rfq) => (
+                <div key={rfq.id} className="bg-white border border-[#e8e8e8] rounded-xl p-5 flex flex-col justify-between space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-[10px] font-mono text-zinc-400">
+                      <span>Lead ID: {rfq.id}</span>
+                      <span>Published: {rfq.date}</span>
                     </div>
-
-                    <h3 className="text-base font-bold text-zinc-950 mt-2 tracking-tight">
-                      {rfq.product}
-                    </h3>
-                    <p className="text-[12.5px] text-[#594047] font-semibold mt-0.5">
-                      Requested by: <strong className="text-zinc-950">{rfq.buyer}</strong>
-                    </p>
+                    <h4 className="font-extrabold text-sm text-zinc-950">{rfq.title}</h4>
+                    <div className="flex flex-wrap gap-2 text-[11px] text-[#594047]">
+                      <span>Target Volume: <span className="font-bold text-zinc-900">{rfq.qty}</span></span>
+                      <span>•</span>
+                      <span>Destination: <span className="font-semibold text-zinc-800">{rfq.location}</span></span>
+                    </div>
                   </div>
 
-                  <div className="text-right">
-                    <span className="text-[10px] text-[#8c7077] font-bold block uppercase">Estimated Budget</span>
-                    <strong className="text-base font-black text-[#b90064]">{rfq.budgetEstimated}</strong>
-                  </div>
-                </div>
-
-                <div className="py-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-[12.5px] text-[#594047] font-medium">
-                  <div>
-                    <span className="block text-[10px] text-[#8c7077] uppercase font-bold">Volume Required</span>
-                    <span className="text-zinc-950 font-bold">{rfq.volumeNeeded}</span>
-                  </div>
-                  <div>
-                    <span className="block text-[10px] text-[#8c7077] uppercase font-bold">Delivery Lead Time Target</span>
-                    <span className="text-zinc-950 font-bold">{rfq.leadTimeRequested}</span>
-                  </div>
-                  <div className="sm:border-l sm:pl-4 border-zinc-100">
-                    <span className="block text-[10px] text-emerald-700 uppercase font-bold">Compliance Required</span>
-                    <span className="text-emerald-800 font-bold flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                      CDSCO Standard Assay
-                    </span>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-[#f0edec] flex justify-between items-center">
-                  <span className="text-[11px] text-[#8c7077] font-medium">
-                    ▲ Placing quote submits factory technical specification and NABL batch history automatically.
-                  </span>
-
-                  {rfq.status === 'open' ? (
+                  <div className="pt-3 border-t border-[#e8e8e8] flex justify-between items-center text-xs">
+                    <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-bold uppercase">{rfq.urgency}</span>
                     <button
-                      onClick={() => handleQuoteRfq(rfq.id)}
-                      className="bg-[#b90064] hover:bg-[#8e004b] text-white text-[12px] font-bold py-2 px-5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 active:scale-98"
+                      onClick={() => setSelectedRfq(rfq)}
+                      className="bg-[#b90064] text-white font-extrabold px-3 py-2 rounded-lg hover:bg-[#8e004b] transition-colors cursor-pointer"
                     >
-                      <FileCheck2 className="w-4 h-4" />
-                      <span>Compile &amp; Send Sourcing Quote</span>
+                      Submit Quote Proposal
                     </button>
-                  ) : (
-                    <div className="flex items-center gap-1 px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-[12px] font-bold">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      <span>Quote Sent Successfully (Active Bid)</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Custom Quote Submission form overlay (Screen 23) */}
+            {selectedRfq && (
+              <div className="fixed inset-0 bg-zinc-950/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+                <div className="bg-white border border-[#e8e8e8] rounded-2xl w-full max-w-md p-6 relative shadow-2xl text-xs space-y-6">
+                  
+                  <div className="flex justify-between items-center pb-3 border-b border-[#e8e8e8]">
+                    <div>
+                      <span className="text-[9px] text-zinc-400 font-mono block">RFQ: {selectedRfq.id}</span>
+                      <h3 className="font-black text-sm text-zinc-900">Send Commercial Quote Proposal</h3>
                     </div>
-                  )}
+                    <button onClick={() => setSelectedRfq(null)} className="text-zinc-400 hover:text-zinc-600 font-bold">
+                      Close
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSendQuote} className="space-y-4 text-xs">
+                    <div>
+                      <span className="block text-[#8c7077] font-bold uppercase mb-1">Target Requirement</span>
+                      <span className="text-sm font-bold text-zinc-950 block">{selectedRfq.title}</span>
+                      <span className="text-[#594047] block mt-0.5">Target volume requested: {selectedRfq.qty}</span>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-[#594047] uppercase tracking-wider mb-1.5">Proposed Price (per unit / Liter)</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. ₹135 / Unit"
+                        value={quotePrice}
+                        onChange={(e) => setQuotePrice(e.target.value)}
+                        className="w-full bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg font-mono text-zinc-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-[#594047] uppercase tracking-wider mb-1.5">Production Lead-time</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. 15 business days"
+                        value={quoteLeadTime}
+                        onChange={(e) => setQuoteLeadTime(e.target.value)}
+                        className="w-full bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={quoteSubmitted}
+                      className="w-full py-3.5 bg-[#b90064] hover:bg-[#8e004b] text-white font-extrabold uppercase tracking-wider rounded-lg shadow-sm transition-all"
+                    >
+                      {quoteSubmitted ? 'Transmitting quote securely...' : 'Submit Commercial Bid'}
+                    </button>
+                  </form>
+
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+            )}
 
-      {/* 4. LOGISTICS & FREIGHT CALCULATOR */}
-      {activeSubTab === 'logistics' && (
-        <div className="space-y-6">
-          <div className="bg-[#e6f0ff] border border-[#bfdbfe] p-4 rounded-xl flex items-start gap-3">
-            <Truck className="w-5 h-5 text-[#0050d6] shrink-0 mt-0.5" />
-            <div className="text-[13px] text-[#0050d6] font-medium">
-              <strong className="font-bold">Pan-India Freight Rate Estimator:</strong> Calculate transport logistics across Mumbai, Baddi, New Delhi, and Ahmedabad plants directly to South, East, and West India buyer hubs. Our estimates integrate GST and local octroi levies.
+          </div>
+        )}
+
+        {/* ================== VERIFICATION HUB (Screen 17 / 24) ================== */}
+        {activeTab === 'verification' && (
+          <div className="space-y-6">
+            <div className="bg-white border border-[#e8e8e8] rounded-xl p-5 space-y-5">
+              <div className="border-b border-[#e8e8e8] pb-3">
+                <h3 className="font-black text-sm text-zinc-900">Supplier Legal Identity Onboarding</h3>
+                <p className="text-xs text-[#594047] mt-0.5">Vetted business licenses boost matching weight curves by up to **40%** in search directories.</p>
+              </div>
+
+              <div className="space-y-4 text-xs">
+                <div>
+                  <label className="block font-bold text-[#594047] uppercase tracking-wider mb-1.5">Company GSTIN Number</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      maxLength={15}
+                      value={supplierGst}
+                      onChange={(e) => setSupplierGst(e.target.value)}
+                      placeholder="e.g. 07AABCU9603R1ZM"
+                      className="flex-1 bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none px-3.5 py-2.5 rounded-lg uppercase tracking-wider font-mono font-bold"
+                    />
+                    <button
+                      onClick={handleVerifyGst}
+                      disabled={isVerifying}
+                      className="bg-[#b90064] text-white font-extrabold px-5 py-2.5 rounded-lg hover:bg-[#8e004b] transition-colors"
+                    >
+                      {isVerifying ? 'Checking...' : 'Sync Corporate Register'}
+                    </button>
+                  </div>
+                </div>
+
+                {gstVerified && (
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex gap-2.5 items-start">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="block font-bold text-emerald-800">Legal Business Verified Successfully</span>
+                      <span className="block text-[#594047] mt-0.5">Aura Beauty Labs private manufacturing lines are fully checked, registered, and active.</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            {/* Input Config Form (col-span-5) */}
-            <div className="lg:col-span-5 bg-[#fcf9f8] border border-[#e8e8e8] p-5 rounded-2xl space-y-4">
-              <h3 className="font-bold text-base text-zinc-950 flex items-center gap-1.5 pb-2 border-b">
-                <Calculator className="w-5 h-5 text-[#b90064]" />
-                Freight Parameter Configuration
-              </h3>
+            {/* Certifications and credentials upload */}
+            <div className="bg-white border border-[#e8e8e8] rounded-xl p-5 space-y-4">
+              <h3 className="font-extrabold text-xs text-[#8c7077] uppercase tracking-wider">Manufacturing Certifications (GMP, ISO, organic)</h3>
+              
+              <div className="border-2 border-dashed border-[#e0bec6] rounded-xl p-6 text-center hover:bg-neutral-50 transition-colors cursor-pointer group">
+                <Upload className="w-8 h-8 text-zinc-400 group-hover:text-[#b90064] mx-auto mb-2" />
+                <span className="block text-xs font-bold text-zinc-900">Upload GMP / ISO Compliance Certificate</span>
+                <span className="block text-[10px] text-zinc-400 mt-0.5">Supports high-res PDF or PNG up to 5MB</span>
+              </div>
+            </div>
 
-              <div className="space-y-4 text-[12.5px]">
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="font-bold text-zinc-950">Origin Plant Hub</label>
-                    <select
-                      value={originHub}
-                      onChange={(e) => setOriginHub(e.target.value)}
-                      className="w-full bg-white border border-[#e8e8e8] p-2.5 rounded-lg font-semibold"
-                    >
-                      <option value="Mumbai Plant">Mumbai (West)</option>
-                      <option value="Ahmedabad Plant">Ahmedabad (West)</option>
-                      <option value="Delhi NCR Plant">Delhi NCR (North)</option>
-                      <option value="Baddi Plant">Baddi (North India Hub)</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="font-bold text-zinc-950">Destination Hub</label>
-                    <select
-                      value={destinationCity}
-                      onChange={(e) => setDestinationCity(e.target.value)}
-                      className="w-full bg-white border border-[#e8e8e8] p-2.5 rounded-lg font-semibold"
-                    >
-                      <option value="Bangalore, KA">Bangalore, Karnataka</option>
-                      <option value="Hyderabad, TS">Hyderabad, Telangana</option>
-                      <option value="Chennai, TN">Chennai, Tamil Nadu</option>
-                      <option value="Kolkata, WB">Kolkata, West Bengal</option>
-                      <option value="Cochin, KL">Cochin, Kerala</option>
-                    </select>
-                  </div>
+            {/* Privacy & Visibility Settings */}
+            <div className="bg-white border border-[#e8e8e8] rounded-xl p-5 space-y-4">
+              <h3 className="font-extrabold text-xs text-[#8c7077] uppercase tracking-wider">Privacy & Visibility Settings</h3>
+              
+              <div className="flex items-center justify-between p-4 bg-[#fcf9f8] rounded-xl border border-[#e8e8e8]">
+                <div className="space-y-1">
+                  <span className="block text-[13px] font-bold text-[#1c1b1b]">Show My Mobile Number to Verified Buyers</span>
+                  <p className="text-[11px] text-[#594047]">When enabled, your verified business contact number will be visible to logged-in buyers. If disabled, they must send an enquiry to connect.</p>
                 </div>
-
-                <div className="space-y-1.5">
-                  <label className="font-bold text-zinc-950">Logistics Shipping Tier</label>
-                  <div className="grid grid-cols-3 gap-2 text-center font-bold">
-                    {[
-                      { tier: 'Air', label: 'Air Premium', desc: 'Urgent' },
-                      { tier: 'Surface', label: 'Surface Cargo', desc: 'Secure' },
-                      { tier: 'Ocean', label: 'Sea Cargo', desc: 'Lowest Rate' }
-                    ].map((item) => (
-                      <button
-                        key={item.tier}
-                        onClick={() => setShippingTier(item.tier as any)}
-                        className={`p-2.5 border rounded-xl transition-all flex flex-col justify-center items-center cursor-pointer ${
-                          shippingTier === item.tier
-                            ? 'bg-[#b90064] text-white border-[#b90064]'
-                            : 'bg-white text-[#594047] border-[#e8e8e8] hover:bg-[#fde7f3]'
-                        }`}
-                      >
-                        <span className="text-[12px] block font-black">{item.label}</span>
-                        <span className="text-[9.5px] font-medium opacity-90">{item.desc}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <div className="flex justify-between items-center text-[12px]">
-                    <label className="font-bold text-zinc-950">Sourcing Gross Weight (KG / Liters)</label>
-                    <span className="text-[10px] text-[#8c7077] font-semibold">Minimum: 100 kg</span>
-                  </div>
-                  <input
-                    type="number"
-                    value={sourcingWeight}
-                    onChange={(e) => setSourcingWeight(Math.max(100, Number(e.target.value)))}
-                    placeholder="Enter gross batch weight in KGs"
-                    className="w-full bg-white border border-[#e8e8e8] focus:border-[#b90064] p-2.5 rounded-lg font-bold outline-none"
-                  />
-                </div>
-
                 <button
-                  onClick={handleCalculateFreight}
-                  className="w-full py-3 bg-[#0050d6] hover:bg-[#003da8] text-white font-extrabold text-[13px] rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
+                  onClick={() => setShowMobileToBuyers(!showMobileToBuyers)}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${showMobileToBuyers ? 'bg-[#b90064]' : 'bg-[#e8e8e8]'}`}
                 >
-                  <Calculator className="w-4 h-4" />
-                  <span>Compute Sourcing Freight Charges</span>
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${showMobileToBuyers ? 'translate-x-5' : 'translate-x-0'}`}
+                  />
                 </button>
-
               </div>
             </div>
 
-            {/* Calculations Result Screen (col-span-7) */}
-            <div className="lg:col-span-7 border border-[#e8e8e8] rounded-2xl p-6 h-full flex flex-col justify-center bg-white min-h-[300px]">
-              {calculatedFreight ? (
-                <div className="space-y-5 text-left">
-                  <div className="flex justify-between items-center pb-3 border-b">
-                    <div>
-                      <span className="text-[10px] text-[#8c7077] font-bold block uppercase">Assigned B2B Carrier Partner</span>
-                      <strong className="text-[14px] text-zinc-950 flex items-center gap-1">
-                        <Truck className="w-4.5 h-4.5 text-[#0050d6]" />
-                        {calculatedFreight.logisticsPartner}
-                      </strong>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[10px] text-[#8c7077] font-bold block uppercase">Estimated Transit Days</span>
-                      <span className="text-[13px] bg-emerald-50 text-emerald-700 font-extrabold px-2.5 py-0.5 rounded border border-emerald-200">
-                        {calculatedFreight.transitDays}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Calculations Sheet */}
-                  <div className="space-y-3 text-[13px] text-[#594047] font-semibold">
-                    <div className="flex justify-between">
-                      <span>Base Transport Rate ({sourcingWeight} KGs):</span>
-                      <span className="text-zinc-950 font-bold">₹{calculatedFreight.baseRate.toLocaleString('en-IN')}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Facility Gate Passes &amp; Octroi:</span>
-                      <span className="text-zinc-950 font-bold">₹{calculatedFreight.surcharges.toLocaleString('en-IN')}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>GST, Fuel Surcharge, &amp; Toll Settle:</span>
-                      <span className="text-zinc-950 font-bold">₹{calculatedFreight.fuelTax.toLocaleString('en-IN')}</span>
-                    </div>
-                    
-                    <div className="pt-3 border-t flex justify-between items-center text-zinc-950 font-extrabold text-base">
-                      <span className="flex items-center gap-1">
-                        <Coins className="w-5 h-5 text-zinc-400" />
-                        Grand Total Freight Cost:
-                      </span>
-                      <span className="text-xl font-black text-[#b90064]">₹{calculatedFreight.grandTotal.toLocaleString('en-IN')}</span>
-                    </div>
-                  </div>
-
-                  {/* Eco Footprint */}
-                  <div className="p-4 bg-emerald-50 border border-[#a3cfb1] rounded-xl flex items-center gap-2.5 text-[12px] text-emerald-900 font-semibold">
-                    <Compass className="w-5 h-5 text-emerald-700 shrink-0" />
-                    <div>
-                      <span>Environmental Carbon Footprint Audit: </span>
-                      <span className="text-emerald-800 font-black">{calculatedFreight.co2Estimate}</span>
-                    </div>
-                  </div>
-
-                  <p className="text-[11px] text-[#8c7077] font-medium leading-relaxed">
-                    *Freight routing calculations are based on standard carrier contracts. In-app purchase checkouts are not available; logistics cost will be appended directly to the final supplier Proforma Invoice.
-                  </p>
-
-                </div>
-              ) : (
-                <div className="text-center space-y-3.5">
-                  <div className="w-12 h-12 rounded-full bg-[#fdf8f8] border border-[#e8e8e8] flex items-center justify-center mx-auto text-[#b90064]">
-                    <Calculator className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="text-[14px] font-bold text-zinc-950">Awaiting Freight Calibration</h4>
-                    <p className="text-[12px] text-[#594047] max-w-[280px] mx-auto mt-1 font-medium">
-                      Select custom plant origins, gross weight parameter and shipping speed tier to compute bulk commercial shipping costs.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
           </div>
-        </div>
-      )}
+        )}
+
+      </div>
 
     </div>
   );

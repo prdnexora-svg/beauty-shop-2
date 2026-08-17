@@ -72,6 +72,49 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
   const [copiedRef, setCopiedRef] = useState(false);
   const [referenceId] = useState(() => `#NX-${Math.floor(1000 + Math.random() * 9000)}`);
 
+  // Quick Requirement Snippet Presets
+  const promptTemplates: Record<string, string[]> = {
+    price: [
+      'Please share your tiered pricing breakdown for 100+ and 500+ units.',
+      'What is your current batch dispatch timeline to our city?',
+      'Please include GST and freight charges in the quotation.'
+    ],
+    bulk: [
+      'We are placing a recurring commercial bulk order. What is your best wholesale rate?',
+      'Can you provide Certificate of Analysis (COA) and MSDS documentation with each batch?',
+      'What are your credit or payment terms for verified repeat buyers?'
+    ],
+    sample: [
+      'We require a pre-production sample for lab testing before confirming the bulk order.',
+      'Kindly dispatch sample along with complete ingredient specification sheet.',
+      'Is sample cost adjusted against the final bulk purchase order?'
+    ],
+    label: [
+      'We require custom screen printing, label design, and private brand packaging.',
+      'Can you formulate with custom botanical actives (Hyaluronic Acid / Niacinamide)?',
+      'What is the minimum batch size for custom formulation and packaging?'
+    ]
+  };
+
+  const handleIntentChange = (newIntent: 'price' | 'bulk' | 'sample' | 'label') => {
+    setIntent(newIntent);
+    if (newIntent === 'price') {
+      setDescription('Please provide your best quotation for commercial bulk supply. Kindly include details on formulation certifications, batch COA, shipping timeline, and payment terms.');
+    } else if (newIntent === 'bulk') {
+      setDescription('We are looking for immediate bulk commercial supply. Please provide your volume tier pricing, freight estimates, batch production capacity, and dispatch schedule.');
+    } else if (newIntent === 'sample') {
+      setDescription('We would like to request an evaluation sample with formulation COA and test reports before placing our primary bulk order.');
+    } else if (newIntent === 'label') {
+      setDescription('We are interested in OEM / Private Label manufacturing with custom formulation and branded packaging. Please share your customization catalog, MOQ, and packaging options.');
+    }
+  };
+
+  const addSnippetToDescription = (snippet: string) => {
+    if (!description.includes(snippet)) {
+      setDescription((prev) => (prev ? `${prev}\n• ${snippet}` : snippet));
+    }
+  };
+
   // Reset or initialize state when opening
   useEffect(() => {
     if (isOpen) {
@@ -614,8 +657,9 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                         Primary Information Needed <span className="text-[#b90064]">*</span>
                       </label>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                        <label
-                          onClick={() => setIntent('price')}
+                        <button
+                          type="button"
+                          onClick={() => handleIntentChange('price')}
                           className={`p-3 border rounded-xl text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1 ${
                             intent === 'price'
                               ? 'bg-[#fde7f3] border-[#b90064] shadow-xs'
@@ -626,10 +670,11 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                           <span className={`text-[12px] font-bold ${intent === 'price' ? 'text-[#b90064]' : 'text-[#1c1b1b]'}`}>
                             Price &amp; Availability
                           </span>
-                        </label>
+                        </button>
 
-                        <label
-                          onClick={() => setIntent('bulk')}
+                        <button
+                          type="button"
+                          onClick={() => handleIntentChange('bulk')}
                           className={`p-3 border rounded-xl text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1 ${
                             intent === 'bulk'
                               ? 'bg-[#fde7f3] border-[#b90064] shadow-xs'
@@ -640,10 +685,11 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                           <span className={`text-[12px] font-bold ${intent === 'bulk' ? 'text-[#b90064]' : 'text-[#1c1b1b]'}`}>
                             Bulk Quote
                           </span>
-                        </label>
+                        </button>
 
-                        <label
-                          onClick={() => setIntent('sample')}
+                        <button
+                          type="button"
+                          onClick={() => handleIntentChange('sample')}
                           className={`p-3 border rounded-xl text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1 ${
                             intent === 'sample'
                               ? 'bg-[#fde7f3] border-[#b90064] shadow-xs'
@@ -654,10 +700,11 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                           <span className={`text-[12px] font-bold ${intent === 'sample' ? 'text-[#b90064]' : 'text-[#1c1b1b]'}`}>
                             Product Sample
                           </span>
-                        </label>
+                        </button>
 
-                        <label
-                          onClick={() => setIntent('label')}
+                        <button
+                          type="button"
+                          onClick={() => handleIntentChange('label')}
                           className={`p-3 border rounded-xl text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1 ${
                             intent === 'label'
                               ? 'bg-[#fde7f3] border-[#b90064] shadow-xs'
@@ -668,8 +715,28 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                           <span className={`text-[12px] font-bold ${intent === 'label' ? 'text-[#b90064]' : 'text-[#1c1b1b]'}`}>
                             Private Label
                           </span>
-                        </label>
+                        </button>
                       </div>
+
+                      {/* Quick Prompt Suggestions */}
+                      {promptTemplates[intent] && (
+                        <div className="mt-2.5 flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[11px] text-[#8c7077] font-semibold flex items-center gap-1">
+                            <Sparkles className="w-3 h-3 text-[#b90064]" /> Add prompt:
+                          </span>
+                          {promptTemplates[intent].map((snippet, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => addSnippetToDescription(snippet)}
+                              className="text-[11px] px-2 py-0.5 bg-[#f0edec] hover:bg-[#fde7f3] hover:text-[#b90064] text-[#594047] rounded-md transition-colors text-left truncate max-w-[280px] cursor-pointer"
+                              title={snippet}
+                            >
+                              + {snippet}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {/* Timeline & Detailed Textarea */}
