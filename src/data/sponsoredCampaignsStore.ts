@@ -1,5 +1,4 @@
 import { SponsoredAdItem } from '../types';
-import { isProductAvailableForSponsorship } from './sponsoredProductsData';
 
 export interface AdCampaignItem extends SponsoredAdItem {
   campaignName: string;
@@ -118,21 +117,11 @@ const INITIAL_CAMPAIGNS: AdCampaignItem[] = [
 export function getStoredCampaigns(): AdCampaignItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    let campaigns: AdCampaignItem[] = raw ? JSON.parse(raw) : INITIAL_CAMPAIGNS;
     if (!raw) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_CAMPAIGNS));
+      return INITIAL_CAMPAIGNS;
     }
-
-    // Auto-detect inactive or unlisted products and update campaign status if needed
-    return campaigns.map((camp) => {
-      if (camp.targetType === 'product' && camp.product_id) {
-        const isAvailable = isProductAvailableForSponsorship(camp.product_id, camp.seller_id);
-        if (!isAvailable && camp.status === 'active') {
-          return { ...camp, status: 'paused_product_unavailable' };
-        }
-      }
-      return camp;
-    });
+    return JSON.parse(raw);
   } catch (err) {
     console.error('Failed to parse campaigns from localStorage:', err);
     return INITIAL_CAMPAIGNS;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Sparkles, Plus, ShieldCheck } from 'lucide-react';
+import { Sparkles, Plus, Phone, MessageCircle, Send, ShieldCheck } from 'lucide-react';
 import { SponsoredAdItem } from '../types';
 import { validateSponsoredAd, SPONSORED_PRODUCTS_DB } from '../data/sponsoredProductsData';
 import { getStoredCampaigns, recordAdClickInStore } from '../data/sponsoredCampaignsStore';
@@ -303,8 +303,8 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
                 />
               </div>
 
-              {/* Bottom: Company Name, Title, Subtitle & Single Action Prompt */}
-              <div className="p-3.5 md:p-4 flex flex-col justify-between space-y-2.5 bg-white flex-1">
+              {/* Bottom: Company Name, Title, Subtitle, and Call/WhatsApp/Chat Buttons */}
+              <div className="p-3.5 md:p-4 flex flex-col justify-between space-y-3 bg-white">
                 <div>
                   <div className="flex items-center justify-between text-[11px] font-bold text-[#8c7077] uppercase tracking-wider mb-1">
                     <span 
@@ -315,12 +315,10 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
                       className="truncate flex items-center gap-1 text-[#b90064] hover:underline cursor-pointer"
                       title="View Supplier Profile"
                     >
-                      <ShieldCheck className="w-3.5 h-3.5 text-[#b90064] shrink-0" />
-                      <span className="truncate">{ad.supplierName}</span>
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#b90064]" />
+                      {ad.supplierName}
                     </span>
-                    <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-1.5 py-0.5 rounded font-bold shrink-0">
-                      GST Verified
-                    </span>
+                    <span className="text-[10px] bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-mono">B2B Verified</span>
                   </div>
 
                   <h3 className="text-sm font-extrabold text-zinc-950 leading-snug line-clamp-1 group-hover/card:text-[#b90064] transition-colors">
@@ -332,10 +330,70 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
                   </p>
                 </div>
 
-                {/* Clean single-action footer link to product details */}
-                <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-xs font-bold text-[#b90064]">
-                  <span>View Product Details</span>
-                  <span className="text-stone-400 group-hover/card:text-[#b90064] group-hover/card:translate-x-1 transition-all">→</span>
+                {/* Direct Action Buttons: Call / WhatsApp / Chat */}
+                <div className="grid grid-cols-3 gap-1.5 pt-1 border-t border-stone-100">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const dbProduct = SPONSORED_PRODUCTS_DB[ad.product_id];
+                      const phone = dbProduct?.sellerDetails?.phone || '+91 98201 55443';
+                      const cleanPhone = phone.replace(/[^0-9+]/g, '');
+                      window.location.href = `tel:${cleanPhone}`;
+                    }}
+                    className="flex items-center justify-center gap-1 bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-800 text-[11px] font-bold py-2 rounded-xl transition-all cursor-pointer shadow-xs"
+                    title="Call Supplier"
+                  >
+                    <Phone className="w-3 h-3 text-[#b90064]" />
+                    <span>Call</span>
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const dbProduct = SPONSORED_PRODUCTS_DB[ad.product_id];
+                      const wa = dbProduct?.sellerDetails?.whatsapp || '919820155443';
+                      const msg = encodeURIComponent(`Hello ${ad.supplierName}, I found your sponsored listing for "${ad.adTitle}" on Nexora Luxe and would like to discuss bulk sourcing.`);
+                      window.open(`https://wa.me/${wa}?text=${msg}`, '_blank');
+                    }}
+                    className="flex items-center justify-center gap-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-[11px] font-bold py-2 rounded-xl transition-all cursor-pointer shadow-xs"
+                    title="WhatsApp Enquiry"
+                  >
+                    <MessageCircle className="w-3 h-3 text-emerald-600" />
+                    <span>WhatsApp</span>
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      recordSponsoredAnalyticsEvent('enquire_click', {
+                        ad_id: ad.id,
+                        seller_id: ad.seller_id,
+                        product_id: ad.product_id,
+                        media_type: 'image_ad',
+                        supplierName: ad.supplierName
+                      });
+                      const dbProduct = SPONSORED_PRODUCTS_DB[ad.product_id];
+                      onOpenChat?.(
+                        {
+                          id: ad.seller_id,
+                          name: ad.supplierName,
+                          location: dbProduct?.supplierLocation || 'Mumbai, MH',
+                          isVerified: true
+                        },
+                        {
+                          title: ad.adTitle,
+                          image: ad.imageUrl,
+                          price: dbProduct?.priceRange,
+                          moq: dbProduct?.moq
+                        }
+                      );
+                    }}
+                    className="flex items-center justify-center gap-1 bg-[#b90064] hover:bg-[#a00056] text-white text-[11px] font-extrabold py-2 rounded-xl transition-all cursor-pointer shadow-xs"
+                    title="Send Enquiry / Chat"
+                  >
+                    <Send className="w-3 h-3 text-white" />
+                    <span>Chat</span>
+                  </button>
                 </div>
               </div>
             </div>

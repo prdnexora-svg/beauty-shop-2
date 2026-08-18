@@ -487,12 +487,3 @@ export function validateSponsoredAd(ad: SponsoredAdItem): boolean {
   if (product.isSuspended) return false;
   return true;
 }
-
-export function isProductAvailableForSponsorship(productId: string, sellerId: string): boolean {
-  const product = SPONSORED_PRODUCTS_DB[productId];
-  if (!product) return false;
-  if (product.seller_id !== sellerId) return false;
-  if (!product.isPublished) return false;
-  if (product.isSuspended) return false;
-  return true;
-}

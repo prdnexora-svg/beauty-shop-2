@@ -259,7 +259,7 @@ export interface SponsoredAdItem {
   adTitle: string;
   subtitle: string;
   imageUrl: string;
-  status: 'active' | 'disabled' | 'paused' | 'draft' | 'paused_product_unavailable';
+  status: 'active' | 'disabled' | 'paused' | 'draft';
 }
 
 export interface ProductDetailData {
