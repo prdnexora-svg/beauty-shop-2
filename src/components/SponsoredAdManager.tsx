@@ -589,6 +589,11 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                           Paused
                         </span>
                       )}
+                      {c.status === 'paused_product_unavailable' && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 text-[10px] font-bold uppercase" title="Linked product is unpublished, suspended, or missing">
+                          Paused — Linked Product Unavailable
+                        </span>
+                      )}
                       {c.status === 'draft' && (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-stone-100 text-stone-600 border border-stone-200 text-[10px] font-bold uppercase">
                           Draft
