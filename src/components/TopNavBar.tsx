@@ -16,9 +16,11 @@ import {
   ChevronDown, 
   Edit3,
   ExternalLink,
-  Briefcase
+  Briefcase,
+  Bell
 } from 'lucide-react';
 import { BuyerProfileData } from './EditProfileModal';
+import { NotificationCenter } from './NotificationCenter';
 
 interface TopNavBarProps {
   currentScreen: any;
@@ -45,6 +47,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [notificationCenterOpen, setNotificationCenterOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
@@ -145,6 +148,20 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
               <Sparkles className="w-4 h-4 text-[#b90064]" />
               <span className="hidden md:inline">Supplier Portal & Ads</span>
             </button>
+
+            {/* Notification Bell Trigger */}
+            {isLoggedIn && (
+              <button
+                aria-label="Notification Center"
+                title="Real-time Sourcing Notifications"
+                onClick={() => setNotificationCenterOpen(true)}
+                className="relative p-2.5 bg-[#fcf9f8] hover:bg-[#FAF1F5] border border-[#E8DFE3] hover:border-[#b90064] rounded-xl transition-all cursor-pointer shadow-2xs group text-[#1c1b1b] hover:text-[#b90064]"
+              >
+                <Bell className="w-4 h-4" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#b90064] animate-ping" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#b90064]" />
+              </button>
+            )}
 
             {/* Profile Dropdown or Sign In Button */}
             {isLoggedIn ? (
@@ -310,6 +327,13 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Real-time Notification Center Modal */}
+      <NotificationCenter
+        isOpen={notificationCenterOpen}
+        onClose={() => setNotificationCenterOpen(false)}
+        onNavigate={(route) => onNavigate(route as any)}
+      />
 
       {/* Mobile Drawer Navigation Menu */}
       {mobileMenuOpen && (

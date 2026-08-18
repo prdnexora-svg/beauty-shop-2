@@ -48,6 +48,7 @@ import {
 import { BuyerEnquiry, BuyerRFQ, VerifiedSupplier } from '../types';
 import { BUYER_MOCK_ENQUIRIES, BUYER_MOCK_RFQS, VERIFIED_SUPPLIERS } from '../data/mockData';
 import { EditProfileModal, BuyerProfileData } from './EditProfileModal';
+import { NotificationCenter } from './NotificationCenter';
 
 interface BuyerDashboardProps {
   isLoggedIn: boolean;
@@ -102,6 +103,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   const [profileComplete, setProfileComplete] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'about' | 'rfqs' | 'saved' | 'social' | 'activity'>('overview');
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isNotificationCenterOpen, setIsNotificationCenterOpen] = useState(false);
   const [profileToast, setProfileToast] = useState<string | null>(null);
 
   const [localBuyerProfile, setLocalBuyerProfile] = useState<BuyerProfileData>({
@@ -963,12 +965,24 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                         <div className="p-3 rounded-xl bg-[#fcf9f8] group-hover:bg-[#fde7f3] transition-colors">
                           <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
                         </div>
-                        {stat.badge && (
+                        {stat.label === 'Unread Messages' ? (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsNotificationCenterOpen(true);
+                            }}
+                            className="p-1 text-[#b90064] hover:bg-[#fde7f3] rounded-lg transition-colors cursor-pointer"
+                            title="Open Real-time Notifications"
+                          >
+                            <Bell className="w-4 h-4" />
+                          </button>
+                        ) : stat.badge ? (
                           <span className="flex h-2 w-2">
                             <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-[#b90064] opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#b90064]"></span>
                           </span>
-                        )}
+                        ) : null}
                       </div>
                       <div className="text-3xl font-black text-[#1c1b1b] tracking-tight">{stat.value}</div>
                       <div className="text-[11px] font-bold text-[#8c7077] uppercase tracking-widest mt-1">{stat.label}</div>
@@ -1721,6 +1735,13 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
         onClose={() => setIsEditProfileOpen(false)}
         initialData={buyerProfile}
         onSave={handleSaveProfile}
+      />
+
+      {/* Real-time Notification Center Drawer/Modal */}
+      <NotificationCenter
+        isOpen={isNotificationCenterOpen}
+        onClose={() => setIsNotificationCenterOpen(false)}
+        onNavigate={(route) => onNavigate(route as any)}
       />
     </div>
   );
