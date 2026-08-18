@@ -1,4 +1,5 @@
 import { RFQItem, DealProduct, TrendingProduct, VerifiedSupplier, CategoryItem, SearchProduct, SearchSupplier, OEMFormulation, BuyerEnquiry, BuyerRFQ } from '../types';
+import { B2B_CATEGORIES } from './categories';
 
 export const BUYER_MOCK_ENQUIRIES: BuyerEnquiry[] = [
   {
@@ -56,105 +57,7 @@ export const BUYER_MOCK_RFQS: BuyerRFQ[] = [
 ];
 
 
-export const CATEGORIES: CategoryItem[] = [
-  {
-    id: 'skincare',
-    name: 'Skincare',
-    iconName: 'Sparkles',
-    subtitle: 'Serums, Creams & Actives',
-    itemCount: '1,420+ Listings',
-    image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 'haircare',
-    name: 'Haircare',
-    iconName: 'Scissors',
-    subtitle: 'Keratin, Oils & Spa Kits',
-    itemCount: '890+ Listings',
-    image: 'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 'cosmetics',
-    name: 'Cosmetics',
-    iconName: 'Palette',
-    subtitle: 'Lipsticks, Powders & Bases',
-    itemCount: '1,150+ Listings',
-    image: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 'fragrances',
-    name: 'Fragrances',
-    iconName: 'Wind',
-    subtitle: 'Attars, EDP & Essential Oils',
-    itemCount: '620+ Listings',
-    image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 'bodycare',
-    name: 'Body Care',
-    iconName: 'Droplets',
-    subtitle: 'Butters, Scrubs & Lotions',
-    itemCount: '780+ Listings',
-    image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 'personalcare',
-    name: 'Personal Care',
-    iconName: 'HandMetal',
-    subtitle: 'Cleansers & Hygiene Lines',
-    itemCount: '940+ Listings',
-    image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 'rawmaterials',
-    name: 'Raw Materials',
-    iconName: 'FlaskConical',
-    subtitle: 'Active Extracts & Emulsifiers',
-    itemCount: '530+ Suppliers',
-    image: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 'packaging',
-    name: 'Packaging',
-    iconName: 'Package',
-    subtitle: 'Glass, Acrylic & Pumps',
-    itemCount: '1,280+ Molds',
-    image: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 'salonequip',
-    name: 'Salon Equipment',
-    iconName: 'Armchair',
-    subtitle: 'Chairs, Steamers & Lasers',
-    itemCount: '410+ Units',
-    image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 'tools',
-    name: 'Tools & Accessories',
-    iconName: 'Wrench',
-    subtitle: 'Brushes, Rollers & Sponges',
-    itemCount: '670+ Listings',
-    image: 'https://images.unsplash.com/photo-1526045612212-70caf35c14df?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 'mensgrooming',
-    name: "Men's Grooming",
-    iconName: 'UserCheck',
-    subtitle: 'Beard Care & Styling Pomades',
-    itemCount: '390+ Listings',
-    image: 'https://images.unsplash.com/photo-1621607512214-68297480165e?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 'oem',
-    name: 'OEM / Private Label',
-    iconName: 'Factory',
-    subtitle: 'Turnkey Formulations & Labs',
-    itemCount: '180+ Audited Facilities',
-    image: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80',
-    isHighlighted: true
-  },
-];
+export const CATEGORIES: CategoryItem[] = B2B_CATEGORIES;
 
 export const LIVE_RFQS: RFQItem[] = [
   {

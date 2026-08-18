@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../data/categories';
 import {
   X,
   CheckCircle2,
@@ -21,6 +22,8 @@ interface RFQModalProps {
 
 export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
   const [submitted, setSubmitted] = useState(false);
+  const [category, setCategory] = useState('Skincare');
+  const [subcategory, setSubcategory] = useState('Serums & Treatments');
   const [productName, setProductName] = useState('');
   const [quantity, setQuantity] = useState('');
   const [unit, setUnit] = useState('Units');
@@ -224,6 +227,47 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                     {errorMessage}
                   </div>
                 )}
+
+                {/* Category & Subcategory Row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[12px] font-bold text-[#1c1b1b] mb-1">
+                      Category <span className="text-[#b90064]">*</span>
+                    </label>
+                    <select
+                      value={category}
+                      onChange={(e) => {
+                        const newCat = e.target.value;
+                        setCategory(newCat);
+                        const subs = getSubcategoriesForCategoryName(newCat);
+                        if (subs.length > 0) setSubcategory(subs[0]);
+                      }}
+                      className="w-full bg-[#f7f2f2] border border-[#e8e8e8] focus:border-[#b90064] rounded-lg px-3 py-2 text-[12.5px] text-[#1c1b1b] focus:outline-none cursor-pointer"
+                    >
+                      {Object.keys(CATEGORY_TAXONOMY).map((catName) => (
+                        <option key={catName} value={catName}>
+                          {catName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[12px] font-bold text-[#1c1b1b] mb-1">
+                      Subcategory <span className="text-[#b90064]">*</span>
+                    </label>
+                    <select
+                      value={subcategory}
+                      onChange={(e) => setSubcategory(e.target.value)}
+                      className="w-full bg-[#f7f2f2] border border-[#e8e8e8] focus:border-[#b90064] rounded-lg px-3 py-2 text-[12.5px] text-[#1c1b1b] focus:outline-none cursor-pointer"
+                    >
+                      {getSubcategoriesForCategoryName(category).map((subItem) => (
+                        <option key={subItem} value={subItem}>
+                          {subItem}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
 
                 {/* Product / Formulation Title */}
                 <div>

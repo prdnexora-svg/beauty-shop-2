@@ -23,8 +23,12 @@ import {
   Info,
   Sliders,
   Award,
-  Download
+  Download,
+  FolderTree,
+  Filter
 } from 'lucide-react';
+import { db } from '../db/database';
+import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../data/categories';
 
 interface PostRequirementScreenProps {
   onNavigateToExplore: () => void;
@@ -45,6 +49,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
   const [productName, setProductName] = useState('Vitamin C Brightening Serum (15% Ascorbic Acid)');
   const [category, setCategory] = useState('Skincare');
   const [subcategory, setSubcategory] = useState('Serums & Treatments');
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(['Serums & Treatments']);
   const [selectedVisualRefs, setSelectedVisualRefs] = useState<string[]>(['dropper', 'pump']);
   
   // Dynamic OEM / Formulation
@@ -184,6 +189,28 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
     }
     setErrorMessage('');
     
+    try {
+      // Phase 4 Relational Database Write: Public RFQ with Multi-Supplier Lead Distribution
+      db.createRFQEnquiry({
+        buyer_id: 'buyer-prof-priya',
+        supplier_id: null,
+        product_id: null,
+        requirement_title: productName,
+        category: category,
+        quantity_required: parseInt(quantity, 10) || 1000,
+        quantity_unit: unit,
+        target_budget: totalBudget ? parseFloat(totalBudget) : (parseFloat(targetUnitPrice) * (parseInt(quantity, 10) || 1000)),
+        delivery_location: deliveryCity,
+        details: `${details}\n\nCompliance: ${selectedCompliance.join(', ')}\nPackaging: ${selectedVisualRefs.join(', ')}\nSupplier Notes: ${additionalSupplierNotes}`,
+        attachments: attachments.map(a => a.name),
+        status: 'new',
+        type: 'public_rfq',
+        send_to_similar_suppliers: true
+      });
+    } catch (err) {
+      console.warn('[PostRequirementScreen] DB write error handled gracefully', err);
+    }
+
     // Start real-time Lead Distribution System
     setShowSuccessOverlay(true);
     setProgressBarWidth(10);
@@ -565,36 +592,135 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                     />
                   </div>
 
+                  {/* Selection Path Visual Feedback Banner */}
+                  <div className="bg-[#FAF1F5] border border-[#F0D5E3] rounded-2xl p-4 space-y-2 transition-all">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2 text-[11.5px] font-extrabold text-[#594047] tracking-wider uppercase">
+                        <FolderTree className="w-4 h-4 text-[#b90064]" />
+                        <span>Active Taxonomy Path</span>
+                      </div>
+                      {selectedSubcategories.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedSubcategories([]);
+                            setSubcategory('');
+                          }}
+                          className="text-[11px] font-bold text-[#b90064] hover:underline cursor-pointer"
+                        >
+                          Clear Selection ({selectedSubcategories.length})
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-wrap text-[13px]">
+                      <span className="bg-white text-[#b90064] font-extrabold px-3 py-1.5 rounded-lg border border-[#f0d5e3] shadow-2xs flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-[#b90064]" />
+                        {category}
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-[#b90064]/60 shrink-0" />
+                      {selectedSubcategories.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5 items-center">
+                          {selectedSubcategories.map((subItem) => (
+                            <span
+                              key={subItem}
+                              className="bg-[#b90064] text-white font-bold px-3 py-1 rounded-lg text-[12px] flex items-center gap-1.5 shadow-2xs"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                              {subItem}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const updated = selectedSubcategories.filter(s => s !== subItem);
+                                  setSelectedSubcategories(updated);
+                                  setSubcategory(updated[0] || '');
+                                }}
+                                className="hover:bg-white/20 rounded-full p-0.5 transition-colors cursor-pointer"
+                              >
+                                <X className="w-3 h-3 text-white" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-[#8d8087] text-[12.5px] italic font-medium">
+                          Select one or more subcategories below
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="space-y-4">
+                      {/* Category Selection */}
                       <div className="space-y-2">
-                        <label className="text-[13px] font-bold text-[#1c1b1b]">Category <span className="text-[#ba1a1a]">*</span></label>
+                        <label className="text-[13px] font-bold text-[#1c1b1b] flex items-center justify-between">
+                          <span>Primary Category <span className="text-[#ba1a1a]">*</span></span>
+                          <span className="text-[11px] font-semibold text-[#8d8087]">Auto-clears subcategories on change</span>
+                        </label>
                         <select
                           value={category}
-                          onChange={(e) => setCategory(e.target.value)}
-                          className="w-full bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] rounded-xl px-4 py-3.5 text-[14px] font-medium text-[#1c1b1b] outline-none cursor-pointer"
+                          onChange={(e) => {
+                            const newCategory = e.target.value;
+                            setCategory(newCategory);
+                            // Auto-clear subcategories on main category change
+                            setSelectedSubcategories([]);
+                            setSubcategory('');
+                          }}
+                          className="w-full bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] rounded-xl px-4 py-3.5 text-[14px] font-medium text-[#1c1b1b] outline-none cursor-pointer transition-all"
                         >
-                          <option value="Skincare">Skincare</option>
-                          <option value="Haircare">Haircare</option>
-                          <option value="Color Cosmetics">Color Cosmetics</option>
-                          <option value="Fragrance">Fragrance</option>
-                          <option value="Bodycare">Bodycare</option>
+                          {Object.keys(CATEGORY_TAXONOMY).map((catName) => (
+                            <option key={catName} value={catName}>
+                              {catName}
+                            </option>
+                          ))}
                         </select>
                       </div>
 
+                      {/* Subcategory Multi-Select */}
                       <div className="space-y-2">
-                        <label className="text-[13px] font-bold text-[#1c1b1b]">Subcategory</label>
-                        <select
-                          value={subcategory}
-                          onChange={(e) => setSubcategory(e.target.value)}
-                          className="w-full bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] rounded-xl px-4 py-3.5 text-[14px] font-medium text-[#1c1b1b] outline-none cursor-pointer"
-                        >
-                          <option value="Serums & Treatments">Serums &amp; Treatments</option>
-                          <option value="Moisturizers">Moisturizers</option>
-                          <option value="Cleansers">Cleansers</option>
-                          <option value="Toners">Toners</option>
-                          <option value="Hair Oils">Hair Oils</option>
-                        </select>
+                        <label className="text-[13px] font-bold text-[#1c1b1b] flex items-center justify-between">
+                          <span>Subcategory Multi-Select <span className="text-[#ba1a1a]">*</span></span>
+                          <span className="text-[11px] font-extrabold text-[#b90064]">
+                            {selectedSubcategories.length} Selected
+                          </span>
+                        </label>
+
+                        {/* Interactive Pill Chips */}
+                        <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-3 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl">
+                          {getSubcategoriesForCategoryName(category).map((subItem) => {
+                            const isSelected = selectedSubcategories.includes(subItem);
+                            return (
+                              <button
+                                key={subItem}
+                                type="button"
+                                onClick={() => {
+                                  let updated: string[];
+                                  if (isSelected) {
+                                    updated = selectedSubcategories.filter(s => s !== subItem);
+                                  } else {
+                                    updated = [...selectedSubcategories, subItem];
+                                  }
+                                  setSelectedSubcategories(updated);
+                                  setSubcategory(updated[0] || '');
+                                }}
+                                className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                                  isSelected
+                                    ? 'bg-[#b90064] text-white shadow-2xs border border-[#b90064]'
+                                    : 'bg-white text-[#1c1b1b] border border-[#e8e8e8] hover:border-[#b90064] hover:bg-[#faf1f5]'
+                                }`}
+                              >
+                                {isSelected ? (
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-white shrink-0" />
+                                ) : (
+                                  <Plus className="w-3.5 h-3.5 text-[#8d8087] shrink-0" />
+                                )}
+                                <span>{subItem}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
 
@@ -1134,7 +1260,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                       {/* Decorative gradient blob */}
                       <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#ffb0c8]/20 rounded-full mix-blend-multiply filter blur-2xl opacity-50 pointer-events-none"></div>
                       
-                      <div className="flex items-center justify-between mb-6 relative z-10">
+                      <div className="flex items-center justify-between mb-4 relative z-10">
                         <h3 className="text-[16px] font-extrabold text-[#1c1b1b] flex items-center gap-2">
                           <FileText className="w-5 h-5 text-[#b90064]" />
                           Requirement Summary
@@ -1151,6 +1277,34 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                         </button>
                       </div>
 
+                      {/* Selected Classification Path Breadcrumb Indicator */}
+                      <div className="bg-[#FAF1F5] border border-[#F0D5E3] rounded-xl p-3.5 mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
+                        <div className="flex items-center gap-2">
+                          <FolderTree className="w-4 h-4 text-[#b90064] shrink-0" />
+                          <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#594047]">Selected Classification Path:</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-wrap text-[13px]">
+                          <span className="bg-white text-[#1c1b1b] font-bold px-3 py-1 rounded-lg border border-[#e8e8e8] shadow-2xs flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-[#b90064]" />
+                            {category}
+                          </span>
+                          <ChevronRight className="w-4 h-4 text-[#b90064]/60 shrink-0" />
+                          {selectedSubcategories.length > 0 ? (
+                            selectedSubcategories.map((subItem) => (
+                              <span key={subItem} className="bg-[#b90064] text-white font-bold px-3 py-1 rounded-lg text-[12px] shadow-2xs flex items-center gap-1">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                                {subItem}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="bg-[#b90064] text-white font-bold px-3 py-1 rounded-lg text-[12px] shadow-2xs flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                              {subcategory || 'General'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
                       <div className="flex flex-col md:flex-row gap-6 relative z-10">
                         {/* Product Image Card */}
                         <div className="w-full md:w-1/3 bg-[#fcf9f8] rounded-xl p-2.5 border border-[#e8e8e8] shadow-3xs shrink-0 flex flex-col justify-between">
@@ -1163,7 +1317,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                             <div className="absolute inset-0 bg-black/10"></div>
                           </div>
                           <p className="text-[12px] font-bold text-center mt-2.5 text-[#594047] truncate">
-                            {category} - {subcategory}
+                            {category} - {selectedSubcategories.length > 0 ? selectedSubcategories.join(', ') : subcategory || 'All Subcategories'}
                           </p>
                         </div>
 

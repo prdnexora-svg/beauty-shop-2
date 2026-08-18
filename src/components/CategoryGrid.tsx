@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowRight, ChevronRight } from 'lucide-react';
+import { B2B_CATEGORIES } from '../data/categories';
 
 interface CategoryGridProps {
   onCategoryClick?: (categoryName: string) => void;
@@ -7,64 +8,13 @@ interface CategoryGridProps {
 }
 
 export const CategoryGrid: React.FC<CategoryGridProps> = ({ onCategoryClick, onViewAll }) => {
-  const categories = [
-    {
-      id: 'cat-skincare',
-      name: 'Skincare',
-      query: 'Skincare',
-      itemCount: '1,420+ listings',
-      image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      id: 'cat-haircare',
-      name: 'Haircare',
-      query: 'Haircare',
-      itemCount: '890+ listings',
-      image: 'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      id: 'cat-makeup',
-      name: 'Cosmetics',
-      query: 'Color Cosmetics',
-      itemCount: '1,150+ listings',
-      image: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      id: 'cat-fragrance',
-      name: 'Fragrances',
-      query: 'Fragrances',
-      itemCount: '620+ listings',
-      image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      id: 'cat-salon-equip',
-      name: 'Salon Equip',
-      query: 'Salon Equipment',
-      itemCount: '410+ units',
-      image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      id: 'cat-devices',
-      name: 'Aesthetic Devices',
-      query: 'Aesthetic Devices',
-      itemCount: '320+ systems',
-      image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      id: 'cat-packaging',
-      name: 'Packaging',
-      query: 'Packaging',
-      itemCount: '1,280+ molds',
-      image: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      id: 'cat-oem',
-      name: 'OEM / Private Label',
-      query: 'OEM / Private Label',
-      itemCount: '180+ audited labs',
-      image: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=600&q=80',
-    },
-  ];
+  const categories = B2B_CATEGORIES.map(c => ({
+    id: c.id,
+    name: c.name,
+    query: c.name,
+    itemCount: c.itemCount,
+    image: c.image
+  }));
 
   return (
     <section className="mb-12">

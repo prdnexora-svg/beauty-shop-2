@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { SearchProduct, SearchSupplier, OEMFormulation } from '../types';
 import { SEARCH_PRODUCTS, SEARCH_SUPPLIERS, SEARCH_OEM_FORMULATIONS } from '../data/mockData';
+import { CATEGORY_TAXONOMY, CATEGORY_TAXONOMY_LIST } from '../data/categories';
 import { ProductCompareModal } from './ProductCompareModal';
 import { SupplierComparisonModal } from './SupplierComparisonModal';
 import { FilterPanel } from './FilterPanel';
@@ -89,14 +90,13 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
   const [maxPrice, setMaxPrice] = useState<number>(5000);
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
 
-  // Category & Subcategory Data
-  const CATEGORIES = [
-    { name: 'Haircare', subcategories: ['Hair Serum', 'Hair Oil', 'Hair Mask', 'Keratin Treatment', 'Shampoo', 'Conditioner'] },
-    { name: 'Skincare', subcategories: ['Facial Kit', 'Serum', 'Moisturizer', 'Sunscreen', 'Cleanser'] },
-    { name: 'Professional Treatments', subcategories: ['Chemical Peel', 'Meso Solutions', 'Botox Alternatives'] },
-    { name: 'Salon Products', subcategories: ['Furniture', 'Hair Styling Tools', 'Spa Equipment'] },
-    { name: 'OEM / Private Label', subcategories: ['Custom Formulation', 'Packaging Solutions', 'Contract Manufacturing'] }
-  ];
+  // Category & Subcategory Data from CATEGORY_TAXONOMY
+  const CATEGORIES = useMemo(() => {
+    return Object.entries(CATEGORY_TAXONOMY).map(([name, subcategories]) => ({
+      name,
+      subcategories
+    }));
+  }, []);
 
   const availableSubcategories = useMemo(() => {
     if (selectedCategories.length === 0) return [];

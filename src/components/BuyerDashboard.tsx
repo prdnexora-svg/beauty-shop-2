@@ -48,6 +48,8 @@ import {
 import { BuyerEnquiry, BuyerRFQ, VerifiedSupplier } from '../types';
 import { BUYER_MOCK_ENQUIRIES, BUYER_MOCK_RFQS, VERIFIED_SUPPLIERS } from '../data/mockData';
 import { EditProfileModal, BuyerProfileData } from './EditProfileModal';
+import { NotificationCenter } from './NotificationCenter';
+import { useNotifications } from '../hooks/useNotifications';
 
 interface BuyerDashboardProps {
   isLoggedIn: boolean;
@@ -59,6 +61,9 @@ interface BuyerDashboardProps {
   buyerProfile?: BuyerProfileData;
   onSaveProfile?: (updated: BuyerProfileData) => void;
   onOpenEditProfile?: () => void;
+  initialTab?: 'overview' | 'about' | 'rfqs' | 'saved' | 'social' | 'activity' | 'notifications';
+  isProfileRoute?: boolean;
+  currentScreen?: string;
 }
 
 interface CommentItem {
@@ -85,6 +90,7 @@ interface TimelinePost {
   mediaUrl?: string;
   mediaType?: 'image' | 'video' | 'none';
   commentsList?: CommentItem[];
+  taggedProduct?: string;
 }
 
 export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({ 
@@ -96,13 +102,27 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   onOpenAuth,
   buyerProfile: propBuyerProfile,
   onSaveProfile: propOnSaveProfile,
-  onOpenEditProfile: propOnOpenEditProfile
+  onOpenEditProfile: propOnOpenEditProfile,
+  initialTab,
+  isProfileRoute = false,
+  currentScreen
 }) => {
+  const isProfileView = currentScreen === 'buyer-profile' || currentScreen === 'supplier-portal' || isProfileRoute;
   const [isLoading, setIsLoading] = useState(true);
   const [profileComplete, setProfileComplete] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'about' | 'rfqs' | 'saved' | 'social' | 'activity'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'about' | 'rfqs' | 'saved' | 'social' | 'activity' | 'notifications' | 'network'>(
+    (initialTab as any) || 'overview'
+  );
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [profileToast, setProfileToast] = useState<string | null>(null);
+
+  const { unreadCount } = useNotifications();
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
 
   const [localBuyerProfile, setLocalBuyerProfile] = useState<BuyerProfileData>({
     fullName: 'Priya Sharma',
@@ -250,6 +270,8 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   const [mediaUrlInput, setMediaUrlInput] = useState('');
   const [postTag, setPostTag] = useState('Buyer Update');
   const [isUploadingPostPhoto, setIsUploadingPostPhoto] = useState(false);
+  const [taggedProduct, setTaggedProduct] = useState<string>('');
+  const [isTaggingProduct, setIsTaggingProduct] = useState(false);
   const postPhotoInputRef = useRef<HTMLInputElement>(null);
 
   const handlePostPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -413,7 +435,8 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
       liked: false,
       mediaUrl: mediaInputType !== 'none' && mediaUrlInput.trim() ? mediaUrlInput.trim() : undefined,
       mediaType: mediaInputType !== 'none' && mediaUrlInput.trim() ? mediaInputType : undefined,
-      commentsList: []
+      commentsList: [],
+      taggedProduct: taggedProduct.trim() ? taggedProduct.trim() : undefined
     };
 
     setFeedPosts([newPost, ...feedPosts]);
@@ -421,6 +444,8 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
     setMediaUrlInput('');
     setMediaInputType('none');
     setPostTag('Buyer Update');
+    setTaggedProduct('');
+    setIsTaggingProduct(false);
     setProfileToast('Timeline update posted successfully!');
     setTimeout(() => setProfileToast(null), 3000);
   };
@@ -574,7 +599,15 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
         </div>
 
         {/* Post Content */}
-        <p className="text-xs text-[#1c1b1b] leading-relaxed font-medium whitespace-pre-wrap">{post.content}</p>
+        <div className="space-y-3">
+          <p className="text-xs text-[#1c1b1b] leading-relaxed font-medium whitespace-pre-wrap">{post.content}</p>
+          {post.taggedProduct && (
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#fde7f3] border border-[#e0bec6] text-[#b90064] rounded-xl text-[11px] font-black">
+              <Package className="w-3.5 h-3.5" />
+              <span>Tagged Beauty Product: <span className="underline">{post.taggedProduct}</span></span>
+            </div>
+          )}
+        </div>
 
         {/* Media Player or HD Image Rendering */}
         {post.mediaUrl && post.mediaType === 'image' && (
@@ -720,191 +753,277 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
         </div>
       )}
 
-      {/* FACEBOOK-STYLE PROFILE HEADER & COVER BANNER */}
-      <div className="bg-white border-b border-[#e8e8e8] shadow-xs">
-        {/* Cover Photo Banner */}
-        <div className="relative h-48 sm:h-72 w-full bg-gradient-to-r from-[#b90064] via-[#e6007e] to-[#0050d6] overflow-hidden">
-          {buyerProfile.coverPhotoUrl ? (
-            <img src={buyerProfile.coverPhotoUrl} alt="Cover Banner" className="w-full h-full object-cover" />
-          ) : (
-            <div className="absolute inset-0 bg-black/20" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-          
-          <div className="absolute bottom-4 right-4 flex items-center gap-2">
-            <button
-              onClick={handleTriggerEditProfile}
-              className="px-3.5 py-2 bg-white/90 hover:bg-white text-[#1c1b1b] rounded-xl text-xs font-bold shadow-md backdrop-blur-md transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              <Camera className="w-3.5 h-3.5 text-[#b90064]" />
-              <span>Edit Cover & Profile</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Profile Info Bar */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-10 pb-6 relative">
-          
-          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-8 pt-4">
+      {/* CONDITIONAL PROFILE HEADER vs CLEAN DASHBOARD HEADER */}
+      {isProfileView ? (
+        /* FACEBOOK-STYLE PROFILE HEADER & COVER BANNER */
+        <div className="bg-white border-b border-[#e8e8e8] shadow-xs">
+          {/* Cover Photo Banner */}
+          <div className="relative h-48 sm:h-72 w-full bg-gradient-to-r from-[#b90064] via-[#e6007e] to-[#0050d6] overflow-hidden">
+            {buyerProfile.coverPhotoUrl ? (
+              <img src={buyerProfile.coverPhotoUrl} alt="Cover Banner" className="w-full h-full object-cover" />
+            ) : (
+              <div className="absolute inset-0 bg-black/20" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
             
-            {/* Left/Main Column: Avatar & Text Info */}
-            <div className="flex flex-col md:flex-row md:items-start gap-6 flex-1">
+            <div className="absolute bottom-4 right-4 flex items-center gap-2">
+              <button
+                onClick={handleTriggerEditProfile}
+                className="px-3.5 py-2 bg-white/90 hover:bg-white text-[#1c1b1b] rounded-xl text-xs font-bold shadow-md backdrop-blur-md transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <Camera className="w-3.5 h-3.5 text-[#b90064]" />
+                <span>Edit Cover & Profile</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Profile Info Bar */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-10 pb-6 relative">
+            
+            <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-8 pt-4">
               
-              {/* Avatar neatly overlapped at the bottom-left edge of the cover banner */}
-              <div className="-mt-16 sm:–mt-20 lg:-mt-24 relative z-20 shrink-0">
-                <div className="relative group">
-                  <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-white p-1.5 shadow-xl border-4 border-white overflow-hidden bg-gradient-to-br from-[#b90064] to-[#e6007e]">
-                    <div className="w-full h-full rounded-2xl overflow-hidden bg-[#fde7f3] flex items-center justify-center text-white font-black text-3xl">
-                      {buyerProfile.avatarUrl ? (
-                        <img src={buyerProfile.avatarUrl} alt={buyerProfile.fullName} className="w-full h-full object-cover" />
-                      ) : (
-                        buyerProfile.fullName ? buyerProfile.fullName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'PS'
+              {/* Left/Main Column: Avatar & Text Info */}
+              <div className="flex flex-col md:flex-row md:items-start gap-6 flex-1">
+                
+                {/* Avatar neatly overlapped at the bottom-left edge of the cover banner */}
+                <div className="-mt-16 sm:-mt-20 lg:-mt-24 relative z-20 shrink-0">
+                  <div className="relative group">
+                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-white p-1.5 shadow-xl border-4 border-white overflow-hidden bg-gradient-to-br from-[#b90064] to-[#e6007e]">
+                      <div className="w-full h-full rounded-2xl overflow-hidden bg-[#fde7f3] flex items-center justify-center text-white font-black text-3xl">
+                        {buyerProfile.avatarUrl ? (
+                          <img src={buyerProfile.avatarUrl} alt={buyerProfile.fullName} className="w-full h-full object-cover" />
+                        ) : (
+                          buyerProfile.fullName ? buyerProfile.fullName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'PS'
+                        )}
+                      </div>
+                    </div>
+                    {/* Online Status Indicator */}
+                    <div className="absolute bottom-3 right-3 w-5 h-5 bg-green-500 rounded-full border-4 border-white shadow-md z-30" title="Active Now" />
+                  </div>
+                </div>
+
+                {/* Text Info: User Name, Title/Role, Location, etc. sits cleanly below the cover banner in vertical flow */}
+                <div className="space-y-3 pt-2 md:pt-4 text-left">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h1 className="text-2xl sm:text-3xl font-black text-[#1c1b1b] tracking-tight">{buyerProfile.fullName}</h1>
+                    {buyerProfile.isGstVerified && (
+                      <span className="px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-green-700 text-xs font-bold flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-600" /> Verified Business Account
+                      </span>
+                    )}
+                    <span className="px-2.5 py-1 rounded-full bg-[#fde7f3] border border-[#e0bec6] text-[#b90064] text-xs font-black flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5 text-[#b90064]" /> {buyerFollowers} Followers
+                    </span>
+                  </div>
+
+                  <p className="text-sm font-bold text-[#594047]">
+                    {buyerProfile.designation} at <span className="text-[#1c1b1b] font-extrabold">{buyerProfile.businessName}</span> ({buyerProfile.businessType})
+                  </p>
+
+                  <div className="flex items-center gap-3.5 text-xs text-[#8c7077] font-semibold flex-wrap pt-1">
+                    <span className="flex items-center gap-1.5">
+                      <MapPin className="w-4 h-4 text-[#b90064]" /> {buyerProfile.city}, {buyerProfile.state}
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4 text-[#0050d6]" /> Joined {buyerProfile.joinedDate || 'January 2024'}
+                    </span>
+                    <span>•</span>
+                    <span className="font-mono text-[#0050d6] bg-[#0050d6]/5 px-2.5 py-0.5 rounded border border-[#0050d6]/15">GST: {buyerProfile.gstin}</span>
+                  </div>
+
+                  {/* Quick Social Badges */}
+                  {buyerProfile.socialLinks && (
+                    <div className="flex items-center gap-2.5 pt-2 flex-wrap">
+                      {buyerProfile.socialLinks.website && (
+                        <a href={buyerProfile.socialLinks.website} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-[#fcf9f8] hover:bg-[#fde7f3] border border-[#e8e8e8] text-[#1c1b1b] rounded-xl text-xs font-bold flex items-center gap-2 transition-colors">
+                          <Globe className="w-4 h-4 text-[#b90064]" />
+                          <span>Website</span>
+                        </a>
+                      )}
+                      {buyerProfile.socialLinks.linkedin && (
+                        <a href={buyerProfile.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-[#0050d6]/5 hover:bg-[#0050d6]/10 text-[#0050d6] border border-[#0050d6]/10 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors">
+                          <ExternalLink className="w-4 h-4 text-[#0050d6]" />
+                          <span>LinkedIn</span>
+                        </a>
+                      )}
+                      {buyerProfile.socialLinks.instagram && (
+                        <a href={buyerProfile.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-pink-50/50 hover:bg-pink-50 text-[#b90064] border border-pink-200/50 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors">
+                          <ExternalLink className="w-4 h-4 text-[#b90064]" />
+                          <span>Instagram</span>
+                        </a>
                       )}
                     </div>
-                  </div>
-                  {/* Online Status Indicator */}
-                  <div className="absolute bottom-3 right-3 w-5 h-5 bg-green-500 rounded-full border-4 border-white shadow-md z-30" title="Active Now" />
+                  )}
                 </div>
+
               </div>
 
-              {/* Text Info: User Name, Title/Role, Location, etc. sits cleanly below the cover banner in vertical flow */}
-              <div className="space-y-3 pt-2 md:pt-4 text-left">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-2xl sm:text-3xl font-black text-[#1c1b1b] tracking-tight">{buyerProfile.fullName}</h1>
-                  {buyerProfile.isGstVerified && (
-                    <span className="px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-green-700 text-xs font-bold flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-600" /> Verified Business Account
+              {/* Right Column: Growth Network Partner Card & Actions */}
+              <div className="flex flex-col sm:flex-row lg:flex-col items-stretch sm:items-center lg:items-end gap-5 shrink-0 w-full lg:w-auto pt-4 lg:pt-0">
+                
+                {/* Premium Nexora Growth Network Partner Card */}
+                <div className="bg-gradient-to-br from-[#1c1b1b] to-[#2d121f] text-white rounded-2xl p-5 border border-[#44303b] shadow-xl w-full sm:max-w-xs relative overflow-hidden text-left z-20">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-[#b90064] opacity-20 rounded-full blur-xl" />
+                  <div className="absolute bottom-0 left-0 w-20 h-20 bg-[#0050d6]/10 rounded-full blur-xl" />
+                  
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[#b90064] flex items-center justify-center text-white shrink-0 shadow-md">
+                        <TrendingUp className="w-4 h-4 text-white animate-pulse" />
+                      </div>
+                      <div>
+                        <span className="text-[8px] font-black tracking-widest text-[#e6007e] uppercase block leading-none">Nexora Luxe</span>
+                        <h4 className="text-[11px] font-black tracking-tight text-white uppercase leading-tight">Growth Network Partner</h4>
+                      </div>
+                    </div>
+                    <span className="px-2 py-0.5 rounded-full bg-green-500/20 border border-green-500/40 text-green-400 text-[9px] font-black tracking-wider uppercase leading-none">
+                      Active
                     </span>
-                  )}
-                  <span className="px-2.5 py-1 rounded-full bg-[#fde7f3] border border-[#e0bec6] text-[#b90064] text-xs font-black flex items-center gap-1">
-                    <Users className="w-3.5 h-3.5 text-[#b90064]" /> {buyerFollowers} Followers
-                  </span>
-                </div>
-
-                <p className="text-sm font-bold text-[#594047]">
-                  {buyerProfile.designation} at <span className="text-[#1c1b1b] font-extrabold">{buyerProfile.businessName}</span> ({buyerProfile.businessType})
-                </p>
-
-                <div className="flex items-center gap-3.5 text-xs text-[#8c7077] font-semibold flex-wrap pt-1">
-                  <span className="flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4 text-[#b90064]" /> {buyerProfile.city}, {buyerProfile.state}
-                  </span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4 text-[#0050d6]" /> Joined {buyerProfile.joinedDate || 'January 2024'}
-                  </span>
-                  <span>•</span>
-                  <span className="font-mono text-[#0050d6] bg-[#0050d6]/5 px-2.5 py-0.5 rounded border border-[#0050d6]/15">GST: {buyerProfile.gstin}</span>
-                </div>
-
-                {/* Quick Social Badges */}
-                {buyerProfile.socialLinks && (
-                  <div className="flex items-center gap-2.5 pt-2 flex-wrap">
-                    {buyerProfile.socialLinks.website && (
-                      <a href={buyerProfile.socialLinks.website} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-[#fcf9f8] hover:bg-[#fde7f3] border border-[#e8e8e8] text-[#1c1b1b] rounded-xl text-xs font-bold flex items-center gap-2 transition-colors">
-                        <Globe className="w-4 h-4 text-[#b90064]" />
-                        <span>Website</span>
-                      </a>
-                    )}
-                    {buyerProfile.socialLinks.linkedin && (
-                      <a href={buyerProfile.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-[#0050d6]/5 hover:bg-[#0050d6]/10 text-[#0050d6] border border-[#0050d6]/10 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors">
-                        <ExternalLink className="w-4 h-4 text-[#0050d6]" />
-                        <span>LinkedIn</span>
-                      </a>
-                    )}
-                    {buyerProfile.socialLinks.instagram && (
-                      <a href={buyerProfile.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-pink-50/50 hover:bg-pink-50 text-[#b90064] border border-pink-200/50 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors">
-                        <ExternalLink className="w-4 h-4 text-[#b90064]" />
-                        <span>Instagram</span>
-                      </a>
-                    )}
                   </div>
-                )}
+
+                  <div className="space-y-3.5">
+                    <div>
+                      <div className="text-[9px] text-[#8c7077] uppercase font-bold tracking-wider leading-none">Partner Card Number</div>
+                      <div className="font-mono text-xs font-black tracking-widest text-pink-100 flex items-center gap-1.5 mt-1">
+                        <span>NXP 807A 45DF 9875</span>
+                        <span className="text-[9px] px-1 py-0.2 bg-white/15 text-stone-200 rounded font-sans font-black tracking-normal uppercase leading-none">Gold</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-[9px] text-[#8c7077] uppercase font-bold tracking-wider leading-none">Sourcing District / Region</div>
+                      <div className="text-xs font-bold text-stone-200 flex items-center gap-1 mt-1">
+                        <MapPin className="w-3.5 h-3.5 text-[#e6007e] shrink-0" />
+                        <span>Mumbai Metro Region, MH</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-stone-800">
+                      <div>
+                        <div className="text-[9px] text-[#8c7077] uppercase font-bold tracking-wider leading-none">Verified Status</div>
+                        <div className="text-xs font-extrabold text-green-400 flex items-center gap-1 mt-1">
+                          <ShieldCheck className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                          <span>GSTIN</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[9px] text-[#8c7077] uppercase font-bold tracking-wider leading-none">Network Reach</div>
+                        <div className="text-xs font-extrabold text-[#e6007e] flex items-center gap-1 mt-1">
+                          <Users className="w-3.5 h-3.5 text-[#e6007e] shrink-0" />
+                          <span>1,481 Followers</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-4 pt-2.5 border-t border-stone-800 text-[10px] text-stone-300 font-bold leading-none">
+                    <span className="text-stone-400 font-medium">Response SLA</span>
+                    <span className="text-[#e6007e] font-black">99.8% SLA</span>
+                  </div>
+                </div>
+
+                {/* Action Buttons row cleanly stacked under the cover image, sitting next to details */}
+                <div className="flex items-center gap-3 flex-wrap sm:justify-end w-full lg:w-auto">
+                  <button
+                    onClick={handleBuyerFollowToggle}
+                    className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5 border ${
+                      buyerFollowed
+                        ? 'bg-[#fde7f3] border-[#b90064] text-[#b90064] hover:bg-[#fbc5e3]'
+                        : 'bg-white border-[#e8e8e8] text-[#1c1b1b] hover:border-[#b90064] hover:text-[#b90064]'
+                    }`}
+                  >
+                    {buyerFollowed ? (
+                      <>
+                        <Check className="w-4 h-4 text-[#b90064]" />
+                        <span>Following</span>
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-4 h-4 text-[#8c7077]" />
+                        <span>Follow Profile</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={handleTriggerEditProfile}
+                    className="px-5 py-2.5 bg-white border border-[#e8e8e8] hover:border-[#b90064] text-[#1c1b1b] hover:text-[#b90064] rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Settings className="w-4 h-4 text-[#b90064]" />
+                    <span>Edit Profile</span>
+                  </button>
+
+                  <button 
+                    onClick={onPostRFQ}
+                    className="px-6 py-2.5 bg-[#b90064] text-white rounded-xl text-xs font-extrabold shadow-md shadow-[#b90064]/25 hover:bg-[#8e004b] transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Post Requirement</span>
+                  </button>
+                </div>
               </div>
 
             </div>
 
-            {/* Right Column: Growth Network Partner Card & Actions */}
-            <div className="flex flex-col sm:flex-row lg:flex-col items-stretch sm:items-center lg:items-end gap-5 shrink-0 w-full lg:w-auto pt-4 lg:pt-0">
-              
-              {/* Premium Nexora Growth Network Partner Card */}
-              <div className="bg-gradient-to-br from-[#1c1b1b] to-[#3a202d] text-white rounded-2xl p-5 border border-[#44303b] shadow-lg w-full sm:max-w-xs relative overflow-hidden text-left z-20">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-[#b90064] opacity-10 rounded-full blur-xl" />
-                <div className="flex items-center gap-2.5 mb-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-[#b90064] flex items-center justify-center text-white shrink-0">
-                    <TrendingUp className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <span className="text-[9px] font-black tracking-widest text-[#e6007e] uppercase block">Nexora Luxe</span>
-                    <h4 className="text-xs font-black tracking-tight text-white uppercase">Growth Network Partner</h4>
-                  </div>
-                </div>
-                <p className="text-[11px] text-stone-300 leading-relaxed font-medium">
-                  Verified premium buyer status in India's leading beauty-industry procurement network.
-                </p>
-                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-stone-850 text-[10px] text-stone-300 font-bold justify-between">
-                  <span className="px-2 py-0.5 rounded bg-[#b90064]/20 border border-[#b90064]/40 text-[#e6007e]">Tier: Gold Member</span>
-                  <span>99.8% Response SLA</span>
-                </div>
-              </div>
-
-              {/* Action Buttons row cleanly stacked under the cover image, sitting next to details */}
-              <div className="flex items-center gap-3 flex-wrap sm:justify-end w-full lg:w-auto">
+            {/* Facebook-Style Navigation Tabs */}
+            <div className="flex items-center gap-2 mt-6 border-t border-[#e8e8e8] pt-3 overflow-x-auto no-scrollbar">
+              {[
+                { id: 'activity', label: 'Posts / Feed', icon: MessageSquare },
+                { id: 'about', label: 'About & Bio', icon: Users },
+                { id: 'social', label: 'Social Links & Credentials', icon: Globe },
+                { id: 'network', label: 'Network / Followers', icon: Share2 },
+                { id: 'overview', label: 'Activity', icon: History }
+              ].map(tab => (
                 <button
-                  onClick={handleBuyerFollowToggle}
-                  className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5 border ${
-                    buyerFollowed
-                      ? 'bg-[#fde7f3] border-[#b90064] text-[#b90064] hover:bg-[#fbc5e3]'
-                      : 'bg-white border-[#e8e8e8] text-[#1c1b1b] hover:border-[#b90064] hover:text-[#b90064]'
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer relative ${
+                    activeTab === tab.id
+                      ? 'bg-[#b90064] text-white shadow-sm shadow-[#b90064]/20'
+                      : 'bg-[#fcf9f8] text-[#594047] hover:bg-[#f0edec] hover:text-[#1c1b1b]'
                   }`}
                 >
-                  {buyerFollowed ? (
-                    <>
-                      <Check className="w-4 h-4 text-[#b90064]" />
-                      <span>Following</span>
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="w-4 h-4 text-[#8c7077]" />
-                      <span>Follow Profile</span>
-                    </>
-                  )}
+                  <tab.icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
                 </button>
-
-                <button
-                  onClick={handleTriggerEditProfile}
-                  className="px-5 py-2.5 bg-white border border-[#e8e8e8] hover:border-[#b90064] text-[#1c1b1b] hover:text-[#b90064] rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
-                >
-                  <Settings className="w-4 h-4 text-[#b90064]" />
-                  <span>Edit Profile</span>
-                </button>
-
-                <button 
-                  onClick={onPostRFQ}
-                  className="px-6 py-2.5 bg-[#b90064] text-white rounded-xl text-xs font-extrabold shadow-md shadow-[#b90064]/25 hover:bg-[#8e004b] transition-all cursor-pointer flex items-center gap-1.5"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Post Requirement</span>
-                </button>
-              </div>
+              ))}
             </div>
-
           </div>
-
-          {/* Facebook-Style Navigation Tabs */}
-          <div className="flex items-center gap-2 mt-6 border-t border-[#e8e8e8] pt-3 overflow-x-auto no-scrollbar">
+        </div>
+      ) : (
+        /* CLEAN HIGH-DENSITY DASHBOARD HEADER FOR NON-PROFILE VIEWS */
+        <div className="bg-white border-b border-[#e8e8e8] px-4 sm:px-10 py-5">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="text-left">
+              <h1 className="text-xl font-bold text-[#1c1b1b] tracking-tight flex items-center gap-2">
+                <LayoutDashboard className="w-5 h-5 text-[#b90064]" />
+                <span>Buyer Sourcing Workspace</span>
+              </h1>
+              <p className="text-xs text-[#594047] font-medium">Manage RFQs, direct enquiries, compare quotes, and monitor notifications.</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={onPostRFQ}
+                className="px-5 py-2.5 bg-[#b90064] hover:bg-[#8e004b] text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Post Requirement</span>
+              </button>
+            </div>
+          </div>
+          
+          <div className="max-w-7xl mx-auto flex items-center gap-2 mt-4 overflow-x-auto no-scrollbar">
             {[
               { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-              { id: 'about', label: 'About & Bio', icon: Users },
+              { id: 'notifications', label: 'Notifications & Alerts', icon: Bell, badge: unreadCount > 0 ? `${unreadCount}` : undefined },
               { id: 'rfqs', label: 'Posts & Sourcing', icon: ClipboardList },
               { id: 'saved', label: 'Saved Suppliers', icon: Bookmark },
-              { id: 'social', label: 'Social Links', icon: Globe },
-              { id: 'activity', label: 'Activity Feed', icon: MessageSquare },
             ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer relative ${
                   activeTab === tab.id
                     ? 'bg-[#b90064] text-white shadow-sm shadow-[#b90064]/20'
                     : 'bg-[#fcf9f8] text-[#594047] hover:bg-[#f0edec] hover:text-[#1c1b1b]'
@@ -912,11 +1031,18 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
               >
                 <tab.icon className="w-4 h-4" />
                 <span>{tab.label}</span>
+                {tab.badge && (
+                  <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-black leading-none ${
+                    activeTab === tab.id ? 'bg-white text-[#b90064]' : 'bg-[#b90064] text-white animate-pulse'
+                  }`}>
+                    {tab.badge}
+                  </span>
+                )}
               </button>
             ))}
           </div>
         </div>
-      </div>
+      )}
 
       <main className="flex-1 p-4 md:p-8 lg:p-10">
         <div className="max-w-7xl mx-auto space-y-10">
@@ -926,7 +1052,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
             <div className="space-y-10 animate-in fade-in-50 duration-200">
               
               {/* Profile Notice */}
-              {!profileComplete && (
+              {isProfileView && !profileComplete && (
                 <div className="bg-white border border-[#b90064]/20 rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 relative overflow-hidden shadow-xs">
                   <div className="absolute top-0 left-0 w-1 h-full bg-[#b90064]" />
                   <div className="flex items-center gap-4">
@@ -986,78 +1112,92 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                 
                 {/* Left Sidebar Intro Box (Facebook Style) */}
                 <div className="space-y-6">
-                  <div className="bg-white border border-[#e8e8e8] rounded-2xl p-6 shadow-xs space-y-5">
-                    <h3 className="text-sm font-black text-[#1c1b1b] tracking-tight">Intro</h3>
-                    
-                    <p className="text-xs text-[#594047] leading-relaxed font-medium">
-                      {buyerProfile.bio}
-                    </p>
+                  {isProfileView && (
+                    <div className="bg-white border border-[#e8e8e8] rounded-2xl p-6 shadow-xs space-y-5">
+                      <h3 className="text-sm font-black text-[#1c1b1b] tracking-tight">Intro</h3>
+                      
+                      <p className="text-xs text-[#594047] leading-relaxed font-medium">
+                        {buyerProfile.bio}
+                      </p>
 
-                    <div className="space-y-3.5 pt-2 border-t border-[#f0edec] text-xs text-[#594047]">
-                      <div className="flex items-center gap-3">
-                        <Building2 className="w-4 h-4 text-[#b90064] shrink-0" />
-                        <div>
-                          <span className="font-bold text-[#1c1b1b]">{buyerProfile.businessName}</span>
-                          <div className="text-[10px] text-[#8c7077]">{buyerProfile.businessType}</div>
+                      <div className="space-y-3.5 pt-2 border-t border-[#f0edec] text-xs text-[#594047]">
+                        <div className="flex items-center gap-3">
+                          <Building2 className="w-4 h-4 text-[#b90064] shrink-0" />
+                          <div>
+                            <span className="font-bold text-[#1c1b1b]">{buyerProfile.businessName}</span>
+                            <div className="text-[10px] text-[#8c7077]">{buyerProfile.businessType}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <MapPin className="w-4 h-4 text-[#0050d6] shrink-0" />
+                          <div>
+                            <span className="font-bold text-[#1c1b1b]">Lives in {buyerProfile.city}, {buyerProfile.state}</span>
+                            <div className="text-[10px] text-[#8c7077]">{buyerProfile.pincode}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <Calendar className="w-4 h-4 text-purple-600 shrink-0" />
+                          <span>Joined {buyerProfile.joinedDate || 'January 2024'}</span>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <ShieldCheck className="w-4 h-4 text-green-600 shrink-0" />
+                          <div>
+                            <span className="font-bold text-green-700">GSTIN Verified</span>
+                            <div className="font-mono text-[10px] text-[#8c7077]">{buyerProfile.gstin}</div>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <MapPin className="w-4 h-4 text-[#0050d6] shrink-0" />
-                        <div>
-                          <span className="font-bold text-[#1c1b1b]">Lives in {buyerProfile.city}, {buyerProfile.state}</span>
-                          <div className="text-[10px] text-[#8c7077]">{buyerProfile.pincode}</div>
+                      {/* Social links in intro box */}
+                      {buyerProfile.socialLinks && (
+                        <div className="pt-3 border-t border-[#f0edec] space-y-2">
+                          <h4 className="text-[11px] font-bold text-[#8c7077] uppercase tracking-wider">Social Presence</h4>
+                          <div className="space-y-2">
+                            {buyerProfile.socialLinks.website && (
+                              <a href={buyerProfile.socialLinks.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs font-bold text-[#0050d6] hover:underline truncate">
+                                <Globe className="w-3.5 h-3.5 shrink-0" />
+                                <span className="truncate">{buyerProfile.socialLinks.website}</span>
+                              </a>
+                            )}
+                            {buyerProfile.socialLinks.linkedin && (
+                              <a href={buyerProfile.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs font-bold text-[#1c1b1b] hover:underline truncate">
+                                <ExternalLink className="w-3.5 h-3.5 shrink-0 text-[#0050d6]" />
+                                <span className="truncate">LinkedIn Profile</span>
+                              </a>
+                            )}
+                            {buyerProfile.socialLinks.instagram && (
+                              <a href={buyerProfile.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs font-bold text-[#1c1b1b] hover:underline truncate">
+                                <ExternalLink className="w-3.5 h-3.5 shrink-0 text-[#b90064]" />
+                                <span className="truncate">Instagram Page</span>
+                              </a>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
-                      <div className="flex items-center gap-3">
-                        <Calendar className="w-4 h-4 text-purple-600 shrink-0" />
-                        <span>Joined {buyerProfile.joinedDate || 'January 2024'}</span>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <ShieldCheck className="w-4 h-4 text-green-600 shrink-0" />
-                        <div>
-                          <span className="font-bold text-green-700">GSTIN Verified</span>
-                          <div className="font-mono text-[10px] text-[#8c7077]">{buyerProfile.gstin}</div>
-                        </div>
-                      </div>
+                      <button
+                        onClick={handleTriggerEditProfile}
+                        className="w-full py-2.5 bg-[#fcf9f8] hover:bg-[#f0edec] text-[#1c1b1b] rounded-xl text-xs font-bold transition-all cursor-pointer border border-[#e8e8e8]"
+                      >
+                        Edit Intro Details
+                      </button>
                     </div>
+                  )}
 
-                    {/* Social links in intro box */}
-                    {buyerProfile.socialLinks && (
-                      <div className="pt-3 border-t border-[#f0edec] space-y-2">
-                        <h4 className="text-[11px] font-bold text-[#8c7077] uppercase tracking-wider">Social Presence</h4>
-                        <div className="space-y-2">
-                          {buyerProfile.socialLinks.website && (
-                            <a href={buyerProfile.socialLinks.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs font-bold text-[#0050d6] hover:underline truncate">
-                              <Globe className="w-3.5 h-3.5 shrink-0" />
-                              <span className="truncate">{buyerProfile.socialLinks.website}</span>
-                            </a>
-                          )}
-                          {buyerProfile.socialLinks.linkedin && (
-                            <a href={buyerProfile.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs font-bold text-[#1c1b1b] hover:underline truncate">
-                              <ExternalLink className="w-3.5 h-3.5 shrink-0 text-[#0050d6]" />
-                              <span className="truncate">LinkedIn Profile</span>
-                            </a>
-                          )}
-                          {buyerProfile.socialLinks.instagram && (
-                            <a href={buyerProfile.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs font-bold text-[#1c1b1b] hover:underline truncate">
-                              <ExternalLink className="w-3.5 h-3.5 shrink-0 text-[#b90064]" />
-                              <span className="truncate">Instagram Page</span>
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    <button
-                      onClick={handleTriggerEditProfile}
-                      className="w-full py-2.5 bg-[#fcf9f8] hover:bg-[#f0edec] text-[#1c1b1b] rounded-xl text-xs font-bold transition-all cursor-pointer border border-[#e8e8e8]"
-                    >
-                      Edit Intro Details
-                    </button>
-                  </div>
+                  {/* Sourcing Notifications & Alerts Widget */}
+                  <NotificationCenter 
+                    variant="widget" 
+                    onNavigate={(screen, params) => {
+                      if (screen === 'buyer-dashboard' && params?.tab === 'notifications') {
+                        setActiveTab('notifications');
+                      } else {
+                        onNavigate(screen, params);
+                      }
+                    }} 
+                  />
                 </div>
 
                 {/* Right Main Column (Active RFQs & Activity Stream) */}
@@ -1286,7 +1426,6 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
 
                 </div>
               </div>
-
             </div>
           )}
 
@@ -1543,7 +1682,60 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
 
           {/* TAB 6: ACTIVITY FEED */}
           {activeTab === 'activity' && (
-            <div className="space-y-6 max-w-3xl mx-auto animate-in fade-in-50 duration-200">
+            <div className={`animate-in fade-in-50 duration-200 ${isProfileView ? 'grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto' : 'space-y-6 max-w-3xl mx-auto'}`}>
+              {isProfileView && (
+                /* Left Column: Intro Box (Facebook style) */
+                <div className="lg:col-span-1 space-y-6 text-left">
+                  <div className="bg-white border border-[#e8e8e8] rounded-2xl p-6 shadow-xs space-y-5">
+                    <h3 className="text-sm font-black text-[#1c1b1b] tracking-tight">Intro</h3>
+                    
+                    <p className="text-xs text-[#594047] leading-relaxed font-medium">
+                      {buyerProfile.bio || 'Premium verified B2B beauty buyer on Nexora Luxe. Active in cosmetic and skincare procurement.'}
+                    </p>
+
+                    <div className="space-y-3.5 pt-2 border-t border-[#f0edec] text-xs text-[#594047]">
+                      <div className="flex items-center gap-3">
+                        <Building2 className="w-4 h-4 text-[#b90064] shrink-0" />
+                        <div>
+                          <span className="font-bold text-[#1c1b1b]">{buyerProfile.businessName}</span>
+                          <div className="text-[10px] text-[#8c7077]">{buyerProfile.businessType}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <MapPin className="w-4 h-4 text-[#0050d6] shrink-0" />
+                        <div>
+                          <span className="font-bold text-[#1c1b1b]">Lives in {buyerProfile.city}, {buyerProfile.state}</span>
+                          <div className="text-[10px] text-[#8c7077]">{buyerProfile.pincode}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <Calendar className="w-4 h-4 text-purple-600 shrink-0" />
+                        <span>Joined {buyerProfile.joinedDate || 'January 2024'}</span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <ShieldCheck className="w-4 h-4 text-green-600 shrink-0" />
+                        <div>
+                          <span className="font-bold text-green-700">GSTIN Verified</span>
+                          <div className="font-mono text-[10px] text-[#8c7077]">{buyerProfile.gstin}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={handleTriggerEditProfile}
+                      className="w-full py-2.5 bg-[#fcf9f8] hover:bg-[#f0edec] text-[#1c1b1b] rounded-xl text-xs font-bold transition-all cursor-pointer border border-[#e8e8e8]"
+                    >
+                      Edit Intro Details
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Right Column: Main Feed & Create Post */}
+              <div className={`${isProfileView ? 'lg:col-span-2' : ''} space-y-6`}>
               
               {/* Upgraded Post Creation Box */}
               <div className="bg-white border border-[#e8e8e8] rounded-2xl p-5 shadow-xs space-y-4">
@@ -1573,7 +1765,8 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
 
                     {/* Active Media Toggle Options */}
                     <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-[#f0edec]">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {/* 1. Photo/Video Attachment Button */}
                         <button
                           type="button"
                           onClick={() => {
@@ -1586,23 +1779,42 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                           }`}
                         >
                           <Image className="w-3.5 h-3.5" />
-                          <span>{isUploadingPostPhoto ? 'Processing...' : mediaInputType === 'image' ? 'Change Photo' : 'Upload Photo'}</span>
+                          <span>{isUploadingPostPhoto ? 'Processing...' : mediaInputType === 'image' ? 'Change Photo' : 'Photo/Video'}</span>
                         </button>
 
+                        {/* 2. Product Tag Attachment Button */}
                         <button
                           type="button"
                           onClick={() => {
-                            setMediaInputType(mediaInputType === 'video' ? 'none' : 'video');
-                            if (mediaInputType !== 'video') setMediaUrlInput('');
+                            setIsTaggingProduct(!isTaggingProduct);
                           }}
                           className={`px-3.5 py-1.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer border ${
-                            mediaInputType === 'video'
-                              ? 'bg-[#0050d6] text-white border-[#0050d6] shadow-sm'
+                            taggedProduct
+                              ? 'bg-[#0050d6] text-white border-[#0050d6]'
                               : 'bg-[#fcf9f8] text-[#594047] border-[#e8e8e8] hover:bg-[#f0edec]'
                           }`}
                         >
-                          <Video className="w-3.5 h-3.5" />
-                          <span>Add Video URL</span>
+                          <Package className="w-3.5 h-3.5" />
+                          <span>{taggedProduct ? `Product: ${taggedProduct}` : 'Product Tag'}</span>
+                        </button>
+
+                        {/* 3. B2B Requirement Attachment Button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPostTag('Sourcing RFQ');
+                            setNewPostText('Sourcing Requirement: Looking to procure premium, dermatologically-tested private-label Vitamin C Serums (approx. 2000 units). Must provide custom formulation, certifications, and high-density glass dropper packaging.');
+                            setProfileToast('B2B Sourcing Template Loaded!');
+                            setTimeout(() => setProfileToast(null), 2500);
+                          }}
+                          className={`px-3.5 py-1.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer border ${
+                            postTag === 'Sourcing RFQ'
+                              ? 'bg-purple-600 text-white border-purple-600'
+                              : 'bg-[#fcf9f8] text-[#594047] border-[#e8e8e8] hover:bg-[#f0edec]'
+                          }`}
+                        >
+                          <ClipboardList className="w-3.5 h-3.5" />
+                          <span>Requirement Template</span>
                         </button>
                       </div>
 
@@ -1621,6 +1833,50 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                         </select>
                       </div>
                     </div>
+
+                    {/* Product Tag Predefined Picker */}
+                    {isTaggingProduct && (
+                      <div className="p-3 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl space-y-2 animate-in slide-in-from-top-1 text-left">
+                        <div className="flex items-center justify-between pb-1.5 border-b border-[#e8e8e8]">
+                          <span className="text-[10px] font-bold text-[#8c7077] uppercase tracking-wider">Select Beauty Product to Tag</span>
+                          <button
+                            type="button"
+                            onClick={() => { setIsTaggingProduct(false); setTaggedProduct(''); }}
+                            className="text-[10px] font-bold text-red-500 hover:underline"
+                          >
+                            Clear Product Tag
+                          </button>
+                        </div>
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {[
+                            'Keratin Premium Hair Serum',
+                            'Peptide Glow Barrier Cream',
+                            'Organic Spa Facial Kit',
+                            'Niacinamide Hydration Mist',
+                            'Vitamin C Spot Lightener',
+                            'Clinical Scalp Purifier'
+                          ].map(prod => (
+                            <button
+                              key={prod}
+                              type="button"
+                              onClick={() => {
+                                setTaggedProduct(prod);
+                                setIsTaggingProduct(false);
+                                setProfileToast(`Tagged product: ${prod}`);
+                                setTimeout(() => setProfileToast(null), 2500);
+                              }}
+                              className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all cursor-pointer ${
+                                taggedProduct === prod
+                                  ? 'bg-[#b90064] text-white border-[#b90064]'
+                                  : 'bg-white text-[#594047] border-[#e8e8e8] hover:border-[#b90064]'
+                              }`}
+                            >
+                              {prod}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Expanding input field ONLY for Videos */}
                     {mediaInputType === 'video' && (
@@ -1709,6 +1965,140 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                 )}
               </div>
 
+              </div>
+            </div>
+          )}
+
+          {/* TAB 7: NOTIFICATIONS & ALERTS */}
+          {activeTab === 'notifications' && (
+            <div className="animate-in fade-in-50 duration-200">
+              <NotificationCenter 
+                variant="full" 
+                onNavigate={(screen, params) => {
+                  if (screen === 'buyer-dashboard' && params?.tab === 'notifications') {
+                    setActiveTab('notifications');
+                  } else {
+                    onNavigate(screen, params);
+                  }
+                }} 
+              />
+            </div>
+          )}
+
+          {/* TAB 8: NETWORK / FOLLOWERS */}
+          {activeTab === 'network' && (
+            <div className="space-y-6 max-w-5xl mx-auto animate-in fade-in-50 duration-200 text-left">
+              <div className="bg-white border border-[#e8e8e8] rounded-2xl p-6 shadow-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#f0edec] mb-6">
+                  <div>
+                    <h2 className="text-base font-black text-[#1c1b1b] tracking-tight">Sourcing Network & Followers</h2>
+                    <p className="text-xs text-[#594047] font-medium mt-1">Connect with professional beauty suppliers, contract manufacturers, and packaging experts.</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="px-3.5 py-1.5 bg-[#fde7f3] text-[#b90064] rounded-xl text-xs font-black">
+                      1,481 Followers
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {[
+                    {
+                      id: 'seller_aura_001',
+                      name: 'Aura Beauty Labs',
+                      type: 'Manufacturer & OEM',
+                      location: 'Mumbai, Maharashtra',
+                      logo: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?auto=format&fit=crop&w=120&q=80',
+                      verified: true,
+                      mutualConnections: 12,
+                      followersCount: '4.8k',
+                      rating: '4.9',
+                      responseRate: '98%',
+                      category: 'Skincare Formulations'
+                    },
+                    {
+                      id: 'seller_luxe_002',
+                      name: 'LuxeForm Cosmetics',
+                      type: 'Private Label Manufacturer',
+                      location: 'Ahmedabad, Gujarat',
+                      logo: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=120&q=80',
+                      verified: true,
+                      mutualConnections: 8,
+                      followersCount: '3.2k',
+                      rating: '4.7',
+                      responseRate: '95%',
+                      category: 'Premium Cosmetics'
+                    },
+                    {
+                      id: 'seller_beautypro_003',
+                      name: 'BeautyPro Manufacturing',
+                      type: 'Contract Manufacturer',
+                      location: 'Baddi, Himachal Pradesh',
+                      logo: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=120&q=80',
+                      verified: true,
+                      mutualConnections: 15,
+                      followersCount: '6.1k',
+                      rating: '4.8',
+                      responseRate: '99%',
+                      category: 'Haircare & Spa'
+                    },
+                    {
+                      id: 'buyer_dist_004',
+                      name: 'Dermaglow India Wholesalers',
+                      type: 'Wholesaler & Distributor',
+                      location: 'Delhi NCR',
+                      logo: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=120&q=80',
+                      verified: true,
+                      mutualConnections: 4,
+                      followersCount: '1.9k',
+                      rating: '4.6',
+                      responseRate: '92%',
+                      category: 'Clinical Dermatological Skincare'
+                    }
+                  ].map((item) => (
+                    <div key={item.id} className="bg-[#fcf9f8] border border-[#e8e8e8] hover:border-[#b90064]/30 rounded-2xl p-5 transition-all flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center gap-3">
+                          <img src={item.logo} alt={item.name} className="w-11 h-11 rounded-xl object-cover border border-[#e8e8e8]" />
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-xs font-black text-[#1c1b1b] tracking-tight truncate flex items-center gap-1.5">
+                              <span>{item.name}</span>
+                              {item.verified && <ShieldCheck className="w-3.5 h-3.5 text-green-600 shrink-0" />}
+                            </h3>
+                            <p className="text-[10px] text-[#8c7077] font-bold uppercase tracking-wider">{item.type}</p>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 space-y-1.5 text-xs text-[#594047]">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-3.5 h-3.5 text-[#b90064] shrink-0" />
+                            <span>{item.location}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Package className="w-3.5 h-3.5 text-[#0050d6] shrink-0" />
+                            <span>Specialty: <span className="font-bold text-[#1c1b1b]">{item.category}</span></span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-5 pt-3.5 border-t border-[#f0edec] flex items-center justify-between gap-2">
+                        <div className="text-[10px] text-[#8c7077]">
+                          <div className="font-bold text-[#1c1b1b]">{item.mutualConnections} Mutual</div>
+                          <div>{item.followersCount} Followers</div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            onNavigate?.('supplier-chat', { supplierId: item.id });
+                          }}
+                          className="px-3.5 py-1.5 bg-[#b90064] hover:bg-[#8e004b] text-white rounded-xl text-[11px] font-black tracking-tight transition-all cursor-pointer"
+                        >
+                          Send Message
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 

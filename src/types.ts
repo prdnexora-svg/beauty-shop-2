@@ -197,6 +197,34 @@ export interface OEMFormulation {
   isIsoCertified: boolean;
 }
 
+export interface AppNotification {
+  id: string;
+  type: 'rfq_response' | 'quote_update' | 'message' | 'verification' | 'sample' | 'system';
+  title: string;
+  description: string;
+  timestamp: string;
+  timeAgo: string;
+  isRead: boolean;
+  priority?: 'high' | 'medium' | 'low';
+  targetScreen?: string;
+  targetParams?: any;
+  sender?: {
+    name: string;
+    avatar?: string;
+    isVerified?: boolean;
+    location?: string;
+  };
+  metadata?: {
+    rfqId?: string;
+    quoteId?: string;
+    price?: string;
+    quantity?: string;
+    supplierName?: string;
+    productName?: string;
+    trackingNumber?: string;
+  };
+}
+
 export interface CategoryItem {
   id: string;
   name: string;
@@ -244,7 +272,7 @@ export interface SponsoredVideoItem {
   display_description: string;
   supplierName: string;
   duration?: string;
-  status: 'active' | 'disabled' | 'paused' | 'draft' | 'paused_product_unavailable';
+  status: 'active' | 'disabled' | 'paused' | 'draft' | 'paused_product_unavailable' | 'budget_depleted' | 'completed';
   embed_url?: string;
 }
 
@@ -259,7 +287,7 @@ export interface SponsoredAdItem {
   adTitle: string;
   subtitle: string;
   imageUrl: string;
-  status: 'active' | 'disabled' | 'paused' | 'draft';
+  status: 'active' | 'disabled' | 'paused' | 'draft' | 'paused_product_unavailable' | 'budget_depleted' | 'completed';
 }
 
 export interface ProductDetailData {

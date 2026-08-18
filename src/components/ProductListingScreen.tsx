@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { SearchProduct, RFQItem } from '../types';
 import { SEARCH_PRODUCTS, LIVE_RFQS } from '../data/mockData';
+import { CATEGORY_TAXONOMY } from '../data/categories';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ProductListingScreenProps {
@@ -341,69 +342,52 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
             </button>
 
             {categoryAccordionOpen && (
-              <div className="space-y-2 pl-1">
-                {/* Haircare (Primary) */}
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={selectedCategory === 'Haircare'}
-                    onChange={() => setSelectedCategory('Haircare')}
-                    className="w-4 h-4 rounded text-[#b90064] focus:ring-[#b90064] border-[#e8e8e8] accent-[#b90064]"
-                  />
-                  <span className="text-[13px] font-bold text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
-                    Haircare
-                  </span>
-                  <span className="ml-auto text-[11px] text-[#8c7077]">(248)</span>
-                </label>
+              <div className="space-y-3 pl-1 max-h-96 overflow-y-auto">
+                {Object.entries(CATEGORY_TAXONOMY).map(([catName, subcategories]) => {
+                  const isCatSelected = selectedCategory === catName || selectedCategory.includes(catName);
+                  return (
+                    <div key={catName} className="space-y-1.5">
+                      <label className="flex items-center gap-2 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={isCatSelected}
+                          onChange={() => {
+                            if (isCatSelected) {
+                              setSelectedCategory('All Categories');
+                              setSelectedSubcategories([]);
+                            } else {
+                              setSelectedCategory(catName);
+                              setSelectedSubcategories([]);
+                            }
+                          }}
+                          className="w-4 h-4 rounded text-[#b90064] focus:ring-[#b90064] border-[#e8e8e8] accent-[#b90064]"
+                        />
+                        <span className={`text-[13px] transition-colors ${isCatSelected ? 'font-extrabold text-[#b90064]' : 'font-bold text-[#1c1b1b] group-hover:text-[#b90064]'}`}>
+                          {catName}
+                        </span>
+                      </label>
 
-                {/* Subcategories */}
-                <div className="pl-5 space-y-2 mt-2 border-l-2 border-[#ece7e7]">
-                  {[
-                    { id: 'Hair Serums', label: 'Hair Serums', count: 184 },
-                    { id: 'Oils & Treatments', label: 'Oils &amp; Treatments', count: 64 },
-                    { id: 'Keratin Formulations', label: 'Keratin Treatments', count: 42 },
-                    { id: 'Scalp Actives', label: 'Scalp Complexes', count: 28 }
-                  ].map((sub) => (
-                    <label key={sub.id} className="flex items-center gap-2 cursor-pointer group">
-                      <input
-                        type="checkbox"
-                        checked={selectedSubcategories.includes(sub.id)}
-                        onChange={() => toggleSubcategory(sub.id)}
-                        className="w-3.5 h-3.5 rounded text-[#b90064] focus:ring-[#b90064] border-[#e8e8e8] accent-[#b90064]"
-                      />
-                      <span className="text-[12.5px] text-[#594047] group-hover:text-[#1c1b1b] transition-colors">
-                        {sub.label}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-
-                {/* Other Main Categories */}
-                <label className="flex items-center gap-2 cursor-pointer group pt-1">
-                  <input
-                    type="checkbox"
-                    checked={selectedCategory === 'Skincare'}
-                    onChange={() => setSelectedCategory(selectedCategory === 'Skincare' ? 'Haircare' : 'Skincare')}
-                    className="w-4 h-4 rounded text-[#b90064] focus:ring-[#b90064] border-[#e8e8e8] accent-[#b90064]"
-                  />
-                  <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
-                    Skincare
-                  </span>
-                  <span className="ml-auto text-[11px] text-[#8c7077]">(1,024)</span>
-                </label>
-
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={selectedCategory === 'Salon Equipment'}
-                    onChange={() => setSelectedCategory(selectedCategory === 'Salon Equipment' ? 'Haircare' : 'Salon Equipment')}
-                    className="w-4 h-4 rounded text-[#b90064] focus:ring-[#b90064] border-[#e8e8e8] accent-[#b90064]"
-                  />
-                  <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
-                    Salon Equipment
-                  </span>
-                  <span className="ml-auto text-[11px] text-[#8c7077]">(180)</span>
-                </label>
+                      {/* Subcategories */}
+                      {isCatSelected && (
+                        <div className="pl-5 space-y-1.5 mt-1 border-l-2 border-[#ece7e7]">
+                          {subcategories.map((subName) => (
+                            <label key={subName} className="flex items-center gap-2 cursor-pointer group">
+                              <input
+                                type="checkbox"
+                                checked={selectedSubcategories.includes(subName)}
+                                onChange={() => toggleSubcategory(subName)}
+                                className="w-3.5 h-3.5 rounded text-[#b90064] focus:ring-[#b90064] border-[#e8e8e8] accent-[#b90064]"
+                              />
+                              <span className="text-[12px] text-[#594047] group-hover:text-[#1c1b1b] transition-colors">
+                                {subName}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

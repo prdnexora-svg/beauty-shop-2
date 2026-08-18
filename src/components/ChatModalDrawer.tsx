@@ -1,6 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Paperclip, ShieldCheck, Sparkles, CheckCircle2, MessageSquare, Phone, ExternalLink, ChevronLeft } from 'lucide-react';
-import { getStoredChatThreads, sendChatMessage, ChatThread } from '../data/chatStore';
+import { 
+  X, 
+  Send, 
+  Paperclip, 
+  ShieldCheck, 
+  Sparkles, 
+  CheckCircle2, 
+  MessageSquare, 
+  Phone, 
+  ExternalLink, 
+  ChevronLeft,
+  Wifi,
+  Radio,
+  Clock
+} from 'lucide-react';
+import { db } from '../db/database';
+import { getStoredChatThreads, sendChatMessage, ChatThread, ChatMessage } from '../data/chatStore';
+import { useChatSubscription } from '../hooks/useChatSubscription';
 
 interface ChatModalDrawerProps {
   isOpen: boolean;
@@ -29,8 +45,11 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [messageInput, setMessageInput] = useState('');
   const [attachedFile, setAttachedFile] = useState<{ name: string; size: string } | null>(null);
+  const [isSending, setIsSending] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // 1. Load Local Chat Threads on Mount & Sync
   useEffect(() => {
     const load = () => {
       const all = getStoredChatThreads();
@@ -51,25 +70,67 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
     return () => window.removeEventListener('nexora_chat_updated', load);
   }, [initialSupplier]);
 
+  const activeThread = threads.find(t => t.id === activeThreadId) || threads[0];
+  const conversationId = activeThread?.id || 'thread-1';
+
+  // 2. Custom Supabase Realtime Hook for Live Sync
+  const { messages: realtimeMessages, connectionState, pushMessage } = useChatSubscription(
+    conversationId,
+    isOpen
+  );
+
+  // Auto Scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [threads, activeThreadId]);
+  }, [threads, activeThreadId, realtimeMessages]);
 
   if (!isOpen) return null;
 
-  const activeThread = threads.find(t => t.id === activeThreadId) || threads[0];
+  // Map realtime messages to UI structure or fall back to activeThread messages
+  const displayMessages = realtimeMessages.length > 0
+    ? realtimeMessages.map((rm) => {
+        const isBuyer = rm.sender_id.includes('buyer') || rm.sender_id === 'usr-buyer-priya';
+        let formattedTime = 'Just now';
+        try {
+          formattedTime = new Date(rm.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } catch (e) {
+          formattedTime = 'Just now';
+        }
 
-  const handleSend = (textToSend?: string, customContext?: any) => {
+        return {
+          id: rm.id,
+          sender: isBuyer ? ('buyer' as const) : ('supplier' as const),
+          senderName: isBuyer ? 'You (Priya Sharma)' : activeThread?.supplierName || 'Supplier',
+          text: rm.message_body,
+          timestamp: formattedTime,
+          attachment: rm.attachments && rm.attachments.length > 0 ? { name: rm.attachments[0], size: '1.2 MB' } : undefined,
+          productContext: undefined
+        };
+      })
+    : activeThread?.messages || [];
+
+  // 3. Send Message Handler using useRealtimeMessages Hook
+  const handleSend = async (textToSend?: string, customContext?: any) => {
     const text = textToSend || messageInput;
     if (!text.trim() && !attachedFile) return;
+
+    setIsSending(true);
 
     const supplierId = initialSupplier?.id || activeThread?.supplierId || 'sup-1';
     const supplierName = initialSupplier?.name || activeThread?.supplierName || 'Aura Beauty Labs';
     const supplierLocation = initialSupplier?.location || activeThread?.supplierLocation || 'Mumbai, MH';
     const isVerified = initialSupplier?.isVerified ?? activeThread?.isVerified ?? true;
-
     const context = customContext || initialProduct;
 
+    // Send via Supabase Realtime Hook
+    await pushMessage({
+      senderId: 'usr-buyer-priya',
+      receiverId: `usr-supp-${supplierId}`,
+      body: text,
+      attachments: attachedFile ? [attachedFile.name] : []
+    });
+
+    // Sync Local Store for instant state consistency
     sendChatMessage(
       supplierId,
       supplierName,
@@ -82,6 +143,7 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
 
     setMessageInput('');
     setAttachedFile(null);
+    setIsSending(false);
     setThreads(getStoredChatThreads());
   };
 
@@ -161,7 +223,7 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
         <div className={`flex-1 flex flex-col bg-white overflow-hidden ${!activeThreadId ? 'hidden md:flex' : 'flex'}`}>
           {activeThread ? (
             <>
-              {/* Chat Header */}
+              {/* Chat Header with Supabase Realtime Status Badge */}
               <div className="p-4 border-b border-stone-200 bg-white flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
                   <button 
@@ -180,10 +242,22 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
                         <ShieldCheck className="w-4 h-4 text-[#b90064]" title="Nexora Verified Supplier" />
                       )}
                     </div>
-                    <p className="text-[11px] text-emerald-600 font-bold flex items-center gap-1 mt-0.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      {activeThread.lastActive} • {activeThread.supplierLocation}
-                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <p className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        {activeThread.lastActive} • {activeThread.supplierLocation}
+                      </p>
+
+                      {/* Supabase Realtime Status Pill */}
+                      <span className={`inline-flex items-center gap-1 text-[9.5px] font-black px-2 py-0.5 rounded-full border ${
+                        connectionState === 'SUBSCRIBED'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-amber-50 text-amber-700 border-amber-200'
+                      }`}>
+                        <Radio className="w-3 h-3 animate-pulse text-emerald-600" />
+                        <span>Supabase Realtime {connectionState === 'SUBSCRIBED' ? 'Active' : 'Connecting'}</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -202,7 +276,7 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
               <div className="flex-1 p-4 md:p-6 overflow-y-auto space-y-4 bg-[#fdf8f8]">
                 
                 {/* Initial Product Card Context Banner if present */}
-                {initialProduct && activeThread.messages.length <= 1 && (
+                {initialProduct && displayMessages.length <= 1 && (
                   <div className="bg-white p-3.5 rounded-2xl border border-pink-200 shadow-sm flex items-center gap-4 max-w-lg mx-auto mb-4">
                     <img src={initialProduct.image} alt={initialProduct.title} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shrink-0" />
                     <div className="flex-1 min-w-0">
@@ -213,7 +287,7 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
                   </div>
                 )}
 
-                {activeThread.messages.map(msg => {
+                {displayMessages.map((msg) => {
                   const isBuyer = msg.sender === 'buyer';
                   return (
                     <div key={msg.id} className={`flex flex-col ${isBuyer ? 'items-end' : 'items-start'}`}>
@@ -268,9 +342,9 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
               </div>
 
               {/* Input Area */}
-              <div className="p-3.5 border-t border-stone-200 bg-white flex items-center gap-3 shrink-0">
+              <div className="p-3.5 border-t border-stone-200 bg-white flex items-center gap-3 shrink-0 relative">
                 {attachedFile && (
-                  <div className="absolute bottom-20 left-4 bg-stone-900 text-white px-3 py-1.5 rounded-xl text-xs flex items-center gap-2 shadow-lg">
+                  <div className="absolute bottom-16 left-4 bg-stone-900 text-white px-3 py-1.5 rounded-xl text-xs flex items-center gap-2 shadow-lg">
                     <Paperclip className="w-3.5 h-3.5 text-pink-400" />
                     <span>{attachedFile.name}</span>
                     <button onClick={() => setAttachedFile(null)} className="text-stone-400 hover:text-white ml-2 cursor-pointer font-bold">×</button>
@@ -296,11 +370,11 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
 
                 <button
                   onClick={() => handleSend()}
-                  disabled={!messageInput.trim() && !attachedFile}
+                  disabled={isSending || (!messageInput.trim() && !attachedFile)}
                   className="bg-[#b90064] hover:bg-[#a00056] disabled:opacity-50 text-white font-bold px-5 py-2.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-sm text-xs"
                 >
                   <Send className="w-4 h-4" />
-                  <span>Send</span>
+                  <span>{isSending ? 'Sending...' : 'Send'}</span>
                 </button>
               </div>
             </>

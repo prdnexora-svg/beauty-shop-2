@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { CATEGORY_TAXONOMY } from '../data/categories';
 import {
   Search,
   MapPin,
@@ -43,6 +44,7 @@ import {
 } from 'lucide-react';
 import { VerifiedSupplier } from '../types';
 import { VERIFIED_SUPPLIERS } from '../data/mockData';
+import { fetchSuppliers } from '../services/supplierService';
 import { VerifiedBadge } from './VerifiedBadge';
 
 interface SupplierDirectoryScreenProps {
@@ -119,6 +121,35 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
   // Mobile Filter Drawer State
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  // Service Supplier State
+  const [remoteSuppliers, setRemoteSuppliers] = useState<VerifiedSupplier[]>(VERIFIED_SUPPLIERS);
+  const [isLoadingSuppliers, setIsLoadingSuppliers] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoadingSuppliers(true);
+
+    fetchSuppliers({
+      searchQuery,
+      businessType: activeBusinessType,
+      category: selectedCategory || 'All',
+      verifiedOnly: quickFilters.verifiedOnly,
+      limit: 50
+    }).then(res => {
+      if (isMounted && res.data && res.data.length > 0) {
+        setRemoteSuppliers(res.data);
+      }
+    }).catch(err => {
+      console.warn('Supplier service error, falling back to mock dataset:', err);
+    }).finally(() => {
+      if (isMounted) setIsLoadingSuppliers(false);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [searchQuery, activeBusinessType, selectedCategory, quickFilters.verifiedOnly]);
 
   // Phone Reveal State (per supplier ID)
   const [revealedPhones, setRevealedPhones] = useState<{ [key: string]: boolean }>({});
@@ -232,7 +263,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
   // Filtered Suppliers List
   const filteredSuppliers = useMemo(() => {
-    return VERIFIED_SUPPLIERS.filter((supplier) => {
+    return remoteSuppliers.filter((supplier) => {
       // Geographic City & Industrial Hub Filter
       if (selectedCity && selectedCity.trim() !== '') {
         const queryCity = selectedCity.toLowerCase();
@@ -298,7 +329,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
       return true;
     });
-  }, [searchQuery, activeBusinessType, businessTypeFilters, selectedCategory, quickFilters, complianceFilters]);
+  }, [remoteSuppliers, searchQuery, activeBusinessType, businessTypeFilters, selectedCategory, quickFilters, complianceFilters]);
 
   const selectedSuppliersObjects = useMemo(() => {
     return VERIFIED_SUPPLIERS.filter((s) => selectedComparisonIds.includes(s.id));
@@ -456,82 +487,56 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
             <h3 className="text-[11px] font-bold text-[#1c1b1b] mb-3 uppercase tracking-widest text-[#8c7077]">
               Categories
             </h3>
-            <div className="flex flex-col gap-2">
-              <label className="flex items-center justify-between text-[13px] text-[#1c1b1b] cursor-pointer group">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedCategory === 'Skincare'}
-                    onChange={() => setSelectedCategory(selectedCategory === 'Skincare' ? '' : 'Skincare')}
-                    className="rounded border-[#e8e8e8] text-[#b90064] focus:ring-[#b90064] w-4 h-4"
-                  />
-                  <span className="font-medium">Skincare</span>
-                </div>
-                <span className="text-[11px] text-[#8c7077] group-hover:text-[#b90064] bg-[#f0edec] px-2 py-0.5 rounded-full font-bold">
-                  412
-                </span>
-              </label>
+            <div className="flex flex-col gap-2.5 max-h-80 overflow-y-auto pr-1">
+              {Object.entries(CATEGORY_TAXONOMY).map(([catName, subcategories]) => {
+                const isSelected = selectedCategory === catName;
+                return (
+                  <div key={catName} className="space-y-1.5">
+                    <label className="flex items-center justify-between text-[13px] text-[#1c1b1b] cursor-pointer group">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => {
+                            if (isSelected) {
+                              setSelectedCategory('');
+                              setSelectedSubcategory('');
+                            } else {
+                              setSelectedCategory(catName);
+                              setSelectedSubcategory('');
+                            }
+                          }}
+                          className="rounded border-[#e8e8e8] text-[#b90064] focus:ring-[#b90064] w-4 h-4"
+                        />
+                        <span className={`font-medium transition-colors ${isSelected ? 'font-bold text-[#b90064]' : 'group-hover:text-[#b90064]'}`}>
+                          {catName}
+                        </span>
+                      </div>
+                    </label>
 
-              <label className="flex items-center justify-between text-[13px] text-[#1c1b1b] cursor-pointer group">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedCategory === 'Haircare'}
-                    onChange={() => setSelectedCategory(selectedCategory === 'Haircare' ? '' : 'Haircare')}
-                    className="rounded border-[#e8e8e8] text-[#b90064] focus:ring-[#b90064] w-4 h-4"
-                  />
-                  <span className="font-medium">Haircare</span>
-                </div>
-                <span className="text-[11px] text-[#8c7077] group-hover:text-[#b90064] bg-[#fde7f3] text-[#b90064] px-2 py-0.5 rounded-full font-bold">
-                  124
-                </span>
-              </label>
-
-              {/* Subcategories Tree */}
-              {selectedCategory === 'Haircare' && (
-                <div className="pl-6 flex flex-col gap-2 border-l-2 border-[#b90064]/20 ml-2 mt-1 py-1">
-                  <label className="flex items-center justify-between text-[12px] text-[#1c1b1b] cursor-pointer">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedSubcategory === 'Serums'}
-                        onChange={() => setSelectedSubcategory(selectedSubcategory === 'Serums' ? '' : 'Serums')}
-                        className="rounded border-[#e8e8e8] text-[#b90064] focus:ring-[#b90064] w-3.5 h-3.5"
-                      />
-                      <span className="font-semibold text-[#b90064]">Serums & Oils</span>
-                    </div>
-                    <span className="text-[10px] text-[#8c7077] font-semibold">45</span>
-                  </label>
-
-                  <label className="flex items-center justify-between text-[12px] text-[#1c1b1b] cursor-pointer">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedSubcategory === 'Shampoo'}
-                        onChange={() => setSelectedSubcategory(selectedSubcategory === 'Shampoo' ? '' : 'Shampoo')}
-                        className="rounded border-[#e8e8e8] text-[#b90064] focus:ring-[#b90064] w-3.5 h-3.5"
-                      />
-                      <span>Shampoos & Bases</span>
-                    </div>
-                    <span className="text-[10px] text-[#8c7077] font-semibold">79</span>
-                  </label>
-                </div>
-              )}
-
-              <label className="flex items-center justify-between text-[13px] text-[#1c1b1b] cursor-pointer group mt-1">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedCategory === 'Color Cosmetics'}
-                    onChange={() => setSelectedCategory(selectedCategory === 'Color Cosmetics' ? '' : 'Color Cosmetics')}
-                    className="rounded border-[#e8e8e8] text-[#b90064] focus:ring-[#b90064] w-4 h-4"
-                  />
-                  <span className="font-medium">Color Cosmetics</span>
-                </div>
-                <span className="text-[11px] text-[#8c7077] group-hover:text-[#b90064] bg-[#f0edec] px-2 py-0.5 rounded-full font-bold">
-                  289
-                </span>
-              </label>
+                    {/* Subcategories Tree */}
+                    {isSelected && (
+                      <div className="pl-6 flex flex-col gap-1.5 border-l-2 border-[#b90064]/30 ml-2 mt-1 py-1">
+                        {subcategories.map((subName) => (
+                          <label key={subName} className="flex items-center justify-between text-[12px] text-[#1c1b1b] cursor-pointer">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedSubcategory === subName}
+                                onChange={() => setSelectedSubcategory(selectedSubcategory === subName ? '' : subName)}
+                                className="rounded border-[#e8e8e8] text-[#b90064] focus:ring-[#b90064] w-3.5 h-3.5"
+                              />
+                              <span className={selectedSubcategory === subName ? 'font-semibold text-[#b90064]' : 'text-[#594047]'}>
+                                {subName}
+                              </span>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 

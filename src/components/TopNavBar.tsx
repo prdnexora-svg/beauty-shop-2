@@ -16,9 +16,12 @@ import {
   ChevronDown, 
   Edit3,
   ExternalLink,
-  Briefcase
+  Briefcase,
+  Bell
 } from 'lucide-react';
 import { BuyerProfileData } from './EditProfileModal';
+import { NotificationCenter } from './NotificationCenter';
+import { useNotifications } from '../hooks/useNotifications';
 
 interface TopNavBarProps {
   currentScreen: any;
@@ -45,7 +48,11 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  const { unreadCount } = useNotifications();
 
   const navItems = [
     { id: 'explore', label: 'Explore' },
@@ -55,19 +62,22 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
     { id: 'oem-hub', label: 'OEM / Private Label' },
   ];
 
-  // Close dropdown on click outside
+  // Close dropdowns on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setProfileDropdownOpen(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setNotificationsOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleNavClick = (screenId: string) => {
-    onNavigate(screenId as any);
+  const handleNavClick = (screenId: string, params?: any) => {
+    onNavigate(screenId as any, params);
     setMobileMenuOpen(false);
     setProfileDropdownOpen(false);
   };
@@ -146,6 +156,41 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
               <span className="hidden md:inline">Supplier Portal & Ads</span>
             </button>
 
+            {/* Notification Bell Center */}
+            <div className="relative" ref={notifRef}>
+              <button
+                aria-label="Procurement Notifications & Alerts"
+                title="Notifications & Live RFQ Responses"
+                onClick={() => setNotificationsOpen(prev => !prev)}
+                className={`p-2.5 rounded-xl border transition-all cursor-pointer relative ${
+                  notificationsOpen
+                    ? 'bg-[#FAF1F5] border-[#B90064] text-[#B90064] shadow-xs'
+                    : 'bg-[#FCF9F8] hover:bg-[#FAF1F5] border-[#E8DFE3] hover:border-[#B90064] text-[#534249] hover:text-[#B90064]'
+                }`}
+              >
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#B90064] text-[9px] font-black text-white shadow-xs animate-pulse">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notification Popover Dropdown */}
+              {notificationsOpen && (
+                <div className="absolute right-0 mt-2 z-50">
+                  <NotificationCenter
+                    variant="dropdown"
+                    onNavigate={(screen, params) => {
+                      setNotificationsOpen(false);
+                      onNavigate(screen, params);
+                    }}
+                    onClose={() => setNotificationsOpen(false)}
+                  />
+                </div>
+              )}
+            </div>
+
             {/* Profile Dropdown or Sign In Button */}
             {isLoggedIn ? (
               <div className="relative" ref={dropdownRef}>
@@ -219,6 +264,21 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
 
                     {/* Menu Actions */}
                     <div className="p-2 space-y-1">
+                      <button
+                        onClick={() => {
+                          setProfileDropdownOpen(false);
+                          if (userRole === 'supplier') {
+                            handleNavClick('supplier-profile', { supplierId: 'seller_aura_001' });
+                          } else {
+                            handleNavClick('buyer-profile');
+                          }
+                        }}
+                        className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#FAF1F5] text-xs font-bold text-[#1c1b1b] hover:text-[#b90064] flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <User className="w-4 h-4 text-[#b90064]" />
+                        <span>View My Profile</span>
+                      </button>
+
                       <button
                         onClick={() => {
                           setProfileDropdownOpen(false);
@@ -354,6 +414,23 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                   >
                     <Edit3 className="w-4 h-4" />
                     <span>Edit Profile & Business Settings</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onNavigate('buyer-dashboard', { tab: 'notifications' });
+                    }}
+                    className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#1C1B1B] hover:bg-[#FAF1F5] flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Bell className="w-4 h-4 text-[#B90064]" />
+                      <span>Notifications & Alerts</span>
+                    </div>
+                    {unreadCount > 0 && (
+                      <span className="px-2 py-0.5 rounded-full bg-[#B90064] text-white text-[10px] font-bold">
+                        {unreadCount} new
+                      </span>
+                    )}
                   </button>
                   <button
                     onClick={() => handleNavClick('buyer-dashboard')}

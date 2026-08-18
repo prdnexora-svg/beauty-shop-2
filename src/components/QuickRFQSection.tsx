@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BadgeCheck, FileText, MessageSquare } from 'lucide-react';
+import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../data/categories';
 
 interface QuickRFQSectionProps {
   onSubmitSuccess?: (message: string) => void;
@@ -10,6 +11,8 @@ export const QuickRFQSection: React.FC<QuickRFQSectionProps> = ({
   onSubmitSuccess,
   onPostDetailedClick,
 }) => {
+  const [category, setCategory] = useState('Skincare');
+  const [subcategory, setSubcategory] = useState('Serums & Treatments');
   const [product, setProduct] = useState('');
   const [quantity, setQuantity] = useState('');
   const [city, setCity] = useState('');
@@ -68,6 +71,46 @@ export const QuickRFQSection: React.FC<QuickRFQSectionProps> = ({
           </h3>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[13px] font-semibold text-[#574147] mb-1">
+                  Category <span className="text-[#ba1a1a]">*</span>
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => {
+                    const newCat = e.target.value;
+                    setCategory(newCat);
+                    const subs = getSubcategoriesForCategoryName(newCat);
+                    if (subs.length > 0) setSubcategory(subs[0]);
+                  }}
+                  className="w-full border border-[#e8e8e8] bg-[#f7f2f2] rounded-lg p-2.5 text-[13.5px] text-[#1c1b1b] focus:border-[#650034] outline-none cursor-pointer"
+                >
+                  {Object.keys(CATEGORY_TAXONOMY).map((catName) => (
+                    <option key={catName} value={catName}>
+                      {catName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-semibold text-[#574147] mb-1">
+                  Subcategory <span className="text-[#ba1a1a]">*</span>
+                </label>
+                <select
+                  value={subcategory}
+                  onChange={(e) => setSubcategory(e.target.value)}
+                  className="w-full border border-[#e8e8e8] bg-[#f7f2f2] rounded-lg p-2.5 text-[13.5px] text-[#1c1b1b] focus:border-[#650034] outline-none cursor-pointer"
+                >
+                  {getSubcategoriesForCategoryName(category).map((subItem) => (
+                    <option key={subItem} value={subItem}>
+                      {subItem}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
             <div>
               <label className="block text-[13px] font-semibold text-[#574147] mb-1">
                 Product / Requirement <span className="text-[#ba1a1a]">*</span>

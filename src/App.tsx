@@ -35,16 +35,17 @@ import { EditProfileModal, BuyerProfileData } from './components/EditProfileModa
 import { ProductDetailPage } from './components/ProductDetailPage';
 import { ChatModalDrawer } from './components/ChatModalDrawer';
 import { BuyerOnboardingScreen } from './components/BuyerOnboardingScreen';
+import { DatabaseStatusModal } from './components/DatabaseStatusModal';
 import {
   CATEGORIES,
   TRENDING_PRODUCTS,
   VERIFIED_SUPPLIERS
 } from './data/mockData';
 import { RFQItem, DealProduct, TrendingProduct, VerifiedSupplier, SearchProduct } from './types';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Database } from 'lucide-react';
 
 export function App() {
-  const [currentScreen, setCurrentScreen] = useState<'explore' | 'directory' | 'supplier-directory' | 'plp' | 'product-detail' | 'search-results' | 'brands' | 'oem-hub' | 'supplier-profile' | 'onboarding' | 'buyer-onboarding' | 'supplier-portal' | 'supplier-verification' | 'buyer-dashboard' | 'rfq-tracking' | 'sample-request' | 'post-rfq' | 'buyer-enquiry-log'>('explore');
+  const [currentScreen, setCurrentScreen] = useState<'explore' | 'directory' | 'supplier-directory' | 'plp' | 'product-detail' | 'search-results' | 'brands' | 'oem-hub' | 'supplier-profile' | 'onboarding' | 'buyer-onboarding' | 'supplier-portal' | 'supplier-verification' | 'buyer-dashboard' | 'buyer-profile' | 'rfq-tracking' | 'sample-request' | 'post-rfq' | 'buyer-enquiry-log'>('explore');
   const [selectedProductId, setSelectedProductId] = useState<string>('product_vitc_101');
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>('seller_aura_001');
   const [selectedLocation, setSelectedLocation] = useState('All');
@@ -95,6 +96,7 @@ export function App() {
   });
 
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [buyerDashboardTab, setBuyerDashboardTab] = useState<'overview' | 'about' | 'rfqs' | 'saved' | 'social' | 'activity' | 'notifications'>('overview');
   
   // Search parameters
   const [searchParams, setSearchParams] = useState({
@@ -117,6 +119,9 @@ export function App() {
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [chatInitialSupplier, setChatInitialSupplier] = useState<{ id: string; name: string; location: string; isVerified: boolean } | undefined>(undefined);
   const [chatInitialProduct, setChatInitialProduct] = useState<{ title: string; image: string; price?: string; moq?: string } | undefined>(undefined);
+
+  // Phase 4 Database Inspector Modal State
+  const [isDatabaseModalOpen, setIsDatabaseModalOpen] = useState(false);
 
   const handleOpenChat = (supplier?: { id: string; name: string; location: string; isVerified: boolean }, product?: { title: string; image: string; price?: string; moq?: string }) => {
     setChatInitialSupplier(supplier);
@@ -174,7 +179,39 @@ export function App() {
 
   // Handlers
   const handleNavigate = (screen: any, params?: any) => {
+    // 1. Define restricted list
+    const supplierScreens = ['supplier-portal', 'supplier-verification', 'onboarding'];
+    const buyerScreens = ['buyer-dashboard', 'buyer-profile', 'rfq-tracking', 'buyer-enquiry-log', 'post-rfq', 'sample-request', 'buyer-onboarding'];
+
+    // 2. Perform Role Guard check
+    if (isLoggedIn) {
+      if (userRole === 'buyer' && supplierScreens.includes(screen)) {
+        triggerToast('Access Restricted: Buyer accounts cannot access the Supplier Portal.');
+        setCurrentScreen('buyer-dashboard');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      if (userRole === 'supplier' && buyerScreens.includes(screen)) {
+        triggerToast('Access Restricted: Supplier accounts cannot access the Buyer Workspace.');
+        setCurrentScreen('supplier-portal');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+    } else {
+      // If guest tries to access protected dashboard features, open login
+      const protectedScreens = [...supplierScreens, ...buyerScreens];
+      if (protectedScreens.includes(screen)) {
+        setAuthMode('login');
+        setIsAuthModalOpen(true);
+        triggerToast('Please sign in to access dashboard workspace features.');
+        return;
+      }
+    }
+
     setCurrentScreen(screen);
+    if ((screen === 'buyer-dashboard' || screen === 'buyer-profile') && params?.tab) {
+      setBuyerDashboardTab(params.tab);
+    }
     if (params) {
       if (params.productId) {
         setSelectedProductId(params.productId);
@@ -595,7 +632,12 @@ export function App() {
         {/* Phase B: Supplier Admin Portal */}
         {currentScreen === 'supplier-portal' && (
           <main className="flex-1">
-            <SupplierAdminPortal />
+            <SupplierAdminPortal 
+              onNavigateToProduct={(productId) => {
+                setSelectedProductId(productId);
+                handleNavigate('product-detail', { productId });
+              }}
+            />
           </main>
         )}
 
@@ -621,6 +663,29 @@ export function App() {
               buyerProfile={buyerProfile}
               onSaveProfile={handleSaveProfile}
               onOpenEditProfile={() => setIsEditProfileOpen(true)}
+              initialTab={buyerDashboardTab}
+              isProfileRoute={false}
+              currentScreen={currentScreen}
+            />
+          </main>
+        )}
+
+        {/* Specific /buyer/profile Route View */}
+        {currentScreen === 'buyer-profile' && (
+          <main className="flex-1">
+            <BuyerDashboard 
+              isLoggedIn={isLoggedIn}
+              onNavigate={handleNavigate}
+              onPostRFQ={() => handleNavigate('post-rfq')}
+              onCallSupplier={handleCallSupplier}
+              onWhatsAppSupplier={handleWhatsAppSupplier}
+              onOpenAuth={() => handleOpenAuthModal('login')}
+              buyerProfile={buyerProfile}
+              onSaveProfile={handleSaveProfile}
+              onOpenEditProfile={() => setIsEditProfileOpen(true)}
+              initialTab="activity"
+              isProfileRoute={true}
+              currentScreen={currentScreen}
             />
           </main>
         )}
@@ -630,9 +695,20 @@ export function App() {
           <main className="flex-1">
             <BuyerRFQTrackingScreen
               onBack={() => handleNavigate('buyer-dashboard')}
-              onNavigateToChat={(supplierId) => {
-                triggerToast(`Opening chat with supplier: ${supplierId}`);
-                // Chat integration will be Screen 15
+              onNavigateToChat={(supplierIdOrName) => {
+                const supp = VERIFIED_SUPPLIERS.find(s => 
+                  s.name.toLowerCase().includes(supplierIdOrName.toLowerCase()) || 
+                  s.id === supplierIdOrName
+                );
+                handleOpenChat(
+                  {
+                    id: supp?.id || 'supp-rfq',
+                    name: supp?.name || supplierIdOrName,
+                    location: supp ? `${supp.city}${supp.state ? `, ${supp.state}` : ''}` : 'India',
+                    isVerified: supp ? supp.isVerified : true
+                  },
+                  { title: 'Vitamin C Brightening Serum (Bulk)', image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80', price: '₹195 / unit', moq: '2,000 Units' }
+                );
               }}
             />
           </main>
@@ -682,11 +758,12 @@ export function App() {
           setTargetEnquiryItem(null);
         }}
         targetItem={targetEnquiryItem}
+        buyerProfile={buyerProfile}
         onCallSupplier={handleCallSupplier}
         onWhatsAppSupplier={handleWhatsAppSupplier}
         onNavigateToDashboard={() => {
           setIsEnquiryModalOpen(false);
-          handleNavigate('buyer-dashboard');
+          handleNavigate('buyer-enquiry-log');
         }}
       />
 
@@ -711,6 +788,12 @@ export function App() {
         initialProduct={chatInitialProduct}
       />
 
+      <DatabaseStatusModal
+        isOpen={isDatabaseModalOpen}
+        onClose={() => setIsDatabaseModalOpen(false)}
+        onNavigateToScreen={(screen) => handleNavigate(screen)}
+      />
+
       {/* Shared Footer */}
       <Footer
         onNavigate={handleNavigate}
@@ -726,6 +809,22 @@ export function App() {
         userRole={userRole}
         onOpenAuth={handleOpenAuthModal}
       />
+
+      {/* Floating Action Button (FAB) for Phase 4 Relational Database Inspector */}
+      <button
+        id="fab-db-inspector"
+        aria-label="Toggle Phase 4 Database Schema & Live Engine Inspector"
+        title="Phase 4 Relational Database Inspector (8 Entities & Live Event Engine)"
+        onClick={() => setIsDatabaseModalOpen(prev => !prev)}
+        className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 bg-[#1C1B1B] hover:bg-[#B90064] text-white py-2.5 px-3.5 rounded-full shadow-xl flex items-center gap-2 text-xs font-bold transition-all transform hover:scale-105 cursor-pointer border border-white/20 group"
+      >
+        <div className="relative">
+          <Database className="w-4 h-4 text-[#FDE7F3] group-hover:text-white" />
+          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+        </div>
+        <span className="hidden sm:inline">DB Inspector</span>
+        <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-[10px] font-mono">8 Tables</span>
+      </button>
 
     </div>
   );

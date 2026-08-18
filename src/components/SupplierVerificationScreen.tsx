@@ -7,8 +7,10 @@ import {
   AlertCircle, 
   Clock, 
   ChevronRight,
-  Info
+  Info,
+  Download
 } from 'lucide-react';
+import { exportSupplierAuditVaultToCsv } from '../utils/exportCsv';
 
 interface SupplierVerificationScreenProps {
   onBack: () => void;
@@ -110,16 +112,43 @@ export const SupplierVerificationScreen: React.FC<SupplierVerificationScreenProp
               </p>
             </div>
             
-            {/* Top Level Status Card */}
-            <div className="bg-[#FDF8F8] border border-[#E0BEC6] rounded-xl p-4 flex items-start gap-3 min-w-[280px]">
-              <div className="w-10 h-10 rounded-full bg-[#B90064]/10 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-5 h-5 text-[#B90064]" />
+            {/* Top Level Status Card & Export Button */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="bg-[#FDF8F8] border border-[#E0BEC6] rounded-xl p-4 flex items-start gap-3 min-w-[240px]">
+                <div className="w-10 h-10 rounded-full bg-[#B90064]/10 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-5 h-5 text-[#B90064]" />
+                </div>
+                <div>
+                  <div className="text-[12px] text-[#594047] font-semibold uppercase tracking-wider mb-0.5">Overall Status</div>
+                  <div className="text-[16px] font-bold text-[#1C1B1B]">Verified Supplier</div>
+                  <div className="text-[12px] text-[#B90064] mt-1 font-medium">Rank Boost Active</div>
+                </div>
               </div>
-              <div>
-                <div className="text-[12px] text-[#594047] font-semibold uppercase tracking-wider mb-0.5">Overall Status</div>
-                <div className="text-[16px] font-bold text-[#1C1B1B]">Verified Supplier</div>
-                <div className="text-[12px] text-[#B90064] mt-1 font-medium">Rank Boost Active</div>
-              </div>
+
+              <button
+                onClick={() => {
+                  const sampleDocs = [
+                    { docName: 'GST Registration Certificate', docType: 'GSTIN License', regNumber: '27AABCA1234A1Z5', issuingAuthority: 'Govt of India (GST Portal)', status: 'Verified', uploadDate: '2026-01-10', expiryDate: 'Permanent' },
+                    { docName: 'ISO 22716 Cosmetics GMP', docType: 'ISO Certification', regNumber: 'ISO-22716-2025-IND', issuingAuthority: 'TÜV SÜD South Asia', status: 'Verified', uploadDate: '2025-11-20', expiryDate: '2028-11-19' },
+                    { docName: 'US-FDA Establishment Identifier (FEI)', docType: 'US-FDA Registration', regNumber: 'FEI-3018294021', issuingAuthority: 'U.S. Food and Drug Administration', status: 'Verified', uploadDate: '2026-02-01', expiryDate: '2027-12-31' },
+                    { docName: 'Factory License & Pollution Board NOC', docType: 'Industrial License', regNumber: 'FAC-MH-2024-88', issuingAuthority: 'Maharashtra Pollution Control Board', status: 'Verified', uploadDate: '2025-06-15', expiryDate: '2029-06-14' },
+                    ...Object.entries(uploadedDocs).map(([key, val]) => ({
+                      docName: key,
+                      docType: 'Uploaded Certificate',
+                      regNumber: 'REG-PENDING',
+                      issuingAuthority: 'Self-Uploaded Audit Vault',
+                      status: 'Under Review',
+                      uploadDate: (val as any)?.date || 'Just now',
+                      expiryDate: 'TBD'
+                    }))
+                  ];
+                  exportSupplierAuditVaultToCsv(sampleDocs);
+                }}
+                className="bg-white border border-[#E0BEC6] hover:border-[#B90064] text-[#1C1B1B] hover:text-[#B90064] text-[13px] font-bold px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+              >
+                <Download className="w-4 h-4 text-[#B90064]" />
+                <span>Export Audit Vault CSV</span>
+              </button>
             </div>
           </div>
           

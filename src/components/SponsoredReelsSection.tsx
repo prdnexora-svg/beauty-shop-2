@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Film, Play, Sparkles, Plus } from 'lucide-react';
+import { Film, Play, Sparkles, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SponsoredVideoItem, VideoPlatform } from '../types';
 import { getStoredSponsoredReels, INITIAL_SPONSORED_REELS, validateSponsoredVideo } from '../data/sponsoredReelsData';
 import { recordSponsoredAnalyticsEvent } from '../data/sponsoredAnalyticsStore';
@@ -20,7 +20,20 @@ export const SponsoredReelsSection: React.FC<SponsoredReelsSectionProps> = ({
 }) => {
   const [reels, setReels] = useState<SponsoredVideoItem[]>(() => getStoredSponsoredReels());
   const [activeModalReel, setActiveModalReel] = useState<SponsoredVideoItem | null>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
   const recordedImpressionsRef = useRef<Set<string>>(new Set());
+
+  const handleScrollLeft = () => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: -200, behavior: 'smooth' });
+    }
+  };
+
+  const handleScrollRight = () => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: 200, behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     const handleUpdate = () => {
@@ -119,19 +132,42 @@ export const SponsoredReelsSection: React.FC<SponsoredReelsSectionProps> = ({
           </div>
         </div>
 
-        {onOpenAdManager && (
-          <button
-            onClick={onOpenAdManager}
-            className="bg-[#b90064] hover:bg-[#a00056] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs"
-          >
-            <Plus className="w-3.5 h-3.5 text-white" />
-            <span>Manage / Create Ads</span>
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {/* Mobile Chevron Buttons */}
+          <div className="flex sm:hidden items-center gap-1">
+            <button
+              onClick={handleScrollLeft}
+              className="w-7 h-7 rounded-full bg-white border border-[#e8e8e8] flex items-center justify-center text-zinc-700 active:scale-95 shadow-2xs"
+              aria-label="Previous Reel"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleScrollRight}
+              className="w-7 h-7 rounded-full bg-white border border-[#e8e8e8] flex items-center justify-center text-zinc-700 active:scale-95 shadow-2xs"
+              aria-label="Next Reel"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {onOpenAdManager && (
+            <button
+              onClick={onOpenAdManager}
+              className="bg-[#b90064] hover:bg-[#a00056] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs"
+            >
+              <Plus className="w-3.5 h-3.5 text-white" />
+              <span>Create Ad</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 5 Reel Cards - Horizontal touch-swipe row on mobile, 5-col grid on desktop */}
-      <div className="flex sm:grid sm:grid-cols-3 md:grid-cols-5 gap-3.5 sm:gap-4 overflow-x-auto pb-3 sm:pb-0 hide-scrollbar snap-x snap-mandatory">
+      <div 
+        ref={carouselRef}
+        className="flex sm:grid sm:grid-cols-3 md:grid-cols-5 gap-3.5 sm:gap-4 overflow-x-auto pb-3 sm:pb-0 hide-scrollbar snap-x snap-mandatory scroll-smooth"
+      >
         {displayReels.map((reel) => {
           const badge = getPlatformBadge(reel.platform);
 

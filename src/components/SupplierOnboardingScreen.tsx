@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { B2B_CATEGORIES } from '../data/categories';
 import { 
   ShieldCheck, 
   ArrowRight, 
@@ -133,101 +134,11 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
     "Puducherry": ["Puducherry"]
   };
 
-  // Beauty Industry Category Data
-  const BEAUTY_CATEGORY_DATA: Record<string, string[]> = {
-    "Skincare & Facial Care": [
-      "Serums & Ampoules", 
-      "Cleansers & Face Washes", 
-      "Moisturizers & Day/Night Creams", 
-      "Sunscreen & Sun Care", 
-      "Sheet Masks & Clay Masks", 
-      "Eye Creams & Lip Care"
-    ],
-    "Hair Care & Styling": [
-      "Shampoos & Conditioners", 
-      "Hair Oils & Serums", 
-      "Hair Masks & Treatments", 
-      "Hair Color & Dyes", 
-      "Hair Styling Products (Gels, Waxes, Sprays)"
-    ],
-    "Body Care & Bath Products": [
-      "Body Lotions & Butter", 
-      "Body Washes & Shower Gels", 
-      "Soaps & Bath Bomb Formulations", 
-      "Body Scrubs & Exfoliators", 
-      "Hand & Foot Care"
-    ],
-    "Fragrances & Perfumes": [
-      "Eau de Parfum (EDP)",
-      "Eau de Toilette (EDT)",
-      "Body Mists & Sprays",
-      "Attars & Essential Oil Perfumes",
-      "Room & Ambient Fragrances"
-    ],
-    "Color Cosmetics & Makeup": [
-      "Face Makeup (Foundations, Concealers, Powders)", 
-      "Lip Products (Lipsticks, Glosses, Tints)", 
-      "Eye Makeup (Mascaras, Eyeliners, Eyeshadows)", 
-      "Nail Care & Polishes"
-    ],
-    "Personal Care & Hygiene": [
-      "Deodorants & Antiperspirants", 
-      "Intimate Hygiene", 
-      "Oral Care Products", 
-      "Shaving & Grooming Products"
-    ],
-    "Men's Grooming": [
-      "Beard Oils & Balms",
-      "Men's Facewash & Moisturizers",
-      "Aftershave Lotions",
-      "Hair Styling for Men"
-    ],
-    "Ayurvedic & Natural": [
-      "Herbal Face Packs & Ubtans",
-      "Ayurvedic Hair Oils",
-      "Natural Soap Bases",
-      "Kumkumadi & Traditional Oils",
-      "Herbal Extracts for Formulation"
-    ],
-    "Nail Care & Professional": [
-      "UV Gel Polishes",
-      "Nail Extensions & Builders",
-      "Professional Manicure Tools",
-      "Pedicure Kits",
-      "Nail Art Accessories"
-    ],
-    "Baby & Kids Care": [
-      "Gentle Shampoos & Washes",
-      "Baby Body Lotions & Oils",
-      "Diaper Rash Creams",
-      "Tear-free Formulations"
-    ],
-    "Beauty Tools & Accessories": [
-      "Makeup Brushes & Sponges",
-      "Hair Tools (Combs, Brushes)",
-      "Facial Rollers & Gua Sha",
-      "Micro-needling Devices"
-    ],
-    "Raw Materials & Actives": [
-      "Botanical & Plant Extracts", 
-      "Essential Oils & Fragrances", 
-      "Active Ingredients (Vitamin C, Hyaluronic Acid, Niacinamide, Retinol, Salicylic Acid)", 
-      "Carrier Oils & Butters", 
-      "Emulsifiers, Preservatives & Surfactants"
-    ],
-    "Packaging & Containers": [
-      "Glass Bottles & Droppers", 
-      "Plastic Jars & Containers", 
-      "Tubes & Squeeze Bottles", 
-      "Pumps, Sprayers & Caps", 
-      "Outer Boxes, Labels & Eco-friendly Packaging"
-    ],
-    "Salon, Spa & Professional Equipment": [
-      "Professional Treatment Kits", 
-      "Facial & Spa Machinery", 
-      "Bulk Salon Supplies"
-    ]
-  };
+  // Beauty Industry Category Data derived from standard taxonomy
+  const BEAUTY_CATEGORY_DATA: Record<string, string[]> = B2B_CATEGORIES.reduce((acc, cat) => {
+    acc[cat.name] = cat.subcategories;
+    return acc;
+  }, {} as Record<string, string[]>);
 
   // Mock Pincode Lookup for Major Sourcing Hubs
   const PINCODE_LOOKUP: Record<string, { state: string, district: string }> = {

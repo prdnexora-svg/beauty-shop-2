@@ -5,8 +5,10 @@ import {
   Eye, MousePointer, Play, Film, Send, ExternalLink, Activity, MessageSquare
 } from 'lucide-react';
 import { SponsoredAdManager } from './SponsoredAdManager';
+import { SupplierAnalyticsDashboard } from './SupplierAnalyticsDashboard';
 import { getStoredSponsoredAnalyticsEvents, SponsoredAnalyticsEvent } from '../data/sponsoredAnalyticsStore';
 import { getStoredChatThreads, supplierReplyMessage, ChatThread } from '../data/chatStore';
+import { CATEGORY_TAXONOMY, CATEGORIES_DATA, getSubcategoriesForCategoryName } from '../data/categories';
 
 // Mock initial listings
 const INITIAL_PRODUCTS = [
@@ -28,8 +30,16 @@ const MOCK_ENQUIRIES = [
   { id: 'ENQ-8105', buyer: 'GreenBeauty Startups', product: 'Peptide Skin Barrier Repair Cream', qty: '10,000 Units', message: 'Looking for 100% biodegradable squeeze tubes. Can we schedule a consulting call?', date: 'Yesterday', status: 'Responded' }
 ];
 
-export const SupplierAdminPortal: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'sponsored-ads' | 'analytics' | 'enquiries' | 'rfqs' | 'verification' | 'chat-hub'>('dashboard');
+interface SupplierAdminPortalProps {
+  onNavigateToProduct?: (productId: string) => void;
+  initialTab?: 'dashboard' | 'products' | 'sponsored-ads' | 'analytics' | 'enquiries' | 'rfqs' | 'verification' | 'chat-hub';
+}
+
+export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
+  onNavigateToProduct,
+  initialTab = 'dashboard'
+}) => {
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'sponsored-ads' | 'analytics' | 'enquiries' | 'rfqs' | 'verification' | 'chat-hub'>(initialTab);
   const [analyticsEvents, setAnalyticsEvents] = useState<SponsoredAnalyticsEvent[]>([]);
   const [chatThreads, setChatThreads] = useState<ChatThread[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
@@ -67,6 +77,7 @@ export const SupplierAdminPortal: React.FC = () => {
   const [newProdPrice, setNewProdPrice] = useState('');
   const [newProdMoq, setNewProdMoq] = useState('');
   const [newProdCat, setNewProdCat] = useState('Skincare');
+  const [newProdSubcat, setNewProdSubcat] = useState('Serums & Treatments');
   const [showMobileToBuyers, setShowMobileToBuyers] = useState(true);
 
   // Quote form state (Screen 23)
@@ -88,12 +99,17 @@ export const SupplierAdminPortal: React.FC = () => {
     e.preventDefault();
     if (!newProdName || !newProdPrice || !newProdMoq) return;
 
+    // Validate classification against CATEGORIES_DATA master taxonomy list
+    const validCatNode = CATEGORIES_DATA.find((c) => c.name === newProdCat);
+    const categoryName = validCatNode ? validCatNode.name : CATEGORIES_DATA[0].name;
+    const subcategoryName = newProdSubcat || (validCatNode ? validCatNode.subcategories[0] : '');
+
     const newProduct = {
       id: `sp-${Date.now()}`,
       name: newProdName,
       price: newProdPrice,
       moq: newProdMoq,
-      category: newProdCat,
+      category: `${categoryName} (${subcategoryName})`,
       status: 'Active'
     };
 
@@ -416,7 +432,42 @@ export const SupplierAdminPortal: React.FC = () => {
             {/* Create Product Form (Screen 20) */}
             <div className="bg-white border border-[#e8e8e8] rounded-xl p-5 space-y-5">
               <h3 className="font-black text-sm text-zinc-950">Add Formulation Private Label to Catalog</h3>
-              <form onSubmit={handleAddProduct} className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+              <form onSubmit={handleAddProduct} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 text-xs">
+                <div>
+                  <label className="block font-bold text-[#594047] uppercase tracking-wider mb-1.5">Category</label>
+                  <select
+                    value={newProdCat}
+                    onChange={(e) => {
+                      const selectedCat = e.target.value;
+                      setNewProdCat(selectedCat);
+                      const subcategories = getSubcategoriesForCategoryName(selectedCat);
+                      setNewProdSubcat(subcategories[0] || '');
+                    }}
+                    className="w-full bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg font-medium cursor-pointer"
+                  >
+                    {CATEGORIES_DATA.map((catNode) => (
+                      <option key={catNode.id} value={catNode.name}>
+                        {catNode.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#594047] uppercase tracking-wider mb-1.5">Subcategory</label>
+                  <select
+                    value={newProdSubcat}
+                    onChange={(e) => setNewProdSubcat(e.target.value)}
+                    className="w-full bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg font-medium cursor-pointer"
+                  >
+                    {getSubcategoriesForCategoryName(newProdCat).map((sName) => (
+                      <option key={sName} value={sName}>
+                        {sName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div>
                   <label className="block font-bold text-[#594047] uppercase tracking-wider mb-1.5">Formulation Title</label>
                   <input
@@ -437,18 +488,6 @@ export const SupplierAdminPortal: React.FC = () => {
                     placeholder="e.g. ₹120 - ₹150 / unit"
                     value={newProdPrice}
                     onChange={(e) => setNewProdPrice(e.target.value)}
-                    className="w-full bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[#594047] uppercase tracking-wider mb-1.5">Min Order Qty (MOQ)</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. 2,000 Bottles"
-                    value={newProdMoq}
-                    onChange={(e) => setNewProdMoq(e.target.value)}
                     className="w-full bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg"
                   />
                 </div>
@@ -518,215 +557,18 @@ export const SupplierAdminPortal: React.FC = () => {
 
         {/* ================== SCREEN 25 — SUPPLIER ANALYTICS & PERFORMANCE ================== */}
         {activeTab === 'analytics' && (
-          <div className="space-y-6">
-            {/* Header & Controls */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white border border-[#e8e8e8] p-5 rounded-2xl shadow-xs">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-black text-lg text-zinc-950">Ad Analytics & Performance</h3>
-                  <span className="bg-[#fde7f3] text-[#b90064] text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border border-[#f7c5e0]">
-                    Screen 25 Live
-                  </span>
-                </div>
-                <p className="text-xs text-[#594047] mt-0.5">
-                  Real-time impression, video completion funnel, and enquiry conversion analytics across sponsored placements
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setAnalyticsEvents(getStoredSponsoredAnalyticsEvents())}
-                  className="bg-white border border-[#e8e8e8] hover:border-[#b90064] text-[#1c1b1b] text-xs font-bold px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-                >
-                  <RefreshCw className="w-3.5 h-3.5 text-[#b90064]" />
-                  <span>Refresh Data</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('sponsored-ads')}
-                  className="bg-[#b90064] hover:bg-[#a00056] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-                >
-                  <Plus className="w-3.5 h-3.5 text-white" />
-                  <span>New Ad Campaign</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Key Performance Indicators */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white border border-[#e8e8e8] p-4.5 rounded-2xl space-y-1">
-                <div className="flex items-center justify-between text-[#8c7077]">
-                  <span className="text-[10px] uppercase font-extrabold tracking-wider">Ad Impressions</span>
-                  <Eye className="w-4 h-4 text-[#b90064]" />
-                </div>
-                <span className="text-2xl font-black text-zinc-950 block">
-                  {analyticsEvents.filter(e => e.eventType === 'ad_impression').length}
-                </span>
-                <span className="text-[10px] text-emerald-600 font-bold block">Verified 50%+ Viewport</span>
-              </div>
-
-              <div className="bg-white border border-[#e8e8e8] p-4.5 rounded-2xl space-y-1">
-                <div className="flex items-center justify-between text-[#8c7077]">
-                  <span className="text-[10px] uppercase font-extrabold tracking-wider">Video Plays</span>
-                  <Play className="w-4 h-4 text-purple-600" />
-                </div>
-                <span className="text-2xl font-black text-purple-950 block">
-                  {analyticsEvents.filter(e => e.eventType === 'video_play').length}
-                </span>
-                <span className="text-[10px] text-purple-600 font-bold block">
-                  {analyticsEvents.filter(e => e.eventType === 'video_open').length} Lightbox Opens
-                </span>
-              </div>
-
-              <div className="bg-white border border-[#e8e8e8] p-4.5 rounded-2xl space-y-1">
-                <div className="flex items-center justify-between text-[#8c7077]">
-                  <span className="text-[10px] uppercase font-extrabold tracking-wider">Product & Profile Clicks</span>
-                  <MousePointer className="w-4 h-4 text-blue-600" />
-                </div>
-                <span className="text-2xl font-black text-blue-950 block">
-                  {analyticsEvents.filter(e => e.eventType === 'product_click' || e.eventType === 'supplier_click').length}
-                </span>
-                <span className="text-[10px] text-blue-600 font-bold block">
-                  {analyticsEvents.filter(e => e.eventType === 'product_click').length} Prod • {analyticsEvents.filter(e => e.eventType === 'supplier_click').length} Supp
-                </span>
-              </div>
-
-              <div className="bg-white border border-[#e8e8e8] p-4.5 rounded-2xl space-y-1">
-                <div className="flex items-center justify-between text-[#8c7077]">
-                  <span className="text-[10px] uppercase font-extrabold tracking-wider">Direct Enquiries</span>
-                  <Send className="w-4 h-4 text-emerald-600" />
-                </div>
-                <span className="text-2xl font-black text-emerald-700 block">
-                  {analyticsEvents.filter(e => e.eventType === 'enquire_click').length}
-                </span>
-                <span className="text-[10px] text-emerald-600 font-bold block">Conversions</span>
-              </div>
-            </div>
-
-            {/* Video Completion & Engagement Retention Funnel */}
-            <div className="bg-white border border-[#e8e8e8] p-5 rounded-2xl space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="font-extrabold text-sm text-zinc-950 flex items-center gap-2">
-                  <Film className="w-4 h-4 text-[#b90064]" />
-                  <span>Video Retention & Milestone Funnel</span>
-                </h4>
-                <span className="text-xs text-[#594047] font-semibold">
-                  Total Video Opens: {analyticsEvents.filter(e => e.eventType === 'video_open').length}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-2">
-                <div className="bg-[#fcf9f8] border border-[#e8e8e8] p-3.5 rounded-xl text-center space-y-1">
-                  <span className="text-[10px] font-bold text-[#8c7077] uppercase block">Played (0%)</span>
-                  <span className="text-lg font-black text-zinc-900 block">
-                    {analyticsEvents.filter(e => e.eventType === 'video_play').length}
-                  </span>
-                  <div className="w-full bg-stone-200 h-1.5 rounded-full overflow-hidden mt-2">
-                    <div className="bg-[#b90064] h-full w-full" />
-                  </div>
-                </div>
-
-                <div className="bg-[#fcf9f8] border border-[#e8e8e8] p-3.5 rounded-xl text-center space-y-1">
-                  <span className="text-[10px] font-bold text-[#8c7077] uppercase block">25% Watched</span>
-                  <span className="text-lg font-black text-purple-900 block">
-                    {analyticsEvents.filter(e => e.eventType === 'video_25_percent').length}
-                  </span>
-                  <div className="w-full bg-stone-200 h-1.5 rounded-full overflow-hidden mt-2">
-                    <div className="bg-purple-600 h-full w-[80%]" />
-                  </div>
-                </div>
-
-                <div className="bg-[#fcf9f8] border border-[#e8e8e8] p-3.5 rounded-xl text-center space-y-1">
-                  <span className="text-[10px] font-bold text-[#8c7077] uppercase block">50% Watched</span>
-                  <span className="text-lg font-black text-blue-900 block">
-                    {analyticsEvents.filter(e => e.eventType === 'video_50_percent').length}
-                  </span>
-                  <div className="w-full bg-stone-200 h-1.5 rounded-full overflow-hidden mt-2">
-                    <div className="bg-blue-600 h-full w-[65%]" />
-                  </div>
-                </div>
-
-                <div className="bg-[#fcf9f8] border border-[#e8e8e8] p-3.5 rounded-xl text-center space-y-1">
-                  <span className="text-[10px] font-bold text-[#8c7077] uppercase block">75% Watched</span>
-                  <span className="text-lg font-black text-amber-900 block">
-                    {analyticsEvents.filter(e => e.eventType === 'video_75_percent').length}
-                  </span>
-                  <div className="w-full bg-stone-200 h-1.5 rounded-full overflow-hidden mt-2">
-                    <div className="bg-amber-500 h-full w-[50%]" />
-                  </div>
-                </div>
-
-                <div className="bg-emerald-50 border border-emerald-200 p-3.5 rounded-xl text-center space-y-1">
-                  <span className="text-[10px] font-bold text-emerald-800 uppercase block">100% Completed</span>
-                  <span className="text-lg font-black text-emerald-900 block">
-                    {analyticsEvents.filter(e => e.eventType === 'video_complete').length}
-                  </span>
-                  <div className="w-full bg-emerald-200 h-1.5 rounded-full overflow-hidden mt-2">
-                    <div className="bg-emerald-600 h-full w-[40%]" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Live Event Stream Log */}
-            <div className="bg-white border border-[#e8e8e8] rounded-2xl p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="font-extrabold text-sm text-zinc-950 flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-[#b90064]" />
-                  <span>Live Event Log Stream ({analyticsEvents.length} Recorded Events)</span>
-                </h4>
-                <span className="text-xs text-[#594047]">Real-time Event Stream</span>
-              </div>
-
-              {analyticsEvents.length === 0 ? (
-                <div className="p-8 text-center bg-[#fcf9f8] border border-dashed border-[#e8e8e8] rounded-xl space-y-2">
-                  <Activity className="w-8 h-8 text-stone-400 mx-auto" />
-                  <p className="text-xs font-bold text-zinc-800">No Analytics Events Recorded Yet</p>
-                  <p className="text-[11px] text-[#594047]">
-                    Interact with sponsored banners, reels, or video ads on the homepage to generate live events.
-                  </p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="border-b border-[#e8e8e8] bg-[#fcf9f8] text-[#8c7077] font-extrabold uppercase text-[10px] tracking-wider">
-                        <th className="p-3">Time</th>
-                        <th className="p-3">Event Type</th>
-                        <th className="p-3">Ad ID</th>
-                        <th className="p-3">Media Type</th>
-                        <th className="p-3">Platform</th>
-                        <th className="p-3">Supplier Name</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#e8e8e8]">
-                      {analyticsEvents.slice(0, 15).map((evt) => (
-                        <tr key={evt.id} className="hover:bg-stone-50 transition-colors">
-                          <td className="p-3 font-mono text-[11px] text-stone-500">
-                            {new Date(evt.timestamp).toLocaleTimeString()}
-                          </td>
-                          <td className="p-3 font-bold">
-                            <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-extrabold ${
-                              evt.eventType === 'ad_impression' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-                              evt.eventType === 'video_play' ? 'bg-purple-50 text-purple-700 border border-purple-200' :
-                              evt.eventType === 'enquire_click' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                              evt.eventType === 'product_click' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                              'bg-stone-100 text-stone-700'
-                            }`}>
-                              {evt.eventType.replace(/_/g, ' ')}
-                            </span>
-                          </td>
-                          <td className="p-3 font-mono text-[11px] text-zinc-900 font-bold">{evt.ad_id}</td>
-                          <td className="p-3 capitalize text-stone-600">{evt.media_type.replace(/_/g, ' ')}</td>
-                          <td className="p-3 text-stone-600">{evt.platform || 'Nexora'}</td>
-                          <td className="p-3 font-semibold text-zinc-900">{evt.supplierName || 'Aura Beauty Labs'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
+          <SupplierAnalyticsDashboard
+            supplierId="seller_aura_001"
+            supplierName="Aura Beauty Labs"
+            onBoostProduct={(productId) => {
+              setActiveTab('sponsored-ads');
+            }}
+            onViewProduct={(productId) => {
+              if (onNavigateToProduct) {
+                onNavigateToProduct(productId);
+              }
+            }}
+          />
         )}
         {activeTab === 'enquiries' && (
           <div className="space-y-4">

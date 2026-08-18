@@ -82,7 +82,7 @@ export const TrendingCategories: React.FC<TrendingCategoriesProps> = ({
           onClick={onViewAll}
           className="text-[13px] font-bold text-[#B90064] hover:text-[#500037] flex items-center gap-1.5 transition-colors cursor-pointer group shrink-0 px-3.5 py-1.5 rounded-lg hover:bg-[#FAF1F5]"
         >
-          <span>View All 12 Categories</span>
+          <span>View All 7 Core Verticals</span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </button>
       </div>
