@@ -43,7 +43,12 @@ import {
   Video,
   Trash2,
   Send,
-  Play
+  Play,
+  Activity,
+  Sparkles,
+  Layers,
+  Flame,
+  ArrowUpRight
 } from 'lucide-react';
 import { BuyerEnquiry, BuyerRFQ, VerifiedSupplier } from '../types';
 import { BUYER_MOCK_ENQUIRIES, BUYER_MOCK_RFQS, VERIFIED_SUPPLIERS } from '../data/mockData';
@@ -267,6 +272,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   // Timeline feed posts state with localStorage persistence
   const [newPostText, setNewPostText] = useState('');
   const [mediaInputType, setMediaInputType] = useState<'none' | 'image' | 'video'>('none');
+  const [profileActivityFilter, setProfileActivityFilter] = useState<'all' | 'rfqs' | 'quotes' | 'interactions'>('all');
   const [mediaUrlInput, setMediaUrlInput] = useState('');
   const [postTag, setPostTag] = useState('Buyer Update');
   const [isUploadingPostPhoto, setIsUploadingPostPhoto] = useState(false);
@@ -1730,6 +1736,293 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                     >
                       Edit Intro Details
                     </button>
+                  </div>
+
+                  {/* RECENT ACTIVITY & SOURCING INTERACTIONS WIDGET */}
+                  <div className="bg-white border border-[#e8e8e8] rounded-2xl p-5 shadow-xs space-y-4 text-left">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-[#fde7f3] text-[#b90064] flex items-center justify-center shrink-0">
+                          <Activity className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h3 className="text-xs font-black text-[#1c1b1b] tracking-tight uppercase">Recent Activity</h3>
+                          <div className="text-[10px] text-[#8c7077] font-semibold">RFQs, Quotes & Social Feed</div>
+                        </div>
+                      </div>
+                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200 text-[9px] font-black uppercase">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                        Live
+                      </span>
+                    </div>
+
+                    {/* Filter Pills */}
+                    <div className="flex items-center gap-1 p-1 bg-[#fcf9f8] rounded-xl border border-[#e8e8e8]">
+                      {[
+                        { id: 'all', label: 'All Activity' },
+                        { id: 'rfqs', label: 'RFQs (2)' },
+                        { id: 'quotes', label: 'Quotes (2)' },
+                        { id: 'interactions', label: 'Social (2)' },
+                      ].map(f => (
+                        <button
+                          key={f.id}
+                          type="button"
+                          onClick={() => setProfileActivityFilter(f.id as any)}
+                          className={`flex-1 py-1 text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center ${
+                            profileActivityFilter === f.id
+                              ? 'bg-[#b90064] text-white shadow-xs'
+                              : 'text-[#594047] hover:text-[#1c1b1b] hover:bg-[#f0edec]'
+                          }`}
+                        >
+                          {f.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Dynamic Aggregated Activity Feed List */}
+                    <div className="space-y-3 pt-1">
+                      {/* 1. RFQ Item: Vitamin C Serum */}
+                      {(profileActivityFilter === 'all' || profileActivityFilter === 'rfqs') && (
+                        <div className="p-3 bg-[#fcf9f8] hover:bg-[#f8f5f4] rounded-xl border border-[#e8e8e8] transition-all space-y-2 group">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start gap-2.5">
+                              <div className="w-7 h-7 rounded-lg bg-[#fde7f3] text-[#b90064] flex items-center justify-center shrink-0 mt-0.5">
+                                <ClipboardList className="w-3.5 h-3.5" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-[#1c1b1b] group-hover:text-[#b90064] transition-colors leading-tight">
+                                  Posted RFQ: 5,000 units Vitamin C Serum
+                                </div>
+                                <div className="text-[10px] text-[#8c7077] mt-0.5 flex items-center gap-1.5">
+                                  <Clock className="w-2.5 h-2.5" />
+                                  <span>2 hours ago</span>
+                                  <span>•</span>
+                                  <span className="font-semibold text-[#0050d6]">3 Quotes Live</span>
+                                </div>
+                              </div>
+                            </div>
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-purple-50 text-purple-700 border border-purple-200 shrink-0 uppercase">
+                              Active RFQ
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between pt-1.5 border-t border-[#f0edec] text-[10px]">
+                            <span className="text-[#594047] font-medium">Target: ₹150 - ₹200/unit</span>
+                            <button
+                              onClick={() => onNavigate('rfq-tracking')}
+                              className="font-bold text-[#b90064] hover:underline flex items-center gap-0.5 cursor-pointer"
+                            >
+                              <span>Compare Quotes</span>
+                              <ChevronRight className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 2. Quote Received Item: Aura Beauty Labs */}
+                      {(profileActivityFilter === 'all' || profileActivityFilter === 'quotes') && (
+                        <div className="p-3 bg-[#fcf9f8] hover:bg-[#f8f5f4] rounded-xl border border-[#e8e8e8] transition-all space-y-2 group">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start gap-2.5">
+                              <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#0050d6] flex items-center justify-center shrink-0 mt-0.5">
+                                <BarChart3 className="w-3.5 h-3.5" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-[#1c1b1b] group-hover:text-[#0050d6] transition-colors leading-tight">
+                                  Quote Received from Aura Beauty Labs
+                                </div>
+                                <div className="text-[10px] text-[#8c7077] mt-0.5 flex items-center gap-1.5">
+                                  <Clock className="w-2.5 h-2.5" />
+                                  <span>45 mins ago</span>
+                                  <span>•</span>
+                                  <span className="font-semibold text-green-700">₹185 / Unit</span>
+                                </div>
+                              </div>
+                            </div>
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-blue-50 text-[#0050d6] border border-blue-200 shrink-0 uppercase">
+                              New Quote
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between pt-1.5 border-t border-[#f0edec] text-[10px]">
+                            <span className="text-[#594047] font-medium">Lead time: 18 working days</span>
+                            <button
+                              onClick={() => onNavigate('rfq-tracking')}
+                              className="font-bold text-[#0050d6] hover:underline flex items-center gap-0.5 cursor-pointer"
+                            >
+                              <span>View Proposal</span>
+                              <ChevronRight className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 3. Social Interaction: Feed Comment */}
+                      {(profileActivityFilter === 'all' || profileActivityFilter === 'interactions') && (
+                        <div className="p-3 bg-[#fcf9f8] hover:bg-[#f8f5f4] rounded-xl border border-[#e8e8e8] transition-all space-y-2 group">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start gap-2.5">
+                              <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <MessageCircle className="w-3.5 h-3.5" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-[#1c1b1b] group-hover:text-amber-700 transition-colors leading-tight">
+                                  Ananya Sen (Aura Labs) commented
+                                </div>
+                                <div className="text-[10px] text-[#8c7077] mt-0.5 flex items-center gap-1.5">
+                                  <Clock className="w-2.5 h-2.5" />
+                                  <span>1 hour ago</span>
+                                  <span>•</span>
+                                  <span>On your sourcing post</span>
+                                </div>
+                              </div>
+                            </div>
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-50 text-amber-700 border border-amber-200 shrink-0 uppercase">
+                              Comment
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-[#594047] italic bg-white p-2 rounded-lg border border-[#f0edec] line-clamp-2">
+                            "We can manufacture this for you! We specialize in custom active-ingredient serums..."
+                          </p>
+                          <div className="flex items-center justify-end pt-1 text-[10px]">
+                            <button
+                              onClick={() => {
+                                setOpenCommentPostIds(prev => ({ ...prev, 'post-1': true }));
+                                setProfileToast('Opened post comments thread!');
+                                setTimeout(() => setProfileToast(null), 2500);
+                              }}
+                              className="font-bold text-[#b90064] hover:underline flex items-center gap-0.5 cursor-pointer"
+                            >
+                              <span>Reply in Feed</span>
+                              <ChevronRight className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 4. RFQ Item: Dropper Bottles */}
+                      {(profileActivityFilter === 'all' || profileActivityFilter === 'rfqs') && (
+                        <div className="p-3 bg-[#fcf9f8] hover:bg-[#f8f5f4] rounded-xl border border-[#e8e8e8] transition-all space-y-2 group">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start gap-2.5">
+                              <div className="w-7 h-7 rounded-lg bg-green-50 text-green-700 flex items-center justify-center shrink-0 mt-0.5">
+                                <Package className="w-3.5 h-3.5" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-[#1c1b1b] group-hover:text-green-700 transition-colors leading-tight">
+                                  Posted Requirement: Dropper Bottles 30ml
+                                </div>
+                                <div className="text-[10px] text-[#8c7077] mt-0.5 flex items-center gap-1.5">
+                                  <Clock className="w-2.5 h-2.5" />
+                                  <span>Yesterday</span>
+                                  <span>•</span>
+                                  <span className="font-semibold text-green-700">10,000 Units</span>
+                                </div>
+                              </div>
+                            </div>
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-green-50 text-green-700 border border-green-200 shrink-0 uppercase">
+                              Packaging
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between pt-1.5 border-t border-[#f0edec] text-[10px]">
+                            <span className="text-[#594047] font-medium">Amber glass + gold pipette</span>
+                            <button
+                              onClick={() => setActiveTab('rfqs')}
+                              className="font-bold text-[#b90064] hover:underline flex items-center gap-0.5 cursor-pointer"
+                            >
+                              <span>Manage RFQ</span>
+                              <ChevronRight className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 5. Quote Updated Item: LuxeForm Cosmetics */}
+                      {(profileActivityFilter === 'all' || profileActivityFilter === 'quotes') && (
+                        <div className="p-3 bg-[#fcf9f8] hover:bg-[#f8f5f4] rounded-xl border border-[#e8e8e8] transition-all space-y-2 group">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start gap-2.5">
+                              <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center shrink-0 mt-0.5">
+                                <Sparkles className="w-3.5 h-3.5" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-[#1c1b1b] group-hover:text-purple-700 transition-colors leading-tight">
+                                  LuxeForm updated Keratin Kits Quote
+                                </div>
+                                <div className="text-[10px] text-[#8c7077] mt-0.5 flex items-center gap-1.5">
+                                  <Clock className="w-2.5 h-2.5" />
+                                  <span>1 day ago</span>
+                                  <span>•</span>
+                                  <span className="font-semibold text-purple-700">₹450 / Kit</span>
+                                </div>
+                              </div>
+                            </div>
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-purple-50 text-purple-700 border border-purple-200 shrink-0 uppercase">
+                              Updated
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between pt-1.5 border-t border-[#f0edec] text-[10px]">
+                            <span className="text-[#594047] font-medium">MOQ: 500 kits (Custom Branding)</span>
+                            <button
+                              onClick={() => onNavigate('rfq-tracking')}
+                              className="font-bold text-purple-700 hover:underline flex items-center gap-0.5 cursor-pointer"
+                            >
+                              <span>View Terms</span>
+                              <ChevronRight className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 6. Social Follower Item: Dermaglow */}
+                      {(profileActivityFilter === 'all' || profileActivityFilter === 'interactions') && (
+                        <div className="p-3 bg-[#fcf9f8] hover:bg-[#f8f5f4] rounded-xl border border-[#e8e8e8] transition-all space-y-2 group">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start gap-2.5">
+                              <div className="w-7 h-7 rounded-lg bg-[#fde7f3] text-[#b90064] flex items-center justify-center shrink-0 mt-0.5">
+                                <UserCheck className="w-3.5 h-3.5" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-[#1c1b1b] group-hover:text-[#b90064] transition-colors leading-tight">
+                                  Dermaglow India followed your Profile
+                                </div>
+                                <div className="text-[10px] text-[#8c7077] mt-0.5 flex items-center gap-1.5">
+                                  <Clock className="w-2.5 h-2.5" />
+                                  <span>2 days ago</span>
+                                  <span>•</span>
+                                  <span>Ahmedabad, Gujarat</span>
+                                </div>
+                              </div>
+                            </div>
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-pink-50 text-[#b90064] border border-pink-200 shrink-0 uppercase">
+                              Network
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between pt-1.5 border-t border-[#f0edec] text-[10px]">
+                            <span className="text-[#594047] font-medium">Cosmeceutical Manufacturer</span>
+                            <button
+                              onClick={() => onNavigate('supplier-directory')}
+                              className="font-bold text-[#b90064] hover:underline flex items-center gap-0.5 cursor-pointer"
+                            >
+                              <span>View Supplier</span>
+                              <ChevronRight className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Summary Quick Stats Footnote */}
+                    <div className="pt-3 border-t border-[#f0edec] flex items-center justify-between">
+                      <div className="text-[10px] font-bold text-[#8c7077]">
+                        <span className="text-[#b90064] font-black">08</span> Active RFQs • <span className="text-[#0050d6] font-black">03</span> Quotes
+                      </div>
+                      <button
+                        onClick={() => onNavigate('rfq-tracking')}
+                        className="text-[10px] font-black text-[#b90064] hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <span>Full RFQ Tracker</span>
+                        <ArrowUpRight className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

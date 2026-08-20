@@ -45,7 +45,7 @@ import { RFQItem, DealProduct, TrendingProduct, VerifiedSupplier, SearchProduct 
 import { CheckCircle2, Database } from 'lucide-react';
 
 export function App() {
-  const [currentScreen, setCurrentScreen] = useState<'explore' | 'directory' | 'supplier-directory' | 'plp' | 'product-detail' | 'search-results' | 'brands' | 'oem-hub' | 'supplier-profile' | 'onboarding' | 'buyer-onboarding' | 'supplier-portal' | 'supplier-verification' | 'buyer-dashboard' | 'buyer-profile' | 'rfq-tracking' | 'sample-request' | 'post-rfq' | 'buyer-enquiry-log'>('explore');
+  const [currentScreen, setCurrentScreen] = useState<'explore' | 'directory' | 'supplier-directory' | 'plp' | 'product-detail' | 'search-results' | 'brands' | 'oem-hub' | 'supplier-profile' | 'onboarding' | 'buyer-onboarding' | 'supplier-portal' | 'supplier-verification' | 'buyer-dashboard' | 'buyer-profile' | 'rfq-tracking' | 'sample-request' | 'post-rfq' | 'buyer-enquiry-log'>('buyer-profile');
   const [selectedProductId, setSelectedProductId] = useState<string>('product_vitc_101');
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>('seller_aura_001');
   const [selectedLocation, setSelectedLocation] = useState('All');
