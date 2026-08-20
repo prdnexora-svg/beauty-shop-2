@@ -23,12 +23,17 @@ import {
   KeyRound,
   ExternalLink,
   ChevronRight,
-  Info
+  Info,
+  Cloud,
+  Zap,
+  AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from '../db/database';
 import { DatabaseState } from '../db/database';
 import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../data/categories';
+import { testSupabaseConnection, isSupabaseConfigured, getSupabaseConfigInfo, syncAllDataToSupabase } from '../lib/supabase';
+
 
 interface DatabaseStatusModalProps {
   isOpen: boolean;
@@ -202,9 +207,16 @@ export const DatabaseStatusModal: React.FC<DatabaseStatusModalProps> = ({
 }) => {
   const [dbState, setDbState] = useState<DatabaseState>(db.getRawState());
   const [activeTable, setActiveTable] = useState<keyof DatabaseState>('rfqs_enquiries');
-  const [activeTab, setActiveTab] = useState<'records' | 'schema' | 'simulator'>('records');
+  const [activeTab, setActiveTab] = useState<'records' | 'schema' | 'simulator' | 'supabase'>('supabase');
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Supabase State
+  const [supabaseTestStatus, setSupabaseTestStatus] = useState<{ connected: boolean; message: string; latencyMs?: number } | null>(null);
+  const [isTestingSupabase, setIsTestingSupabase] = useState(false);
+  const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
+  const [supabaseSyncMessage, setSupabaseSyncMessage] = useState<string | null>(null);
+  const [copiedSql, setCopiedSql] = useState(false);
 
   // Simulator State
   const [testLeadCategory, setTestLeadCategory] = useState('Skincare');
@@ -213,6 +225,197 @@ export const DatabaseStatusModal: React.FC<DatabaseStatusModalProps> = ({
   const [testLeadQty, setTestLeadQty] = useState('3000');
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationResult, setSimulationResult] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Initial Supabase test check
+    testSupabaseConnection().then(res => setSupabaseTestStatus(res));
+  }, []);
+
+  const handleTestSupabase = async () => {
+    setIsTestingSupabase(true);
+    setSupabaseSyncMessage(null);
+    try {
+      const res = await testSupabaseConnection();
+      setSupabaseTestStatus(res);
+    } finally {
+      setIsTestingSupabase(false);
+    }
+  };
+
+  const handleSyncToSupabase = async () => {
+    setIsSyncingSupabase(true);
+    setSupabaseSyncMessage(null);
+    try {
+      const res = await syncAllDataToSupabase(dbState);
+      if (res.success) {
+        setSupabaseSyncMessage(`Successfully synced ${res.syncedCount} records across all tables into Supabase!`);
+      } else {
+        setSupabaseSyncMessage(`Sync notice: ${res.errors.join(', ')}`);
+      }
+    } catch (err: any) {
+      setSupabaseSyncMessage(`Sync failed: ${err.message || 'Unknown error'}`);
+    } finally {
+      setIsSyncingSupabase(false);
+    }
+  };
+
+  const handleCopySupabaseSql = () => {
+    const sqlContent = `-- NEXORA LUXE - SUPABASE POSTGRESQL SCHEMA MIGRATION
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- 1. USERS
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  email VARCHAR(255) UNIQUE NOT NULL,
+  phone VARCHAR(50) UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  role VARCHAR(20) NOT NULL CHECK (role IN ('buyer', 'supplier', 'admin')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 2. PROFILES_BUYER
+CREATE TABLE IF NOT EXISTS profiles_buyer (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  contact_name VARCHAR(255) NOT NULL,
+  company_name VARCHAR(255) NOT NULL,
+  business_type VARCHAR(100) NOT NULL,
+  city VARCHAR(100) NOT NULL,
+  state VARCHAR(100) NOT NULL,
+  pincode VARCHAR(20),
+  address TEXT,
+  gst_number VARCHAR(50),
+  target_categories TEXT[],
+  annual_budget VARCHAR(100),
+  requirements_posted_count INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. PROFILES_SUPPLIER
+CREATE TABLE IF NOT EXISTS profiles_supplier (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  company_name VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) UNIQUE NOT NULL,
+  logo_url TEXT,
+  cover_image_url TEXT,
+  business_type VARCHAR(100) NOT NULL,
+  verification_level VARCHAR(50) DEFAULT 'Basic',
+  gst_number VARCHAR(50),
+  year_established VARCHAR(10),
+  employee_count VARCHAR(50),
+  service_areas TEXT[],
+  categories TEXT[],
+  response_rate NUMERIC(5,2) DEFAULT 95.0,
+  avg_response_time NUMERIC(5,2) DEFAULT 2.0,
+  profile_completion_pct INT DEFAULT 85,
+  trust_score INT DEFAULT 80,
+  phone VARCHAR(50),
+  whatsapp VARCHAR(50),
+  city VARCHAR(100),
+  state VARCHAR(100),
+  address TEXT,
+  is_verified BOOLEAN DEFAULT FALSE,
+  is_gst_verified BOOLEAN DEFAULT FALSE,
+  is_iso_certified BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4. PRODUCTS
+CREATE TABLE IF NOT EXISTS products (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  supplier_id UUID NOT NULL REFERENCES profiles_supplier(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) NOT NULL,
+  category_id VARCHAR(100) NOT NULL,
+  brand_name VARCHAR(255),
+  description TEXT,
+  images TEXT[],
+  specifications JSONB DEFAULT '{}'::jsonb,
+  moq INT NOT NULL DEFAULT 1,
+  moq_unit VARCHAR(50) DEFAULT 'Units',
+  unit_price NUMERIC(12,2) NOT NULL,
+  bulk_price_slabs JSONB DEFAULT '[]'::jsonb,
+  lead_time_days INT DEFAULT 7,
+  status VARCHAR(20) DEFAULT 'active',
+  is_featured BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 5. RFQS_ENQUIRIES
+CREATE TABLE IF NOT EXISTS rfqs_enquiries (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  buyer_id UUID NOT NULL REFERENCES profiles_buyer(id) ON DELETE CASCADE,
+  supplier_id UUID REFERENCES profiles_supplier(id) ON DELETE SET NULL,
+  product_id UUID REFERENCES products(id) ON DELETE SET NULL,
+  requirement_title VARCHAR(255) NOT NULL,
+  category VARCHAR(100) NOT NULL,
+  quantity_required INT NOT NULL,
+  quantity_unit VARCHAR(50) DEFAULT 'Units',
+  target_budget NUMERIC(14,2),
+  delivery_location VARCHAR(255),
+  details TEXT,
+  attachments TEXT[],
+  status VARCHAR(20) DEFAULT 'new',
+  type VARCHAR(30) DEFAULT 'direct_enquiry',
+  send_to_similar_suppliers BOOLEAN DEFAULT FALSE,
+  matched_supplier_ids TEXT[],
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 6. QUOTES
+CREATE TABLE IF NOT EXISTS quotes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  rfq_id UUID NOT NULL REFERENCES rfqs_enquiries(id) ON DELETE CASCADE,
+  supplier_id UUID NOT NULL REFERENCES profiles_supplier(id) ON DELETE CASCADE,
+  buyer_id UUID NOT NULL REFERENCES profiles_buyer(id) ON DELETE CASCADE,
+  unit_price NUMERIC(12,2) NOT NULL,
+  moq_quoted INT NOT NULL,
+  tax_gst_pct NUMERIC(5,2) DEFAULT 18.00,
+  freight_charges NUMERIC(12,2) DEFAULT 0.00,
+  total_amount NUMERIC(14,2) NOT NULL,
+  estimated_lead_days INT DEFAULT 7,
+  valid_until DATE,
+  payment_terms VARCHAR(255),
+  notes TEXT,
+  status VARCHAR(20) DEFAULT 'submitted',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 7. MESSAGES
+CREATE TABLE IF NOT EXISTS messages (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  rfq_id UUID NOT NULL REFERENCES rfqs_enquiries(id) ON DELETE CASCADE,
+  sender_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  recipient_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  sender_role VARCHAR(20) NOT NULL,
+  message_text TEXT NOT NULL,
+  attachments TEXT[],
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 8. FOLLOW_UPS
+CREATE TABLE IF NOT EXISTS follow_ups (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  rfq_id UUID NOT NULL REFERENCES rfqs_enquiries(id) ON DELETE CASCADE,
+  supplier_id UUID NOT NULL REFERENCES profiles_supplier(id) ON DELETE CASCADE,
+  buyer_id UUID NOT NULL REFERENCES profiles_buyer(id) ON DELETE CASCADE,
+  scheduled_at TIMESTAMPTZ NOT NULL,
+  status VARCHAR(20) DEFAULT 'pending',
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);`;
+    navigator.clipboard.writeText(sqlContent);
+    setCopiedSql(true);
+    setTimeout(() => setCopiedSql(false), 2000);
+  };
 
   useEffect(() => {
     const unsub = db.subscribe(() => {
@@ -418,6 +621,23 @@ export const DatabaseStatusModal: React.FC<DatabaseStatusModalProps> = ({
         <div className="px-5 py-2.5 bg-white border-b border-[#E8DFE3] flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setActiveTab('supabase')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'supabase'
+                  ? 'bg-[#3ECF8E] text-[#1C1B1B] shadow-xs'
+                  : 'bg-[#FCF9F8] text-[#594047] hover:bg-[#FAF1F5] hover:text-[#B90064] border border-[#E8DFE3]'
+              }`}
+            >
+              <Cloud className="w-3.5 h-3.5" />
+              <span>Supabase Cloud DB</span>
+              {isSupabaseConfigured() ? (
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              ) : (
+                <span className="w-2 h-2 rounded-full bg-amber-400" />
+              )}
+            </button>
+
+            <button
               onClick={() => setActiveTab('records')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'records'
@@ -551,6 +771,222 @@ export const DatabaseStatusModal: React.FC<DatabaseStatusModalProps> = ({
                 </button>
               )}
             </div>
+
+            {/* TAB 4: SUPABASE CLOUD DATABASE INTEGRATION */}
+            {activeTab === 'supabase' && (
+              <div className="flex-1 overflow-auto p-5 space-y-5 custom-scrollbar bg-[#FCF9F8]">
+                {/* Supabase Status Banner */}
+                <div className="p-4 rounded-2xl bg-white border border-[#E8DFE3] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-12 h-12 rounded-xl bg-[#3ECF8E]/15 text-[#3ECF8E] flex items-center justify-center shrink-0 border border-[#3ECF8E]/30">
+                      <Cloud className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-base font-black text-[#1C1B1B]">Supabase PostgreSQL Cloud Engine</h3>
+                        {isSupabaseConfigured() ? (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Live Supabase Configured
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-300 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" />
+                            Local Fallback Mode Active
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-[#594047] font-medium mt-1">
+                        Connect your live Supabase database to persist products, RFQs, quotes, messages, and profiles across real-time PostgreSQL sessions.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={handleTestSupabase}
+                      disabled={isTestingSupabase}
+                      className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#FAF1F5] border border-[#E8DFE3] hover:border-[#B90064] text-xs font-bold text-[#1C1B1B] flex items-center gap-2 transition-all cursor-pointer shadow-2xs disabled:opacity-50"
+                    >
+                      <Zap className={`w-3.5 h-3.5 text-[#3ECF8E] ${isTestingSupabase ? 'animate-spin' : ''}`} />
+                      <span>{isTestingSupabase ? 'Testing...' : 'Test Connection'}</span>
+                    </button>
+
+                    <button
+                      onClick={handleSyncToSupabase}
+                      disabled={isSyncingSupabase}
+                      className="px-3.5 py-2 rounded-xl bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1B1B] text-xs font-black flex items-center gap-2 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${isSyncingSupabase ? 'animate-spin' : ''}`} />
+                      <span>{isSyncingSupabase ? 'Syncing Tables...' : 'Sync Tables to Supabase'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Test Feedback Notice */}
+                {supabaseTestStatus && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`p-3.5 rounded-xl border text-xs font-medium flex items-center justify-between gap-3 ${
+                      supabaseTestStatus.connected
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                        : 'bg-amber-50 border-amber-200 text-amber-900'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {supabaseTestStatus.connected ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      ) : (
+                        <Info className="w-4 h-4 text-amber-600 shrink-0" />
+                      )}
+                      <span>{supabaseTestStatus.message}</span>
+                    </div>
+                    {supabaseTestStatus.latencyMs && (
+                      <span className="text-[10px] font-mono font-bold bg-white/70 px-2 py-0.5 rounded border border-emerald-200">
+                        {supabaseTestStatus.latencyMs}ms
+                      </span>
+                    )}
+                  </motion.div>
+                )}
+
+                {supabaseSyncMessage && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3.5 rounded-xl bg-purple-50 border border-purple-200 text-purple-900 text-xs font-medium flex items-center justify-between gap-2"
+                  >
+                    <span>{supabaseSyncMessage}</span>
+                    <button
+                      onClick={() => setSupabaseSyncMessage(null)}
+                      className="text-purple-700 font-bold hover:underline shrink-0 cursor-pointer"
+                    >
+                      Dismiss
+                    </button>
+                  </motion.div>
+                )}
+
+                {/* Configuration Details & Setup Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Left Column: Credentials & Environment Setup */}
+                  <div className="bg-white p-4 rounded-xl border border-[#E8DFE3] shadow-2xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-xs font-black text-[#1C1B1B]">
+                        <KeyRound className="w-4 h-4 text-[#B90064]" />
+                        <span>Supabase Credentials Status</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-[#8C7077]">.env / Secrets</span>
+                    </div>
+
+                    <div className="space-y-2 text-xs">
+                      <div className="p-2.5 rounded-lg bg-[#FCF9F8] border border-[#E8DFE3]">
+                        <div className="text-[10px] uppercase font-bold text-[#8C7077]">Project URL (VITE_SUPABASE_URL)</div>
+                        <div className="font-mono text-xs text-[#1C1B1B] truncate mt-0.5">
+                          {getSupabaseConfigInfo().url || 'https://your-project.supabase.co (defaulting to local fallback)'}
+                        </div>
+                      </div>
+
+                      <div className="p-2.5 rounded-lg bg-[#FCF9F8] border border-[#E8DFE3]">
+                        <div className="text-[10px] uppercase font-bold text-[#8C7077]">Anon Key (VITE_SUPABASE_ANON_KEY)</div>
+                        <div className="font-mono text-xs text-[#1C1B1B] truncate mt-0.5">
+                          {getSupabaseConfigInfo().anonKeyTruncated}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-[#E8DFE3] flex items-center justify-between text-[11px] text-[#594047]">
+                      <span>Declared in <code className="text-[#B90064] font-mono">.env.example</code></span>
+                      <a
+                        href="https://supabase.com/dashboard"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#0050D6] font-bold hover:underline flex items-center gap-1"
+                      >
+                        <span>Open Supabase Dashboard</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Right Column: 1-Click SQL Schema Copy */}
+                  <div className="bg-white p-4 rounded-xl border border-[#E8DFE3] shadow-2xs space-y-3 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-xs font-black text-[#1C1B1B]">
+                          <Code2 className="w-4 h-4 text-[#3ECF8E]" />
+                          <span>Supabase PostgreSQL Migration SQL</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                          8 Tables + FKs
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#594047] mt-1.5 leading-relaxed">
+                        Copy the complete DDL schema and paste it into the <strong>SQL Editor</strong> in your Supabase dashboard to create all 8 tables in 1 click.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={handleCopySupabaseSql}
+                      className="w-full py-2.5 px-4 rounded-xl bg-[#1C1B1B] hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                    >
+                      {copiedSql ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          <span className="text-emerald-400">Copied SQL Schema to Clipboard!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5 text-stone-300" />
+                          <span>Copy Supabase SQL Migration Script</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* 8 Tables Synchronization Status Matrix */}
+                <div className="bg-white p-4 rounded-xl border border-[#E8DFE3] shadow-2xs space-y-3">
+                  <div className="flex items-center justify-between border-b border-[#E8DFE3] pb-2">
+                    <h4 className="text-xs font-black text-[#1C1B1B] uppercase tracking-wider">
+                      Relational Database Tables Ready for Supabase ({tables.length})
+                    </h4>
+                    <span className="text-[11px] font-bold text-[#8C7077]">
+                      {totalRecords} Total Local Records Available to Sync
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    {tables.map((t) => (
+                      <div
+                        key={t.id}
+                        className="p-2.5 rounded-lg bg-[#FCF9F8] border border-[#E8DFE3] flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          {t.icon}
+                          <span className="font-mono text-xs font-bold text-[#1C1B1B] truncate">{t.name}</span>
+                        </div>
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-white border border-[#E8DFE3] text-[#B90064]">
+                          {t.count}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Step by step connection instructions */}
+                <div className="bg-white p-4 rounded-xl border border-[#E8DFE3] shadow-2xs space-y-2.5 text-xs text-[#594047]">
+                  <h4 className="font-black text-[#1C1B1B] flex items-center gap-1.5">
+                    <Info className="w-4 h-4 text-[#0050D6]" />
+                    <span>How to connect your live Supabase Project in 3 steps:</span>
+                  </h4>
+                  <ol className="list-decimal list-inside space-y-1.5 text-xs leading-relaxed ml-1">
+                    <li>Create a project at <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-[#0050D6] font-bold underline">supabase.com</a>.</li>
+                    <li>Go to the <strong>SQL Editor</strong> in Supabase, click <em>New Query</em>, paste the copied SQL schema, and click <strong>Run</strong>.</li>
+                    <li>Go to <strong>Project Settings &gt; API</strong>, copy your <code>Project URL</code> and <code>anon public key</code>, and configure them as <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code>.</li>
+                  </ol>
+                </div>
+              </div>
+            )}
 
             {/* TAB 1: RECORD EXPLORER */}
             {activeTab === 'records' && (

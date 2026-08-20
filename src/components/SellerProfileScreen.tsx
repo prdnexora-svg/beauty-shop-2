@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   ShieldCheck,
   Star,
@@ -13,6 +13,7 @@ import {
   MapPin,
   Bookmark,
   ChevronRight,
+  ChevronDown,
   Send,
   Building2,
   ExternalLink,
@@ -27,6 +28,8 @@ import {
   Search,
   Filter,
   ArrowLeft,
+  ArrowUpDown,
+  SlidersHorizontal,
   Calendar,
   Users,
   UserPlus,
@@ -70,9 +73,10 @@ export const SellerProfileScreen: React.FC<SellerProfileScreenProps> = ({
   // Tab State
   const [activeTab, setActiveTab] = useState<'about' | 'products' | 'oem' | 'contact'>('about');
 
-  // Product Filter State
+  // Product Filter & Sort State
   const [productSearch, setProductSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [sortBy, setSortBy] = useState<'latest' | 'price_asc' | 'price_desc' | 'popularity' | 'moq_asc' | 'name_asc'>('latest');
 
   // Interactive Modals & Toast State
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -129,14 +133,58 @@ export const SellerProfileScreen: React.FC<SellerProfileScreenProps> = ({
     }, 3000);
   };
 
-  // Filter products by search and category
+  // Helper parsers for sorting
+  const parsePriceValue = (p: ProductDetailData): number => {
+    if (typeof p.priceMin === 'number' && !isNaN(p.priceMin) && p.priceMin > 0) return p.priceMin;
+    const match = p.priceRange?.match(/\d[\d,]*/);
+    if (match) {
+      return parseInt(match[0].replace(/,/g, ''), 10) || 0;
+    }
+    return 0;
+  };
+
+  const parseMoqValue = (p: ProductDetailData): number => {
+    const match = p.moq?.match(/\d[\d,]*/);
+    if (match) {
+      return parseInt(match[0].replace(/,/g, ''), 10) || 0;
+    }
+    return 0;
+  };
+
+  // Filter & Sort products
   const categories = ['All', ...Array.from(new Set(sellerProducts.map(p => p.category)))];
-  const filteredProducts = sellerProducts.filter(p => {
-    const matchesSearch = p.title.toLowerCase().includes(productSearch.toLowerCase()) ||
-                          p.description.toLowerCase().includes(productSearch.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  
+  const filteredProducts = useMemo(() => {
+    const list = sellerProducts.filter(p => {
+      const matchesSearch = p.title.toLowerCase().includes(productSearch.toLowerCase()) ||
+                            p.description.toLowerCase().includes(productSearch.toLowerCase()) ||
+                            p.category.toLowerCase().includes(productSearch.toLowerCase());
+      const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+
+    return [...list].sort((a, b) => {
+      if (sortBy === 'price_asc') {
+        return parsePriceValue(a) - parsePriceValue(b);
+      }
+      if (sortBy === 'price_desc') {
+        return parsePriceValue(b) - parsePriceValue(a);
+      }
+      if (sortBy === 'moq_asc') {
+        return parseMoqValue(a) - parseMoqValue(b);
+      }
+      if (sortBy === 'name_asc') {
+        return a.title.localeCompare(b.title);
+      }
+      if (sortBy === 'popularity') {
+        const scoreA = (a.sellerDetails?.trustScore || 90) + (a.bulkTiers?.length || 0) * 5;
+        const scoreB = (b.sellerDetails?.trustScore || 90) + (b.bulkTiers?.length || 0) * 5;
+        return scoreB - scoreA;
+      }
+      // 'latest' default
+      return 0;
+    });
+  }, [sellerProducts, productSearch, selectedCategory, sortBy]);
 
   const handleRfqSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -585,34 +633,123 @@ export const SellerProfileScreen: React.FC<SellerProfileScreenProps> = ({
         {/* TAB 2: PRODUCT CATALOG (PLP) */}
         {activeTab === 'products' && (
           <div className="space-y-6">
-            {/* Catalog Filter Bar */}
-            <div className="bg-white rounded-2xl p-4 border border-[#f3e8eb] shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="relative w-full md:w-96">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#594047]" />
-                <input
-                  type="text"
-                  placeholder="Search products listed by this seller..."
-                  value={productSearch}
-                  onChange={(e) => setProductSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 text-xs bg-[#fcf9f8] border border-[#e0bec6] rounded-xl focus:outline-none focus:border-[#b90064]"
-                />
+            {/* Catalog Filter & Sort Bar */}
+            <div className="bg-white rounded-2xl p-4 md:p-5 border border-[#f3e8eb] shadow-xs space-y-4">
+              <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+                {/* Search Input */}
+                <div className="relative w-full lg:w-96">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#594047]" />
+                  <input
+                    type="text"
+                    placeholder="Search products listed by this seller..."
+                    value={productSearch}
+                    onChange={(e) => setProductSearch(e.target.value)}
+                    className="w-full pl-10 pr-9 py-2.5 text-xs bg-[#fcf9f8] border border-[#e0bec6] rounded-xl focus:outline-none focus:border-[#b90064] text-[#1c1b1b] placeholder:text-[#8c7077]"
+                  />
+                  {productSearch && (
+                    <button
+                      onClick={() => setProductSearch('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8c7077] hover:text-[#b90064] cursor-pointer"
+                      title="Clear search"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Right controls: Category Pills + Sort By Dropdown */}
+                <div className="flex flex-wrap items-center justify-between lg:justify-end gap-3">
+                  {/* Category Filter Pills */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                    {categories.map((cat, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                          selectedCategory === cat
+                            ? 'bg-[#b90064] text-white shadow-xs'
+                            : 'bg-[#fcf9f8] text-[#594047] border border-[#e0bec6] hover:bg-[#fde7f3]'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Sort By Dropdown */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#594047] whitespace-nowrap">
+                      <ArrowUpDown className="w-3.5 h-3.5 text-[#b90064]" />
+                      <span className="hidden sm:inline">Sort by:</span>
+                    </div>
+                    <div className="relative">
+                      <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value as any)}
+                        className="appearance-none bg-[#fcf9f8] hover:bg-white text-[#1c1b1b] text-xs font-semibold pl-3 pr-8 py-2 border border-[#e0bec6] hover:border-[#b90064] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#b90064]/20 focus:border-[#b90064] transition-all cursor-pointer"
+                      >
+                        <option value="latest">Latest Arrivals</option>
+                        <option value="price_asc">Price: Low to High</option>
+                        <option value="price_desc">Price: High to Low</option>
+                        <option value="popularity">Popularity / Top Rated</option>
+                        <option value="moq_asc">MOQ: Low to High</option>
+                        <option value="name_asc">Name: A to Z</option>
+                      </select>
+                      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#594047] pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {/* Category Pills */}
-              <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto no-scrollbar">
-                {categories.map((cat, idx) => (
+              {/* Status and Active Filter Strip */}
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[#f3e8eb] text-xs text-[#594047]">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-[#1c1b1b]">
+                    Showing {filteredProducts.length} of {sellerProducts.length} Products
+                  </span>
+                  {selectedCategory !== 'All' && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#fde7f3] text-[#b90064] font-medium text-[11px]">
+                      Category: {selectedCategory}
+                      <button onClick={() => setSelectedCategory('All')} className="hover:text-[#1c1b1b] cursor-pointer">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  )}
+                  {productSearch && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#fde7f3] text-[#b90064] font-medium text-[11px]">
+                      Search: "{productSearch}"
+                      <button onClick={() => setProductSearch('')} className="hover:text-[#1c1b1b] cursor-pointer">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  )}
+                  {sortBy !== 'latest' && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-stone-100 text-[#1c1b1b] font-medium text-[11px]">
+                      Sorted: {
+                        sortBy === 'price_asc' ? 'Price Low-High' :
+                        sortBy === 'price_desc' ? 'Price High-Low' :
+                        sortBy === 'popularity' ? 'Popularity' :
+                        sortBy === 'moq_asc' ? 'MOQ Low-High' : 'A-Z'
+                      }
+                      <button onClick={() => setSortBy('latest')} className="hover:text-[#b90064] cursor-pointer">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  )}
+                </div>
+
+                {(selectedCategory !== 'All' || productSearch || sortBy !== 'latest') && (
                   <button
-                    key={idx}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                      selectedCategory === cat
-                        ? 'bg-[#b90064] text-white'
-                        : 'bg-[#fcf9f8] text-[#594047] border border-[#e0bec6] hover:bg-[#fde7f3]'
-                    }`}
+                    onClick={() => {
+                      setSelectedCategory('All');
+                      setProductSearch('');
+                      setSortBy('latest');
+                    }}
+                    className="text-[#b90064] hover:underline font-bold text-xs cursor-pointer"
                   >
-                    {cat}
+                    Reset Filters
                   </button>
-                ))}
+                )}
               </div>
             </div>
 

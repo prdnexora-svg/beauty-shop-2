@@ -6,6 +6,7 @@ import { TrendingCategories } from './components/TrendingCategories';
 import { QuickRFQSection } from './components/QuickRFQSection';
 import { MarketplaceColumns } from './components/MarketplaceColumns';
 import { SponsoredImageAds } from './components/SponsoredImageAds';
+import { TopProfilesMarqueeBar } from './components/TopProfilesMarqueeBar';
 import { SponsoredReelsSection } from './components/SponsoredReelsSection';
 import { SponsoredFullVideoSection } from './components/SponsoredFullVideoSection';
 import { OEMSpotlight } from './components/OEMSpotlight';
@@ -36,6 +37,7 @@ import { ProductDetailPage } from './components/ProductDetailPage';
 import { ChatModalDrawer } from './components/ChatModalDrawer';
 import { BuyerOnboardingScreen } from './components/BuyerOnboardingScreen';
 import { DatabaseStatusModal } from './components/DatabaseStatusModal';
+import { getBuyerProfile, BUYER_PROFILES_DB } from './data/buyerProfilesData';
 import {
   CATEGORIES,
   TRENDING_PRODUCTS,
@@ -63,15 +65,8 @@ export function App() {
 
   // Persistent Buyer Profile State
   const [buyerProfile, setBuyerProfile] = useState<BuyerProfileData>(() => {
-    const stored = localStorage.getItem('nexora_buyer_profile');
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch (e) {
-        // Fallback
-      }
-    }
-    return {
+    const priyaDefault = getBuyerProfile('buyer_priya_001') || {
+      id: 'buyer_priya_001',
       fullName: 'Priya Sharma',
       businessName: 'Radiant Beauty Solutions',
       businessType: 'Salon / Spa Chain',
@@ -79,6 +74,8 @@ export function App() {
       email: 'priya.procurement@radiantbeauty.in',
       phone: '+91 98201 54321',
       alternatePhone: '+91 22 2650 4321',
+      avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
+      coverPhotoUrl: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1600&q=80',
       gstin: '27AAACR1234F1Z5',
       pancard: 'AAACR1234F',
       address: 'Plot No. 42, Bandra-Kurla Complex',
@@ -91,8 +88,28 @@ export function App() {
       whatsappAlerts: true,
       emailAlerts: true,
       isGstVerified: true,
-      isBusinessVerified: true
+      isBusinessVerified: true,
+      followersCount: 1481,
+      partnerCardNumber: 'NXP 807A 45DF 9875',
+      partnerTier: 'Gold',
+      sourcingDistrict: 'Mumbai Metro Region, MH',
+      responseSla: '99.8% SLA',
+      joinedDate: 'January 2024'
     };
+
+    const stored = localStorage.getItem('nexora_buyer_profile');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        return {
+          ...priyaDefault,
+          ...parsed
+        };
+      } catch (e) {
+        // Fallback
+      }
+    }
+    return priyaDefault;
   });
 
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -218,6 +235,27 @@ export function App() {
       }
       if (params.supplierId) {
         setSelectedSupplierId(params.supplierId);
+      }
+      if (params.buyerId || (screen === 'buyer-profile' && (params.memberData || params.buyerId))) {
+        const found = getBuyerProfile(params.buyerId || params.memberData?.profileId || params.memberData?.id || params.memberData?.name);
+        if (found) {
+          setBuyerProfile({ ...found });
+        } else if (params.memberData) {
+          const m = params.memberData;
+          const cleanName = m.name.replace(/\s*\(.*?\)\s*/g, '').trim();
+          const bizName = m.name.match(/\((.*?)\)/)?.[1] || `${cleanName} Enterprises`;
+          setBuyerProfile(prev => ({
+            ...prev,
+            fullName: cleanName,
+            businessName: bizName,
+            businessType: m.businessType || prev.businessType,
+            avatarUrl: m.avatar,
+            city: m.city || prev.city,
+            state: m.state || prev.state,
+            isGstVerified: m.isGstVerified,
+            followersCount: m.followersCount || prev.followersCount
+          }));
+        }
       }
       setSearchParams((prev) => ({
         ...prev,
@@ -374,6 +412,20 @@ export function App() {
                   }
                 }}
                 onViewAll={() => handleNavigate('plp')}
+              />
+
+              {/* Horizontal Auto-Scrolling Top Members / Profiles Bar */}
+              <TopProfilesMarqueeBar
+                onNavigateProfile={(roleType, profileId, memberData) => {
+                  if (roleType === 'supplier') {
+                    handleNavigate('supplier-profile', { supplierId: profileId, memberData });
+                  } else {
+                    handleNavigate('buyer-profile', { buyerId: profileId, memberData });
+                  }
+                }}
+                onOpenWhatsApp={(phone, name) => {
+                  handleWhatsAppSupplier(name);
+                }}
               />
 
               {/* Marketplace Discovery Blocks (Featured Suppliers & Trending Sourcing) */}

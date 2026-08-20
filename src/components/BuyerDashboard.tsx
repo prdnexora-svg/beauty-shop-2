@@ -53,6 +53,7 @@ import {
 import { BuyerEnquiry, BuyerRFQ, VerifiedSupplier } from '../types';
 import { BUYER_MOCK_ENQUIRIES, BUYER_MOCK_RFQS, VERIFIED_SUPPLIERS } from '../data/mockData';
 import { EditProfileModal, BuyerProfileData } from './EditProfileModal';
+import { FollowerNetworkModal } from './FollowerNetworkModal';
 import { NotificationCenter } from './NotificationCenter';
 import { useNotifications } from '../hooks/useNotifications';
 
@@ -171,9 +172,23 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   });
 
   const [buyerFollowers, setBuyerFollowers] = useState<number>(() => {
+    if (buyerProfile?.followersCount) {
+      const parsed = parseInt(String(buyerProfile.followersCount).replace(/[^0-9]/g, ''), 10);
+      if (!isNaN(parsed)) return parsed;
+    }
     const saved = localStorage.getItem('buyer_followers_count');
-    return saved ? parseInt(saved, 10) : 1480;
+    return saved ? parseInt(saved, 10) : 1481;
   });
+
+  // Dynamically update follower count when active buyer profile changes
+  useEffect(() => {
+    if (buyerProfile?.followersCount) {
+      const parsed = parseInt(String(buyerProfile.followersCount).replace(/[^0-9]/g, ''), 10);
+      if (!isNaN(parsed)) {
+        setBuyerFollowers(parsed);
+      }
+    }
+  }, [buyerProfile?.fullName, buyerProfile?.followersCount]);
 
   const handleBuyerFollowToggle = () => {
     const nextFollowed = !buyerFollowed;
@@ -278,6 +293,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   const [isUploadingPostPhoto, setIsUploadingPostPhoto] = useState(false);
   const [taggedProduct, setTaggedProduct] = useState<string>('');
   const [isTaggingProduct, setIsTaggingProduct] = useState(false);
+  const [isFollowersModalOpen, setIsFollowersModalOpen] = useState(false);
   const postPhotoInputRef = useRef<HTMLInputElement>(null);
 
   const handlePostPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -892,8 +908,10 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                     <div>
                       <div className="text-[9px] text-[#8c7077] uppercase font-bold tracking-wider leading-none">Partner Card Number</div>
                       <div className="font-mono text-xs font-black tracking-widest text-pink-100 flex items-center gap-1.5 mt-1">
-                        <span>NXP 807A 45DF 9875</span>
-                        <span className="text-[9px] px-1 py-0.2 bg-white/15 text-stone-200 rounded font-sans font-black tracking-normal uppercase leading-none">Gold</span>
+                        <span>{buyerProfile.partnerCardNumber || 'NXP 807A 45DF 9875'}</span>
+                        <span className="text-[9px] px-1 py-0.2 bg-white/15 text-stone-200 rounded font-sans font-black tracking-normal uppercase leading-none">
+                          {buyerProfile.partnerTier || 'Gold'}
+                        </span>
                       </div>
                     </div>
 
@@ -901,7 +919,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                       <div className="text-[9px] text-[#8c7077] uppercase font-bold tracking-wider leading-none">Sourcing District / Region</div>
                       <div className="text-xs font-bold text-stone-200 flex items-center gap-1 mt-1">
                         <MapPin className="w-3.5 h-3.5 text-[#e6007e] shrink-0" />
-                        <span>Mumbai Metro Region, MH</span>
+                        <span>{buyerProfile.sourcingDistrict || `${buyerProfile.city} Metro Region, ${buyerProfile.state}`}</span>
                       </div>
                     </div>
 
@@ -910,22 +928,28 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                         <div className="text-[9px] text-[#8c7077] uppercase font-bold tracking-wider leading-none">Verified Status</div>
                         <div className="text-xs font-extrabold text-green-400 flex items-center gap-1 mt-1">
                           <ShieldCheck className="w-3.5 h-3.5 text-green-400 shrink-0" />
-                          <span>GSTIN</span>
+                          <span>{buyerProfile.isGstVerified ? 'GSTIN' : 'Verified'}</span>
                         </div>
                       </div>
                       <div>
                         <div className="text-[9px] text-[#8c7077] uppercase font-bold tracking-wider leading-none">Network Reach</div>
-                        <div className="text-xs font-extrabold text-[#e6007e] flex items-center gap-1 mt-1">
-                          <Users className="w-3.5 h-3.5 text-[#e6007e] shrink-0" />
-                          <span>1,481 Followers</span>
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsFollowersModalOpen(true)}
+                          className="text-xs font-extrabold text-[#e6007e] hover:text-[#ff389b] flex items-center gap-1 mt-1 cursor-pointer transition-all group"
+                          title="Click to view connected supplier profiles"
+                        >
+                          <Users className="w-3.5 h-3.5 text-[#e6007e] group-hover:scale-110 transition-transform shrink-0" />
+                          <span className="underline decoration-dotted underline-offset-2 decoration-[#e6007e]/60 group-hover:decoration-[#ff389b]">{buyerFollowers.toLocaleString()} Followers</span>
+                          <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
+                        </button>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between mt-4 pt-2.5 border-t border-stone-800 text-[10px] text-stone-300 font-bold leading-none">
                     <span className="text-stone-400 font-medium">Response SLA</span>
-                    <span className="text-[#e6007e] font-black">99.8% SLA</span>
+                    <span className="text-[#e6007e] font-black">{buyerProfile.responseSla || '99.8% SLA'}</span>
                   </div>
                 </div>
 
@@ -2288,9 +2312,15 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                     <p className="text-xs text-[#594047] font-medium mt-1">Connect with professional beauty suppliers, contract manufacturers, and packaging experts.</p>
                   </div>
                   <div className="text-right">
-                    <span className="px-3.5 py-1.5 bg-[#fde7f3] text-[#b90064] rounded-xl text-xs font-black">
-                      1,481 Followers
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsFollowersModalOpen(true)}
+                      className="px-3.5 py-1.5 bg-[#fde7f3] hover:bg-[#fbc5e3] text-[#b90064] rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs group"
+                    >
+                      <Users className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                      <span>1,481 Followers</span>
+                      <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
                   </div>
                 </div>
 
@@ -2404,6 +2434,21 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
         onClose={() => setIsEditProfileOpen(false)}
         initialData={buyerProfile}
         onSave={handleSaveProfile}
+      />
+
+      {/* Connected Followers Network Modal */}
+      <FollowerNetworkModal
+        isOpen={isFollowersModalOpen}
+        onClose={() => setIsFollowersModalOpen(false)}
+        onNavigateSupplier={(supplierId) => {
+          onNavigate('supplier-profile', { supplierId });
+        }}
+        onSendRFQ={(supplierName) => {
+          onPostRFQ();
+        }}
+        onSendMessage={(supplierId) => {
+          onNavigate('supplier-chat', { supplierId });
+        }}
       />
     </div>
   );

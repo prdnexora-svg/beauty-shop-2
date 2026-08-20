@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 
 export interface BuyerProfileData {
+  id?: string;
   fullName: string;
   businessName: string;
   businessType: 'Salon / Spa' | 'Retailer / Wholesaler' | 'E-commerce Brand' | 'Cosmetics Distributor' | 'OEM / Private Brand' | 'Other';
@@ -48,6 +49,11 @@ export interface BuyerProfileData {
   coverPhotoUrl?: string;
   bio?: string;
   joinedDate?: string;
+  followersCount?: string;
+  partnerCardNumber?: string;
+  partnerTier?: string;
+  sourcingDistrict?: string;
+  responseSla?: string;
   socialLinks?: {
     facebook?: string;
     instagram?: string;

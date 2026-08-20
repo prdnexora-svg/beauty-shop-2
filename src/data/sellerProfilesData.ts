@@ -99,7 +99,7 @@ export const SELLER_PROFILES_DB: Record<string, SellerProfileData> = {
   },
   'seller_luxe_002': {
     id: 'seller_luxe_002',
-    alternateIds: ['sup-2', 'ss-2', 'LuxeForm Cosmetics', 'LuxeCosmetics Mfg.'],
+    alternateIds: ['sup-2', 'ss-2', 'seller_luxeform_003', 'LuxeForm Cosmetics', 'LuxeCosmetics Mfg.', 'LuxeForm Cosmetic Packaging Ltd.', 'LuxeForm Packaging'],
     name: 'LuxeForm Cosmetics',
     legalName: 'LuxeForm Cosmeceuticals & Labs Pvt. Ltd.',
     shortCode: 'LFC',
@@ -141,7 +141,7 @@ export const SELLER_PROFILES_DB: Record<string, SellerProfileData> = {
   },
   'seller_derma_003': {
     id: 'seller_derma_003',
-    alternateIds: ['sup-3', 'ss-3', 'Dermaglow India'],
+    alternateIds: ['sup-3', 'ss-3', 'seller_dermaglow_002', 'Dermaglow India', 'Dermaglow India Cosmeceuticals'],
     name: 'Dermaglow India',
     legalName: 'Dermaglow Healthcare & Beauty Wholesale Pvt. Ltd.',
     shortCode: 'DGI',
@@ -183,7 +183,7 @@ export const SELLER_PROFILES_DB: Record<string, SellerProfileData> = {
   },
   'seller_pure_004': {
     id: 'seller_pure_004',
-    alternateIds: ['sup-4', 'ss-4', 'PureFormulations Pvt', 'PureFormulations Pvt.'],
+    alternateIds: ['sup-4', 'ss-4', 'seller_pureessence_005', 'PureFormulations Pvt', 'PureFormulations Pvt.', 'PureEssence Distillers & Oils'],
     name: 'PureFormulations Pvt',
     legalName: 'PureFormulations Chemical & Cosmetic Actives Ltd.',
     shortCode: 'PFP',
@@ -225,7 +225,7 @@ export const SELLER_PROFILES_DB: Record<string, SellerProfileData> = {
   },
   'seller_biotech_005': {
     id: 'seller_biotech_005',
-    alternateIds: ['sup-5', 'ss-5', 'BioTech Derma Labs'],
+    alternateIds: ['sup-5', 'ss-5', 'seller_novapharma_007', 'BioTech Derma Labs', 'NovaPharma Clinical Cosmeceuticals'],
     name: 'BioTech Derma Labs',
     legalName: 'BioTech Derma Laboratories India Pvt. Ltd.',
     shortCode: 'BDL',
@@ -309,7 +309,7 @@ export const SELLER_PROFILES_DB: Record<string, SellerProfileData> = {
   },
   'seller_radiant_007': {
     id: 'seller_radiant_007',
-    alternateIds: ['sup-7', 'ss-7', 'Radiant Cosmeceuticals', 'Radiant Bulk Beauty Wholesale'],
+    alternateIds: ['sup-7', 'ss-7', 'seller_radiant_004', 'Radiant Cosmeceuticals', 'Radiant Bulk Beauty Wholesale', 'Radiant Botanicals & Active Extracts'],
     name: 'Radiant Cosmeceuticals',
     legalName: 'Radiant Cosmeceuticals & Wholesale Labs Pvt. Ltd.',
     shortCode: 'RCL',
@@ -435,7 +435,7 @@ export const SELLER_PROFILES_DB: Record<string, SellerProfileData> = {
   },
   'seller_silk_010': {
     id: 'seller_silk_010',
-    alternateIds: ['sup-10', 'ss-10', 'Silk&Shine Manufacturing'],
+    alternateIds: ['sup-10', 'ss-10', 'seller_glampack_006', 'Silk&Shine Manufacturing', 'GlamPack Sustainable Tooling Co.'],
     name: 'Silk&Shine Manufacturing',
     legalName: 'Silk&Shine Haircare & Cosmetics Mfg. Pvt. Ltd.',
     shortCode: 'SSM',
