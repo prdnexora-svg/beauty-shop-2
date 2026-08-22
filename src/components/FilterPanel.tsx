@@ -1,28 +1,38 @@
 import React from 'react';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { SlidersHorizontal, X, Check, ShieldCheck, Award, MapPin, Building2, Calendar, Package } from 'lucide-react';
 
-interface FilterPanelProps {
+export interface FilterPanelProps {
   categories: { name: string; subcategories: string[] }[];
   selectedCategories: string[];
   toggleCategory: (cat: string) => void;
   availableSubcategories: string[];
   selectedSubcategories: string[];
   toggleSubcategory: (sub: string) => void;
-  selectedLocation: string;
-  setSelectedLocation: (loc: string) => void;
-  setLocationQuery: (q: string) => void;
-  selectedDistance: string;
-  setSelectedDistance: (dist: string) => void;
+  // Multi-select Locations
+  selectedLocations: string[];
+  toggleLocation: (loc: string) => void;
+  // Multi-select Certifications
+  selectedCertifications: string[];
+  toggleCertification: (cert: string) => void;
+  // Multi-select MOQ Tiers
+  selectedMoqTiers: string[];
+  toggleMoqTier: (tier: string) => void;
+  // Multi-select Established Years
+  selectedEstablishedYears: string[];
+  toggleEstablishedYear: (yearRange: string) => void;
+  // Supplier Types
   selectedSupplierTypes: string[];
   toggleSupplierType: (type: string) => void;
-  selectedMoqTier: string;
-  setSelectedMoqTier: (tier: any) => void;
+  // Trust & Verification
   isGstOnly: boolean;
   setIsGstOnly: (val: boolean) => void;
   isNexoraVerifiedOnly: boolean;
   setIsNexoraVerifiedOnly: (val: boolean) => void;
   isBusinessVerifiedOnly: boolean;
   setIsBusinessVerifiedOnly: (val: boolean) => void;
+  isExportReadyOnly: boolean;
+  setIsExportReadyOnly: (val: boolean) => void;
+  // Price Filter
   maxPrice: number;
   setMaxPrice: (val: number) => void;
   onClearAll: () => void;
@@ -35,233 +45,367 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   availableSubcategories,
   selectedSubcategories,
   toggleSubcategory,
-  selectedLocation,
-  setSelectedLocation,
-  setLocationQuery,
-  selectedDistance,
-  setSelectedDistance,
+  selectedLocations,
+  toggleLocation,
+  selectedCertifications,
+  toggleCertification,
+  selectedMoqTiers,
+  toggleMoqTier,
+  selectedEstablishedYears,
+  toggleEstablishedYear,
   selectedSupplierTypes,
   toggleSupplierType,
-  selectedMoqTier,
-  setSelectedMoqTier,
   isGstOnly,
   setIsGstOnly,
   isNexoraVerifiedOnly,
   setIsNexoraVerifiedOnly,
   isBusinessVerifiedOnly,
   setIsBusinessVerifiedOnly,
+  isExportReadyOnly,
+  setIsExportReadyOnly,
   maxPrice,
   setMaxPrice,
   onClearAll
 }) => {
+  const CERTIFICATION_OPTIONS = [
+    { id: 'GMP', label: 'WHO-GMP Compliant', desc: 'Good Manufacturing Practice' },
+    { id: 'ISO', label: 'ISO 9001 / ISO 22716', desc: 'Quality Management' },
+    { id: 'Halal', label: 'Halal Certified', desc: 'Compliant Formulation' },
+    { id: 'Organic', label: 'Organic / ECOCERT', desc: 'USDA / ECOCERT Certified' },
+    { id: 'FDA', label: 'US-FDA Registered', desc: 'Drug Master File / Lab' },
+    { id: 'Cruelty-Free', label: 'Cruelty-Free / Vegan', desc: 'Ethical Testing' }
+  ];
+
+  const LOCATION_OPTIONS = [
+    { id: 'Maharashtra', label: 'Maharashtra (Mumbai, Pune)' },
+    { id: 'Delhi NCR', label: 'Delhi NCR (Delhi, Gurugram)' },
+    { id: 'Gujarat', label: 'Gujarat (Ahmedabad, Surat)' },
+    { id: 'Karnataka', label: 'Karnataka (Bengaluru)' },
+    { id: 'Tamil Nadu', label: 'Tamil Nadu (Chennai)' },
+    { id: 'Telangana', label: 'Telangana (Hyderabad)' },
+    { id: 'Pan India', label: 'Pan India / Other Hubs' }
+  ];
+
+  const MOQ_OPTIONS = [
+    { id: 'lt_50', label: 'Low MOQ (< 50 units)' },
+    { id: '50_200', label: '50 - 200 units' },
+    { id: '200_500', label: '200 - 500 units' },
+    { id: 'gt_500', label: '500+ units (Bulk Runs)' }
+  ];
+
+  const ESTABLISHED_OPTIONS = [
+    { id: '15_plus', label: '15+ Years (Legacy & High Reliability)' },
+    { id: '10_15', label: '10 - 15 Years (Established)' },
+    { id: '5_10', label: '5 - 10 Years (Growth Stage)' },
+    { id: 'lt_5', label: '< 5 Years (Emerging / Rapid Tech)' }
+  ];
+
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-[#1c1b1b]">Filters</h2>
+    <div className="flex flex-col gap-5 bg-white border border-[#e8e8e8] rounded-2xl p-5 shadow-2xs">
+      <div className="flex items-center justify-between pb-1">
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="w-4 h-4 text-[#b90064]" />
+          <h2 className="text-[15px] font-extrabold text-[#1c1b1b]">Filter Sourcing</h2>
+        </div>
         <button 
           onClick={onClearAll}
-          className="text-[12px] font-bold text-[#b90064] hover:underline"
+          className="text-[11px] font-bold text-[#b90064] hover:underline"
         >
-          Clear All
+          Reset All
         </button>
       </div>
 
       {/* Category Filter */}
-      <div className="flex flex-col gap-3 border-t border-[#e8e8e8] pt-4">
-        <h3 className="text-[13px] font-bold uppercase tracking-wider text-[#594047]">Category</h3>
-        <div className="flex flex-col gap-2.5">
-          {categories.map((item) => (
-            <label key={item.name} className="flex items-center justify-between cursor-pointer group select-none">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={selectedCategories.includes(item.name)}
-                  onChange={() => toggleCategory(item.name)}
-                  className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
-                />
-                <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
-                  {item.name}
-                </span>
-              </div>
-            </label>
-          ))}
+      <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5">
+        <div className="flex items-center justify-between">
+          <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Category</h3>
+          {selectedCategories.length > 0 && (
+            <span className="text-[10px] bg-[#fde7f3] text-[#b90064] font-bold px-1.5 py-0.5 rounded-full">
+              {selectedCategories.length}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col gap-2">
+          {categories.map((item) => {
+            const isChecked = selectedCategories.includes(item.name);
+            return (
+              <label key={item.name} className="flex items-center justify-between cursor-pointer group select-none">
+                <div className="flex items-center gap-2.5">
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => toggleCategory(item.name)}
+                    className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+                  />
+                  <span className={`text-[13px] ${isChecked ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+                    {item.name}
+                  </span>
+                </div>
+              </label>
+            );
+          })}
         </div>
       </div>
 
       {/* Subcategory Filter (Conditional) */}
       {availableSubcategories.length > 0 && (
-        <div className="flex flex-col gap-3 border-t border-[#e8e8e8] pt-4 animate-in fade-in slide-in-from-top-2 duration-200">
-          <h3 className="text-[13px] font-bold uppercase tracking-wider text-[#594047]">Subcategory</h3>
-          <div className="flex flex-col gap-2.5">
-            {availableSubcategories.map((sub) => (
-              <label key={sub} className="flex items-center gap-2 cursor-pointer group select-none">
-                <input
-                  type="checkbox"
-                  checked={selectedSubcategories.includes(sub)}
-                  onChange={() => toggleSubcategory(sub)}
-                  className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
-                />
-                <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
-                  {sub}
-                </span>
-              </label>
-            ))}
+        <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5 animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="flex items-center justify-between">
+            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Subcategory</h3>
+            {selectedSubcategories.length > 0 && (
+              <span className="text-[10px] bg-[#fde7f3] text-[#b90064] font-bold px-1.5 py-0.5 rounded-full">
+                {selectedSubcategories.length}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+            {availableSubcategories.map((sub) => {
+              const isChecked = selectedSubcategories.includes(sub);
+              return (
+                <label key={sub} className="flex items-center gap-2.5 cursor-pointer group select-none">
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => toggleSubcategory(sub)}
+                    className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+                  />
+                  <span className={`text-[12px] ${isChecked ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+                    {sub}
+                  </span>
+                </label>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* Location Filter */}
-      <div className="flex flex-col gap-3 border-t border-[#e8e8e8] pt-4">
-        <h3 className="text-[13px] font-bold uppercase tracking-wider text-[#594047]">Location</h3>
+      {/* Certifications (Multi-Select) */}
+      <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Award className="w-3.5 h-3.5 text-[#b90064]" />
+            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Certifications</h3>
+          </div>
+          {selectedCertifications.length > 0 && (
+            <span className="text-[10px] bg-[#fde7f3] text-[#b90064] font-bold px-1.5 py-0.5 rounded-full">
+              {selectedCertifications.length}
+            </span>
+          )}
+        </div>
         <div className="flex flex-col gap-2">
-          {[
-            { id: 'All', label: 'All India' },
-            { id: 'Mumbai', label: 'Mumbai' },
-            { id: 'Delhi', label: 'Delhi' },
-            { id: 'Bengaluru', label: 'Bengaluru' },
-            { id: 'Ahmedabad', label: 'Ahmedabad' },
-            { id: 'Surat', label: 'Surat' },
-            { id: 'Hyderabad', label: 'Hyderabad' },
-            { id: 'Chennai', label: 'Chennai' },
-            { id: 'Pune', label: 'Pune' }
-          ].map((loc) => (
-            <label key={loc.id} className="flex items-center gap-2 cursor-pointer group select-none">
-              <input
-                type="radio"
-                name="location-filter"
-                checked={selectedLocation === loc.id}
-                onChange={() => {
-                  setSelectedLocation(loc.id);
-                  setLocationQuery(loc.label);
-                }}
-                className="border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
-              />
-              <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
-                {loc.label}
-              </span>
-            </label>
-          ))}
+          {CERTIFICATION_OPTIONS.map((cert) => {
+            const isChecked = selectedCertifications.includes(cert.id);
+            return (
+              <label key={cert.id} className="flex items-start gap-2.5 cursor-pointer group select-none">
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={() => toggleCertification(cert.id)}
+                  className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 mt-0.5 cursor-pointer accent-[#b90064]"
+                />
+                <div className="flex flex-col">
+                  <span className={`text-[12px] ${isChecked ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors leading-tight`}>
+                    {cert.label}
+                  </span>
+                  <span className="text-[10px] text-[#8c7077]">{cert.desc}</span>
+                </div>
+              </label>
+            );
+          })}
         </div>
       </div>
 
-      {/* Distance Filter */}
-      <div className="flex flex-col gap-3 border-t border-[#e8e8e8] pt-4">
-        <h3 className="text-[13px] font-bold uppercase tracking-wider text-[#594047]">Service Region</h3>
+      {/* Location / Region Filter (Multi-Select) */}
+      <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-[#b90064]" />
+            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Location / Region</h3>
+          </div>
+          {selectedLocations.length > 0 && (
+            <span className="text-[10px] bg-[#fde7f3] text-[#b90064] font-bold px-1.5 py-0.5 rounded-full">
+              {selectedLocations.length}
+            </span>
+          )}
+        </div>
         <div className="flex flex-col gap-2">
-          {[
-            { id: 'Local', label: 'Local' },
-            { id: 'Within 100 km', label: 'Within 100 km' },
-            { id: 'Within 250 km', label: 'Within 250 km' },
-            { id: 'Within 500 km', label: 'Within 500 km' },
-            { id: 'Pan India', label: 'Pan India' }
-          ].map((dist) => (
-            <label key={dist.id} className="flex items-center gap-2 cursor-pointer group select-none">
-              <input
-                type="radio"
-                name="distance-filter"
-                checked={selectedDistance === dist.id}
-                onChange={() => setSelectedDistance(dist.id)}
-                className="border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
-              />
-              <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
-                {dist.label}
-              </span>
-            </label>
-          ))}
+          {LOCATION_OPTIONS.map((loc) => {
+            const isChecked = selectedLocations.includes(loc.id);
+            return (
+              <label key={loc.id} className="flex items-center gap-2.5 cursor-pointer group select-none">
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={() => toggleLocation(loc.id)}
+                  className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+                />
+                <span className={`text-[12px] ${isChecked ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+                  {loc.label}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Minimum Order Quantity (MOQ) Filter (Multi-Select) */}
+      <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Package className="w-3.5 h-3.5 text-[#b90064]" />
+            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Min. Order Quantity (MOQ)</h3>
+          </div>
+          {selectedMoqTiers.length > 0 && (
+            <span className="text-[10px] bg-[#fde7f3] text-[#b90064] font-bold px-1.5 py-0.5 rounded-full">
+              {selectedMoqTiers.length}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col gap-2">
+          {MOQ_OPTIONS.map((tier) => {
+            const isChecked = selectedMoqTiers.includes(tier.id);
+            return (
+              <label key={tier.id} className="flex items-center gap-2.5 cursor-pointer group select-none">
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={() => toggleMoqTier(tier.id)}
+                  className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+                />
+                <span className={`text-[12px] ${isChecked ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+                  {tier.label}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Established Year / Experience Filter (Multi-Select) */}
+      <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-[#b90064]" />
+            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Established Year</h3>
+          </div>
+          {selectedEstablishedYears.length > 0 && (
+            <span className="text-[10px] bg-[#fde7f3] text-[#b90064] font-bold px-1.5 py-0.5 rounded-full">
+              {selectedEstablishedYears.length}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col gap-2">
+          {ESTABLISHED_OPTIONS.map((yr) => {
+            const isChecked = selectedEstablishedYears.includes(yr.id);
+            return (
+              <label key={yr.id} className="flex items-center gap-2.5 cursor-pointer group select-none">
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={() => toggleEstablishedYear(yr.id)}
+                  className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+                />
+                <span className={`text-[12px] ${isChecked ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+                  {yr.label}
+                </span>
+              </label>
+            );
+          })}
         </div>
       </div>
 
       {/* Supplier Type */}
-      <div className="flex flex-col gap-3 border-t border-[#e8e8e8] pt-4">
-        <h3 className="text-[13px] font-bold uppercase tracking-wider text-[#594047]">Supplier Type</h3>
-        <div className="flex flex-col gap-2.5">
-          {['Manufacturer', 'Wholesaler', 'Distributor', 'OEM / Private Label'].map((type) => (
-            <label key={type} className="flex items-center gap-2 cursor-pointer group select-none">
-              <input
-                type="checkbox"
-                checked={selectedSupplierTypes.includes(type)}
-                onChange={() => toggleSupplierType(type)}
-                className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
-              />
-              <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
-                {type}
-              </span>
-            </label>
-          ))}
+      <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Building2 className="w-3.5 h-3.5 text-[#b90064]" />
+            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Supplier Business Type</h3>
+          </div>
+          {selectedSupplierTypes.length > 0 && (
+            <span className="text-[10px] bg-[#fde7f3] text-[#b90064] font-bold px-1.5 py-0.5 rounded-full">
+              {selectedSupplierTypes.length}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col gap-2">
+          {['Manufacturer', 'OEM / Private Label', 'Wholesaler', 'Distributor'].map((type) => {
+            const isChecked = selectedSupplierTypes.includes(type);
+            return (
+              <label key={type} className="flex items-center gap-2.5 cursor-pointer group select-none">
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={() => toggleSupplierType(type)}
+                  className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+                />
+                <span className={`text-[12px] ${isChecked ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+                  {type}
+                </span>
+              </label>
+            );
+          })}
         </div>
       </div>
 
-      {/* Verification */}
-      <div className="flex flex-col gap-3 border-t border-[#e8e8e8] pt-4">
-        <h3 className="text-[13px] font-bold uppercase tracking-wider text-[#594047]">Verification</h3>
-        <div className="flex flex-col gap-2.5">
-          <label className="flex items-center gap-2 cursor-pointer group select-none">
+      {/* Verification & Trust */}
+      <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5">
+        <div className="flex items-center gap-1.5">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#b90064]" />
+          <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Trust &amp; Verification</h3>
+        </div>
+        <div className="flex flex-col gap-2">
+          <label className="flex items-center gap-2.5 cursor-pointer group select-none">
             <input
               type="checkbox"
               checked={isNexoraVerifiedOnly}
               onChange={(e) => setIsNexoraVerifiedOnly(e.target.checked)}
               className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
             />
-            <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
+            <span className={`text-[12px] ${isNexoraVerifiedOnly ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
               Nexora Verified
             </span>
           </label>
-          <label className="flex items-center gap-2 cursor-pointer group select-none">
+          <label className="flex items-center gap-2.5 cursor-pointer group select-none">
             <input
               type="checkbox"
               checked={isGstOnly}
               onChange={(e) => setIsGstOnly(e.target.checked)}
               className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
             />
-            <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
-              GST Verified
+            <span className={`text-[12px] ${isGstOnly ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+              GST Registered &amp; Verified
             </span>
           </label>
-          <label className="flex items-center gap-2 cursor-pointer group select-none">
+          <label className="flex items-center gap-2.5 cursor-pointer group select-none">
             <input
               type="checkbox"
               checked={isBusinessVerifiedOnly}
               onChange={(e) => setIsBusinessVerifiedOnly(e.target.checked)}
               className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
             />
-            <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
-              Business Verified
+            <span className={`text-[12px] ${isBusinessVerifiedOnly ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+              Business On-Site Audited
+            </span>
+          </label>
+          <label className="flex items-center gap-2.5 cursor-pointer group select-none">
+            <input
+              type="checkbox"
+              checked={isExportReadyOnly}
+              onChange={(e) => setIsExportReadyOnly(e.target.checked)}
+              className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+            />
+            <span className={`text-[12px] ${isExportReadyOnly ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+              Export Ready (AEO / Port Dock)
             </span>
           </label>
         </div>
       </div>
 
-      {/* MOQ Filter */}
-      <div className="flex flex-col gap-3 border-t border-[#e8e8e8] pt-4">
-        <h3 className="text-[13px] font-bold uppercase tracking-wider text-[#594047]">MOQ Range</h3>
-        <div className="flex flex-col gap-2.5">
-          {[
-            { id: 'all', label: 'All MOQs' },
-            { id: 'lt_100', label: '< 100 units' },
-            { id: '100_500', label: '100 - 500 units' },
-            { id: 'gt_500', label: '500+ units' }
-          ].map((tier) => (
-            <label key={tier.id} className="flex items-center gap-2 cursor-pointer group select-none">
-              <input
-                type="radio"
-                name="moq-filter"
-                checked={selectedMoqTier === tier.id}
-                onChange={() => setSelectedMoqTier(tier.id as any)}
-                className="border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
-              />
-              <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
-                {tier.label}
-              </span>
-            </label>
-          ))}
-        </div>
-      </div>
-
       {/* Price Slider */}
-      <div className="flex flex-col gap-3 border-t border-[#e8e8e8] pt-4 mb-4">
+      <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5 mb-1">
         <div className="flex items-center justify-between">
-          <h3 className="text-[13px] font-bold uppercase tracking-wider text-[#594047]">Max Price</h3>
-          <span className="text-[12px] font-bold text-[#b90064]">₹{maxPrice >= 5000 ? '5,000+' : maxPrice}</span>
+          <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Max Unit Price</h3>
+          <span className="text-[12px] font-bold text-[#b90064]">₹{maxPrice >= 5000 ? '5,000+' : maxPrice.toLocaleString('en-IN')}</span>
         </div>
         <input
           type="range"
@@ -272,7 +416,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           onChange={(e) => setMaxPrice(Number(e.target.value))}
           className="w-full accent-[#b90064] cursor-pointer"
         />
-        <div className="flex justify-between text-[11px] font-medium text-[#8c7077]">
+        <div className="flex justify-between text-[10px] font-medium text-[#8c7077]">
           <span>₹50</span>
           <span>₹5,000+</span>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal, X } from 'lucide-react';
 
 interface HeroSectionProps {
   onSearch?: (query: string, locationOrCategory: string) => void;
@@ -15,6 +15,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSearch, onTabChange 
     'Glass Packaging',
     'Vegan Formulations',
     'Peptide Serum',
+    'GMP Certified',
+    'Low MOQ <100'
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -29,6 +31,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSearch, onTabChange 
     if (onSearch) {
       onSearch(tag, category);
     }
+  };
+
+  const handleClear = () => {
+    setQuery('');
   };
 
   return (
@@ -107,15 +113,25 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSearch, onTabChange 
               onSubmit={handleSubmit}
               className="flex flex-col md:flex-row gap-2 bg-white p-2 rounded-xl border border-[#E8DFE3] shadow-md relative w-full"
             >
-              <div className="flex-1 flex items-center px-3 py-2.5 min-h-[44px] border-b md:border-b-0 md:border-r border-[#E8DFE3]">
+              <div className="flex-1 flex items-center px-3 py-2.5 min-h-[44px] border-b md:border-b-0 md:border-r border-[#E8DFE3] relative">
                 <Search className="text-[#8D8087] mr-2.5 w-4.5 h-4.5 shrink-0" />
                 <input
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search products, suppliers, or ingredients..."
-                  className="w-full bg-transparent border-none focus:ring-0 text-[13.5px] sm:text-[14.5px] text-[#1e1a1d] placeholder-[#8D8087] p-0 outline-none"
+                  className="w-full bg-transparent border-none focus:ring-0 text-[13.5px] sm:text-[14.5px] text-[#1e1a1d] placeholder-[#8D8087] p-0 outline-none pr-6"
                 />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={handleClear}
+                    title="Clear search"
+                    className="p-1 text-[#8D8087] hover:text-[#B90064] transition-colors rounded-full hover:bg-[#FAF1F5] cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
 
               <div className="flex items-center px-3 py-2.5 min-h-[44px]">

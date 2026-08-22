@@ -38,6 +38,7 @@ import { ChatModalDrawer } from './components/ChatModalDrawer';
 import { BuyerOnboardingScreen } from './components/BuyerOnboardingScreen';
 import { DatabaseStatusModal } from './components/DatabaseStatusModal';
 import { getBuyerProfile, BUYER_PROFILES_DB } from './data/buyerProfilesData';
+import { SupabaseProvider } from './lib/supabase';
 import {
   CATEGORIES,
   TRENDING_PRODUCTS,
@@ -348,7 +349,8 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fdf8f8] text-[#1c1b1b] flex flex-col font-sans selection:bg-[#fde7f3] selection:text-[#b90064] pb-16 md:pb-0">
+    <SupabaseProvider>
+      <div className="min-h-screen bg-[#fdf8f8] text-[#1c1b1b] flex flex-col font-sans selection:bg-[#fde7f3] selection:text-[#b90064] pb-16 md:pb-0">
       
       {/* Toast Banner */}
       {toastMessage && (
@@ -878,7 +880,8 @@ export function App() {
         <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-[10px] font-mono">8 Tables</span>
       </button>
 
-    </div>
+      </div>
+    </SupabaseProvider>
   );
 }
 export default App;

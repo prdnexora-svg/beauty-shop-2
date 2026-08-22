@@ -261,9 +261,9 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
     showToast('Filters reset to default');
   };
 
-  // Filtered Suppliers List
+  // Filtered & Sorted Suppliers List
   const filteredSuppliers = useMemo(() => {
-    return remoteSuppliers.filter((supplier) => {
+    const list = remoteSuppliers.filter((supplier) => {
       // Geographic City & Industrial Hub Filter
       if (selectedCity && selectedCity.trim() !== '') {
         const queryCity = selectedCity.toLowerCase();
@@ -329,7 +329,65 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
       return true;
     });
-  }, [remoteSuppliers, searchQuery, activeBusinessType, businessTypeFilters, selectedCategory, quickFilters, complianceFilters]);
+
+    // Helper functions for sorting calculations
+    const getSupplierRating = (sup: VerifiedSupplier) => {
+      return sup.overallRating ?? sup.productQualityRating ?? (sup.trustScore ? sup.trustScore / 20 : 4.5);
+    };
+
+    const getSupplierEstablishedYear = (sup: VerifiedSupplier) => {
+      if (sup.establishedYearNumber) return sup.establishedYearNumber;
+      if (sup.establishedYear) {
+        const match = sup.establishedYear.match(/\d{4}/);
+        if (match) return parseInt(match[0], 10);
+      }
+      return 2015;
+    };
+
+    const getSupplierEmployeeCount = (sup: VerifiedSupplier) => {
+      if (sup.employeeCountNumber) return sup.employeeCountNumber;
+      if (sup.employeeCount) {
+        const nums = sup.employeeCount.match(/\d+/g);
+        if (nums && nums.length > 0) {
+          const parsed = nums.map(n => parseInt(n, 10));
+          return Math.max(...parsed);
+        }
+      }
+      if (sup.facilityArea) {
+        const areaMatch = sup.facilityArea.replace(/,/g, '').match(/\d+/);
+        if (areaMatch) {
+          return Math.round(parseInt(areaMatch[0], 10) / 250);
+        }
+      }
+      if (sup.monthlyCapacity) {
+        const capMatch = sup.monthlyCapacity.replace(/,/g, '').match(/\d+/);
+        if (capMatch) {
+          return Math.round(parseInt(capMatch[0], 10) / 1000);
+        }
+      }
+      return 50;
+    };
+
+    return [...list].sort((a, b) => {
+      if (sortBy === 'Rating') {
+        const diff = getSupplierRating(b) - getSupplierRating(a);
+        if (diff !== 0) return diff;
+        return (b.trustScore || 0) - (a.trustScore || 0);
+      }
+      if (sortBy === 'Year Established') {
+        // Order by oldest established manufacturer / industry longevity first
+        return getSupplierEstablishedYear(a) - getSupplierEstablishedYear(b);
+      }
+      if (sortBy === 'Employee Count') {
+        // Order by largest workforce / scale first
+        return getSupplierEmployeeCount(b) - getSupplierEmployeeCount(a);
+      }
+      if (sortBy === 'Relevance' || sortBy === 'Recommended') {
+        return (b.trustScore || 0) - (a.trustScore || 0);
+      }
+      return 0;
+    });
+  }, [remoteSuppliers, searchQuery, selectedCity, activeBusinessType, businessTypeFilters, selectedCategory, quickFilters, complianceFilters, sortBy]);
 
   const selectedSuppliersObjects = useMemo(() => {
     return VERIFIED_SUPPLIERS.filter((s) => selectedComparisonIds.includes(s.id));
@@ -813,16 +871,20 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                 </div>
 
                 {/* Sort Dropdown */}
-                <div className="relative">
+                <div className="relative" id="supplier-sort-dropdown-container">
+                  <label htmlFor="supplier-directory-sort-select" className="sr-only">
+                    Sort Manufacturers
+                  </label>
                   <select
+                    id="supplier-directory-sort-select"
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="appearance-none bg-white border border-[#e8e8e8] text-[13px] font-semibold text-[#1c1b1b] rounded-xl py-2 pl-3.5 pr-8 focus:ring-1 focus:ring-[#b90064] cursor-pointer shadow-2xs"
+                    className="appearance-none bg-white border border-[#e8e8e8] hover:border-[#b90064] text-[13px] font-semibold text-[#1c1b1b] rounded-xl py-2 pl-3.5 pr-8 focus:outline-none focus:ring-1 focus:ring-[#b90064] cursor-pointer shadow-2xs transition-colors"
                   >
-                    <option value="Recommended">Sort: Recommended</option>
-                    <option value="Rating">Sort: Trust Rating</option>
-                    <option value="Response Time">Sort: Response Time</option>
-                    <option value="MOQ">Sort: Low MOQ</option>
+                    <option value="Relevance">Sort: Relevance</option>
+                    <option value="Rating">Sort: Rating</option>
+                    <option value="Year Established">Sort: Year Established</option>
+                    <option value="Employee Count">Sort: Employee Count</option>
                   </select>
                   <ChevronDown className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8c7077] pointer-events-none" />
                 </div>
@@ -1493,6 +1555,26 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                 <button onClick={() => setIsMobileFilterOpen(false)} className="text-[#8c7077]">
                   <X className="w-5 h-5" />
                 </button>
+              </div>
+
+              {/* Mobile Sort By */}
+              <div className="mb-5">
+                <h3 className="text-[11px] font-bold text-[#8c7077] uppercase tracking-wider mb-2.5">
+                  Sort Manufacturers
+                </h3>
+                <div className="relative">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="w-full appearance-none bg-[#fcf9f8] border border-[#e8e8e8] text-[13px] font-semibold text-[#1c1b1b] rounded-xl py-2.5 pl-3.5 pr-8 focus:ring-1 focus:ring-[#b90064] cursor-pointer"
+                  >
+                    <option value="Relevance">Sort: Relevance</option>
+                    <option value="Rating">Sort: Rating</option>
+                    <option value="Year Established">Sort: Year Established</option>
+                    <option value="Employee Count">Sort: Employee Count</option>
+                  </select>
+                  <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-[#8c7077] pointer-events-none" />
+                </div>
               </div>
 
               {/* Mobile Business Type */}

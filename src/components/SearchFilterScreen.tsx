@@ -80,13 +80,15 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
   );
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
   const [selectedSupplierTypes, setSelectedSupplierTypes] = useState<string[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState<string>('All');
-  const [selectedDistance, setSelectedDistance] = useState<string>('Pan India');
-  const [selectedMoqTier, setSelectedMoqTier] = useState<'all' | 'lt_100' | '100_500' | 'gt_500'>('all');
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [selectedCertifications, setSelectedCertifications] = useState<string[]>([]);
+  const [selectedMoqTiers, setSelectedMoqTiers] = useState<string[]>([]);
+  const [selectedEstablishedYears, setSelectedEstablishedYears] = useState<string[]>([]);
   const [isGstOnly, setIsGstOnly] = useState(false);
   const [isIsoOnly, setIsIsoOnly] = useState(false);
   const [isNexoraVerifiedOnly, setIsNexoraVerifiedOnly] = useState(false);
   const [isBusinessVerifiedOnly, setIsBusinessVerifiedOnly] = useState(false);
+  const [isExportReadyOnly, setIsExportReadyOnly] = useState(false);
   const [maxPrice, setMaxPrice] = useState<number>(5000);
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
 
@@ -115,14 +117,47 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
   const [comparedSupplierIds, setComparedSupplierIds] = useState<string[]>([]);
   const [isSupplierCompareModalOpen, setIsSupplierCompareModalOpen] = useState(false);
 
+  // Filter Toggles
+  const toggleLocation = (loc: string) => {
+    setSelectedLocations((prev) =>
+      prev.includes(loc) ? prev.filter((l) => l !== loc) : [...prev, loc]
+    );
+  };
+
+  const toggleCertification = (cert: string) => {
+    setSelectedCertifications((prev) =>
+      prev.includes(cert) ? prev.filter((c) => c !== cert) : [...prev, cert]
+    );
+  };
+
+  const toggleMoqTier = (tier: string) => {
+    setSelectedMoqTiers((prev) =>
+      prev.includes(tier) ? prev.filter((t) => t !== tier) : [...prev, tier]
+    );
+  };
+
+  const toggleEstablishedYear = (yr: string) => {
+    setSelectedEstablishedYears((prev) =>
+      prev.includes(yr) ? prev.filter((y) => y !== yr) : [...prev, yr]
+    );
+  };
+
   // Active filter chips list
   const activeChips = useMemo(() => {
     const chips: { id: string; label: string; onRemove: () => void }[] = [];
 
+    if (searchQuery.trim()) {
+      chips.push({
+        id: 'search-keyword',
+        label: `Keyword: "${searchQuery}"`,
+        onRemove: () => setSearchQuery('')
+      });
+    }
+
     selectedCategories.forEach((cat) => {
       chips.push({
         id: `cat-${cat}`,
-        label: cat,
+        label: `Category: ${cat}`,
         onRemove: () => setSelectedCategories((prev) => prev.filter((c) => c !== cat))
       });
     });
@@ -135,52 +170,57 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
       });
     });
 
-    selectedSupplierTypes.forEach((type) => {
+    selectedCertifications.forEach((cert) => {
       chips.push({
-        id: `type-${type}`,
-        label: type,
-        onRemove: () => setSelectedSupplierTypes((prev) => prev.filter((t) => t !== type))
+        id: `cert-${cert}`,
+        label: `Cert: ${cert}`,
+        onRemove: () => setSelectedCertifications((prev) => prev.filter((c) => c !== cert))
       });
     });
 
-    if (selectedLocation && selectedLocation !== 'All') {
+    selectedLocations.forEach((loc) => {
       chips.push({
-        id: 'filter-selected-loc',
-        label: `📍 ${selectedLocation}`,
-        onRemove: () => {
-          setSelectedLocation('All');
-          setLocationQuery('All India');
-        }
+        id: `loc-${loc}`,
+        label: `📍 ${loc}`,
+        onRemove: () => setSelectedLocations((prev) => prev.filter((l) => l !== loc))
       });
-    }
+    });
 
-    if (selectedDistance && selectedDistance !== 'Pan India') {
+    selectedMoqTiers.forEach((tier) => {
+      const labelMap: Record<string, string> = {
+        lt_50: 'MOQ < 50 units',
+        '50_200': 'MOQ 50-200',
+        '200_500': 'MOQ 200-500',
+        gt_500: 'MOQ 500+'
+      };
       chips.push({
-        id: 'filter-dist',
-        label: selectedDistance,
-        onRemove: () => setSelectedDistance('Pan India')
+        id: `moq-${tier}`,
+        label: labelMap[tier] || `MOQ: ${tier}`,
+        onRemove: () => setSelectedMoqTiers((prev) => prev.filter((t) => t !== tier))
       });
-    }
+    });
 
-    if (selectedMoqTier === 'lt_100') {
+    selectedEstablishedYears.forEach((yr) => {
+      const yrMap: Record<string, string> = {
+        '15_plus': '15+ Yrs Legacy',
+        '10_15': '10-15 Yrs Established',
+        '5_10': '5-10 Yrs Growth',
+        lt_5: '< 5 Yrs Tech'
+      };
       chips.push({
-        id: 'moq-lt100',
-        label: 'MOQ < 100',
-        onRemove: () => setSelectedMoqTier('all')
+        id: `yr-${yr}`,
+        label: yrMap[yr] || yr,
+        onRemove: () => setSelectedEstablishedYears((prev) => prev.filter((y) => y !== yr))
       });
-    } else if (selectedMoqTier === '100_500') {
+    });
+
+    selectedSupplierTypes.forEach((type) => {
       chips.push({
-        id: 'moq-100-500',
-        label: 'MOQ 100 - 500',
-        onRemove: () => setSelectedMoqTier('all')
+        id: `type-${type}`,
+        label: `Type: ${type}`,
+        onRemove: () => setSelectedSupplierTypes((prev) => prev.filter((t) => t !== type))
       });
-    } else if (selectedMoqTier === 'gt_500') {
-      chips.push({
-        id: 'moq-gt500',
-        label: 'MOQ > 500',
-        onRemove: () => setSelectedMoqTier('all')
-      });
-    }
+    });
 
     if (isGstOnly) {
       chips.push({
@@ -201,25 +241,57 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
     if (isBusinessVerifiedOnly) {
       chips.push({
         id: 'filter-biz-ver',
-        label: 'Business Verified',
+        label: 'Business Audited',
         onRemove: () => setIsBusinessVerifiedOnly(false)
       });
     }
 
+    if (isExportReadyOnly) {
+      chips.push({
+        id: 'filter-export-ready',
+        label: 'Export Ready',
+        onRemove: () => setIsExportReadyOnly(false)
+      });
+    }
+
+    if (maxPrice < 5000) {
+      chips.push({
+        id: 'filter-price',
+        label: `Max ₹${maxPrice}`,
+        onRemove: () => setMaxPrice(5000)
+      });
+    }
+
     return chips;
-  }, [selectedCategories, selectedSubcategories, selectedSupplierTypes, selectedLocation, selectedDistance, selectedMoqTier, isGstOnly, isNexoraVerifiedOnly, isBusinessVerifiedOnly]);
+  }, [
+    searchQuery,
+    selectedCategories,
+    selectedSubcategories,
+    selectedCertifications,
+    selectedLocations,
+    selectedMoqTiers,
+    selectedEstablishedYears,
+    selectedSupplierTypes,
+    isGstOnly,
+    isNexoraVerifiedOnly,
+    isBusinessVerifiedOnly,
+    isExportReadyOnly,
+    maxPrice
+  ]);
 
   const handleClearAllFilters = () => {
     setSelectedCategories([]);
     setSelectedSubcategories([]);
     setSelectedSupplierTypes([]);
-    setSelectedLocation('All');
-    setSelectedDistance('Pan India');
-    setSelectedMoqTier('all');
+    setSelectedLocations([]);
+    setSelectedCertifications([]);
+    setSelectedMoqTiers([]);
+    setSelectedEstablishedYears([]);
     setIsGstOnly(false);
     setIsIsoOnly(false);
     setIsNexoraVerifiedOnly(false);
     setIsBusinessVerifiedOnly(false);
+    setIsExportReadyOnly(false);
     setMaxPrice(5000);
     setLocationQuery('All India');
     setSearchQuery('');
@@ -288,6 +360,60 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
     return SEARCH_SUPPLIERS.filter((s) => comparedSupplierIds.includes(s.id));
   }, [comparedSupplierIds]);
 
+  // Helper matching functions for multi-selects
+  const matchesLocationRegions = (locationStr: string, regions: string[]) => {
+    if (regions.length === 0) return true;
+    const loc = locationStr.toLowerCase();
+    return regions.some((region) => {
+      if (region === 'Maharashtra') return loc.includes('mumbai') || loc.includes('pune') || loc.includes('thane') || loc.includes('maharashtra') || loc.includes('mh');
+      if (region === 'Delhi NCR') return loc.includes('delhi') || loc.includes('noida') || loc.includes('gurugram') || loc.includes('gurgaon') || loc.includes('ncr');
+      if (region === 'Gujarat') return loc.includes('ahmedabad') || loc.includes('surat') || loc.includes('vadodara') || loc.includes('gujarat') || loc.includes('gj');
+      if (region === 'Karnataka') return loc.includes('bengaluru') || loc.includes('bangalore') || loc.includes('karnataka') || loc.includes('ka');
+      if (region === 'Tamil Nadu') return loc.includes('chennai') || loc.includes('tamil') || loc.includes('tn');
+      if (region === 'Telangana') return loc.includes('hyderabad') || loc.includes('telangana') || loc.includes('ts');
+      if (region === 'Pan India') return true;
+      return loc.includes(region.toLowerCase());
+    });
+  };
+
+  const matchesCertifications = (item: { isGmpCertified?: boolean; isIsoCertified?: boolean; isHalalCertified?: boolean; isOrganicCertified?: boolean; isFdaRegistered?: boolean; isCrueltyFree?: boolean; certifications?: string[] }, certs: string[]) => {
+    if (certs.length === 0) return true;
+    return certs.every((c) => {
+      if (c === 'GMP') return item.isGmpCertified || item.certifications?.some(x => x.toLowerCase().includes('gmp'));
+      if (c === 'ISO') return item.isIsoCertified || item.certifications?.some(x => x.toLowerCase().includes('iso'));
+      if (c === 'Halal') return item.isHalalCertified || item.certifications?.some(x => x.toLowerCase().includes('halal'));
+      if (c === 'Organic') return item.isOrganicCertified || item.certifications?.some(x => x.toLowerCase().includes('organic') || x.toLowerCase().includes('ecocert'));
+      if (c === 'FDA') return item.isFdaRegistered || item.certifications?.some(x => x.toLowerCase().includes('fda'));
+      if (c === 'Cruelty-Free') return item.isCrueltyFree || item.certifications?.some(x => x.toLowerCase().includes('cruelty') || x.toLowerCase().includes('vegan'));
+      return true;
+    });
+  };
+
+  const matchesMoq = (moqNum: number, tiers: string[]) => {
+    if (tiers.length === 0) return true;
+    return tiers.some((t) => {
+      if (t === 'lt_50') return moqNum < 50;
+      if (t === '50_200') return moqNum >= 50 && moqNum <= 200;
+      if (t === '200_500') return moqNum > 200 && moqNum <= 500;
+      if (t === 'gt_500') return moqNum > 500;
+      return true;
+    });
+  };
+
+  const matchesEstablishedYears = (yearNum: number | undefined, yrTiers: string[]) => {
+    if (yrTiers.length === 0) return true;
+    if (!yearNum) return true;
+    const currentYear = 2026;
+    const yearsActive = currentYear - yearNum;
+    return yrTiers.some((yt) => {
+      if (yt === '15_plus') return yearsActive >= 15;
+      if (yt === '10_15') return yearsActive >= 10 && yearsActive < 15;
+      if (yt === '5_10') return yearsActive >= 5 && yearsActive < 10;
+      if (yt === 'lt_5') return yearsActive < 5;
+      return true;
+    });
+  };
+
   // Filtered Products
   const filteredProducts = useMemo(() => {
     return SEARCH_PRODUCTS.filter((p) => {
@@ -301,10 +427,9 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
       }
 
       // Location match
-      if (selectedLocation && selectedLocation !== 'All') {
-        const loc = selectedLocation.toLowerCase();
-        if (!p.supplierLocation.toLowerCase().includes(loc)) return false;
-      } else if (locationQuery.trim()) {
+      if (!matchesLocationRegions(p.supplierLocation, selectedLocations)) return false;
+
+      if (locationQuery.trim()) {
         const loc = locationQuery.toLowerCase().split(',')[0].trim();
         if (loc && !['all', 'india', 'all india'].includes(loc)) {
           if (!p.supplierLocation.toLowerCase().includes(loc)) return false;
@@ -323,32 +448,52 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
         if (!matchesSub) return false;
       }
 
-      if (selectedMoqTier === 'lt_100' && p.moqNumber >= 100) return false;
-      if (selectedMoqTier === '100_500' && (p.moqNumber < 100 || p.moqNumber > 500)) return false;
-      if (selectedMoqTier === 'gt_500' && p.moqNumber <= 500) return false;
+      // Certifications match
+      if (!matchesCertifications(p, selectedCertifications)) return false;
+
+      // MOQ match
+      if (!matchesMoq(p.moqNumber, selectedMoqTiers)) return false;
+
+      // Established year match
+      if (!matchesEstablishedYears(p.establishedYearNumber, selectedEstablishedYears)) return false;
+
+      // Supplier type match
+      if (selectedSupplierTypes.length > 0) {
+        const matchesType = selectedSupplierTypes.some((type) => p.supplierType.toLowerCase().includes(type.toLowerCase()));
+        if (!matchesType) return false;
+      }
 
       if (isGstOnly && !p.isGstVerified) return false;
       if (isIsoOnly && !p.isIsoCertified) return false;
       if (isNexoraVerifiedOnly && !p.isNexoraVerified) return false;
+      if (isBusinessVerifiedOnly && !p.isBusinessVerified) return false;
 
       if (p.priceMin > maxPrice) return false;
 
       return true;
     }).sort((a, b) => {
+      if (sortBy === 'rating_desc') return (b.rating || 4.5) - (a.rating || 4.5);
       if (sortBy === 'price_asc') return a.priceMin - b.priceMin;
       if (sortBy === 'price_desc') return b.priceMin - a.priceMin;
       if (sortBy === 'moq_asc') return a.moqNumber - b.moqNumber;
+      if (sortBy === 'established_asc') return (a.establishedYearNumber || 2015) - (b.establishedYearNumber || 2015);
+      if (sortBy === 'most_enquired') return (b.moqNumber || 0) - (a.moqNumber || 0);
       return 0;
     });
   }, [
     searchQuery,
-    selectedLocation,
+    selectedLocations,
     locationQuery,
     selectedCategories,
-    selectedMoqTier,
+    selectedSubcategories,
+    selectedCertifications,
+    selectedMoqTiers,
+    selectedEstablishedYears,
+    selectedSupplierTypes,
     isGstOnly,
     isIsoOnly,
     isNexoraVerifiedOnly,
+    isBusinessVerifiedOnly,
     maxPrice,
     sortBy
   ]);
@@ -368,15 +513,13 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
       }
 
       // Location match
-      if (selectedLocation && selectedLocation !== 'All') {
-        const loc = selectedLocation.toLowerCase();
-        const supplierLoc = `${s.city} ${s.state}`.toLowerCase();
-        if (!supplierLoc.includes(loc)) return false;
-      } else if (locationQuery.trim()) {
+      const fullLoc = `${s.city} ${s.state} ${s.locationDetails?.industrialZone || ''}`;
+      if (!matchesLocationRegions(fullLoc, selectedLocations)) return false;
+
+      if (locationQuery.trim()) {
         const loc = locationQuery.toLowerCase().split(',')[0].trim();
         if (loc && !['all', 'india', 'all india'].includes(loc)) {
-          const supplierLoc = `${s.city} ${s.state}`.toLowerCase();
-          if (!supplierLoc.includes(loc)) return false;
+          if (!fullLoc.toLowerCase().includes(loc)) return false;
         }
       }
 
@@ -394,24 +537,55 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
         if (!matchesType) return false;
       }
 
+      // Certifications match
+      if (!matchesCertifications({
+        isGmpCertified: s.isGmpCertified,
+        isIsoCertified: s.isIsoCertified,
+        isHalalCertified: s.isHalalCertified,
+        isOrganicCertified: s.isOrganicCertified,
+        isFdaRegistered: s.isFdaRegistered,
+        isCrueltyFree: s.isCrueltyFree,
+        certifications: s.certificationsList
+      }, selectedCertifications)) return false;
+
+      // Established years match
+      if (!matchesEstablishedYears(s.establishedYearNumber, selectedEstablishedYears)) return false;
+
       if (isGstOnly && !s.isGstVerified) return false;
       if (isIsoOnly && !s.isIsoCertified) return false;
       if (isNexoraVerifiedOnly && !s.isNexoraVerified) return false;
       if (isBusinessVerifiedOnly && !s.isBusinessVerified) return false;
+      if (isExportReadyOnly && !s.exportReady) return false;
 
       return true;
     }).sort((a, b) => {
+      if (sortBy === 'rating_desc') return (b.rating || 4.5) - (a.rating || 4.5);
+      if (sortBy === 'established_asc') return (a.establishedYearNumber || 2010) - (b.establishedYearNumber || 2010);
+      if (sortBy === 'established_desc') return (b.establishedYearNumber || 2010) - (a.establishedYearNumber || 2010);
+      if (sortBy === 'employees_desc') return (b.employeeCountNumber || 50) - (a.employeeCountNumber || 50);
       if (sortBy === 'verified') return (b.trustScore || 0) - (a.trustScore || 0);
+      if (sortBy === 'most_products') return (b.totalProductsCount || 0) - (a.totalProductsCount || 0);
+      if (sortBy === 'fast_response') {
+        const isAFast = a.responseTime?.includes('1 hr') || a.responseTime?.includes('30 min');
+        const isBFast = b.responseTime?.includes('1 hr') || b.responseTime?.includes('30 min');
+        if (isAFast && !isBFast) return -1;
+        if (isBFast && !isAFast) return 1;
+      }
       return 0;
     });
   }, [
     searchQuery,
-    selectedLocation,
+    selectedLocations,
     locationQuery,
     selectedCategories,
+    selectedSupplierTypes,
+    selectedCertifications,
+    selectedEstablishedYears,
     isGstOnly,
     isIsoOnly,
     isNexoraVerifiedOnly,
+    isBusinessVerifiedOnly,
+    isExportReadyOnly,
     sortBy
   ]);
 
@@ -429,10 +603,9 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
       }
 
       // Location match
-      if (selectedLocation && selectedLocation !== 'All') {
-        const loc = selectedLocation.toLowerCase();
-        if (!oem.location.toLowerCase().includes(loc)) return false;
-      } else if (locationQuery.trim()) {
+      if (!matchesLocationRegions(oem.location, selectedLocations)) return false;
+
+      if (locationQuery.trim()) {
         const loc = locationQuery.toLowerCase().split(',')[0].trim();
         if (loc && !['all', 'india', 'all india'].includes(loc)) {
           if (!oem.location.toLowerCase().includes(loc)) return false;
@@ -455,7 +628,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
     });
   }, [
     searchQuery,
-    selectedLocation,
+    selectedLocations,
     locationQuery,
     selectedCategories,
     isGstOnly,
@@ -500,6 +673,11 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                 placeholder="City, State (or radius)"
                 className="w-full bg-transparent border-none text-[14px] text-[#1c1b1b] placeholder:text-[#8c7077] focus:outline-none"
               />
+              {locationQuery && locationQuery !== 'All India' && (
+                <button onClick={() => setLocationQuery('All India')} className="text-[#8c7077] hover:text-[#1c1b1b] ml-1">
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             {/* Submit Button */}
@@ -512,14 +690,101 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
             </button>
           </div>
 
+          {/* Quick Filter Suggested Tags */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+            <span className="text-[11px] font-bold text-[#8c7077] uppercase tracking-wider shrink-0 mr-1">
+              Quick Filter:
+            </span>
+            <button
+              onClick={() => toggleCertification('GMP')}
+              className={`px-3 py-1 rounded-full text-[12px] font-semibold transition-all shrink-0 border ${
+                selectedCertifications.includes('GMP')
+                  ? 'bg-[#b90064] text-white border-[#b90064]'
+                  : 'bg-white text-[#594047] border-[#e8e8e8] hover:border-[#b90064]'
+              }`}
+            >
+              WHO-GMP
+            </button>
+            <button
+              onClick={() => toggleCertification('ISO')}
+              className={`px-3 py-1 rounded-full text-[12px] font-semibold transition-all shrink-0 border ${
+                selectedCertifications.includes('ISO')
+                  ? 'bg-[#b90064] text-white border-[#b90064]'
+                  : 'bg-white text-[#594047] border-[#e8e8e8] hover:border-[#b90064]'
+              }`}
+            >
+              ISO Certified
+            </button>
+            <button
+              onClick={() => toggleCertification('Organic')}
+              className={`px-3 py-1 rounded-full text-[12px] font-semibold transition-all shrink-0 border ${
+                selectedCertifications.includes('Organic')
+                  ? 'bg-[#b90064] text-white border-[#b90064]'
+                  : 'bg-white text-[#594047] border-[#e8e8e8] hover:border-[#b90064]'
+              }`}
+            >
+              Organic / ECOCERT
+            </button>
+            <button
+              onClick={() => toggleMoqTier('lt_50')}
+              className={`px-3 py-1 rounded-full text-[12px] font-semibold transition-all shrink-0 border ${
+                selectedMoqTiers.includes('lt_50')
+                  ? 'bg-[#b90064] text-white border-[#b90064]'
+                  : 'bg-white text-[#594047] border-[#e8e8e8] hover:border-[#b90064]'
+              }`}
+            >
+              Low MOQ (&lt;50 units)
+            </button>
+            <button
+              onClick={() => toggleLocation('Maharashtra')}
+              className={`px-3 py-1 rounded-full text-[12px] font-semibold transition-all shrink-0 border ${
+                selectedLocations.includes('Maharashtra')
+                  ? 'bg-[#b90064] text-white border-[#b90064]'
+                  : 'bg-white text-[#594047] border-[#e8e8e8] hover:border-[#b90064]'
+              }`}
+            >
+              📍 Maharashtra Hub
+            </button>
+            <button
+              onClick={() => toggleLocation('Delhi NCR')}
+              className={`px-3 py-1 rounded-full text-[12px] font-semibold transition-all shrink-0 border ${
+                selectedLocations.includes('Delhi NCR')
+                  ? 'bg-[#b90064] text-white border-[#b90064]'
+                  : 'bg-white text-[#594047] border-[#e8e8e8] hover:border-[#b90064]'
+              }`}
+            >
+              📍 Delhi NCR
+            </button>
+            <button
+              onClick={() => toggleEstablishedYear('15_plus')}
+              className={`px-3 py-1 rounded-full text-[12px] font-semibold transition-all shrink-0 border ${
+                selectedEstablishedYears.includes('15_plus')
+                  ? 'bg-[#b90064] text-white border-[#b90064]'
+                  : 'bg-white text-[#594047] border-[#e8e8e8] hover:border-[#b90064]'
+              }`}
+            >
+              15+ Yrs Legacy
+            </button>
+            <button
+              onClick={() => setIsExportReadyOnly(!isExportReadyOnly)}
+              className={`px-3 py-1 rounded-full text-[12px] font-semibold transition-all shrink-0 border ${
+                isExportReadyOnly
+                  ? 'bg-[#b90064] text-white border-[#b90064]'
+                  : 'bg-white text-[#594047] border-[#e8e8e8] hover:border-[#b90064]'
+              }`}
+            >
+              Export Ready
+            </button>
+          </div>
+
           {/* Active Filter Chips & Clear All */}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
+          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-[#f0edec]">
             <span className="text-[11px] font-semibold text-[#8c7077] uppercase tracking-wider mr-1">
               Active Filters:
             </span>
 
             {activeChips.length === 0 ? (
-              <span className="text-[12px] text-[#8c7077] italic">No active filters applied</span>
+              <span className="text-[12px] text-[#8c7077] italic">No active filters applied (Showing all results)</span>
             ) : (
               activeChips.map((chip) => (
                 <div
@@ -543,7 +808,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                 onClick={handleClearAllFilters}
                 className="text-[12px] font-semibold text-[#594047] underline hover:text-[#b90064] ml-2 transition-colors"
               >
-                Clear All
+                Clear All Filters
               </button>
             )}
 
@@ -573,21 +838,24 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
               availableSubcategories={availableSubcategories}
               selectedSubcategories={selectedSubcategories}
               toggleSubcategory={toggleSubcategory}
-              selectedLocation={selectedLocation}
-              setSelectedLocation={setSelectedLocation}
-              setLocationQuery={setLocationQuery}
-              selectedDistance={selectedDistance}
-              setSelectedDistance={setSelectedDistance}
+              selectedLocations={selectedLocations}
+              toggleLocation={toggleLocation}
+              selectedCertifications={selectedCertifications}
+              toggleCertification={toggleCertification}
+              selectedMoqTiers={selectedMoqTiers}
+              toggleMoqTier={toggleMoqTier}
+              selectedEstablishedYears={selectedEstablishedYears}
+              toggleEstablishedYear={toggleEstablishedYear}
               selectedSupplierTypes={selectedSupplierTypes}
               toggleSupplierType={toggleSupplierType}
-              selectedMoqTier={selectedMoqTier}
-              setSelectedMoqTier={setSelectedMoqTier}
               isGstOnly={isGstOnly}
               setIsGstOnly={setIsGstOnly}
               isNexoraVerifiedOnly={isNexoraVerifiedOnly}
               setIsNexoraVerifiedOnly={setIsNexoraVerifiedOnly}
               isBusinessVerifiedOnly={isBusinessVerifiedOnly}
               setIsBusinessVerifiedOnly={setIsBusinessVerifiedOnly}
+              isExportReadyOnly={isExportReadyOnly}
+              setIsExportReadyOnly={setIsExportReadyOnly}
               maxPrice={maxPrice}
               setMaxPrice={setMaxPrice}
               onClearAll={handleClearAllFilters}
@@ -627,7 +895,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
           <div className="mb-6 bg-white border border-[#e8e8e8] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
             <div className="flex flex-col gap-1">
               <h2 className="text-[18px] font-extrabold text-[#1c1b1b]">
-                {activeTab === 'products' ? filteredProducts.length : activeTab === 'suppliers' ? filteredSuppliers.length : filteredOem.length} results for <span className="text-[#b90064]">“{searchQuery}”</span>
+                {activeTab === 'products' ? filteredProducts.length : activeTab === 'suppliers' ? filteredSuppliers.length : filteredOem.length} results for <span className="text-[#b90064]">“{searchQuery || 'All Beauty Categories'}”</span>
               </h2>
               <div className="flex items-center gap-2 text-[12px] font-bold text-[#594047]">
                 <MapPin className="w-3.5 h-3.5 text-[#b90064]" />
@@ -635,9 +903,9 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                 <span className="mx-1 opacity-40">•</span>
                 <span>Sorted by: {
                   activeTab === 'products' ? 
-                    (sortBy === 'relevance' ? 'Relevance' : sortBy === 'most_enquired' ? 'Most Enquired' : sortBy === 'newest' ? 'Newest' : sortBy === 'price_asc' ? 'Price: Low to High' : sortBy === 'price_desc' ? 'Price: High to Low' : 'Lowest MOQ') :
+                    (sortBy === 'relevance' ? 'Relevance' : sortBy === 'rating_desc' ? 'Highest Rating' : sortBy === 'moq_asc' ? 'Lowest MOQ' : sortBy === 'price_asc' ? 'Price: Low to High' : sortBy === 'price_desc' ? 'Price: High to Low' : sortBy === 'established_asc' ? 'Established Manufacturer' : 'Most Enquired') :
                   activeTab === 'suppliers' ?
-                    (sortBy === 'relevance' ? 'Relevance' : sortBy === 'verified' ? 'Verified First' : sortBy === 'fast_response' ? 'Fastest Response' : 'Most Products') :
+                    (sortBy === 'relevance' ? 'Relevance' : sortBy === 'rating_desc' ? 'Highest Rating' : sortBy === 'established_asc' ? 'Year Established (Oldest First)' : sortBy === 'established_desc' ? 'Year Established (Newest First)' : sortBy === 'employees_desc' ? 'Employee Count' : sortBy === 'verified' ? 'Verified First' : sortBy === 'fast_response' ? 'Fastest Response' : 'Most Products') :
                     (sortBy === 'relevance' ? 'Relevance' : sortBy === 'verified' ? 'Verified First' : sortBy === 'moq_asc' ? 'Lowest MOQ' : 'Fastest Lead Time')
                 }</span>
               </div>
@@ -645,7 +913,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
 
             {activeChips.length > 0 && (
               <div className="flex flex-wrap gap-2 items-center">
-                <span className="text-[11px] font-bold text-[#8c7077] uppercase mr-1">Active Filters:</span>
+                <span className="text-[11px] font-bold text-[#8c7077] uppercase mr-1">Active:</span>
                 {activeChips.map((chip) => (
                   <button
                     key={chip.id}
@@ -746,30 +1014,35 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="bg-white border border-[#e8e8e8] hover:border-[#8c7077] rounded-lg px-3 py-1.5 text-[12px] font-semibold text-[#1c1b1b] focus:outline-none focus:border-[#b90064] cursor-pointer appearance-none pr-8"
+                  className="bg-white border border-[#e8e8e8] hover:border-[#8c7077] rounded-lg px-3 py-1.5 text-[12px] font-semibold text-[#1c1b1b] focus:outline-none focus:border-[#b90064] cursor-pointer appearance-none pr-8 shadow-2xs"
                 >
                   {activeTab === 'products' ? (
                     <>
-                      <option value="relevance">Relevance</option>
-                      <option value="most_enquired">Most Enquired</option>
-                      <option value="newest">Newest</option>
-                      <option value="price_asc">Price: Low to High</option>
-                      <option value="price_desc">Price: High to Low</option>
-                      <option value="moq_asc">Lowest MOQ</option>
+                      <option value="relevance">Sort: Relevance</option>
+                      <option value="rating_desc">Sort: Highest Rating ★</option>
+                      <option value="moq_asc">Sort: Lowest MOQ</option>
+                      <option value="price_asc">Sort: Price: Low to High</option>
+                      <option value="price_desc">Sort: Price: High to Low</option>
+                      <option value="established_asc">Sort: Established Manufacturer</option>
+                      <option value="most_enquired">Sort: Most Enquired</option>
                     </>
                   ) : activeTab === 'suppliers' ? (
                     <>
-                      <option value="relevance">Relevance</option>
-                      <option value="verified">Verified First</option>
-                      <option value="fast_response">Fastest Response</option>
-                      <option value="most_products">Most Products</option>
+                      <option value="relevance">Sort: Relevance</option>
+                      <option value="rating_desc">Sort: Highest Rating ★</option>
+                      <option value="established_asc">Sort: Established (Oldest First)</option>
+                      <option value="established_desc">Sort: Established (Newest First)</option>
+                      <option value="employees_desc">Sort: Employee Count (Largest)</option>
+                      <option value="verified">Sort: Trust Score &amp; Verified</option>
+                      <option value="fast_response">Sort: Fastest Response Time</option>
+                      <option value="most_products">Sort: Most Products Listed</option>
                     </>
                   ) : (
                     <>
-                      <option value="relevance">Relevance</option>
-                      <option value="verified">Verified First</option>
-                      <option value="moq_asc">Lowest MOQ</option>
-                      <option value="fast_lead">Fastest Lead Time</option>
+                      <option value="relevance">Sort: Relevance</option>
+                      <option value="verified">Sort: Verified Labs First</option>
+                      <option value="moq_asc">Sort: Lowest MOQ</option>
+                      <option value="fast_lead">Sort: Fastest Lead Time</option>
                     </>
                   )}
                 </select>
@@ -1387,21 +1660,24 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                 availableSubcategories={availableSubcategories}
                 selectedSubcategories={selectedSubcategories}
                 toggleSubcategory={toggleSubcategory}
-                selectedLocation={selectedLocation}
-                setSelectedLocation={setSelectedLocation}
-                setLocationQuery={setLocationQuery}
-                selectedDistance={selectedDistance}
-                setSelectedDistance={setSelectedDistance}
+                selectedLocations={selectedLocations}
+                toggleLocation={toggleLocation}
+                selectedCertifications={selectedCertifications}
+                toggleCertification={toggleCertification}
+                selectedMoqTiers={selectedMoqTiers}
+                toggleMoqTier={toggleMoqTier}
+                selectedEstablishedYears={selectedEstablishedYears}
+                toggleEstablishedYear={toggleEstablishedYear}
                 selectedSupplierTypes={selectedSupplierTypes}
                 toggleSupplierType={toggleSupplierType}
-                selectedMoqTier={selectedMoqTier}
-                setSelectedMoqTier={setSelectedMoqTier}
                 isGstOnly={isGstOnly}
                 setIsGstOnly={setIsGstOnly}
                 isNexoraVerifiedOnly={isNexoraVerifiedOnly}
                 setIsNexoraVerifiedOnly={setIsNexoraVerifiedOnly}
                 isBusinessVerifiedOnly={isBusinessVerifiedOnly}
                 setIsBusinessVerifiedOnly={setIsBusinessVerifiedOnly}
+                isExportReadyOnly={isExportReadyOnly}
+                setIsExportReadyOnly={setIsExportReadyOnly}
                 maxPrice={maxPrice}
                 setMaxPrice={setMaxPrice}
                 onClearAll={handleClearAllFilters}

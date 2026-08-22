@@ -1,10 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
+import React, { createContext, useContext } from 'react';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { DatabaseState } from '../db/database';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mock-nexora-project.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vY2stbmV4b3JhLXByb2plY3QiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTcwMDA0MDAwMCwiZXhwIjoyMDE1NjE2MDAwfQ.mock_key_nexora';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
@@ -144,5 +145,38 @@ export async function syncAllDataToSupabase(state: DatabaseState): Promise<{ suc
     };
   }
 }
+
+export interface SupabaseContextType {
+  supabase: SupabaseClient;
+  isConfigured: boolean;
+  testConnection: () => Promise<{ connected: boolean; message: string; details?: any; latencyMs?: number }>;
+  syncData: (state: DatabaseState) => Promise<{ success: boolean; syncedCount: number; errors: string[] }>;
+}
+
+export const SupabaseContext = createContext<SupabaseContextType>({
+  supabase,
+  isConfigured: false,
+  testConnection: testSupabaseConnection,
+  syncData: syncAllDataToSupabase,
+});
+
+export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const isConfigured = isSupabaseConfigured();
+
+  return React.createElement(
+    SupabaseContext.Provider,
+    {
+      value: {
+        supabase,
+        isConfigured,
+        testConnection: testSupabaseConnection,
+        syncData: syncAllDataToSupabase,
+      },
+    },
+    children
+  );
+};
+
+export const useSupabase = () => useContext(SupabaseContext);
 
 
