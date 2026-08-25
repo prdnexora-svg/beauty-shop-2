@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TopNavBar } from './components/TopNavBar';
 import { HeroSection } from './components/HeroSection';
 import { CategoryGrid } from './components/CategoryGrid';
@@ -38,7 +38,17 @@ import { ChatModalDrawer } from './components/ChatModalDrawer';
 import { BuyerOnboardingScreen } from './components/BuyerOnboardingScreen';
 import { DatabaseStatusModal } from './components/DatabaseStatusModal';
 import { getBuyerProfile, BUYER_PROFILES_DB } from './data/buyerProfilesData';
-import { SupabaseProvider } from './lib/supabase';
+import {
+  SupabaseProvider,
+  useSupabase,
+  AUTH_LOGIN_PATH,
+  AUTH_CALLBACK_PATH,
+  AUTH_CALLBACK_PREFIX,
+  getAuthCallbackCode,
+  hasAuthCallbackParams,
+  isAuthPath,
+  stripAuthCallbackParams,
+} from './lib/supabase';
 import {
   CATEGORIES,
   TRENDING_PRODUCTS,
@@ -47,21 +57,33 @@ import {
 import { RFQItem, DealProduct, TrendingProduct, VerifiedSupplier, SearchProduct } from './types';
 import { CheckCircle2, Database } from 'lucide-react';
 
-export function App() {
-  const [currentScreen, setCurrentScreen] = useState<'explore' | 'directory' | 'supplier-directory' | 'plp' | 'product-detail' | 'search-results' | 'brands' | 'oem-hub' | 'supplier-profile' | 'onboarding' | 'buyer-onboarding' | 'supplier-portal' | 'supplier-verification' | 'buyer-dashboard' | 'buyer-profile' | 'rfq-tracking' | 'sample-request' | 'post-rfq' | 'buyer-enquiry-log'>('buyer-profile');
+function NexoraShopApp() {
+  const {
+    isConfigured,
+    authReady,
+    session,
+    user,
+    locationSyncStatus,
+    signOut,
+  } = useSupabase();
+
+  const [currentScreen, setCurrentScreen] = useState<'explore' | 'directory' | 'supplier-directory' | 'plp' | 'product-detail' | 'search-results' | 'brands' | 'oem-hub' | 'supplier-profile' | 'onboarding' | 'buyer-onboarding' | 'supplier-portal' | 'supplier-verification' | 'buyer-dashboard' | 'buyer-profile' | 'rfq-tracking' | 'sample-request' | 'post-rfq' | 'buyer-enquiry-log'>('explore');
   const [selectedProductId, setSelectedProductId] = useState<string>('product_vitc_101');
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>('seller_aura_001');
   const [selectedLocation, setSelectedLocation] = useState('All');
   
-  // Persistent Auth State
+  // Persistent Auth State (synced from the single Supabase auth session when a
+  // real Supabase project is configured; local demo storage is only a fallback).
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    if (isConfigured) return false;
     const stored = localStorage.getItem('nexora_is_logged_in');
-    return stored === null ? true : stored === 'true'; // Default to logged in as per prompt
+    return stored === 'true';
   });
 
   const [userRole, setUserRole] = useState<'buyer' | 'supplier' | null>(() => {
+    if (isConfigured) return null;
     const stored = localStorage.getItem('nexora_user_role');
-    return (stored as 'buyer' | 'supplier') || 'buyer';
+    return (stored === 'buyer' || stored === 'supplier') ? stored : null;
   });
 
   // Persistent Buyer Profile State
@@ -163,11 +185,16 @@ export function App() {
     triggerToast('Profile & Business Details updated successfully!');
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUserRole(null);
+  const handleLogout = async () => {
+    localStorage.removeItem('nexora_user_session');
+    localStorage.removeItem('nexora_guest_mode');
     localStorage.setItem('nexora_is_logged_in', 'false');
     localStorage.removeItem('nexora_user_role');
+    setIsLoggedIn(false);
+    setUserRole(null);
+    setIsEditProfileOpen(false);
+    await signOut({ redirectToLogin: false });
+    setCurrentScreen('explore');
     triggerToast('You have signed out successfully.');
   };
 
@@ -179,19 +206,15 @@ export function App() {
     setIsAuthModalOpen(false);
     
     if (isNewUser) {
-      if (role === 'buyer') {
-        handleNavigate('buyer-onboarding');
-      } else {
-        handleNavigate('onboarding');
-      }
+      const target = role === 'buyer' ? 'buyer-onboarding' : 'onboarding';
+      setCurrentScreen(target);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       triggerToast(`Welcome to Nexora Luxe! Let's set up your ${role} profile.`);
     } else {
+      const target = role === 'buyer' ? 'buyer-dashboard' : 'supplier-portal';
+      setCurrentScreen(target);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       triggerToast(`Welcome back! Logged in as ${role === 'buyer' ? 'Buyer' : 'Supplier'}.`);
-      if (role === 'buyer') {
-        handleNavigate('buyer-dashboard');
-      } else {
-        handleNavigate('supplier-portal');
-      }
     }
   };
 
@@ -348,8 +371,159 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Derive the Supabase user's role (stored in auth metadata at registration).
+  const supabaseRole = (user?.user_metadata?.role as 'buyer' | 'supplier') || null;
+  const currentPathname = typeof window !== 'undefined' ? window.location.pathname : '/';
+  const isAuthLoginPath = currentPathname === AUTH_LOGIN_PATH;
+  const isAuthCallbackPath = currentPathname === AUTH_CALLBACK_PATH || currentPathname.startsWith(AUTH_CALLBACK_PREFIX);
+  const isAuthRoute = isAuthPath(currentPathname);
+  const authCallbackPresent = hasAuthCallbackParams();
+  const authCallbackCode = getAuthCallbackCode();
+
+  // Always strip transient authorization parameters after the Supabase PKCE
+  // exchange has resolved (session present) or when we are already rendering a
+  // stable auth page, so `?code=...&state=...` never persists in the address bar.
+  useEffect(() => {
+    if (authCallbackCode && session?.user) {
+      stripAuthCallbackParams();
+    }
+  }, [authCallbackCode, session?.user?.id]);
+
+  // Keep the in-memory login flags in sync with the single Supabase auth
+  // listener whenever a real Supabase project is configured.
+  useEffect(() => {
+    if (!isConfigured) return;
+    if (!authReady) return;
+    if (session?.user) {
+      const role = supabaseRole || 'buyer';
+      setIsLoggedIn(true);
+      setUserRole(role);
+      localStorage.setItem('nexora_is_logged_in', 'true');
+      if (role) localStorage.setItem('nexora_user_role', role);
+    } else {
+      setIsLoggedIn(false);
+      setUserRole(null);
+      localStorage.setItem('nexora_is_logged_in', 'false');
+      localStorage.removeItem('nexora_user_role');
+    }
+  }, [isConfigured, authReady, session?.user?.id, supabaseRole]);
+
+  // Demo / local mode fallback keeps the existing offline preview working.
+  useEffect(() => {
+    if (isConfigured) return;
+    const stored = localStorage.getItem('nexora_is_logged_in');
+    const storedRole = localStorage.getItem('nexora_user_role');
+    setIsLoggedIn(stored === 'true');
+    setUserRole(storedRole === 'buyer' || storedRole === 'supplier' ? storedRole : null);
+  }, [isConfigured]);
+
+  // PKCE / OAuth callback handling: once a session exists on any /auth/*
+  // path, normalize the URL back to the app root to avoid repeat exchanges.
+  // This also covers authenticated users landing on /auth/login, preventing
+  // the login view from being re-rendered while already signed in (loop guard).
+  useEffect(() => {
+    if (!session?.user || !isAuthRoute) return;
+    window.history.replaceState({}, '', '/');
+    setCurrentScreen('explore');
+    stripAuthCallbackParams();
+  }, [session?.user?.id, isAuthRoute]);
+
+  // If the Supabase session is no longer valid, do not strand the user on a
+  // protected workspace.
+  useEffect(() => {
+    if (!isConfigured || !authReady) return;
+    if (session?.user) return;
+    const protectedScreens = [
+      'buyer-dashboard', 'buyer-profile', 'rfq-tracking', 'buyer-enquiry-log',
+      'post-rfq', 'sample-request', 'buyer-onboarding',
+      'supplier-portal', 'supplier-verification', 'onboarding',
+    ];
+    setCurrentScreen((prev) => protectedScreens.includes(prev) ? 'explore' : prev);
+  }, [isConfigured, authReady, session?.user?.id]);
+
+  if (isConfigured && !authReady) {
+    return (
+      <div className="min-h-screen bg-[#fdf8f8] flex items-center justify-center p-4 text-center">
+        <div className="space-y-3">
+          <div className="w-10 h-10 border-4 border-[#b90064] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm font-bold text-[#594047]">Securing your Nexora session…</p>
+        </div>
+      </div>
+    );
+  }
+
+  // The browser is still exchanging a PKCE authorization code for a session.
+  if (isConfigured && isAuthCallbackPath && authCallbackPresent && !session?.user) {
+    if (!authReady) {
+      return (
+        <div className="min-h-screen bg-[#fdf8f8] flex items-center justify-center p-4 text-center">
+          <div className="w-10 h-10 border-4 border-[#b90064] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm font-bold text-[#594047]">Completing secure sign-in…</p>
+        </div>
+      );
+    }
+
+    // The exchange finished but no session was created (expired/invalid code).
+    stripAuthCallbackParams();
+    return (
+      <div className="min-h-screen bg-[#fdf8f8] flex items-center justify-center p-4 text-center">
+        <div className="max-w-md bg-white border border-[#e8e8e8] rounded-3xl p-8 shadow-2xl space-y-5">
+          <div className="w-12 h-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto">
+            <span className="text-lg font-black">!</span>
+          </div>
+          <h1 className="text-xl font-black text-[#1c1b1b]">Sign-in link has expired</h1>
+          <p className="text-[13px] text-[#594047]">
+            The authorization code was not accepted. Please request a new secure sign-in link.
+          </p>
+          <button
+            onClick={() => {
+              window.location.replace(AUTH_LOGIN_PATH);
+            }}
+            className="w-full bg-[#b90064] hover:bg-[#8e004b] text-white font-extrabold text-[13px] py-3 rounded-xl shadow-md transition-all cursor-pointer"
+          >
+            Go to Sign In
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Explicit /auth/login route. This is also the redirect target for invalid or
+  // expired sessions. It renders in-page and normalizes to "/" on success.
+  if (isConfigured && isAuthLoginPath) {
+    if (!authReady) {
+      return (
+        <div className="min-h-screen bg-[#fdf8f8] flex items-center justify-center p-4 text-center">
+          <div className="w-10 h-10 border-4 border-[#b90064] border-t-transparent rounded-full animate-spin mx-auto" />
+        </div>
+      );
+    }
+    if (session?.user) {
+      // Already authenticated: the effect below normalizes the URL back to "/".
+      return (
+        <div className="min-h-screen bg-[#fdf8f8] flex items-center justify-center p-4 text-center">
+          <div className="w-10 h-10 border-4 border-[#b90064] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm font-bold text-[#594047] mt-3">Redirecting to Nexora…</p>
+        </div>
+      );
+    }
+    return (
+      <AuthModal
+        isOpen
+        isFullPage
+        initialMode="login"
+        onClose={() => {
+          window.history.replaceState({}, '', '/');
+        }}
+        onSuccess={(role, isNewUser) => {
+          handleLoginSuccess(role, isNewUser);
+          window.history.replaceState({}, '', '/');
+        }}
+      />
+    );
+  }
+
   return (
-    <SupabaseProvider>
       <div className="min-h-screen bg-[#fdf8f8] text-[#1c1b1b] flex flex-col font-sans selection:bg-[#fde7f3] selection:text-[#b90064] pb-16 md:pb-0">
       
       {/* Toast Banner */}
@@ -868,7 +1042,9 @@ export function App() {
       <button
         id="fab-db-inspector"
         aria-label="Toggle Phase 4 Database Schema & Live Engine Inspector"
-        title="Phase 4 Relational Database Inspector (8 Entities & Live Event Engine)"
+        title={isLoggedIn && locationSyncStatus === 'synced'
+          ? 'Phase 4 Relational Database Inspector & Live Location Synced'
+          : 'Phase 4 Relational Database Inspector (8 Entities & Live Event Engine)'}
         onClick={() => setIsDatabaseModalOpen(prev => !prev)}
         className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 bg-[#1C1B1B] hover:bg-[#B90064] text-white py-2.5 px-3.5 rounded-full shadow-xl flex items-center gap-2 text-xs font-bold transition-all transform hover:scale-105 cursor-pointer border border-white/20 group"
       >
@@ -881,6 +1057,13 @@ export function App() {
       </button>
 
       </div>
+  );
+}
+
+export function App() {
+  return (
+    <SupabaseProvider>
+      <NexoraShopApp />
     </SupabaseProvider>
   );
 }

@@ -3,6 +3,7 @@
 // ============================================================================
 
 import { db } from './database';
+import { supabase } from '../lib/supabase';
 import {
   DBUser,
   DBProfileBuyer,
@@ -18,6 +19,19 @@ import {
   UserRole
 } from './types';
 
+function mapSupabaseUser(user: { id: string; email?: string | null; phone?: string | null; created_at?: string; updated_at?: string; user_metadata?: { role?: UserRole } }): DBUser {
+  const role = (user.user_metadata?.role as UserRole) || 'buyer';
+  return {
+    id: user.id,
+    email: user.email || '',
+    phone: user.phone || '',
+    password_hash: 'managed-by-supabase-auth', // Never persist or expose a password locally.
+    role,
+    created_at: user.created_at || new Date().toISOString(),
+    updated_at: user.updated_at || new Date().toISOString(),
+  };
+}
+
 // ============================================================================
 // AUTH & SESSION API
 // ============================================================================
@@ -32,20 +46,21 @@ export interface AuthSession {
 export const authApi = {
   async getSession(): Promise<AuthSession | null> {
     try {
-      const stored = localStorage.getItem('nexora_user_session');
-      if (!stored) return null;
-      const parsed = JSON.parse(stored);
-      const user = db.getUserByEmailOrPhone(parsed.email) || db.getUserById(parsed.userId);
-      if (!user) return null;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return null;
 
-      const buyerProfile = db.getBuyerProfileByUserId(user.id);
-      const supplierProfile = db.getSupplierProfileByUserId(user.id);
+      const buyerProfile = session.user.user_metadata?.role === 'buyer'
+        ? db.getBuyerProfileByUserId(session.user.id)
+        : undefined;
+      const supplierProfile = session.user.user_metadata?.role === 'supplier'
+        ? db.getSupplierProfileByUserId(session.user.id)
+        : undefined;
 
       return {
-        user,
+        user: mapSupabaseUser(session.user),
         buyerProfile,
         supplierProfile,
-        token: parsed.token || 'nexora_token_mock'
+        token: session.access_token,
       };
     } catch {
       return null;
@@ -53,43 +68,25 @@ export const authApi = {
   },
 
   async login(identifier: string, passwordOrOtp: string): Promise<{ success: boolean; session?: AuthSession; error?: string }> {
-    const user = db.getUserByEmailOrPhone(identifier);
-    if (!user) {
-      // Auto-register if new user in simulation
-      return { success: false, error: 'User not found. Please register your business account.' };
+    const isEmail = identifier.includes('@');
+    const { data, error } = isEmail && passwordOrOtp.length >= 8
+      ? await supabase.auth.signInWithPassword({ email: identifier, password: passwordOrOtp })
+      : await supabase.auth.signInWithOtp(isEmail ? { email: identifier } : { phone: identifier });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    if (!data?.session?.user) {
+      return { success: false, error: 'Verification required. No active session yet.' };
     }
 
-    // OTP / Password validation
-    if (passwordOrOtp === '1234' || passwordOrOtp.length >= 4) {
-      const token = `nexora_jwt_${Date.now()}`;
-      const buyerProfile = db.getBuyerProfileByUserId(user.id);
-      const supplierProfile = db.getSupplierProfileByUserId(user.id);
-
-      const sessionData = {
-        userId: user.id,
-        email: user.email,
-        name: buyerProfile?.contact_name || supplierProfile?.company_name || 'Nexora Member',
-        role: user.role,
-        token,
-        authenticatedAt: new Date().toISOString()
-      };
-
-      localStorage.setItem('nexora_user_session', JSON.stringify(sessionData));
-      localStorage.setItem('nexora_is_logged_in', 'true');
-      localStorage.setItem('nexora_user_role', user.role);
-
-      return {
-        success: true,
-        session: {
-          user,
-          buyerProfile,
-          supplierProfile,
-          token
-        }
-      };
-    }
-
-    return { success: false, error: 'Invalid password or verification code.' };
+    return {
+      success: true,
+      session: {
+        user: mapSupabaseUser(data.session.user),
+        token: data.session.access_token,
+      },
+    };
   },
 
   async register(data: {
@@ -97,85 +94,50 @@ export const authApi = {
     businessName: string;
     role: UserRole;
     contactName?: string;
+    password?: string;
   }): Promise<{ success: boolean; session?: AuthSession; error?: string }> {
     const isEmail = data.emailOrPhone.includes('@');
-    const email = isEmail ? data.emailOrPhone : `${data.businessName.toLowerCase().replace(/[^a-z0-9]/g, '')}@sourcing.in`;
-    const phone = isEmail ? '+91 98000 00000' : data.emailOrPhone;
-
-    const existing = db.getUserByEmailOrPhone(data.emailOrPhone);
-    const user = existing || db.createUser({
-      email,
-      phone,
-      password_hash: 'hashed_account_security_key',
-      role: data.role
-    });
-
-    let buyerProfile: DBProfileBuyer | undefined;
-    let supplierProfile: DBProfileSupplier | undefined;
-
-    if (data.role === 'buyer') {
-      buyerProfile = db.upsertBuyerProfile({
-        user_id: user.id,
-        contact_name: data.contactName || 'Procurement Manager',
-        company_name: data.businessName
-      });
-    } else if (data.role === 'supplier') {
-      supplierProfile = db.upsertSupplierProfile({
-        user_id: user.id,
-        company_name: data.businessName
-      });
+    if (!isEmail) {
+      return { success: false, error: 'Business email is required for registration.' };
     }
 
-    const token = `nexora_jwt_${Date.now()}`;
-    const sessionData = {
-      userId: user.id,
-      email: user.email,
-      name: data.businessName,
-      role: data.role,
-      token,
-      authenticatedAt: new Date().toISOString()
-    };
+    const password = data.password && data.password.length >= 8
+      ? data.password
+      : `Nexora${Date.now()}`;
 
-    localStorage.setItem('nexora_user_session', JSON.stringify(sessionData));
-    localStorage.setItem('nexora_is_logged_in', 'true');
-    localStorage.setItem('nexora_user_role', data.role);
+    const { data: authData, error } = await supabase.auth.signUp({
+      email: data.emailOrPhone,
+      password,
+      options: {
+        data: { role: data.role, business_name: data.businessName },
+        emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined,
+      },
+    });
 
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    if (!authData.user) {
+      return { success: false, error: 'Registration could not create a user.' };
+    }
+
+    const user = mapSupabaseUser(authData.user);
     return {
       success: true,
-      session: {
-        user,
-        buyerProfile,
-        supplierProfile,
-        token
-      }
+      session: authData.session
+        ? { user, token: authData.session.access_token }
+        : undefined,
     };
   },
 
   async switchRole(userId: string, targetRole: UserRole): Promise<DBUser | undefined> {
-    const updated = db.updateUserRole(userId, targetRole);
-    if (updated) {
-      localStorage.setItem('nexora_user_role', targetRole);
-      // Ensure target profile exists
-      if (targetRole === 'buyer' && !db.getBuyerProfileByUserId(userId)) {
-        db.upsertBuyerProfile({
-          user_id: userId,
-          contact_name: 'Procurement Specialist',
-          company_name: 'Independent Buyer'
-        });
-      } else if (targetRole === 'supplier' && !db.getSupplierProfileByUserId(userId)) {
-        db.upsertSupplierProfile({
-          user_id: userId,
-          company_name: 'Verified Manufacturing Hub'
-        });
-      }
-    }
-    return updated;
+    const { data } = await supabase.auth.updateUser({ data: { role: targetRole } });
+    if (!data?.user) return undefined;
+    return mapSupabaseUser(data.user);
   },
 
   logout(): void {
-    localStorage.removeItem('nexora_user_session');
-    localStorage.setItem('nexora_is_logged_in', 'false');
-    localStorage.setItem('nexora_user_role', 'guest');
+    void supabase.auth.signOut();
   }
 };
 
