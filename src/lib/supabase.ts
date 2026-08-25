@@ -243,10 +243,10 @@ export function stripAuthCallbackParams(): void {
  * - Never redirect when already on /auth/login.
  * - Throttle rapid repeated redirects for the same boot/session so a stale
  *   callback or a failed token refresh cannot bounce the user forever.
- * - Manual sign-out uses `signOut({ redirectToLogin: false })` so the app does
- *   not redirect the user into a login wall after they explicitly sign out.
+ * - Protected-screen redirects are decided by App.tsx, allowing anonymous
+ *   users to remain on public screens after sign-out.
  */
-function redirectToLogin(): void {
+export function redirectToLogin(): void {
   if (typeof window === 'undefined') return;
   if (window.location.pathname === AUTH_LOGIN_PATH) return;
 
@@ -256,6 +256,40 @@ function redirectToLogin(): void {
   }
   lastAuthRedirectAt = now;
   window.location.replace(AUTH_LOGIN_PATH);
+}
+
+/**
+ * Supabase may reject a persisted session because its refresh token is expired,
+ * revoked, malformed, or no longer exists. Those failures are authentication
+ * outcomes, while network/availability failures are transient and must not
+ * force a user away from a public page.
+ */
+function isAuthenticationInvalidatingError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+
+  const authError = error as {
+    name?: string;
+    code?: string;
+    status?: number;
+    message?: string;
+  };
+  const code = (authError.code || '').toLowerCase();
+  const message = (authError.message || '').toLowerCase();
+
+  return authError.name === 'AuthSessionMissingError'
+    || authError.name === 'AuthInvalidTokenResponseError'
+    || authError.name === 'SyntaxError'
+    || authError.status === 401
+    || authError.status === 403
+    || [
+      'refresh_token_not_found',
+      'refresh_token_already_used',
+      'session_not_found',
+      'bad_jwt',
+    ].includes(code)
+    || message.includes('invalid refresh token')
+    || message.includes('refresh token not found')
+    || message.includes('jwt expired');
 }
 
 // ============================================================================
@@ -334,6 +368,12 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       };
     }
 
+    // Capture this before Supabase initialization can remove an invalid entry.
+    // A missing entry is a normal anonymous startup; a present-but-rejected
+    // entry is an expired/invalid persisted authentication attempt.
+    const hadPersistedAuthAtStartup = typeof window !== 'undefined'
+      && Boolean(window.localStorage.getItem(SUPABASE_STORAGE_KEY));
+
     const applyAuthEvent = (event: AuthChangeEvent, nextSession: Session | null) => {
       if (!mounted) return;
       setSession(nextSession);
@@ -348,11 +388,9 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           stripAuthCallbackParams();
         }
       } else if (event === 'SIGNED_OUT') {
-        const shouldRedirect = hadSessionRef.current && !suppressRedirectRef.current;
+        // App.tsx owns route-aware SIGNED_OUT redirects: protected screens go
+        // to login while public screens remain public.
         hadSessionRef.current = false;
-        if (shouldRedirect) {
-          redirectToLogin();
-        }
       }
     };
 
@@ -364,8 +402,20 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     supabase.auth
       .getSession()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
         if (!mounted) return;
+
+        if (error) {
+          setSession(null);
+          setAuthenticationStatus('unauthenticated');
+          setAuthReady(true);
+          if (hadPersistedAuthAtStartup && isAuthenticationInvalidatingError(error)) {
+            hadSessionRef.current = false;
+            redirectToLogin();
+          }
+          return;
+        }
+
         const nextSession = data?.session ?? null;
         setSession(nextSession);
         setAuthenticationStatus(nextSession ? 'authenticated' : 'unauthenticated');
@@ -374,14 +424,19 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           hadSessionRef.current = true;
           lastAuthRedirectAt = 0;
           stripAuthCallbackParams();
+        } else if (hadPersistedAuthAtStartup && !hasAuthCallbackParams()) {
+          // Supabase rejected/cleared a previously persisted session without
+          // returning an AuthError. Treat that as an invalid persisted session,
+          // but do not interfere with an in-progress PKCE callback.
+          redirectToLogin();
         }
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (!mounted) return;
         setSession(null);
         setAuthenticationStatus('unauthenticated');
         setAuthReady(true);
-        if (hadSessionRef.current) {
+        if (hadPersistedAuthAtStartup && isAuthenticationInvalidatingError(error)) {
           hadSessionRef.current = false;
           redirectToLogin();
         }

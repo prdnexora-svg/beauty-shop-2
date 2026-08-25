@@ -47,6 +47,7 @@ import {
   getAuthCallbackCode,
   hasAuthCallbackParams,
   isAuthPath,
+  redirectToLogin,
   stripAuthCallbackParams,
 } from './lib/supabase';
 import {
@@ -428,18 +429,29 @@ function NexoraShopApp() {
     stripAuthCallbackParams();
   }, [session?.user?.id, isAuthRoute]);
 
-  // If the Supabase session is no longer valid, do not strand the user on a
-  // protected workspace.
+  const protectedScreens = [
+    'buyer-dashboard', 'buyer-profile', 'rfq-tracking', 'buyer-enquiry-log',
+    'post-rfq', 'sample-request', 'buyer-onboarding',
+    'supplier-portal', 'supplier-verification', 'onboarding',
+  ];
+  const isProtectedScreen = protectedScreens.includes(currentScreen);
+
+  // Never silently replace protected content with a public screen. A missing or
+  // invalid session on a protected screen always enters the explicit login
+  // route; redirectToLogin guards /auth/login and throttles repeated attempts.
   useEffect(() => {
-    if (!isConfigured || !authReady) return;
-    if (session?.user) return;
-    const protectedScreens = [
-      'buyer-dashboard', 'buyer-profile', 'rfq-tracking', 'buyer-enquiry-log',
-      'post-rfq', 'sample-request', 'buyer-onboarding',
-      'supplier-portal', 'supplier-verification', 'onboarding',
-    ];
-    setCurrentScreen((prev) => protectedScreens.includes(prev) ? 'explore' : prev);
-  }, [isConfigured, authReady, session?.user?.id]);
+    if (!isConfigured || !authReady || session?.user || !isProtectedScreen) return;
+    redirectToLogin();
+  }, [isConfigured, authReady, session?.user?.id, isProtectedScreen]);
+
+  // A callback route without a session after auth initialization represents an
+  // expired/invalid code (including Supabase ?error= callbacks). Clean the URL
+  // and move directly to login instead of leaving an actionable error screen.
+  useEffect(() => {
+    if (!isConfigured || !authReady || session?.user || !isAuthCallbackPath) return;
+    stripAuthCallbackParams();
+    redirectToLogin();
+  }, [isConfigured, authReady, session?.user?.id, isAuthCallbackPath]);
 
   if (isConfigured && !authReady) {
     return (
@@ -452,37 +464,21 @@ function NexoraShopApp() {
     );
   }
 
-  // The browser is still exchanging a PKCE authorization code for a session.
-  if (isConfigured && isAuthCallbackPath && authCallbackPresent && !session?.user) {
-    if (!authReady) {
-      return (
-        <div className="min-h-screen bg-[#fdf8f8] flex items-center justify-center p-4 text-center">
-          <div className="w-10 h-10 border-4 border-[#b90064] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm font-bold text-[#594047]">Completing secure sign-in…</p>
-        </div>
-      );
-    }
-
-    // The exchange finished but no session was created (expired/invalid code).
-    stripAuthCallbackParams();
+  // Keep callback and protected content covered while the corresponding effect
+  // completes its automatic redirect. This prevents an invalid callback error
+  // page or protected application content from flashing on screen.
+  if (
+    isConfigured
+    && !session?.user
+    && (isAuthCallbackPath || (authReady && isProtectedScreen))
+  ) {
     return (
       <div className="min-h-screen bg-[#fdf8f8] flex items-center justify-center p-4 text-center">
-        <div className="max-w-md bg-white border border-[#e8e8e8] rounded-3xl p-8 shadow-2xl space-y-5">
-          <div className="w-12 h-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto">
-            <span className="text-lg font-black">!</span>
-          </div>
-          <h1 className="text-xl font-black text-[#1c1b1b]">Sign-in link has expired</h1>
-          <p className="text-[13px] text-[#594047]">
-            The authorization code was not accepted. Please request a new secure sign-in link.
+        <div className="space-y-3">
+          <div className="w-10 h-10 border-4 border-[#b90064] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm font-bold text-[#594047]">
+            {authCallbackPresent && !authReady ? 'Completing secure sign-in…' : 'Redirecting to secure sign-in…'}
           </p>
-          <button
-            onClick={() => {
-              window.location.replace(AUTH_LOGIN_PATH);
-            }}
-            className="w-full bg-[#b90064] hover:bg-[#8e004b] text-white font-extrabold text-[13px] py-3 rounded-xl shadow-md transition-all cursor-pointer"
-          >
-            Go to Sign In
-          </button>
         </div>
       </div>
     );
