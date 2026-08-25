@@ -193,3 +193,19 @@ export interface PopulatedQuote extends DBQuote {
 export interface PopulatedProduct extends DBProduct {
   supplier?: DBProfileSupplier;
 }
+
+// 9. USER_LOCATIONS TABLE (authenticated live coordinate sync)
+export interface DBUserLocation {
+  user_id: string; // FK to auth.users(id)
+  latitude: number;
+  longitude: number;
+  accuracy: number | null;
+  altitude: number | null;
+  speed: number | null;
+  heading: number | null;
+  source: string;
+  is_active: boolean;
+  captured_at: string;
+  updated_at: string;
+  last_synced_at: string;
+}

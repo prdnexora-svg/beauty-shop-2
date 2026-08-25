@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, CheckCircle2, ShieldCheck, ArrowRight, Building2, ShoppingBag, Sparkles, Mail, Phone, Lock, Eye, EyeOff } from 'lucide-react';
+import { X, CheckCircle2, ArrowRight, Building2, ShoppingBag, Sparkles, Mail, Phone, Lock, Eye, EyeOff, AlertCircle, Info } from 'lucide-react';
+import { useSupabase } from '../lib/supabase';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -9,13 +10,22 @@ interface AuthModalProps {
   isFullPage?: boolean;
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  onSuccess, 
+export const AuthModal: React.FC<AuthModalProps> = ({
+  isOpen,
+  onClose,
+  onSuccess,
   initialMode = 'login',
   isFullPage = false
 }) => {
+  const {
+    isConfigured,
+    signInWithEmailPassword,
+    signUpWithEmailPassword,
+    signInWithOtp,
+    verifyOtp,
+    signInWithGoogle,
+  } = useSupabase();
+
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
   const [role, setRole] = useState<'buyer' | 'supplier'>('buyer');
   const [authMethod, setAuthMethod] = useState<'otp' | 'password'>('otp');
@@ -27,11 +37,32 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [otp, setOtp] = useState('');
   const [verified, setVerified] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
 
   if (!isOpen && !isFullPage) return null;
 
-  const handleOAuthGoogle = () => {
+  const resetMessages = () => {
+    setErrorMessage(null);
+    setInfoMessage(null);
+  };
+
+  const handleOAuthGoogle = async () => {
+    resetMessages();
     setIsGoogleLoading(true);
+
+    if (isConfigured) {
+      try {
+        await signInWithGoogle();
+        // PKCE detectSessionInUrl handles the redirect/callback.
+      } catch (err: any) {
+        setErrorMessage(err?.message || 'Google sign-in failed. Please try again.');
+        setIsGoogleLoading(false);
+      }
+      return;
+    }
+
+    // Demo fallback (no remote Supabase project configured).
     setTimeout(() => {
       setIsGoogleLoading(false);
       const token = `nexora_oauth_token_${Date.now()}`;
@@ -56,14 +87,55 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     onClose();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    resetMessages();
     if (!phoneOrEmail.trim()) return;
 
+    if (isConfigured) {
+      if (authMethod === 'otp') {
+        const { error } = await signInWithOtp(phoneOrEmail.trim());
+        if (error) {
+          setErrorMessage(error.message || 'Unable to send OTP. Please try again.');
+          return;
+        }
+        setOtpMode(true);
+        setInfoMessage(`A secure verification code was sent to ${phoneOrEmail.trim()}.`);
+        return;
+      }
+
+      if (mode === 'register') {
+        const { error, needsEmailConfirmation } = await signUpWithEmailPassword(
+          phoneOrEmail.trim(),
+          password,
+          role,
+        );
+        if (error) {
+          setErrorMessage(error.message || 'Registration failed. Please try again.');
+          return;
+        }
+        if (needsEmailConfirmation) {
+          setVerified(false);
+          setInfoMessage('Registration received. Check your email to confirm your Nexora account, then sign in.');
+          return;
+        }
+        setVerified(true);
+        return;
+      }
+
+      const { error } = await signInWithEmailPassword(phoneOrEmail.trim(), password);
+      if (error) {
+        setErrorMessage(error.message || 'Sign in failed. Please verify your credentials.');
+        return;
+      }
+      setVerified(true);
+      return;
+    }
+
+    // Demo fallback (no remote Supabase project configured).
     if (authMethod === 'otp') {
       setOtpMode(true);
     } else {
-      // Password login simulation
       if (password.length >= 4) {
         const token = `nexora_jwt_${Date.now()}`;
         localStorage.setItem('nexora_user_session', JSON.stringify({
@@ -77,13 +149,27 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         localStorage.setItem('nexora_user_role', role);
         setVerified(true);
       } else {
-        alert('Please enter a password with at least 4 characters.');
+        setErrorMessage('Please enter a password with at least 4 characters.');
       }
     }
   };
 
-  const handleVerifyOtp = (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    resetMessages();
+
+    if (isConfigured) {
+      const { error } = await verifyOtp(phoneOrEmail.trim(), otp);
+      if (error) {
+        setErrorMessage(error.message || 'Invalid or expired verification code.');
+        setOtp('');
+        return;
+      }
+      setVerified(true);
+      return;
+    }
+
+    // Demo fallback (no remote Supabase project configured).
     if (otp === '1234' || otp.length === 4) {
       const token = `nexora_jwt_${Date.now()}`;
       localStorage.setItem('nexora_user_session', JSON.stringify({
@@ -97,7 +183,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       localStorage.setItem('nexora_user_role', role);
       setVerified(true);
     } else {
-      alert('Invalid OTP. For Demo, please enter: 1234');
+      setErrorMessage('Invalid OTP. For Demo, please enter: 1234');
       setOtp('');
     }
   };
@@ -110,13 +196,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setPhoneOrEmail('');
     setPassword('');
     setBusinessName('');
+    resetMessages();
     onSuccess(role, isNew);
     onClose();
   };
 
   const content = (
     <div className="bg-white rounded-3xl border border-[#e8e8e8] w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-      
+
       {/* Modal Header */}
       <div className="p-5 border-b border-[#e8e8e8] flex items-center justify-between bg-[#fcf9f8]">
         <div>
@@ -124,7 +211,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {verified ? 'Authentication Verified' : otpMode ? 'Verify Sourcing OTP' : mode === 'login' ? 'Sign In to Nexora Luxe' : 'Create Business Account'}
           </h3>
           <p className="text-[12px] text-[#594047] font-medium">
-            {verified ? 'Session activated & security checks passed' : otpMode ? `OTP sent to ${phoneOrEmail}` : 'Access India\'s premier B2B beauty sourcing network'}
+            {verified ? 'Session activated & security checks passed' : otpMode ? `OTP sent to ${phoneOrEmail}` : "Access India's premier B2B beauty sourcing network"}
           </p>
         </div>
         {!isFullPage && (
@@ -139,6 +226,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
       {/* Modal Body */}
       <div className="p-6">
+        {errorMessage && (
+          <div className="mb-4 flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 px-3 py-2.5 rounded-xl text-[12px] font-semibold">
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        {infoMessage && (
+          <div className="mb-4 flex items-start gap-2 bg-sky-50 border border-sky-200 text-sky-700 px-3 py-2.5 rounded-xl text-[12px] font-semibold">
+            <Info className="w-4 h-4 mt-0.5 shrink-0" />
+            <span>{infoMessage}</span>
+          </div>
+        )}
+
         {verified ? (
           <div className="text-center py-6 space-y-4">
             <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
@@ -176,7 +277,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                           newOtp[i] = val;
                           const combined = newOtp.join('');
                           setOtp(combined);
-                          
+
                           // Auto-focus next input
                           if (val && i < 3) {
                             const inputs = e.target.parentElement?.querySelectorAll('input');
@@ -197,12 +298,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </div>
 
               {/* Demo Hint */}
-              <div className="inline-block bg-[#fde7f3] border border-[#b90064]/20 px-4 py-2 rounded-xl animate-pulse mx-auto">
-                <p className="text-[11px] font-black text-[#b90064] uppercase tracking-wider flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  For Demo, enter OTP: 1234
-                </p>
-              </div>
+              {!isConfigured && (
+                <div className="inline-block bg-[#fde7f3] border border-[#b90064]/20 px-4 py-2 rounded-xl animate-pulse mx-auto">
+                  <p className="text-[11px] font-black text-[#b90064] uppercase tracking-wider flex items-center gap-2">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    For Demo, enter OTP: 1234
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -225,13 +328,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
             <div className="text-center">
               <p className="text-[12px] text-[#8c7077]">
-                Didn't receive code? <button type="button" onClick={() => setOtp('1234')} className="text-[#b90064] font-bold hover:underline cursor-pointer">Auto-fill 1234</button>
+                Didn't receive code? {!isConfigured && <button type="button" onClick={() => setOtp('1234')} className="text-[#b90064] font-bold hover:underline cursor-pointer">Auto-fill 1234</button>}
               </p>
             </div>
           </form>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            
+
             {/* Role Toggle Selector (Buyer, Supplier) */}
             <div className="grid grid-cols-2 gap-2 p-1 bg-[#f7f2f2] rounded-xl border border-[#e8e8e8]">
               <button
@@ -264,7 +367,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div className="flex border-b border-[#e8e8e8] text-[13px] font-bold">
               <button
                 type="button"
-                onClick={() => setMode('login')}
+                onClick={() => { setMode('login'); resetMessages(); }}
                 className={`flex-1 pb-2.5 border-b-2 transition-all cursor-pointer ${
                   mode === 'login'
                     ? 'border-[#b90064] text-[#b90064]'
@@ -275,7 +378,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => setMode('register')}
+                onClick={() => { setMode('register'); resetMessages(); }}
                 className={`flex-1 pb-2.5 border-b-2 transition-all cursor-pointer ${
                   mode === 'register'
                     ? 'border-[#b90064] text-[#b90064]'
@@ -291,7 +394,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <span>Sign in using:</span>
               <button
                 type="button"
-                onClick={() => setAuthMethod('otp')}
+                onClick={() => { setAuthMethod('otp'); resetMessages(); }}
                 className={`px-2 py-0.5 rounded cursor-pointer ${authMethod === 'otp' ? 'bg-[#fde7f3] text-[#b90064]' : 'hover:text-[#1c1b1b]'}`}
               >
                 Mobile OTP
@@ -299,7 +402,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <span className="text-stone-300">|</span>
               <button
                 type="button"
-                onClick={() => setAuthMethod('password')}
+                onClick={() => { setAuthMethod('password'); resetMessages(); }}
                 className={`px-2 py-0.5 rounded cursor-pointer ${authMethod === 'password' ? 'bg-[#fde7f3] text-[#b90064]' : 'hover:text-[#1c1b1b]'}`}
               >
                 Password
@@ -439,4 +542,3 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     </div>
   );
 };
-
