@@ -126,6 +126,10 @@ const SEED_PROFILES_SUPPLIER: DBProfileSupplier[] = [
     is_verified: true,
     is_gst_verified: true,
     is_iso_certified: true,
+    onboarding_status: 'approved',
+    reviewed_at: '2025-11-20T10:30:00.000Z',
+    approved_at: '2025-11-20T10:30:00.000Z',
+    verification_notes: null,
     created_at: '2025-11-20T10:30:00.000Z',
     updated_at: '2026-08-16T11:20:00.000Z'
   },
@@ -155,6 +159,10 @@ const SEED_PROFILES_SUPPLIER: DBProfileSupplier[] = [
     is_verified: true,
     is_gst_verified: true,
     is_iso_certified: true,
+    onboarding_status: 'approved',
+    reviewed_at: '2025-11-20T10:30:00.000Z',
+    approved_at: '2025-11-20T10:30:00.000Z',
+    verification_notes: null,
     created_at: '2025-08-14T08:30:00.000Z',
     updated_at: '2026-08-12T16:45:00.000Z'
   },
@@ -184,6 +192,10 @@ const SEED_PROFILES_SUPPLIER: DBProfileSupplier[] = [
     is_verified: true,
     is_gst_verified: true,
     is_iso_certified: true,
+    onboarding_status: 'approved',
+    reviewed_at: '2025-11-20T10:30:00.000Z',
+    approved_at: '2025-11-20T10:30:00.000Z',
+    verification_notes: null,
     created_at: '2025-09-01T12:30:00.000Z',
     updated_at: '2026-08-14T09:15:00.000Z'
   }
@@ -762,6 +774,10 @@ class RelationalDatabase {
         is_verified: true,
         is_gst_verified: true,
         is_iso_certified: true,
+        onboarding_status: 'review',
+        reviewed_at: null,
+        approved_at: null,
+        verification_notes: null,
         created_at: now,
         updated_at: now
       };
