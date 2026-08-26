@@ -23,13 +23,16 @@ import {
 interface SupplierOnboardingScreenProps {
   onComplete: () => void;
   onNavigateToExplore: () => void;
+  /** Authentication is completed by AuthModal before this screen is mounted. */
+  authenticated?: boolean;
 }
 
 export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> = ({
   onComplete,
-  onNavigateToExplore
+  onNavigateToExplore,
+  authenticated = false
 }) => {
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(authenticated ? 2 : 1);
   
   // Step 1: Mobile Auth
   const [mobile, setMobile] = useState('');
@@ -73,7 +76,8 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
     if (savedDraft) {
       try {
         const data = JSON.parse(savedDraft);
-        setStep(data.step || 1);
+        // A registered user resumes business onboarding, never the auth step.
+        setStep(authenticated ? Math.max(2, data.step || 2) as 2 | 3 | 4 : (data.step || 1));
         setMobile(data.mobile || '');
         setBusinessName(data.businessName || '');
         setGstin(data.gstin || '');
@@ -690,8 +694,8 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                   <CheckCircle2 className="w-10 h-10" />
                 </div>
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-black text-[#1c1b1b]">Profile Generated!</h1>
-                  <p className="text-[14px] text-[#594047]">Your business is now ready for verification.</p>
+                  <h1 className="text-3xl font-black text-[#1c1b1b]">Profile Ready for Review</h1>
+                  <p className="text-[14px] text-[#594047]">Your business and catalog are ready. Submit them for Nexora review to unlock the verified badge.</p>
                 </div>
               </div>
 
@@ -708,7 +712,7 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                   </div>
                   <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-wider border border-emerald-100">
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    Nexora Verified
+                    Pending Review
                   </div>
                 </div>
 
@@ -755,7 +759,7 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                   onClick={handleFinalComplete}
                   className="w-full py-4 bg-[#b90064] hover:bg-[#8e004b] text-white font-black text-[14px] rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
                 >
-                  <span>Launch Business Hub</span>
+                  <span>Submit for Nexora Review</span>
                   <ArrowRight className="w-5 h-5" />
                 </button>
                 <p className="text-[11px] text-[#8c7077] text-center">

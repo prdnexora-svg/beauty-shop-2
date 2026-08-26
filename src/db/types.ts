@@ -36,6 +36,7 @@ export interface DBProfileBuyer {
 
 export type SupplierBusinessType = 'Manufacturer' | 'Wholesaler' | 'OEM' | 'Private Label' | 'Distributor' | 'Contract Manufacturer';
 export type SupplierVerificationLevel = 'Basic' | 'Business Verified' | 'Nexora Verified';
+export type SupplierOnboardingStatus = 'business_pending' | 'catalog_pending' | 'review' | 'approved' | 'rejected';
 
 export interface DBProfileSupplier {
   id: string; // Primary Key
@@ -63,6 +64,10 @@ export interface DBProfileSupplier {
   is_verified: boolean;
   is_gst_verified: boolean;
   is_iso_certified: boolean;
+  onboarding_status: SupplierOnboardingStatus;
+  reviewed_at: string | null;
+  approved_at: string | null;
+  verification_notes: string | null;
   created_at: string;
   updated_at: string;
 }
