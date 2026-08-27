@@ -220,23 +220,47 @@
   --color-royal: #6B2D8C;
   --color-ink: #2A0E3F;
 
-  /* Custom shadows — shadow-md is re-tuned to the luxe ambient shadow
-     (0 8px 30px rgba(61,30,78,0.12)) per the brand mapping table */
+  /* Luxe brand namespace (bg-luxe-purple, text-luxe-gold, …) */
+  --color-luxe-purple: #3D1E4E;
+  --color-luxe-purple-light: #6B2D8C;
+  --color-luxe-purple-dark: #2A0E3F;
+  --color-luxe-gold: #C9A961;
+  --color-luxe-gold-light: #E8C547;
+  --color-luxe-cream: #FDFBF7;
+  --color-luxe-lavender: #E8D5F2;
+
+  /* Custom shadows — per the NEXORA LUXE mapping table.
+     shadow-md is re-tuned to the luxe ambient shadow as well. */
   --shadow-md: 0 8px 30px rgba(61, 30, 78, 0.12);
-  --shadow-luxe: 0 10px 34px -14px rgba(42, 14, 63, 0.16);
-  --shadow-luxe-lg: 0 22px 48px -16px rgba(42, 14, 63, 0.26);
-  --shadow-gold-glow: 0 12px 36px -10px rgba(201, 169, 97, 0.55);
+  --shadow-luxe: 0 8px 32px 0 rgba(61, 30, 78, 0.15);
+  --shadow-luxe-lg: 0 20px 60px 0 rgba(61, 30, 78, 0.3);
+  --shadow-gold-glow: 0 0 30px rgba(201, 169, 97, 0.4);
 
   /* Custom radius */
   --radius-luxe: 12px;
 
-  /* Brand animations */
-  --animate-shimmer: gold-shimmer 2.6s linear infinite;
+  /* Frosted-glass blur step */
+  --blur-xs: 2px;
+
+  /* Brand animations (utilities: animate-gold-shimmer, animate-sparkle,
+     animate-fade-in-up, animate-shimmer) */
+  --animate-gold-shimmer: goldShimmer 3s linear infinite;
+  --animate-sparkle: sparkle 2s ease-in-out infinite;
+  --animate-fade-in-up: fadeInUp 0.6s ease-out;
+  --animate-shimmer: goldShimmer 2.6s linear infinite;
   --animate-twinkle: nl-twinkle 3.4s ease-in-out infinite;
 
-  @keyframes gold-shimmer {
-    0% { background-position: -200% 50%; }
-    100% { background-position: 200% 50%; }
+  @keyframes goldShimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  @keyframes sparkle {
+    0%, 100% { opacity: 0; transform: scale(0); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
   }
 }
 
@@ -354,7 +378,7 @@
     background: #FFFFFF;
     border: 1px solid #E5D4ED;
     border-radius: 12px;
-    box-shadow: 0 10px 34px -14px rgba(42, 14, 63, 0.14);
+    box-shadow: 0 8px 32px 0 rgba(61, 30, 78, 0.15);
   }
   .luxe-card-hover {
     transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
