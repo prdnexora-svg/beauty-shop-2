@@ -616,6 +616,18 @@
     transform: translateY(-2px);
     box-shadow: 0 10px 30px rgba(201, 169, 97, 0.3);
   }
+
+  /* ===== BACKDROP-FILTER FALLBACK =====
+     Browsers without backdrop-filter get near-opaque surfaces so text
+     stays readable without the blur. (-webkit- checked too, so Safari
+     builds that do support blur via the prefix keep the true glass.) */
+  @supports not ((backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px))) {
+    .glass-card { background: rgba(255, 255, 255, 0.85); }
+    .glass-card:hover { background: rgba(255, 255, 255, 0.92); }
+    .glass-card-dark { background: rgba(42, 14, 63, 0.85); }
+    .glass-button { background: rgba(255, 255, 255, 0.85); }
+    .glass-button:hover { background: rgba(201, 169, 97, 0.45); }
+  }
 }
 
 @keyframes marquee-scroll {
