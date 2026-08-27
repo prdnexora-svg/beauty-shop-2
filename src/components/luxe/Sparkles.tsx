@@ -20,12 +20,38 @@ const SPARKS = [
   { top: '48%', left: '46%', s: 2.5, d: '2.2s', gold: true },
 ];
 
+/* Pulsing `.sparkle` dots — radial gold glints that bloom in and out. */
+const SPARKLE_DOTS = [
+  { top: '18%', left: '22%', s: 8, d: '0.2s', dur: '2.4s' },
+  { top: '30%', left: '82%', s: 10, d: '1.1s', dur: '2.8s' },
+  { top: '58%', left: '10%', s: 7, d: '0.7s', dur: '2.2s' },
+  { top: '72%', left: '58%', s: 9, d: '1.6s', dur: '2.6s' },
+  { top: '12%', left: '60%', s: 6, d: '2.0s', dur: '2.3s' },
+  { top: '84%', left: '88%', s: 8, d: '0.5s', dur: '2.9s' },
+  { top: '44%', left: '38%', s: 6, d: '1.9s', dur: '2.5s' },
+];
+
 export const Sparkles: React.FC<{ opacity?: number }> = ({ opacity = 1 }) => (
   <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ opacity }} aria-hidden="true">
     {/* Large soft bokeh orbs */}
     <div className="absolute -top-24 -left-24 w-[420px] h-[420px] rounded-full bg-[#B0579E]/25 blur-[110px]" />
     <div className="absolute top-1/3 -right-28 w-[460px] h-[460px] rounded-full bg-[#E39BC6]/25 blur-[120px]" />
     <div className="absolute -bottom-32 left-1/3 w-[380px] h-[380px] rounded-full bg-[#C9A961]/14 blur-[100px]" />
+    {/* Pulsing gold sparkles */}
+    {SPARKLE_DOTS.map((sp, i) => (
+      <span
+        key={`sparkle-${i}`}
+        className="sparkle"
+        style={{
+          top: sp.top,
+          left: sp.left,
+          width: sp.s,
+          height: sp.s,
+          animationDelay: sp.d,
+          animationDuration: sp.dur,
+        }}
+      />
+    ))}
     {SPARKS.map((sp, i) => (
       <span
         key={i}

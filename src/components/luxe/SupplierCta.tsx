@@ -48,7 +48,7 @@ export const SupplierCta: React.FC<{
             {STEPS.map((s) => (
               <div
                 key={s.label}
-                className="flex sm:flex-col items-center gap-3 sm:gap-2.5 bg-white/70 backdrop-blur-sm border border-[#EDDDBC] rounded-xl px-4 py-4"
+                className="glass-card flex sm:flex-col items-center gap-3 sm:gap-2.5 rounded-xl px-4 py-4"
               >
                 <span className="w-10 h-10 rounded-full bg-royal-gradient flex items-center justify-center shrink-0 shadow-md">
                   <s.icon className="w-[18px] h-[18px] text-[#EFD9A0]" />

@@ -63,7 +63,7 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
               <img src={heroSerum} alt="Luxury saffron & gold face serum dropper bottle" className="w-full aspect-[3/4] object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#240B33]/35 via-transparent to-transparent" />
             </div>
-            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white/14 backdrop-blur-md border border-white/30 rounded-full px-4 py-2 text-[11.5px] font-semibold text-white shadow-lg">
+            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap glass-card-dark rounded-full px-4 py-2 text-[11.5px] font-semibold text-white">
               ✦ Saffron Gold Serum · MOQ 100 pcs
             </div>
           </div>
@@ -74,19 +74,19 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
               <img src={heroBrushes} alt="Professional makeup brush set with gold ferrules" className="w-full aspect-[3/4] object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#240B33]/35 via-transparent to-transparent" />
             </div>
-            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white/14 backdrop-blur-md border border-white/30 rounded-full px-4 py-2 text-[11.5px] font-semibold text-white shadow-lg">
+            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap glass-card-dark rounded-full px-4 py-2 text-[11.5px] font-semibold text-white">
               ✦ Pro Brush Set · 12 pc Gold Ferrule
             </div>
           </div>
 
           {/* Center — headline + search */}
           <div className="order-1 lg:order-none text-center max-w-[720px] mx-auto">
-            <div className="inline-flex items-center gap-2 bg-white/12 border border-white/25 backdrop-blur-md rounded-full px-4 py-1.5 text-[12px] font-semibold tracking-wide text-white/95 mb-6">
+            <div className="glass-card-dark inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[12px] font-semibold tracking-wide text-white/95 mb-6">
               <span className="text-[#EFD9A0]">✦</span> India's Premium B2B Beauty Marketplace
             </div>
 
             <h1 className="font-display text-white text-[34px] leading-[1.16] md:text-[52px] md:leading-[1.12] font-semibold text-editorial-tight">
-              Find <span className="italic text-[#EFD9A0]">Verified</span> Beauty Suppliers, Products &amp; OEM Manufacturers
+              Find <span className="italic text-gold-shimmer">Verified</span> Beauty Suppliers, Products &amp; OEM Manufacturers
             </h1>
 
             <p className="mt-4 text-white/75 text-[14.5px] md:text-[16px] max-w-[560px] mx-auto leading-relaxed">
@@ -140,7 +140,7 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
                 <button
                   key={t}
                   onClick={() => onSearch(t, location)}
-                  className="text-white/70 hover:text-white border border-white/20 hover:border-white/45 rounded-full px-3 py-1 transition-colors"
+                  className="glass-button text-white/80 hover:text-white rounded-full px-3 py-1 text-[12px]"
                 >
                   {t}
                 </button>
@@ -153,7 +153,7 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
                 <button
                   key={tab.label}
                   onClick={() => onTabChange(tab.scope, tab.label)}
-                  className="group flex items-center justify-center gap-2 bg-white/12 hover:bg-white/22 border border-white/25 hover:border-[#EFD9A0]/60 backdrop-blur-md rounded-full px-4 py-2.5 text-[12.5px] font-semibold text-white transition-all"
+                  className="glass-button group flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-[12.5px] font-semibold text-white"
                 >
                   <tab.icon className="w-4 h-4 text-[#EFD9A0]" />
                   {tab.label === 'OEM / Private Label' ? 'OEM' : tab.label}

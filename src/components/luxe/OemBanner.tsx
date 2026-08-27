@@ -74,7 +74,7 @@ export const OemBanner: React.FC<{
           {FEATURES.map((f, i) => (
             <React.Fragment key={f.label}>
               {i > 0 && <span className="hidden sm:block w-10 h-px bg-white/20 mx-1" />}
-              <span className="flex items-center gap-2.5 bg-white/8 border border-white/15 backdrop-blur-sm rounded-full pl-1.5 pr-4 py-1.5">
+              <span className="glass-card flex items-center gap-2.5 rounded-full pl-1.5 pr-4 py-1.5">
                 <span className="w-8 h-8 rounded-full bg-gold-gradient flex items-center justify-center">
                   <f.icon className="w-4 h-4 text-[#2A0E3F]" />
                 </span>

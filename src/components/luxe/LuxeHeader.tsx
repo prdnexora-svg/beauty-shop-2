@@ -20,15 +20,15 @@ const NAV_ITEMS = [
 ];
 
 export const LuxeLogo: React.FC<{ dark?: boolean; compact?: boolean }> = ({ dark, compact }) => (
-  <div className="flex flex-col items-center leading-none select-none cursor-pointer group">
+  <div className="logo-luxe flex flex-col items-center leading-none select-none">
     <span
-      className={`font-display font-bold italic tracking-[0.14em] ${compact ? 'text-[21px]' : 'text-[24px]'} ${
+      className={`logo-nexora font-display font-bold italic tracking-[0.14em] ${compact ? 'text-[21px]' : 'text-[24px]'} ${
         dark ? 'text-white' : 'text-[#2A0E3F]'
-      } group-hover:text-[#3D1E4E] transition-colors`}
+      } transition-colors`}
     >
       NEXORA
     </span>
-    <span className="font-cormorant italic text-gold-gradient tracking-[0.55em] text-[13px] font-semibold -mt-0.5 pl-1">
+    <span className="logo-luxe-text font-cormorant italic text-gold-shimmer tracking-[0.55em] text-[13px] font-semibold -mt-0.5 pl-1">
       LUXE
     </span>
   </div>
