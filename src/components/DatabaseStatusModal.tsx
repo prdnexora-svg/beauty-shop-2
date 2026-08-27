@@ -33,6 +33,96 @@ import { db } from '../db/database';
 import { DatabaseState } from '../db/database';
 import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../data/categories';
 import { testSupabaseConnection, isSupabaseConfigured, getSupabaseConfigInfo, syncAllDataToSupabase } from '../lib/supabase';
+import { SUPABASE_AUTH_PROVIDERS_URL, phoneOtpAllowed, readPhoneCapability } from '../lib/phoneAuth';
+
+/**
+ * Sign-in channel health.
+ *
+ * "Unsupported phone provider" is the single most common auth support ticket for
+ * this app: Supabase answers that when the project has no SMS provider wired
+ * up. Rather than making someone dig through dashboard settings, the database
+ * status panel reports the cached verdict here alongside the credentials.
+ */
+const AuthChannelHealth: React.FC = () => {
+  const configured = isSupabaseConfigured();
+  const capability = readPhoneCapability();
+  const smsEnabled = phoneOtpAllowed();
+
+  const rows = [
+    {
+      label: 'Email (OTP / magic link)',
+      state: configured ? 'ready' : 'local',
+      note: configured ? 'Delivered by Supabase Auth' : 'Simulated in demo mode',
+    },
+    {
+      label: 'Mobile OTP (SMS)',
+      state: !configured
+        ? 'local'
+        : !smsEnabled
+          ? 'disabled'
+          : capability.state === 'unavailable'
+            ? 'blocked'
+            : capability.state === 'available'
+              ? 'ready'
+              : 'untested',
+      note: !configured
+        ? 'Demo mode accepts OTP 1234'
+        : !smsEnabled
+          ? 'Turned off via VITE_AUTH_PHONE_OTP_ENABLED'
+          : capability.state === 'unavailable'
+            ? `Supabase has no SMS provider configured (${capability.reason || 'Unsupported phone provider'})`
+            : capability.state === 'available'
+              ? 'A provider accepted an OTP request in this tab'
+              : 'No attempt yet — GoTrue needs Twilio / MessageBird / Vonage / TextLocal',
+    },
+  ] as const;
+
+  const badgeCopy: Record<string, { text: string; className: string }> = {
+    ready: { text: 'Ready', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    blocked: { text: 'Provider missing', className: 'bg-amber-50 text-amber-800 border-amber-200' },
+    disabled: { text: 'Disabled', className: 'bg-stone-100 text-stone-600 border-stone-200' },
+    untested: { text: 'Unknown', className: 'bg-sky-50 text-sky-700 border-sky-200' },
+    local: { text: 'Demo only', className: 'bg-[#F5EEF8] text-[#6B2D8C] border-[#E8DEEF]' },
+  };
+
+  return (
+    <div className="p-2.5 rounded-lg bg-[#FDFBF7] border border-[#E5D8EE] space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="text-[10px] uppercase font-bold text-[#7E6C96]">Sign-in Channel Health</div>
+        <span className="text-[10px] font-bold text-[#7E6C96]">Supabase Auth</span>
+      </div>
+
+      <div className="space-y-1.5">
+        {rows.map((row) => {
+          const badge = badgeCopy[row.state as keyof typeof badgeCopy];
+          return (
+            <div key={row.label} className="flex items-start justify-between gap-2">
+              <div>
+                <div className="text-[11px] font-bold text-[#2A0E3F]">{row.label}</div>
+                <div className="text-[10px] text-[#7E6C96] leading-snug">{row.note}</div>
+              </div>
+              <span className={`shrink-0 text-[9px] font-black uppercase tracking-wide px-1.5 py-0.5 rounded border ${badge.className}`}>
+                {badge.text}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      {configured && (rows[1].state === 'blocked' || rows[1].state === 'untested') && (
+        <a
+          href={SUPABASE_AUTH_PROVIDERS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[#6B2D8C] font-bold hover:underline flex items-center gap-1 text-[10px]"
+        >
+          <span>Configure SMS provider</span>
+          <ExternalLink className="w-3 h-3" />
+        </a>
+      )}
+    </div>
+  );
+};
 
 
 interface DatabaseStatusModalProps {
@@ -892,6 +982,8 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                           {getSupabaseConfigInfo().anonKeyTruncated}
                         </div>
                       </div>
+
+                      <AuthChannelHealth />
                     </div>
 
                     <div className="pt-2 border-t border-[#E5D8EE] flex items-center justify-between text-[11px] text-[#5B4A6E]">

@@ -1,8 +1,22 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { DatabaseState } from '../db/database';
 import { useLocationSync, LocationSyncStatus } from '../hooks/useLocationSync';
+import {
+  AuthFailure,
+  OtpChannel,
+  PhoneCapability,
+  PhoneCapabilityRecord,
+  classifyAuthError,
+  clearPhoneCapability,
+  localAuthFailure,
+  parseAuthIdentifier,
+  phoneOtpAllowed,
+  preferredPhoneOtpChannel,
+  readPhoneCapability,
+  writePhoneCapability,
+} from './phoneAuth';
 
 // ============================================================================
 // NEXORA UNIVERSAL SUPABASE CLIENT
@@ -293,6 +307,145 @@ function isAuthenticationInvalidatingError(error: unknown): boolean {
 }
 
 // ============================================================================
+// OTP requests (phone SMS / WhatsApp, or email code)
+// ============================================================================
+//
+// These wrappers exist because a raw `supabase.auth.signInWithOtp({ phone })`
+// fails in three unhelpful ways for this app:
+//   1. GoTrue rejects anything that is not E.164 — and the sign-in field
+//      happily accepts "+91 98201 54321".
+//   2. A project without an SMS provider answers "Unsupported phone
+//      provider", which the user cannot act on.
+//   3. Retrying #2 repeatedly also burns the per-phone SMS rate limit.
+// So every OTP request here is normalised, classified, and remembered.
+
+export interface OtpSendOptions {
+  /** 'register' asks GoTrue to create the account if it does not exist yet. */
+  purpose?: 'signin' | 'register';
+}
+
+export interface OtpSendResult {
+  error: Error | null;
+  /** Classified, UI-ready description of the failure (null on success). */
+  failure: AuthFailure | null;
+  /** Channel actually used. */
+  channel: OtpChannel;
+  /** Normalised destination (E.164 phone or lower-cased email). */
+  target: string;
+  /** Set when the request never left the browser (bad input / SMS disabled). */
+  skipped: boolean;
+}
+
+export interface OtpVerifyResult {
+  error: Error | null;
+  failure: AuthFailure | null;
+}
+
+/**
+ * Ask Supabase to deliver a one-time code to an email address or mobile
+ * number. Never throws: every outcome is expressed as `failure` so the caller
+ * can render guidance instead of a server string.
+ */
+export async function requestOtp(
+  identifier: string,
+  options: OtpSendOptions = {},
+): Promise<OtpSendResult> {
+  const parsed = parseAuthIdentifier(identifier);
+
+  if (parsed.kind === 'invalid') {
+    const isEmailAttempt = parsed.value.includes('@');
+    const failure = localAuthFailure(
+      isEmailAttempt ? 'invalid_email' : 'invalid_phone',
+      parsed.error,
+    );
+    return {
+      error: new Error(parsed.error),
+      failure,
+      channel: isEmailAttempt ? 'email' : preferredPhoneOtpChannel(),
+      target: parsed.value,
+      skipped: true,
+    };
+  }
+
+  const purpose = options.purpose ?? 'signin';
+
+  if (parsed.kind === 'email') {
+    const { error } = await supabase.auth.signInWithOtp({
+      email: parsed.value,
+      options: { shouldCreateUser: purpose === 'register' },
+    });
+    if (error) {
+      return {
+        error,
+        failure: classifyAuthError(error, 'email'),
+        channel: 'email',
+        target: parsed.value,
+        skipped: false,
+      };
+    }
+    return { error: null, failure: null, channel: 'email', target: parsed.value, skipped: false };
+  }
+
+  const channel = preferredPhoneOtpChannel();
+
+  // Guard rails for the SMS path, in order of how cheap they are.
+  if (!phoneOtpAllowed()) {
+    const failure = localAuthFailure('sms_provider_unavailable');
+    return { error: new Error(failure.message), failure, channel, target: parsed.value, skipped: true };
+  }
+
+  const capability = readPhoneCapability();
+  if (capability.state === 'unavailable') {
+    // We already know this project cannot send SMS. Do not spend a request
+    // (and the phone's rate-limit budget) rediscovering it.
+    const failure = classifyAuthError(new Error(capability.reason || 'Unsupported phone provider'), channel);
+    return { error: new Error(failure.message), failure, channel, target: parsed.value, skipped: true };
+  }
+
+  const { error } = await supabase.auth.signInWithOtp({
+    phone: parsed.value,
+    options: { channel, shouldCreateUser: purpose === 'register' },
+  });
+
+  if (error) {
+    const failure = classifyAuthError(error, channel);
+    if (failure.kind === 'sms_provider_unavailable') {
+      // Remember it for the rest of the tab so the form can warn up front.
+      writePhoneCapability({ state: 'unavailable', reason: error.message, checkedAt: Date.now() });
+    } else if (failure.kind === 'network') {
+      // Transport noise says nothing about provider config — do not cache it.
+      clearPhoneCapability();
+    }
+    return { error, failure, channel, target: parsed.value, skipped: false };
+  }
+
+  writePhoneCapability({ state: 'available', checkedAt: Date.now() });
+  return { error: null, failure: null, channel, target: parsed.value, skipped: false };
+}
+
+/** Verify a delivered code. The identifier is normalised exactly as in requestOtp. */
+export async function submitOtp(identifier: string, token: string): Promise<OtpVerifyResult> {
+  const parsed = parseAuthIdentifier(identifier);
+
+  if (parsed.kind === 'invalid') {
+    const failure = localAuthFailure(
+      parsed.value.includes('@') ? 'invalid_email' : 'invalid_phone',
+      parsed.error,
+    );
+    return { error: new Error(parsed.error), failure };
+  }
+
+  const { error } = parsed.kind === 'email'
+    ? await supabase.auth.verifyOtp({ email: parsed.value, token, type: 'email' })
+    : await supabase.auth.verifyOtp({ phone: parsed.value, token, type: 'sms' });
+
+  if (error) {
+    return { error, failure: classifyAuthError(error, parsed.kind === 'email' ? 'email' : preferredPhoneOtpChannel()) };
+  }
+  return { error: null, failure: null };
+}
+
+// ============================================================================
 // Auth + Supabase context
 // ============================================================================
 
@@ -309,10 +462,15 @@ export interface SupabaseContextType {
   locationSyncStatus: LocationSyncStatus;
   testConnection: () => Promise<{ connected: boolean; message: string; details?: any; latencyMs?: number }>;
   syncData: (state: DatabaseState) => Promise<{ success: boolean; syncedCount: number; errors: string[] }>;
-  signInWithEmailPassword: (email: string, password: string) => Promise<{ error?: Error | null }>;
-  signUpWithEmailPassword: (email: string, password: string, role: 'buyer' | 'supplier') => Promise<{ error?: Error | null; needsEmailConfirmation?: boolean }>;
-  signInWithOtp: (identifier: string) => Promise<{ error?: Error | null }>;
-  verifyOtp: (identifier: string, token: string) => Promise<{ error?: Error | null }>;
+  signInWithEmailPassword: (email: string, password: string) => Promise<{ error?: Error | null; failure?: AuthFailure | null }>;
+  signUpWithEmailPassword: (email: string, password: string, role: 'buyer' | 'supplier') => Promise<{ error?: Error | null; needsEmailConfirmation?: boolean; failure?: AuthFailure | null }>;
+  signInWithOtp: (identifier: string, options?: OtpSendOptions) => Promise<OtpSendResult>;
+  verifyOtp: (identifier: string, token: string) => Promise<OtpVerifyResult>;
+  /** Whether this Supabase project can deliver SMS OTP (cached per tab). */
+  phoneOtpCapability: PhoneCapability;
+  phoneOtpCapabilityDetail: PhoneCapabilityRecord | null;
+  /** Forget the cached verdict so the next attempt really hits Supabase again. */
+  recheckPhoneOtpCapability: () => Promise<PhoneCapability>;
   signInWithGoogle: () => Promise<void>;
   signOut: (opts?: { redirectToLogin?: boolean }) => Promise<void>;
 }
@@ -328,10 +486,19 @@ const defaultContext: SupabaseContextType = {
   locationSyncStatus: 'idle',
   testConnection: testSupabaseConnection,
   syncData: syncAllDataToSupabase,
-  signInWithEmailPassword: async () => ({ error: null }),
-  signUpWithEmailPassword: async () => ({ error: null }),
-  signInWithOtp: async () => ({ error: null }),
-  verifyOtp: async () => ({ error: null }),
+  signInWithEmailPassword: async () => ({ error: null, failure: null }),
+  signUpWithEmailPassword: async () => ({ error: null, needsEmailConfirmation: false, failure: null }),
+  signInWithOtp: async () => ({
+    error: null,
+    failure: null,
+    channel: preferredPhoneOtpChannel(),
+    target: '',
+    skipped: false,
+  }),
+  verifyOtp: async () => ({ error: null, failure: null }),
+  phoneOtpCapability: phoneOtpAllowed() ? 'unknown' : 'disabled',
+  phoneOtpCapabilityDetail: null,
+  recheckPhoneOtpCapability: async () => readPhoneCapability().state,
   signInWithGoogle: async () => {},
   signOut: async () => {},
 };
@@ -344,6 +511,27 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [session, setSession] = useState<Session | null>(null);
   const [authenticationStatus, setAuthenticationStatus] = useState<AuthenticationStatus>('loading');
   const [lastAuthEvent, setLastAuthEvent] = useState<AuthChangeEvent | null>(null);
+  // Cached verdict on whether this project can deliver SMS OTP, mirrored from
+  // the per-tab store in lib/phoneAuth so the sign-in form can react to it.
+  const [phoneOtpCapability, setPhoneOtpCapability] = useState<PhoneCapability>(() => readPhoneCapability().state);
+  const [phoneOtpCapabilityDetail, setPhoneOtpCapabilityDetail] = useState<PhoneCapabilityRecord | null>(null);
+
+  const syncPhoneOtpCapability = useCallback(() => {
+    const record = readPhoneCapability();
+    setPhoneOtpCapability(record.state);
+    setPhoneOtpCapabilityDetail(record.state === 'unavailable' ? record : null);
+    return record.state;
+  }, []);
+
+  const recheckPhoneOtpCapability = useCallback(async () => {
+    // Called when the operator says "I configured the SMS provider": forget the
+    // cached verdict so the next attempt actually reaches GoTrue again.
+    clearPhoneCapability();
+    setPhoneOtpCapabilityDetail(null);
+    const next = phoneOtpAllowed() ? 'unknown' : 'disabled';
+    setPhoneOtpCapability(next);
+    return next as PhoneCapability;
+  }, []);
 
   const hadSessionRef = useRef(false);
   const suppressRedirectRef = useRef(false);
@@ -461,7 +649,10 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     syncData: syncAllDataToSupabase,
     signInWithEmailPassword: async (email, password) => {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      return { error: error as Error | null };
+      return {
+        error: error as Error | null,
+        failure: error ? classifyAuthError(error, 'email') : null,
+      };
     },
     signUpWithEmailPassword: async (email, password, role) => {
       const { data, error } = await supabase.auth.signUp({
@@ -475,22 +666,21 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return {
         error: error as Error | null,
         needsEmailConfirmation: Boolean(data?.user && !data.session),
+        failure: error ? classifyAuthError(error, 'email') : null,
       };
     },
-    signInWithOtp: async (identifier) => {
-      const isEmail = identifier.includes('@');
-      const { error } = isEmail
-        ? await supabase.auth.signInWithOtp({ email: identifier })
-        : await supabase.auth.signInWithOtp({ phone: identifier });
-      return { error: error as Error | null };
+    // Phone/email OTP goes through requestOtp()/submitOtp() so that numbers are
+    // normalised to E.164 and provider misconfiguration becomes actionable
+    // guidance instead of "Unsupported phone provider".
+    signInWithOtp: async (identifier, options) => {
+      const result = await requestOtp(identifier, options);
+      syncPhoneOtpCapability();
+      return result;
     },
-    verifyOtp: async (identifier, token) => {
-      const isEmail = identifier.includes('@');
-      const { error } = isEmail
-        ? await supabase.auth.verifyOtp({ email: identifier, token, type: 'email' })
-        : await supabase.auth.verifyOtp({ phone: identifier, token, type: 'sms' });
-      return { error: error as Error | null };
-    },
+    verifyOtp: async (identifier, token) => submitOtp(identifier, token),
+    phoneOtpCapability,
+    phoneOtpCapabilityDetail,
+    recheckPhoneOtpCapability,
     signInWithGoogle: async () => {
       await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -526,7 +716,18 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setAuthReady(true);
       }
     },
-  }), [isConfigured, authReady, authenticationStatus, session, lastAuthEvent, locationSyncStatus]);
+  }), [
+    isConfigured,
+    authReady,
+    authenticationStatus,
+    session,
+    lastAuthEvent,
+    locationSyncStatus,
+    phoneOtpCapability,
+    phoneOtpCapabilityDetail,
+    recheckPhoneOtpCapability,
+    syncPhoneOtpCapability,
+  ]);
 
   return React.createElement(
     SupabaseContext.Provider,
@@ -536,3 +737,16 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 };
 
 export const useSupabase = () => useContext(SupabaseContext);
+
+// Re-exported so screens do not have to know which lib file owns which concern.
+export {
+  SMS_PROVIDER_FIX_STEPS,
+  SUPABASE_AUTH_PROVIDERS_URL,
+  SUPABASE_OTP_LENGTH,
+  OTP_RESEND_COOLDOWN_MS,
+  formatPhoneForDisplay,
+  parseAuthIdentifier,
+  phoneOtpAllowed,
+  toE164Phone,
+} from './phoneAuth';
+export type { AuthFailure, OtpChannel, PhoneCapability } from './phoneAuth';
