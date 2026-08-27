@@ -1157,7 +1157,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
 
       {/* Sticky Bottom Comparison Tray */}
       {comparedProducts.length > 0 && (
-        <div className="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-[#E8DEEF] shadow-[0_-4px_16px_rgba(0,0,0,0.08)] z-40 animate-in slide-in-from-bottom-5 duration-300">
+        <div className="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-[#E8DEEF] shadow-[0_-4px_16px_rgba(0,0,0,0.08)] z-45 animate-in slide-in-from-bottom-5 duration-300">
           <div className="max-w-[1440px] mx-auto px-5 md:px-10 py-3 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <span className="text-xs sm:text-sm font-bold text-[#2A0E3F]">
