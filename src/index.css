@@ -37,6 +37,52 @@
 }
 
 @layer utilities {
+  /* ── NEXORA LUXE purple-gold design system ─────────────────────────── */
+  .font-display {
+    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  }
+  .text-gold-gradient {
+    background: linear-gradient(92deg, #b08d45 0%, #e9d29a 45%, #c9a961 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .bg-gold-gradient {
+    background: linear-gradient(135deg, #d9bd7e 0%, #c9a961 55%, #b08d45 100%);
+  }
+  .bg-royal-gradient {
+    background: linear-gradient(135deg, #3d1e4e 0%, #54276e 60%, #3d1e4e 100%);
+  }
+  .luxe-card {
+    background: #ffffff;
+    border: 1px solid #ecdfef;
+    border-radius: 12px;
+    box-shadow: 0 10px 34px -14px rgba(42, 14, 63, 0.14);
+  }
+  .luxe-card-hover {
+    transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+  }
+  .luxe-card-hover:hover {
+    transform: translateY(-4px);
+    border-color: #d9b96a;
+    box-shadow: 0 20px 44px -16px rgba(42, 14, 63, 0.22);
+  }
+  @keyframes nl-twinkle {
+    0%, 100% { opacity: 0.12; transform: scale(0.65); }
+    50% { opacity: 0.95; transform: scale(1.15); }
+  }
+  @keyframes nl-float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-12px); }
+  }
+  @keyframes nl-float-delayed {
+    0%, 100% { transform: translateY(-6px) rotate(2deg); }
+    50% { transform: translateY(8px) rotate(2deg); }
+  }
+  .nl-twinkle { animation: nl-twinkle 3.4s ease-in-out infinite; }
+  .nl-float { animation: nl-float 7s ease-in-out infinite; }
+  .nl-float-delayed { animation: nl-float-delayed 9s ease-in-out infinite; }
+
   .text-editorial-tight {
     letter-spacing: -0.02em;
     line-height: 1.1;

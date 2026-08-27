@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { TopNavBar } from './components/TopNavBar';
-import { HeroSection } from './components/HeroSection';
-import { CategoryGrid } from './components/CategoryGrid';
-import { TrendingCategories } from './components/TrendingCategories';
-import { QuickRFQSection } from './components/QuickRFQSection';
-import { MarketplaceColumns } from './components/MarketplaceColumns';
-import { SponsoredImageAds } from './components/SponsoredImageAds';
-import { TopProfilesMarqueeBar } from './components/TopProfilesMarqueeBar';
-import { SponsoredReelsSection } from './components/SponsoredReelsSection';
-import { SponsoredFullVideoSection } from './components/SponsoredFullVideoSection';
-import { OEMSpotlight } from './components/OEMSpotlight';
-import { SellerGrowthSection } from './components/SellerGrowthSection';
 import { Footer } from './components/Footer';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { Breadcrumbs } from './components/Breadcrumbs';
+import { LuxeHeader } from './components/luxe/LuxeHeader';
+import { LuxeHero } from './components/luxe/LuxeHero';
+import { BuySmartCard } from './components/luxe/BuySmartCard';
+import { CategoryStrip } from './components/luxe/CategoryStrip';
+import { VerifiedSuppliers } from './components/luxe/VerifiedSuppliers';
+import { TrendingProducts } from './components/luxe/TrendingProducts';
+import { OemBanner } from './components/luxe/OemBanner';
+import { SupplierCta } from './components/luxe/SupplierCta';
+import { SourcingCities } from './components/luxe/SourcingCities';
+import { HowItWorks } from './components/luxe/HowItWorks';
+import { LuxeFooter } from './components/luxe/LuxeFooter';
 import { DirectoryHubScreen } from './components/DirectoryHubScreen';
 import { EnquiryModal } from './components/EnquiryModal';
 import { AuthModal } from './components/AuthModal';
@@ -530,18 +530,30 @@ function NexoraShopApp() {
         </div>
       )}
 
-      {/* Shared Top Navigation Bar */}
-      <TopNavBar
-        currentScreen={currentScreen}
-        onNavigate={handleNavigate}
-        onOpenRFQModal={() => handleNavigate('post-rfq')}
-        onOpenAuthModal={handleOpenAuthModal}
-        isLoggedIn={isLoggedIn}
-        userRole={userRole}
-        userProfile={buyerProfile}
-        onOpenEditProfile={() => setIsEditProfileOpen(true)}
-        onLogout={handleLogout}
-      />
+      {/* Shared Top Navigation Bar — Luxe header on the homepage */}
+      {currentScreen === 'explore' ? (
+        <LuxeHeader
+          currentScreen={currentScreen}
+          onNavigate={handleNavigate}
+          onOpenAuthModal={handleOpenAuthModal}
+          isLoggedIn={isLoggedIn}
+          userRole={userRole}
+          userProfile={buyerProfile}
+          onOpenChat={() => handleOpenChat()}
+        />
+      ) : (
+        <TopNavBar
+          currentScreen={currentScreen}
+          onNavigate={handleNavigate}
+          onOpenRFQModal={() => handleNavigate('post-rfq')}
+          onOpenAuthModal={handleOpenAuthModal}
+          isLoggedIn={isLoggedIn}
+          userRole={userRole}
+          userProfile={buyerProfile}
+          onOpenEditProfile={() => setIsEditProfileOpen(true)}
+          onLogout={handleLogout}
+        />
+      )}
 
       {/* Main Content Area with Top Spacing to Clear the Fixed Header */}
       <div className="flex-1 flex flex-col pt-20">
@@ -553,131 +565,83 @@ function NexoraShopApp() {
             supplierName: currentScreen === 'supplier-profile' ? VERIFIED_SUPPLIERS.find(s => s.id === (selectedSupplierId || searchParams.supplierId))?.name : undefined
           }}
         />
-        {/* Screen 01: Homepage / Explore Hub */}
+        {/* Screen 01: Homepage / Explore Hub — NEXORA LUXE purple-gold edition */}
         {currentScreen === 'explore' && (
-          <main className="flex-1">
-            <HeroSection
-              onSearch={(q, cat) => {
-                handleSearchSubmit({ query: q, location: cat !== 'All Categories' ? cat : 'All' });
-              }}
-              onTabChange={(tab) => {
-                if (tab === 'Suppliers') {
+          <main className="flex-1 -mt-20 bg-[linear-gradient(180deg,#FDF9FB_0%,#FBF6FB_45%,#F8F2FA_100%)]">
+            <LuxeHero
+              onSearch={(q, loc) => handleSearchSubmit({ query: q, location: loc })}
+              onTabChange={(scope) => {
+                if (scope === 'suppliers') {
                   handleNavigate('supplier-directory');
-                } else if (tab === 'Brands') {
+                } else if (scope === 'brands') {
                   handleNavigate('brands');
-                } else if (tab === 'OEM') {
+                } else if (scope === 'oem') {
                   handleSearchSubmit({ query: 'OEM', location: 'All India' });
                 } else {
                   handleNavigate('plp');
                 }
               }}
             />
-            
-            <div className="max-w-[1440px] mx-auto px-4 md:px-8 flex flex-col gap-6">
-              {/* Trending Categories Section */}
-              <TrendingCategories
-                onCategoryClick={(catName) => {
-                  if (catName === 'OEM / Private Label' || catName === 'Private Label' || catName === 'OEM') {
-                    handleSearchSubmit({ query: 'OEM', location: 'All India' });
-                  } else {
-                    handleSearchSubmit({ query: catName, location: 'All India' });
-                  }
-                }}
-                onViewAll={() => handleNavigate('plp')}
-              />
 
-              {/* Horizontal Auto-Scrolling Top Members / Profiles Bar */}
-              <TopProfilesMarqueeBar
-                onNavigateProfile={(roleType, profileId, memberData) => {
-                  if (roleType === 'supplier') {
-                    handleNavigate('supplier-profile', { supplierId: profileId, memberData });
-                  } else {
-                    handleNavigate('buyer-profile', { buyerId: profileId, memberData });
-                  }
-                }}
-                onOpenWhatsApp={(phone, name) => {
-                  handleWhatsAppSupplier(name);
-                }}
-              />
+            <BuySmartCard
+              onGetQuotes={() => {
+                handleNavigate('post-rfq');
+                triggerToast('Requirement captured — complete the form to receive supplier quotes.');
+              }}
+              onPostDetailed={() => handleNavigate('post-rfq')}
+            />
 
-              {/* Marketplace Discovery Blocks (Featured Suppliers & Trending Sourcing) */}
-              <MarketplaceColumns
-                onSupplierClick={(id) => handleNavigate('supplier-profile', { supplierId: id })}
-                onProductClick={(id) => handleNavigate('product-detail', { productId: id })}
-                onEnquiryClick={(data) => {
-                  handleOpenEnquiry({
-                    id: 'enq-' + Date.now(),
-                    title: data.title,
-                    supplierName: data.supplier,
-                    type: data.type === 'supplier' ? 'supplier' : 'product',
-                  });
-                }}
-                onViewAllSuppliers={() => handleNavigate('supplier-directory')}
-                onViewAllProducts={() => handleNavigate('plp')}
-              />
+            <CategoryStrip
+              onCategoryClick={(label) => {
+                if (label === 'OEM/Private Label') {
+                  handleSearchSubmit({ query: 'OEM', location: 'All India' });
+                } else {
+                  handleSearchSubmit({ query: label, location: 'All India' });
+                }
+              }}
+            />
 
-              {/* Sponsored Beauty Showcase (10 Sponsored Image Ads Marquee) */}
-              <SponsoredImageAds
-                onProductClick={(ad) => {
-                  handleNavigate('product-detail', { productId: ad.product_id, supplierId: ad.seller_id });
-                }}
-                onSupplierClick={(supplierId) => {
-                  handleNavigate('supplier-profile', { supplierId });
-                }}
-                onOpenAdManager={() => handleNavigate('supplier-portal')}
-                onOpenChat={handleOpenChat}
-              />
+            <VerifiedSuppliers
+              onViewProfile={(id) => handleNavigate('supplier-profile', { supplierId: id })}
+              onSendEnquiry={(name) => {
+                handleOpenEnquiry({
+                  id: 'enq-' + Date.now(),
+                  title: 'Enquiry for ' + name,
+                  supplierName: name,
+                  type: 'supplier',
+                });
+              }}
+              onViewAll={() => handleNavigate('supplier-directory')}
+            />
 
-              {/* Reels & Shorts (5 Sponsored 9:16 Video Ads) */}
-              <SponsoredReelsSection
-                onOpenAdManager={() => handleNavigate('supplier-portal')}
-                onViewProduct={(productId, sellerId) => {
-                  handleNavigate('product-detail', { productId, supplierId: sellerId });
-                }}
-                onViewSupplier={(sellerId) => {
-                  handleNavigate('supplier-profile', { supplierId: sellerId });
-                }}
-                onEnquire={(productId, sellerId, supplierName) => {
-                  handleOpenEnquiry({
-                    id: 'enq-' + Date.now(),
-                    title: 'Enquiry for ' + supplierName,
-                    supplierName,
-                    type: productId ? 'product' : 'supplier',
-                  });
-                }}
-              />
+            <TrendingProducts
+              onViewDetails={(id) => handleNavigate('product-detail', { productId: id })}
+              onSendEnquiry={(title, supplier) => {
+                handleOpenEnquiry({
+                  id: 'enq-' + Date.now(),
+                  title,
+                  supplierName: supplier,
+                  type: 'product',
+                });
+              }}
+              onViewAll={() => handleNavigate('plp')}
+            />
 
-              {/* Full Video Ads (5 Sponsored 16:9 Video Ads) */}
-              <SponsoredFullVideoSection
-                onOpenAdManager={() => handleNavigate('supplier-portal')}
-                onViewProduct={(productId, sellerId) => {
-                  handleNavigate('product-detail', { productId, supplierId: sellerId });
-                }}
-                onViewSupplier={(sellerId) => {
-                  handleNavigate('supplier-profile', { supplierId: sellerId });
-                }}
-                onEnquire={(productId, sellerId, supplierName) => {
-                  handleOpenEnquiry({
-                    id: 'enq-' + Date.now(),
-                    title: 'Enquiry for ' + supplierName,
-                    supplierName,
-                    type: productId ? 'product' : 'supplier',
-                  });
-                }}
-              />
+            <OemBanner
+              onExplore={() => handleNavigate('oem-hub')}
+              onPostRequirement={() => handleNavigate('post-rfq')}
+            />
 
-              {/* OEM / Private Label Spotlight */}
-              <OEMSpotlight
-                onExploreSolutions={() => handleNavigate('plp')}
-                onPostRequirement={() => handleNavigate('post-rfq')}
-              />
+            <SupplierCta
+              onJoin={() => handleNavigate('onboarding')}
+              onLogin={() => handleOpenAuthModal('login')}
+            />
 
-              {/* Seller / Supplier Growth Block */}
-              <SellerGrowthSection
-                onJoinSupplier={() => handleNavigate('onboarding')}
-                onSupplierLogin={() => handleOpenAuthModal('login')}
-              />
-            </div>
+            <SourcingCities
+              onCityClick={(city) => handleSearchSubmit({ query: '', location: city })}
+            />
+
+            <HowItWorks onPost={() => handleNavigate('post-rfq')} />
           </main>
         )}
 
@@ -1019,12 +983,19 @@ function NexoraShopApp() {
         onNavigateToScreen={(screen) => handleNavigate(screen)}
       />
 
-      {/* Shared Footer */}
-      <Footer
-        onNavigate={handleNavigate}
-        onOpenAuthModal={handleOpenAuthModal}
-        onOpenRFQModal={() => handleNavigate('post-rfq')}
-      />
+      {/* Shared Footer — Luxe edition on the homepage */}
+      {currentScreen === 'explore' ? (
+        <LuxeFooter
+          onNavigate={handleNavigate}
+          onOpenRFQModal={() => handleNavigate('post-rfq')}
+        />
+      ) : (
+        <Footer
+          onNavigate={handleNavigate}
+          onOpenAuthModal={handleOpenAuthModal}
+          onOpenRFQModal={() => handleNavigate('post-rfq')}
+        />
+      )}
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav 
