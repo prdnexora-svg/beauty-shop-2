@@ -20,7 +20,9 @@ const SPARKS = [
   { top: '48%', left: '46%', s: 2.5, d: '2.2s', gold: true },
 ];
 
-/* Pulsing `.sparkle` dots — radial gold glints that bloom in and out. */
+/* Pulsing `.sparkle` dots — radial gold glints that bloom in and out.
+   Positions are fixed constants instead of Math.random() so the field
+   never re-shuffles when the hero re-renders (e.g. while typing). */
 const SPARKLE_DOTS = [
   { top: '18%', left: '22%', s: 8, d: '0.2s', dur: '2.4s' },
   { top: '30%', left: '82%', s: 10, d: '1.1s', dur: '2.8s' },
@@ -29,6 +31,13 @@ const SPARKLE_DOTS = [
   { top: '12%', left: '60%', s: 6, d: '2.0s', dur: '2.3s' },
   { top: '84%', left: '88%', s: 8, d: '0.5s', dur: '2.9s' },
   { top: '44%', left: '38%', s: 6, d: '1.9s', dur: '2.5s' },
+  { top: '8%', left: '42%', s: 9, d: '0.9s', dur: '2.7s' },
+  { top: '25%', left: '6%', s: 7, d: '1.4s', dur: '2.1s' },
+  { top: '40%', left: '92%', s: 8, d: '0.4s', dur: '2.6s' },
+  { top: '66%', left: '30%', s: 10, d: '1.8s', dur: '2.4s' },
+  { top: '78%', left: '74%', s: 7, d: '0.1s', dur: '2.2s' },
+  { top: '52%', left: '70%', s: 6, d: '2.3s', dur: '2.8s' },
+  { top: '90%', left: '20%', s: 8, d: '1.2s', dur: '2.5s' },
 ];
 
 export const Sparkles: React.FC<{ opacity?: number }> = ({ opacity = 1 }) => (

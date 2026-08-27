@@ -34,25 +34,9 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
   };
 
   return (
-    <section className="relative overflow-hidden">
-      {/* Gradient canvas — Deep Royal Purple → Violet → Luxe Gold */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'linear-gradient(135deg, #3D1E4E 0%, #6B2D8C 50%, #C9A961 100%)',
-        }}
-      />
-      {/* Contrast veil so headline & search stay readable over the gold corner */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 62% 58% at 50% 44%, rgba(42,14,63,0.52) 0%, rgba(42,14,63,0.28) 52%, transparent 100%)',
-        }}
-      />
+    <section className="relative overflow-hidden bg-gradient-to-br from-luxe-purple via-luxe-purple-light to-luxe-purple">
       {/* Subtle floral damask texture */}
-      <div className="absolute inset-0 floral-pattern-gold opacity-60" />
+      <div className="absolute inset-0 floral-pattern-gold opacity-50" />
       <Sparkles />
 
       <div className="relative z-10 max-w-[1360px] mx-auto px-4 md:px-8 pt-[112px] md:pt-[128px] pb-28 md:pb-32">
@@ -86,30 +70,30 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
             </div>
 
             <h1 className="font-display text-white text-[34px] leading-[1.16] md:text-[52px] md:leading-[1.12] font-semibold text-editorial-tight">
-              Find <span className="italic text-gold-shimmer">Verified</span> Beauty Suppliers, Products &amp; OEM Manufacturers
+              Find <span className="italic text-[#EFD9A0]">Verified</span> Beauty Suppliers,{" "}
+              <span className="text-gold-shimmer">Products &amp; OEM</span> Manufacturers
             </h1>
 
-            <p className="mt-4 text-white/75 text-[14.5px] md:text-[16px] max-w-[560px] mx-auto leading-relaxed">
-              Source from 25,000+ GST-verified manufacturers, wholesalers &amp; private-label
-              specialists across India — with MOQs and quotes that fit your business.
+            <p className="mt-4 text-white/80 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+              India&rsquo;s premium B2B marketplace for beauty, cosmetics &amp; wellness
             </p>
 
             {/* Search bar */}
             <form
               onSubmit={submit}
-              className="mt-8 bg-white rounded-2xl p-2 flex flex-col sm:flex-row items-stretch gap-2 shadow-luxe-lg"
+              className="mt-8 glass-card rounded-2xl p-2 flex flex-col sm:flex-row items-stretch gap-2"
             >
               <div className="flex items-center flex-1 min-w-0 pl-3.5">
-                <Search className="w-[18px] h-[18px] text-[#8A7A94] shrink-0" />
+                <Search className="w-[18px] h-[18px] text-white/70 shrink-0" />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search for products, suppliers, brands or services"
-                  className="w-full bg-transparent outline-none px-3 py-3 text-[14px] text-[#2A0E3F] placeholder:text-[#9C8CA8]"
+                  placeholder="Search products, suppliers, brands..."
+                  className="w-full bg-transparent outline-none px-3 py-3 text-[14px] text-white placeholder:text-white/60"
                 />
               </div>
 
-              <div className="hidden sm:block w-px bg-[#EDE3F0] my-2" />
+              <div className="hidden sm:block w-px bg-white/25 my-2" />
 
               {/* Location dropdown */}
               <div className="relative sm:w-[168px] shrink-0">
@@ -117,7 +101,7 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
                 <select
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="w-full appearance-none bg-[#FAF6FB] border border-[#EDE3F0] rounded-xl pl-9 pr-8 py-3 text-[13.5px] font-medium text-[#2A0E3F] outline-none cursor-pointer hover:border-[#D9B96A] transition-colors"
+                  className="w-full appearance-none bg-white/10 border border-white/30 rounded-xl pl-9 pr-8 py-3 text-[13.5px] font-medium text-white outline-none cursor-pointer hover:border-[#EFD9A0] transition-colors [&>option]:text-[#2A0E3F]"
                 >
                   {CITIES.map((c) => (
                     <option key={c}>{c}</option>
@@ -128,7 +112,7 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
 
               <button
                 type="submit"
-                className="btn-shine bg-gold-gradient hover:brightness-105 text-[#2A0E3F] text-[14px] font-bold px-8 py-3 rounded-xl transition-all shadow-[0_10px_24px_-8px_rgba(201,169,97,0.65)] hover:-translate-y-px"
+                className="btn-shine px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-luxe-gold to-luxe-gold-light text-luxe-purple text-[14px] font-bold transition-all duration-300 shadow-luxe hover:scale-105 hover:shadow-gold-glow"
               >
                 <span className="relative z-10">Search</span>
               </button>
