@@ -1,0 +1,14 @@
+node_modules
+dist
+build
+coverage
+server.js
+bun.lock
+src
+public
+assets
+tailwind.config.ts
+tsconfig.json
+metadata.json
+*.log
+.DS_Store
