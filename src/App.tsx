@@ -378,7 +378,8 @@ function NexoraShopApp() {
   const supabaseRole = (user?.user_metadata?.role as 'buyer' | 'supplier') || null;
   const currentPathname = typeof window !== 'undefined' ? window.location.pathname : '/';
   const isAuthLoginPath = currentPathname === AUTH_LOGIN_PATH;
-  const isAuthCallbackPath = currentPathname === AUTH_CALLBACK_PATH || currentPathname.startsWith(AUTH_CALLBACK_PREFIX);
+  const isAuthCallbackPath = currentPathname !== AUTH_LOGIN_PATH
+    && (currentPathname === AUTH_CALLBACK_PATH || currentPathname.startsWith(AUTH_CALLBACK_PREFIX));
   const isAuthRoute = isAuthPath(currentPathname);
   const authCallbackPresent = hasAuthCallbackParams();
   const authCallbackCode = getAuthCallbackCode();
