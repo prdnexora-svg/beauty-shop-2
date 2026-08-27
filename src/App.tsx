@@ -19,6 +19,8 @@ import { GoldDivider } from './components/luxe/GoldDivider';
 import { DirectoryHubScreen } from './components/DirectoryHubScreen';
 import { EnquiryModal } from './components/EnquiryModal';
 import { AuthModal } from './components/AuthModal';
+import { ProductCompareModal } from './components/ProductCompareModal';
+import { QuoteModal } from './components/QuoteModal';
 import { ProductListingScreen } from './components/ProductListingScreen';
 import { SearchFilterScreen } from './components/SearchFilterScreen';
 import { SupplierDirectoryScreen } from './components/SupplierDirectoryScreen';
@@ -163,8 +165,45 @@ function NexoraShopApp() {
   const [chatInitialSupplier, setChatInitialSupplier] = useState<{ id: string; name: string; location: string; isVerified: boolean } | undefined>(undefined);
   const [chatInitialProduct, setChatInitialProduct] = useState<{ title: string; image: string; price?: string; moq?: string } | undefined>(undefined);
 
+  // Product Comparison Modal State
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+  const [comparedProductsList, setComparedProductsList] = useState<SearchProduct[]>([]);
+
+  // Formal Quote Modal State
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [targetQuoteRFQ, setTargetQuoteRFQ] = useState<RFQItem | null>(null);
+
   // Phase 4 Database Inspector Modal State
   const [isDatabaseModalOpen, setIsDatabaseModalOpen] = useState(false);
+
+  const handleOpenProductComparison = (products: SearchProduct[]) => {
+    setComparedProductsList(products);
+    setIsCompareModalOpen(true);
+  };
+
+  const handleRemoveFromComparison = (id: string) => {
+    setComparedProductsList((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const handleOpenQuoteModal = (rfq?: RFQItem) => {
+    const defaultRfq: RFQItem = rfq || {
+      id: 'rfq-gen-' + Date.now(),
+      title: 'Bulk Formulation & Custom Packaging Supply',
+      buyerLocation: 'Mumbai, Maharashtra',
+      category: 'Cosmetics & Skincare',
+      quantityRequired: '2,000 Units',
+      targetPrice: '₹180 - ₹220 / Unit',
+      timeAgo: '2 hours ago',
+      isVerifiedBuyer: true,
+      description: 'Require high-potency cosmetic formulation with COA certification and customized secondary packaging.'
+    };
+    setTargetQuoteRFQ(defaultRfq);
+    setIsQuoteModalOpen(true);
+  };
+
+  const handleFacilityTour = (supplierName?: string) => {
+    triggerToast(`Virtual Facility Tour requested for ${supplierName || 'verified manufacturing unit'}. Support desk will send access credentials.`);
+  };
 
   const handleOpenChat = (supplier?: { id: string; name: string; location: string; isVerified: boolean }, product?: { title: string; image: string; price?: string; moq?: string }) => {
     setChatInitialSupplier(supplier);
@@ -689,12 +728,12 @@ function NexoraShopApp() {
             <ProductListingScreen
               isLoggedIn={isLoggedIn}
               onOpenEnquiryModal={handleOpenEnquiry}
-              onOpenQuoteModal={() => {}}
+              onOpenQuoteModal={handleOpenQuoteModal}
               onOpenRFQModal={() => handleNavigate('post-rfq')}
               onNavigateToExplore={() => handleNavigate('explore')}
               onNavigateToSearch={handleNavigate}
               onNavigateToProductDetail={(productId) => handleNavigate('product-detail', { productId })}
-              onOpenProductComparison={() => {}}
+              onOpenProductComparison={handleOpenProductComparison}
               onCallSupplier={handleCallSupplier}
               onWhatsAppSupplier={handleWhatsAppSupplier}
               onOpenAuth={() => handleOpenAuthModal('login')}
@@ -710,7 +749,7 @@ function NexoraShopApp() {
               initialCategory={searchParams.category}
               initialLocation={searchParams.location}
               onOpenEnquiryModal={handleOpenEnquiry}
-              onOpenQuoteModal={() => {}}
+              onOpenQuoteModal={handleOpenQuoteModal}
               onOpenRFQModal={() => handleNavigate('post-rfq')}
               onNavigateToExplore={() => handleNavigate('explore')}
               onCallSupplier={handleCallSupplier}
@@ -761,7 +800,7 @@ function NexoraShopApp() {
           <main className="flex-1">
             <SupplierDirectoryScreen
               onOpenEnquiryModal={handleOpenEnquiry}
-              onOpenQuoteModal={() => {}}
+              onOpenQuoteModal={handleOpenQuoteModal}
               onOpenRFQModal={() => handleNavigate('post-rfq')}
               onNavigateToExplore={() => handleNavigate('explore')}
               onNavigateToSupplierProfile={(supplierId) => handleNavigate('supplier-profile', { supplierId })}
@@ -797,7 +836,7 @@ function NexoraShopApp() {
                 handleOpenEnquiry({ name: prodName, supplierName: suppName });
               }}
               onOpenRFQModal={() => handleNavigate('post-rfq')}
-              onOpenFacilityTour={() => {}}
+              onOpenFacilityTour={(suppName) => handleFacilityTour(suppName)}
               onNavigateToSuppliers={() => handleNavigate('supplier-directory')}
               onNavigateToSupplierProfile={(supplierId) => handleNavigate('supplier-profile', { supplierId })}
             />
@@ -812,7 +851,7 @@ function NexoraShopApp() {
               onOpenEnquiryModal={(prodName, suppName) => {
                 handleOpenEnquiry({ name: prodName, supplierName: suppName });
               }}
-              onOpenFacilityTour={() => {}}
+              onOpenFacilityTour={(suppName) => handleFacilityTour(suppName)}
               onNavigateToSuppliers={() => handleNavigate('supplier-directory')}
               onNavigateToSupplierProfile={(supplierId) => handleNavigate('supplier-profile', { supplierId })}
             />
@@ -1013,6 +1052,27 @@ function NexoraShopApp() {
         onClose={() => setChatModalOpen(false)}
         initialSupplier={chatInitialSupplier}
         initialProduct={chatInitialProduct}
+      />
+
+      <ProductCompareModal
+        isOpen={isCompareModalOpen}
+        onClose={() => setIsCompareModalOpen(false)}
+        products={comparedProductsList}
+        onRemoveProduct={handleRemoveFromComparison}
+        onOpenEnquiry={(product) => {
+          handleOpenEnquiry({
+            id: 'enq-' + Date.now(),
+            title: product.title,
+            supplierName: product.supplierName,
+            type: 'product'
+          });
+        }}
+      />
+
+      <QuoteModal
+        isOpen={isQuoteModalOpen}
+        onClose={() => setIsQuoteModalOpen(false)}
+        rfq={targetQuoteRFQ}
       />
 
       <DatabaseStatusModal
