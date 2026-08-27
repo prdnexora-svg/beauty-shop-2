@@ -422,8 +422,8 @@ export const SellerProfileScreen: React.FC<SellerProfileScreenProps> = ({
             </div>
 
             <div className="bg-white/5 rounded-xl p-3.5 border border-white/10">
-              <div className="flex items-center gap-2 text-amber-400 mb-1">
-                <Star className="w-4 h-4 fill-amber-400" />
+              <div className="flex items-center gap-2 text-gold-400 mb-1">
+                <Star className="w-4 h-4 fill-gold-400" />
                 <span className="text-xs font-bold text-stone-300">Buyer Rating</span>
               </div>
               <p className="text-lg font-extrabold text-white">{profile.overallRating} / 5.0</p>

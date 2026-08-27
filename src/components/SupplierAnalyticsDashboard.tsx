@@ -674,7 +674,7 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
                   <p className="text-purple-400">📦 Product Views: <b>{timelineData[hoveredDataPoint].pViews}</b></p>
                   <p className="text-purple-400">🏢 Profile Views: <b>{timelineData[hoveredDataPoint].profViews}</b></p>
                   <p className="text-purple-400">💬 Enquiries: <b>{timelineData[hoveredDataPoint].enq}</b></p>
-                  <p className="text-amber-400">📝 RFQs Received: <b>{timelineData[hoveredDataPoint].rfq}</b></p>
+                  <p className="text-gold-400">📝 RFQs Received: <b>{timelineData[hoveredDataPoint].rfq}</b></p>
                 </div>
               </div>
             )}

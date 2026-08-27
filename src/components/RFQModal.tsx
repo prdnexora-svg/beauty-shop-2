@@ -127,7 +127,7 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                     initial={{ opacity: 0, scale: 0 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.2 }}
-                    className="absolute -top-1 -right-1 bg-amber-400 text-white p-1 rounded-full shadow-xs z-20"
+                    className="absolute -top-1 -right-1 bg-gold-400 text-[#2A0E3F] p-1 rounded-full shadow-xs z-20"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
                   </motion.div>

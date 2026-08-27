@@ -889,7 +889,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                         <div className="flex items-center gap-1 mb-1">
                           <div className="flex items-center gap-0.5">
                             {[1, 2, 3, 4, 5].map((s) => (
-                              <Star key={s} className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                              <Star key={s} className="w-2.5 h-2.5 fill-gold-400 text-gold-400" />
                             ))}
                           </div>
                           <span className="text-[10px] font-bold text-[#7E6C96]">4.9 (85+)</span>

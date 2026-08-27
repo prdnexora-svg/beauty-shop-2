@@ -45,10 +45,94 @@ const config: Config = {
         warning: '#F59E0B', // Amber
         destructive: '#E11D48', // Rose
 
-        /* Royal purple scale (overrides default Tailwind purple) */
-        purple: {
-          50: '#F8F3FB',
-          100: '#F1E7F7',
+      /* Neutral scales — purple-tinted luxe neutrals
+         (gray-100 → cream, gray-200 → soft purple, gray-600 → muted plum,
+          gray-800 → dark purple; mirrored across stone/zinc/neutral/slate) */
+      gray: {
+        50: '#FAF7F2',
+        100: '#FDFBF7',
+        200: '#E5D4ED',
+        300: '#D6C3E4',
+        400: '#AC9CBB',
+        500: '#8A7A9C',
+        600: '#6B4D7A',
+        700: '#54406A',
+        800: '#2A0E3F',
+        900: '#241531',
+        950: '#1A0D24',
+      },
+      stone: {
+        50: '#FAF7F2',
+        100: '#FDFBF7',
+        200: '#E5D4ED',
+        300: '#D6C3E4',
+        400: '#AC9CBB',
+        500: '#8A7A9C',
+        600: '#6B4D7A',
+        700: '#54406A',
+        800: '#2A0E3F',
+        900: '#241531',
+        950: '#1A0D24',
+      },
+      zinc: {
+        50: '#FAF7F2',
+        100: '#FDFBF7',
+        200: '#E5D4ED',
+        300: '#D6C3E4',
+        400: '#AC9CBB',
+        500: '#8A7A9C',
+        600: '#6B4D7A',
+        700: '#54406A',
+        800: '#2A0E3F',
+        900: '#241531',
+        950: '#1A0D24',
+      },
+      neutral: {
+        50: '#FAF7F2',
+        100: '#FDFBF7',
+        200: '#E5D4ED',
+        300: '#D6C3E4',
+        400: '#AC9CBB',
+        500: '#8A7A9C',
+        600: '#6B4D7A',
+        700: '#54406A',
+        800: '#2A0E3F',
+        900: '#241531',
+        950: '#1A0D24',
+      },
+      slate: {
+        50: '#FAF7F2',
+        100: '#FDFBF7',
+        200: '#E5D4ED',
+        300: '#D6C3E4',
+        400: '#AC9CBB',
+        500: '#8A7A9C',
+        600: '#6B4D7A',
+        700: '#54406A',
+        800: '#2A0E3F',
+        900: '#241531',
+        950: '#1A0D24',
+      },
+
+      /* Yellow scale → luxe gold family (yellow-400 → #C9A961) */
+      yellow: {
+        50: '#FBF7EC',
+        100: '#F6EEDA',
+        200: '#EBD9A8',
+        300: '#E3C87F',
+        400: '#C9A961',
+        500: '#B08D45',
+        600: '#8F6F35',
+        700: '#7A5E2D',
+        800: '#5F4A23',
+        900: '#46361A',
+        950: '#2E2311',
+      },
+
+      /* Royal purple scale (overrides default Tailwind purple) */
+      purple: {
+        50: '#F5EEF8',
+        100: '#F1E7F7',
           200: '#E5D4ED',
           300: '#D4B8E4',
           400: '#B57FCF',
@@ -87,6 +171,8 @@ const config: Config = {
         cormorant: ['"Cormorant Garamond"', 'Georgia', 'Times New Roman', 'serif'],
       },
       boxShadow: {
+        /* shadow-md re-tuned to the luxe ambient shadow per brand table */
+        md: '0 8px 30px rgba(61, 30, 78, 0.12)',
         luxe: '0 10px 34px -14px rgba(42, 14, 63, 0.16)',
         'luxe-lg': '0 22px 48px -16px rgba(42, 14, 63, 0.26)',
         'gold-glow': '0 12px 36px -10px rgba(201, 169, 97, 0.55)',

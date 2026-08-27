@@ -570,7 +570,7 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                                           ? 'fill-[#f59e0b] text-[#f59e0b]'
                                           : star - ratingVal <= 0.5
                                           ? 'fill-[#f59e0b]/50 text-[#f59e0b]'
-                                          : 'text-[#d1d5db]'
+                                          : 'text-[#D6C3E4]'
                                       }`}
                                     />
                                   );

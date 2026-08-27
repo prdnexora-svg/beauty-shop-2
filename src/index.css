@@ -96,7 +96,7 @@
   --font-cormorant: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
 
   /* Royal purple scale (overrides Tailwind default purple) */
-  --color-purple-50: #F8F3FB;
+  --color-purple-50: #F5EEF8;
   --color-purple-100: #F1E7F7;
   --color-purple-200: #E5D4ED;
   --color-purple-300: #D4B8E4;
@@ -107,6 +107,82 @@
   --color-purple-800: #4A2560;
   --color-purple-900: #3D1E4E;
   --color-purple-950: #2A0E3F;
+
+  /* Neutral scales — purple-tinted luxe neutrals
+     (gray-100 → cream #FDFBF7, gray-200 → soft purple #E5D4ED,
+      gray-600 → muted plum #6B4D7A, gray-800 → dark purple #2A0E3F) */
+  --color-gray-50: #FAF7F2;
+  --color-gray-100: #FDFBF7;
+  --color-gray-200: #E5D4ED;
+  --color-gray-300: #D6C3E4;
+  --color-gray-400: #AC9CBB;
+  --color-gray-500: #8A7A9C;
+  --color-gray-600: #6B4D7A;
+  --color-gray-700: #54406A;
+  --color-gray-800: #2A0E3F;
+  --color-gray-900: #241531;
+  --color-gray-950: #1A0D24;
+
+  --color-stone-50: #FAF7F2;
+  --color-stone-100: #FDFBF7;
+  --color-stone-200: #E5D4ED;
+  --color-stone-300: #D6C3E4;
+  --color-stone-400: #AC9CBB;
+  --color-stone-500: #8A7A9C;
+  --color-stone-600: #6B4D7A;
+  --color-stone-700: #54406A;
+  --color-stone-800: #2A0E3F;
+  --color-stone-900: #241531;
+  --color-stone-950: #1A0D24;
+
+  --color-zinc-50: #FAF7F2;
+  --color-zinc-100: #FDFBF7;
+  --color-zinc-200: #E5D4ED;
+  --color-zinc-300: #D6C3E4;
+  --color-zinc-400: #AC9CBB;
+  --color-zinc-500: #8A7A9C;
+  --color-zinc-600: #6B4D7A;
+  --color-zinc-700: #54406A;
+  --color-zinc-800: #2A0E3F;
+  --color-zinc-900: #241531;
+  --color-zinc-950: #1A0D24;
+
+  --color-neutral-50: #FAF7F2;
+  --color-neutral-100: #FDFBF7;
+  --color-neutral-200: #E5D4ED;
+  --color-neutral-300: #D6C3E4;
+  --color-neutral-400: #AC9CBB;
+  --color-neutral-500: #8A7A9C;
+  --color-neutral-600: #6B4D7A;
+  --color-neutral-700: #54406A;
+  --color-neutral-800: #2A0E3F;
+  --color-neutral-900: #241531;
+  --color-neutral-950: #1A0D24;
+
+  --color-slate-50: #FAF7F2;
+  --color-slate-100: #FDFBF7;
+  --color-slate-200: #E5D4ED;
+  --color-slate-300: #D6C3E4;
+  --color-slate-400: #AC9CBB;
+  --color-slate-500: #8A7A9C;
+  --color-slate-600: #6B4D7A;
+  --color-slate-700: #54406A;
+  --color-slate-800: #2A0E3F;
+  --color-slate-900: #241531;
+  --color-slate-950: #1A0D24;
+
+  /* Yellow scale → luxe gold family (yellow-400 → #C9A961) */
+  --color-gold-50: #FBF7EC;
+  --color-yellow-100: #F6EEDA;
+  --color-yellow-200: #EBD9A8;
+  --color-yellow-300: #E3C87F;
+  --color-yellow-400: #C9A961;
+  --color-yellow-500: #B08D45;
+  --color-yellow-600: #8F6F35;
+  --color-yellow-700: #7A5E2D;
+  --color-yellow-800: #5F4A23;
+  --color-yellow-900: #46361A;
+  --color-yellow-950: #2E2311;
 
   /* Luxe gold scale */
   --color-gold-50: #FBF7EC;
@@ -144,7 +220,9 @@
   --color-royal: #6B2D8C;
   --color-ink: #2A0E3F;
 
-  /* Custom shadows */
+  /* Custom shadows — shadow-md is re-tuned to the luxe ambient shadow
+     (0 8px 30px rgba(61,30,78,0.12)) per the brand mapping table */
+  --shadow-md: 0 8px 30px rgba(61, 30, 78, 0.12);
   --shadow-luxe: 0 10px 34px -14px rgba(42, 14, 63, 0.16);
   --shadow-luxe-lg: 0 22px 48px -16px rgba(42, 14, 63, 0.26);
   --shadow-gold-glow: 0 12px 36px -10px rgba(201, 169, 97, 0.55);

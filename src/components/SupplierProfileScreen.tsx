@@ -312,7 +312,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star 
                     key={star} 
-                    className="w-4 h-4 fill-amber-400 text-amber-400" 
+                    className="w-4 h-4 fill-gold-400 text-gold-400" 
                   />
                 ))}
               </div>
@@ -414,7 +414,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
               </div>
               <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3.5 md:p-4 flex flex-col items-center border border-[#E8DEEF] shadow-2xs">
                 <span className="text-xl md:text-2xl font-black text-[#6B2D8C] flex items-center gap-1">
-                  <Star className="w-4 h-4 fill-amber-400 text-amber-500" /> 4.9
+                  <Star className="w-4 h-4 fill-gold-400 text-amber-500" /> 4.9
                 </span>
                 <span className="text-[11px] font-bold text-[#7E6C96] uppercase tracking-wider mt-1">Rating</span>
               </div>
