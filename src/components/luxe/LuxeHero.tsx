@@ -35,14 +35,24 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
 
   return (
     <section className="relative overflow-hidden">
-      {/* Gradient canvas */}
+      {/* Gradient canvas — Deep Royal Purple → Violet → Luxe Gold */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            'linear-gradient(112deg, #240B33 0%, #3D1E4E 30%, #6B3585 58%, #A8549B 80%, #E8A9CB 100%)',
+            'linear-gradient(135deg, #3D1E4E 0%, #6B2D8C 50%, #C9A961 100%)',
         }}
       />
+      {/* Contrast veil so headline & search stay readable over the gold corner */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 62% 58% at 50% 44%, rgba(42,14,63,0.52) 0%, rgba(42,14,63,0.28) 52%, transparent 100%)',
+        }}
+      />
+      {/* Subtle floral damask texture */}
+      <div className="absolute inset-0 floral-pattern-gold opacity-60" />
       <Sparkles />
 
       <div className="relative z-10 max-w-[1360px] mx-auto px-4 md:px-8 pt-[112px] md:pt-[128px] pb-28 md:pb-32">
@@ -87,7 +97,7 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
             {/* Search bar */}
             <form
               onSubmit={submit}
-              className="mt-8 bg-white rounded-2xl p-2 flex flex-col sm:flex-row items-stretch gap-2 shadow-[0_24px_60px_-16px_rgba(20,5,35,0.55)]"
+              className="mt-8 bg-white rounded-2xl p-2 flex flex-col sm:flex-row items-stretch gap-2 shadow-luxe-lg"
             >
               <div className="flex items-center flex-1 min-w-0 pl-3.5">
                 <Search className="w-[18px] h-[18px] text-[#8A7A94] shrink-0" />
@@ -118,9 +128,9 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
 
               <button
                 type="submit"
-                className="bg-royal-gradient hover:brightness-110 text-white text-[14px] font-semibold px-8 py-3 rounded-xl transition-all shadow-[0_10px_24px_-8px_rgba(61,30,78,0.6)] hover:-translate-y-px"
+                className="btn-shine bg-gold-gradient hover:brightness-105 text-[#2A0E3F] text-[14px] font-bold px-8 py-3 rounded-xl transition-all shadow-[0_10px_24px_-8px_rgba(201,169,97,0.65)] hover:-translate-y-px"
               >
-                Search
+                <span className="relative z-10">Search</span>
               </button>
             </form>
 
@@ -155,7 +165,7 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
       </div>
 
       {/* Soft blend into page */}
-      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#FDF9FB] to-transparent z-[5]" />
+      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#FDFBF7] to-transparent z-[5]" />
     </section>
   );
 };

@@ -57,7 +57,7 @@ const InteractiveSparkline: React.FC<SparklineTrendProps> = ({
           {isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
           <span>{isPositive ? '+' : ''}{pctChange.toFixed(1)}%</span>
         </span>
-        <span className="text-[9px] text-[#594047] font-medium">vs 7d ago</span>
+        <span className="text-[9px] text-[#5B4A6E] font-medium">vs 7d ago</span>
       </div>
 
       {/* SVG Interactive Sparkline */}
@@ -612,7 +612,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
   };
 
   return (
-    <div className="space-y-6 text-[#1c1b1b]">
+    <div className="space-y-6 text-[#2A0E3F]">
       
       {/* ========================================================================= */}
       {/* 1. TOP HEADER BANNER & CREDITS REMAINING */}
@@ -620,10 +620,10 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
       <div className="bg-gradient-to-r from-stone-900 via-neutral-900 to-stone-900 text-white rounded-2xl p-6 shadow-md relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="space-y-2 max-w-2xl z-10">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-[#b90064]/20 border border-[#b90064]/40 text-[#f7c5e0]">
-              <Sparkles className="w-4 h-4 text-[#f7c5e0]" />
+            <span className="p-1.5 rounded-lg bg-[#6B2D8C]/20 border border-[#6B2D8C]/40 text-[#E8D5F2]">
+              <Sparkles className="w-4 h-4 text-[#E8D5F2]" />
             </span>
-            <span className="text-xs font-extrabold uppercase tracking-widest text-[#f7c5e0]">
+            <span className="text-xs font-extrabold uppercase tracking-widest text-[#E8D5F2]">
               Screen 25 — Sponsored Ad Campaign Manager
             </span>
           </div>
@@ -651,13 +651,13 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
             <div className="flex bg-black/40 rounded-lg p-0.5 border border-white/10 text-[10px] font-bold">
               <button
                 onClick={() => setCurrency('USD')}
-                className={`px-2 py-1 rounded transition-colors cursor-pointer ${currency === 'USD' ? 'bg-[#b90064] text-white' : 'text-stone-300 hover:text-white'}`}
+                className={`px-2 py-1 rounded transition-colors cursor-pointer ${currency === 'USD' ? 'bg-[#6B2D8C] text-white' : 'text-stone-300 hover:text-white'}`}
               >
                 USD ($)
               </button>
               <button
                 onClick={() => setCurrency('INR')}
-                className={`px-2 py-1 rounded transition-colors cursor-pointer ${currency === 'INR' ? 'bg-[#b90064] text-white' : 'text-stone-300 hover:text-white'}`}
+                className={`px-2 py-1 rounded transition-colors cursor-pointer ${currency === 'INR' ? 'bg-[#6B2D8C] text-white' : 'text-stone-300 hover:text-white'}`}
               >
                 INR (₹)
               </button>
@@ -668,15 +668,15 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
           <div className="flex items-center gap-2 w-full md:w-auto">
             <button
               onClick={() => setShowTopUpModal(true)}
-              className="flex-1 md:flex-none bg-white text-[#1c1b1b] hover:bg-stone-100 font-bold text-xs px-3.5 py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+              className="flex-1 md:flex-none bg-white text-[#2A0E3F] hover:bg-stone-100 font-bold text-xs px-3.5 py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
             >
-              <Wallet className="w-3.5 h-3.5 text-[#b90064]" />
+              <Wallet className="w-3.5 h-3.5 text-[#6B2D8C]" />
               <span>Top Up Credits</span>
             </button>
 
             <button
               onClick={() => handleOpenCreateModal(undefined, 'image_ad')}
-              className="flex-1 md:flex-none bg-[#b90064] hover:bg-[#a00056] text-white font-bold text-xs px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
+              className="flex-1 md:flex-none bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-bold text-xs px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
             >
               <Plus className="w-4 h-4" />
               <span>Create Campaign</span>
@@ -726,7 +726,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
           </div>
           <button
             onClick={() => setShowTopUpModal(true)}
-            className="shrink-0 bg-[#b90064] hover:bg-[#a00056] text-white font-bold px-3.5 py-2 rounded-lg transition-colors cursor-pointer shadow-xs"
+            className="shrink-0 bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-bold px-3.5 py-2 rounded-lg transition-colors cursor-pointer shadow-xs"
           >
             Add $100 Credits
           </button>
@@ -739,18 +739,18 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* CARD 1: Total Ad Spend & Credits */}
-        <div className="p-4.5 bg-white border border-[#e8e8e8] rounded-xl space-y-3 flex flex-col justify-between shadow-2xs">
+        <div className="p-4.5 bg-white border border-[#E8DEEF] rounded-xl space-y-3 flex flex-col justify-between shadow-2xs">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] text-[#594047] font-extrabold uppercase tracking-wider">
+              <span className="text-[10px] text-[#5B4A6E] font-extrabold uppercase tracking-wider">
                 Total Ad Spend
               </span>
-              <DollarSign className="w-4 h-4 text-[#b90064]" />
+              <DollarSign className="w-4 h-4 text-[#6B2D8C]" />
             </div>
             <div className="text-2xl font-black text-zinc-950 mt-1">
               {formatCurrency(totalSpentUsd)}
             </div>
-            <p className="text-[11px] text-[#594047] mt-0.5">
+            <p className="text-[11px] text-[#5B4A6E] mt-0.5">
               Credits Remaining: <b className="text-emerald-700">{formatCurrency(balanceUsd, balance)}</b>
             </p>
           </div>
@@ -758,26 +758,26 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
           {/* Interactive Sparkline */}
           <InteractiveSparkline 
             data={spendTrendData}
-            color="#b90064"
+            color="#6B2D8C"
             metricPrefix={currency === 'USD' ? '$' : '₹'}
           />
 
           <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden">
             <div 
-              className="bg-[#b90064] h-full transition-all" 
+              className="bg-[#6B2D8C] h-full transition-all" 
               style={{ width: `${Math.min(100, (totalSpentUsd / (totalSpentUsd + balanceUsd || 1)) * 100)}%` }}
             />
           </div>
         </div>
 
         {/* CARD 2: Total Impressions (>1s Viewport Logged) */}
-        <div className="p-4.5 bg-white border border-[#e8e8e8] rounded-xl space-y-3 flex flex-col justify-between shadow-2xs">
+        <div className="p-4.5 bg-white border border-[#E8DEEF] rounded-xl space-y-3 flex flex-col justify-between shadow-2xs">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] text-[#594047] font-extrabold uppercase tracking-wider">
+              <span className="text-[10px] text-[#5B4A6E] font-extrabold uppercase tracking-wider">
                 Total Impressions
               </span>
-              <Eye className="w-4 h-4 text-blue-600" />
+              <Eye className="w-4 h-4 text-purple-700" />
             </div>
             <div className="text-2xl font-black text-zinc-950 mt-1">
               {totalImpressions.toLocaleString('en-IN')}
@@ -791,23 +791,23 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
           {/* Interactive Sparkline */}
           <InteractiveSparkline 
             data={impressionsTrendData}
-            color="#0050d6"
+            color="#6B2D8C"
           />
 
-          <span className="text-[10px] text-[#594047]">100% MRC Validated Viewability</span>
+          <span className="text-[10px] text-[#5B4A6E]">100% MRC Validated Viewability</span>
         </div>
 
         {/* CARD 3: Total Clicks & Direct Leads Breakdown */}
-        <div className="p-4.5 bg-white border border-[#e8e8e8] rounded-xl space-y-3 flex flex-col justify-between shadow-2xs">
+        <div className="p-4.5 bg-white border border-[#E8DEEF] rounded-xl space-y-3 flex flex-col justify-between shadow-2xs">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] text-[#594047] font-extrabold uppercase tracking-wider">
+              <span className="text-[10px] text-[#5B4A6E] font-extrabold uppercase tracking-wider">
                 Clicks & Direct Leads
               </span>
-              <MousePointer className="w-4 h-4 text-[#b90064]" />
+              <MousePointer className="w-4 h-4 text-[#6B2D8C]" />
             </div>
             <div className="flex items-baseline gap-2 mt-1">
-              <span className="text-2xl font-black text-[#b90064]">
+              <span className="text-2xl font-black text-[#6B2D8C]">
                 {totalClicks.toLocaleString('en-IN')}
               </span>
               <span className="text-xs font-bold text-stone-500">
@@ -819,7 +819,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
           {/* Interactive Sparkline */}
           <InteractiveSparkline 
             data={clicksTrendData}
-            color="#b90064"
+            color="#6B2D8C"
           />
 
           <div className="grid grid-cols-3 gap-1 pt-1 border-t border-stone-100 text-[10px]">
@@ -831,7 +831,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
               <span className="text-stone-400 block text-[9px]">Profile</span>
               <span className="font-bold text-stone-900">{totalProfileClicks}</span>
             </div>
-            <div className="text-center bg-pink-50 text-[#b90064] p-1 rounded border border-pink-100">
+            <div className="text-center bg-purple-50 text-[#6B2D8C] p-1 rounded border border-purple-100">
               <span className="block text-[9px]">RFQs</span>
               <span className="font-bold">{totalRfqsGenerated}</span>
             </div>
@@ -839,10 +839,10 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
         </div>
 
         {/* CARD 4: Video Engagement Stats (25%, 50%, 75%, 100%) */}
-        <div className="p-4.5 bg-white border border-[#e8e8e8] rounded-xl space-y-3 flex flex-col justify-between shadow-2xs">
+        <div className="p-4.5 bg-white border border-[#E8DEEF] rounded-xl space-y-3 flex flex-col justify-between shadow-2xs">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] text-[#594047] font-extrabold uppercase tracking-wider">
+              <span className="text-[10px] text-[#5B4A6E] font-extrabold uppercase tracking-wider">
                 Video Completion Stats
               </span>
               <Film className="w-4 h-4 text-purple-600" />
@@ -856,7 +856,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
           {/* Interactive Sparkline */}
           <InteractiveSparkline 
             data={videoEngagementTrendData}
-            color="#9333ea"
+            color="#8236A0"
             metricSuffix="%"
           />
 
@@ -885,19 +885,19 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
       {/* ========================================================================= */}
       {/* 4. CREATIVE PLACEMENT SELECTOR STRIP & SIMULATION CONTROLS */}
       {/* ========================================================================= */}
-      <div className="bg-white border border-[#e8e8e8] p-4 rounded-xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+      <div className="bg-white border border-[#E8DEEF] p-4 rounded-xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         
         {/* Creative Quick Launch Buttons */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-extrabold text-[#594047] uppercase tracking-wider mr-1">
+          <span className="text-xs font-extrabold text-[#5B4A6E] uppercase tracking-wider mr-1">
             Create Placement:
           </span>
 
           <button
             onClick={() => handleOpenCreateModal(undefined, 'image_ad')}
-            className="bg-stone-100 hover:bg-[#fde7f3] hover:text-[#b90064] text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer border border-stone-200"
+            className="bg-stone-100 hover:bg-[#F5EEF8] hover:text-[#6B2D8C] text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer border border-stone-200"
           >
-            <ImageIcon className="w-3.5 h-3.5 text-[#b90064]" />
+            <ImageIcon className="w-3.5 h-3.5 text-[#6B2D8C]" />
             <span>Part 1: Marquee Image Ad</span>
           </button>
 
@@ -911,9 +911,9 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
 
           <button
             onClick={() => handleOpenCreateModal(undefined, 'full_video')}
-            className="bg-stone-100 hover:bg-blue-50 hover:text-blue-700 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer border border-stone-200"
+            className="bg-stone-100 hover:bg-purple-50 hover:text-purple-800 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer border border-stone-200"
           >
-            <Video className="w-3.5 h-3.5 text-blue-600" />
+            <Video className="w-3.5 h-3.5 text-purple-700" />
             <span>Part 3: 16:9 Full Showcase Video</span>
           </button>
         </div>
@@ -947,7 +947,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
       {/* ========================================================================= */}
       {/* 5. FILTER, SEARCH & ACTIVE CAMPAIGNS TABLE */}
       {/* ========================================================================= */}
-      <div className="bg-white border border-[#e8e8e8] p-4 rounded-xl space-y-4">
+      <div className="bg-white border border-[#E8DEEF] p-4 rounded-xl space-y-4">
         <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
           
           {/* Status Tabs */}
@@ -964,8 +964,8 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                 onClick={() => setFilterStatus(st.id as typeof filterStatus)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   filterStatus === st.id
-                    ? 'bg-[#b90064] text-white shadow-xs'
-                    : 'bg-stone-100 text-[#594047] hover:bg-stone-200'
+                    ? 'bg-[#6B2D8C] text-white shadow-xs'
+                    : 'bg-stone-100 text-[#5B4A6E] hover:bg-stone-200'
                 }`}
               >
                 {st.label}
@@ -978,7 +978,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value as typeof filterType)}
-              className="bg-[#fdf8f8] border border-[#e8e8e8] text-xs font-bold text-stone-700 py-1.5 px-2.5 rounded-lg focus:outline-none focus:border-[#b90064]"
+              className="bg-[#FDFBF7] border border-[#E8DEEF] text-xs font-bold text-stone-700 py-1.5 px-2.5 rounded-lg focus:outline-none focus:border-[#C9A961]"
             >
               <option value="all">All Creative Types</option>
               <option value="image_ad">Marquee Image</option>
@@ -987,24 +987,24 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
             </select>
 
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-[#594047] absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-[#5B4A6E] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search campaigns, products, or IDs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 text-xs bg-[#fdf8f8] border border-[#e8e8e8] rounded-lg focus:outline-none focus:border-[#b90064]"
+                className="w-full pl-9 pr-3 py-1.5 text-xs bg-[#FDFBF7] border border-[#E8DEEF] rounded-lg focus:outline-none focus:border-[#C9A961]"
               />
             </div>
           </div>
         </div>
 
         {/* Itemized Table */}
-        <div className="border border-[#e8e8e8] rounded-xl overflow-hidden shadow-2xs">
+        <div className="border border-[#E8DEEF] rounded-xl overflow-hidden shadow-2xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-stone-50 border-b border-[#e8e8e8] text-[11px] font-extrabold uppercase tracking-wider text-[#594047]">
+                <tr className="bg-stone-50 border-b border-[#E8DEEF] text-[11px] font-extrabold uppercase tracking-wider text-[#5B4A6E]">
                   <th className="p-3.5">1. Ad Preview & Type</th>
                   <th className="p-3.5">2. Linked Asset</th>
                   <th className="p-3.5">3. Status Badge</th>
@@ -1015,14 +1015,14 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
               <tbody className="divide-y divide-stone-100 text-xs">
                 {filteredCampaigns.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="p-8 text-center text-[#594047]">
+                    <td colSpan={5} className="p-8 text-center text-[#5B4A6E]">
                       <div className="max-w-xs mx-auto space-y-2">
                         <Sparkles className="w-8 h-8 text-stone-300 mx-auto" />
                         <p className="font-bold text-sm text-zinc-800">No campaigns match filters</p>
-                        <p className="text-xs text-[#594047]">Adjust your filters or launch a new campaign to begin driving B2B leads.</p>
+                        <p className="text-xs text-[#5B4A6E]">Adjust your filters or launch a new campaign to begin driving B2B leads.</p>
                         <button
                           onClick={() => handleOpenCreateModal()}
-                          className="mt-2 bg-[#b90064] text-white font-bold text-xs px-4 py-2 rounded-lg cursor-pointer"
+                          className="mt-2 bg-[#6B2D8C] text-white font-bold text-xs px-4 py-2 rounded-lg cursor-pointer"
                         >
                           Create New Campaign
                         </button>
@@ -1052,7 +1052,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                                 </span>
                               )}
                               {cType === 'full_video' && (
-                                <span className="absolute -top-1 -right-1 bg-blue-600 text-white p-0.5 rounded-full shadow-xs">
+                                <span className="absolute -top-1 -right-1 bg-purple-700 text-white p-0.5 rounded-full shadow-xs">
                                   <Video className="w-2.5 h-2.5" />
                                 </span>
                               )}
@@ -1061,16 +1061,16 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                             <div className="min-w-0 space-y-0.5">
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded ${
-                                  cType === 'image_ad' ? 'bg-pink-50 text-[#b90064] border border-pink-200' :
+                                  cType === 'image_ad' ? 'bg-purple-50 text-[#6B2D8C] border border-purple-200' :
                                   cType === 'reel_or_short' ? 'bg-purple-50 text-purple-700 border border-purple-200' :
-                                  'bg-blue-50 text-blue-700 border border-blue-200'
+                                  'bg-purple-50 text-purple-800 border border-purple-200'
                                 }`}>
                                   {cType === 'image_ad' ? 'Marquee Image' : cType === 'reel_or_short' ? '9:16 Reel' : '16:9 Video'}
                                 </span>
                                 <span className="text-[10px] text-stone-400 font-mono">#{c.id.slice(-6)}</span>
                               </div>
                               <p className="font-bold text-zinc-900 truncate text-xs">{c.campaignName}</p>
-                              <p className="text-[11px] text-[#594047] truncate">{c.adTitle}</p>
+                              <p className="text-[11px] text-[#5B4A6E] truncate">{c.adTitle}</p>
                             </div>
                           </div>
                         </td>
@@ -1121,7 +1121,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                               </span>
                               <button
                                 onClick={() => handleOpenCreateModal(c)}
-                                className="text-[10px] text-[#b90064] hover:underline font-bold block cursor-pointer"
+                                className="text-[10px] text-[#6B2D8C] hover:underline font-bold block cursor-pointer"
                               >
                                 Re-link Product →
                               </button>
@@ -1139,7 +1139,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                             </span>
                           )}
                           {c.status === 'completed' && (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold uppercase">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50 text-purple-800 border border-purple-200 text-[10px] font-bold uppercase">
                               Completed
                             </span>
                           )}
@@ -1157,13 +1157,13 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                               <span className="font-bold text-zinc-900">{c.impressions.toLocaleString('en-IN')}</span>
                               <span className="text-stone-400">impr</span>
                               <span className="text-stone-300">|</span>
-                              <span className="font-bold text-[#b90064]">{c.clicks.toLocaleString('en-IN')}</span>
+                              <span className="font-bold text-[#6B2D8C]">{c.clicks.toLocaleString('en-IN')}</span>
                               <span className="text-stone-400">clicks</span>
                               <span className="text-stone-300">|</span>
                               <span className="font-bold text-emerald-600">{c.ctr}%</span>
                               <span className="text-stone-400">CTR</span>
                             </div>
-                            <div className="text-[10px] text-[#594047]">
+                            <div className="text-[10px] text-[#5B4A6E]">
                               RFQs Generated: <b className="text-purple-700">{c.rfqsGenerated || Math.round(c.clicks * 0.1)} direct leads</b>
                             </div>
                           </div>
@@ -1177,7 +1177,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                             <button
                               onClick={() => setAnalyticsDetailCampaign(c)}
                               title="View Analytics Breakdown"
-                              className="p-1.5 text-stone-600 hover:text-[#b90064] hover:bg-stone-100 rounded-lg transition-colors cursor-pointer"
+                              className="p-1.5 text-stone-600 hover:text-[#6B2D8C] hover:bg-stone-100 rounded-lg transition-colors cursor-pointer"
                             >
                               <BarChart3 className="w-4 h-4" />
                             </button>
@@ -1186,7 +1186,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                             <button
                               onClick={() => setPreviewModalCampaign(c)}
                               title="Preview Ad In Context"
-                              className="p-1.5 text-stone-600 hover:text-blue-600 hover:bg-stone-100 rounded-lg transition-colors cursor-pointer"
+                              className="p-1.5 text-stone-600 hover:text-purple-700 hover:bg-stone-100 rounded-lg transition-colors cursor-pointer"
                             >
                               <Eye className="w-4 h-4" />
                             </button>
@@ -1245,19 +1245,19 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
       {/* ========================================================================= */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 md:p-6 overflow-y-auto">
-          <div className="bg-white rounded-2xl border border-[#e8e8e8] shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden my-auto">
+          <div className="bg-white rounded-2xl border border-[#E8DEEF] shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden my-auto">
             
             {/* Modal Header */}
-            <div className="p-4 md:p-5 border-b border-[#e8e8e8] flex items-center justify-between bg-stone-50 shrink-0">
+            <div className="p-4 md:p-5 border-b border-[#E8DEEF] flex items-center justify-between bg-stone-50 shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#fde7f3] border border-[#f7c5e0] flex items-center justify-center text-[#b90064]">
-                  <Sparkles className="w-4 h-4 text-[#b90064]" />
+                <div className="w-8 h-8 rounded-xl bg-[#F5EEF8] border border-[#E8D5F2] flex items-center justify-center text-[#6B2D8C]">
+                  <Sparkles className="w-4 h-4 text-[#6B2D8C]" />
                 </div>
                 <div>
                   <h3 className="font-extrabold text-base text-zinc-900">
                     {editingCampaignId ? 'Edit Sponsored Campaign' : 'Create Sponsored Ad Campaign'}
                   </h3>
-                  <p className="text-xs text-[#594047]">Configure creative placement, destination link, auto-validation, and budget.</p>
+                  <p className="text-xs text-[#5B4A6E]">Configure creative placement, destination link, auto-validation, and budget.</p>
                 </div>
               </div>
 
@@ -1276,8 +1276,8 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
               <div className="lg:col-span-7 space-y-6">
                 
                 {/* 1. CREATIVE PLACEMENT SELECTION */}
-                <div className="space-y-3 bg-[#fdf8f8] p-4 rounded-xl border border-[#e8e8e8]">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-[#b90064] flex items-center gap-1.5">
+                <div className="space-y-3 bg-[#FDFBF7] p-4 rounded-xl border border-[#E8DEEF]">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-[#6B2D8C] flex items-center gap-1.5">
                     <Target className="w-3.5 h-3.5" />
                     <span>1. Select Creative Placement Slot</span>
                   </h4>
@@ -1288,11 +1288,11 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                       onClick={() => setFormCreativeType('image_ad')}
                       className={`p-3 rounded-xl border text-left transition-all cursor-pointer space-y-1 ${
                         formCreativeType === 'image_ad' 
-                          ? 'border-[#b90064] bg-[#fde7f3]/50 ring-2 ring-[#b90064]/20' 
+                          ? 'border-[#6B2D8C] bg-[#F5EEF8]/50 ring-2 ring-[#6B2D8C]/20' 
                           : 'border-stone-200 bg-white hover:bg-stone-50'
                       }`}
                     >
-                      <ImageIcon className="w-4 h-4 text-[#b90064]" />
+                      <ImageIcon className="w-4 h-4 text-[#6B2D8C]" />
                       <div className="font-extrabold text-xs text-stone-900">Part 1: Marquee</div>
                       <div className="text-[10px] text-stone-500 leading-tight">Hero banner linked to 1 Product ID</div>
                     </button>
@@ -1316,11 +1316,11 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                       onClick={() => setFormCreativeType('full_video')}
                       className={`p-3 rounded-xl border text-left transition-all cursor-pointer space-y-1 ${
                         formCreativeType === 'full_video' 
-                          ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-600/20' 
+                          ? 'border-purple-700 bg-purple-50 ring-2 ring-purple-700/20' 
                           : 'border-stone-200 bg-white hover:bg-stone-50'
                       }`}
                     >
-                      <Video className="w-4 h-4 text-blue-600" />
+                      <Video className="w-4 h-4 text-purple-700" />
                       <div className="font-extrabold text-xs text-stone-900">Part 3: 16:9 Video</div>
                       <div className="text-[10px] text-stone-500 leading-tight">YouTube / Vimeo Widescreen</div>
                     </button>
@@ -1333,14 +1333,14 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                       value={formName}
                       onChange={(e) => setFormName(e.target.value)}
                       placeholder="e.g. Q3 Certified Active Serum Sourcing Campaign"
-                      className="w-full bg-white border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg text-xs"
+                      className="w-full bg-white border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none p-2.5 rounded-lg text-xs"
                     />
                   </div>
                 </div>
 
                 {/* 2. LINKED ENTITY & ATTRIBUTION (PRODUCT AUTO-VALIDATION) */}
-                <div className="space-y-3 bg-[#fdf8f8] p-4 rounded-xl border border-[#e8e8e8]">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-[#b90064] flex items-center gap-1.5">
+                <div className="space-y-3 bg-[#FDFBF7] p-4 rounded-xl border border-[#E8DEEF]">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-[#6B2D8C] flex items-center gap-1.5">
                     <ShieldCheck className="w-3.5 h-3.5" />
                     <span>2. Linked Entity & Product Auto-Validation</span>
                   </h4>
@@ -1353,7 +1353,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                         value="product"
                         checked={formTargetType === 'product'}
                         onChange={() => setFormTargetType('product')}
-                        className="accent-[#b90064]"
+                        className="accent-[#6B2D8C]"
                       />
                       <span>Specific Product ID</span>
                     </label>
@@ -1365,7 +1365,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                         value="profile"
                         checked={formTargetType === 'profile'}
                         onChange={() => setFormTargetType('profile')}
-                        className="accent-[#b90064]"
+                        className="accent-[#6B2D8C]"
                       />
                       <span>Supplier Profile (/supplier/{supplierId})</span>
                     </label>
@@ -1379,7 +1379,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                       <select
                         value={formProductId}
                         onChange={(e) => setFormProductId(e.target.value)}
-                        className="w-full bg-white border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg text-xs font-medium"
+                        className="w-full bg-white border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none p-2.5 rounded-lg text-xs font-medium"
                       >
                         {Object.values(SPONSORED_PRODUCTS_DB).map(prod => (
                           <option key={prod.id} value={prod.id}>
@@ -1411,7 +1411,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                       <select
                         value={formCtaType}
                         onChange={(e) => setFormCtaType(e.target.value as typeof formCtaType)}
-                        className="w-full bg-white border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg text-xs font-medium"
+                        className="w-full bg-white border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none p-2.5 rounded-lg text-xs font-medium"
                       >
                         <option value="product_detail">Direct Product Detail URL</option>
                         <option value="supplier_profile">Direct Supplier Profile URL</option>
@@ -1424,7 +1424,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                       <select
                         value={formCtaText}
                         onChange={(e) => setFormCtaText(e.target.value as AdCampaignItem['ctaText'])}
-                        className="w-full bg-white border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg text-xs font-medium"
+                        className="w-full bg-white border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none p-2.5 rounded-lg text-xs font-medium"
                       >
                         <option value="Get Quote">Get Quote</option>
                         <option value="View Product">View Product</option>
@@ -1437,8 +1437,8 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                 </div>
 
                 {/* 3. CREATIVE ASSET & AD COPY */}
-                <div className="space-y-3 bg-[#fdf8f8] p-4 rounded-xl border border-[#e8e8e8]">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-[#b90064] flex items-center gap-1.5">
+                <div className="space-y-3 bg-[#FDFBF7] p-4 rounded-xl border border-[#E8DEEF]">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-[#6B2D8C] flex items-center gap-1.5">
                     <ImageIcon className="w-3.5 h-3.5" />
                     <span>3. Creative Asset & Copy</span>
                   </h4>
@@ -1454,7 +1454,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                         value={formVideoUrl}
                         onChange={(e) => handleVideoUrlChange(e.target.value)}
                         placeholder="https://youtube.com/shorts/... or https://instagram.com/reel/..."
-                        className="w-full bg-white border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg text-xs font-mono"
+                        className="w-full bg-white border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none p-2.5 rounded-lg text-xs font-mono"
                       />
                       <p className="text-[10px] text-stone-500 mt-1">
                         Detected Platform: <b className="text-stone-900">{formVideoPlatform}</b>
@@ -1467,24 +1467,24 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                     <label className="block text-xs font-bold text-zinc-800 mb-1">
                       {formCreativeType === 'image_ad' ? 'Banner Image Asset' : 'Video Thumbnail Poster'}
                     </label>
-                    <div className="border-2 border-dashed border-stone-300 hover:border-[#b90064] bg-white rounded-xl p-4 text-center transition-colors relative cursor-pointer group">
+                    <div className="border-2 border-dashed border-stone-300 hover:border-[#6B2D8C] bg-white rounded-xl p-4 text-center transition-colors relative cursor-pointer group">
                       <input
                         type="file"
                         accept="image/png, image/jpeg, image/webp"
                         onChange={handleFileUpload}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       />
-                      <Upload className="w-5 h-5 text-stone-400 group-hover:text-[#b90064] mx-auto mb-1 transition-colors" />
+                      <Upload className="w-5 h-5 text-stone-400 group-hover:text-[#6B2D8C] mx-auto mb-1 transition-colors" />
                       <p className="text-xs font-bold text-zinc-800">
                         {uploadedFileName ? `Uploaded: ${uploadedFileName}` : 'Click or Drag & Drop Image Asset'}
                       </p>
-                      <p className="text-[10px] text-[#594047] mt-0.5">PNG, JPG, WebP under 5MB</p>
+                      <p className="text-[10px] text-[#5B4A6E] mt-0.5">PNG, JPG, WebP under 5MB</p>
                     </div>
                   </div>
 
                   {/* Preset Selector */}
                   <div>
-                    <label className="block text-[11px] font-bold text-[#594047] mb-1">Or choose preset photo:</label>
+                    <label className="block text-[11px] font-bold text-[#5B4A6E] mb-1">Or choose preset photo:</label>
                     <div className="grid grid-cols-3 gap-2">
                       {PRESET_SAMPLE_IMAGES.map((img, idx) => (
                         <button
@@ -1495,7 +1495,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                             setUploadedFileName(null);
                           }}
                           className={`relative h-12 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
-                            formImageUrl === img.url ? 'border-[#b90064] ring-2 ring-[#b90064]/20' : 'border-stone-200'
+                            formImageUrl === img.url ? 'border-[#6B2D8C] ring-2 ring-[#6B2D8C]/20' : 'border-stone-200'
                           }`}
                         >
                           <img src={img.url} alt={img.label} className="w-full h-full object-cover" />
@@ -1515,7 +1515,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                       value={formHeadline}
                       onChange={(e) => setFormHeadline(e.target.value)}
                       placeholder="e.g. Professional 20% Vitamin C Glow Serum Base"
-                      className="w-full bg-white border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg text-xs"
+                      className="w-full bg-white border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none p-2.5 rounded-lg text-xs"
                     />
                   </div>
 
@@ -1526,14 +1526,14 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                       value={formSubtitle}
                       onChange={(e) => setFormSubtitle(e.target.value)}
                       placeholder="e.g. Bulk sourcing for salon chains & cosmetic brand distributors"
-                      className="w-full bg-white border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg text-xs"
+                      className="w-full bg-white border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none p-2.5 rounded-lg text-xs"
                     />
                   </div>
                 </div>
 
                 {/* 4. BUDGET & DURATION */}
-                <div className="space-y-3 bg-[#fdf8f8] p-4 rounded-xl border border-[#e8e8e8]">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-[#b90064] flex items-center gap-1.5">
+                <div className="space-y-3 bg-[#FDFBF7] p-4 rounded-xl border border-[#E8DEEF]">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-[#6B2D8C] flex items-center gap-1.5">
                     <DollarSign className="w-3.5 h-3.5" />
                     <span>4. Budget & Schedule</span>
                   </h4>
@@ -1546,7 +1546,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                         min="5"
                         value={formDailyBudget}
                         onChange={(e) => setFormDailyBudget(Number(e.target.value))}
-                        className="w-full bg-white border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg text-xs"
+                        className="w-full bg-white border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none p-2.5 rounded-lg text-xs"
                       />
                     </div>
 
@@ -1557,7 +1557,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                         min="50"
                         value={formTotalBudget}
                         onChange={(e) => setFormTotalBudget(Number(e.target.value))}
-                        className="w-full bg-white border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none p-2.5 rounded-lg text-xs"
+                        className="w-full bg-white border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none p-2.5 rounded-lg text-xs"
                       />
                     </div>
                   </div>
@@ -1588,7 +1588,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                       </div>
 
                       <div className="space-y-1">
-                        <span className="text-[10px] text-[#b90064] font-extrabold uppercase tracking-wider">
+                        <span className="text-[10px] text-[#6B2D8C] font-extrabold uppercase tracking-wider">
                           {supplierName} • Verified OEM
                         </span>
                         <h4 className="font-extrabold text-sm text-stone-900 leading-tight">
@@ -1599,7 +1599,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                         </p>
                       </div>
 
-                      <button className="w-full bg-[#b90064] text-white text-xs font-extrabold py-2.5 rounded-xl shadow-xs">
+                      <button className="w-full bg-[#6B2D8C] text-white text-xs font-extrabold py-2.5 rounded-xl shadow-xs">
                         {formCtaText} →
                       </button>
                     </div>
@@ -1621,7 +1621,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                         <p className="text-xs font-bold leading-snug drop-shadow-md">
                           {formHeadline || 'Reel Headline'}
                         </p>
-                        <button className="w-full bg-[#b90064] text-white text-[11px] font-extrabold py-2 rounded-lg shadow-sm">
+                        <button className="w-full bg-[#6B2D8C] text-white text-[11px] font-extrabold py-2 rounded-lg shadow-sm">
                           {formCtaText}
                         </button>
                       </div>
@@ -1633,13 +1633,13 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                     <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden p-4 space-y-3">
                       <div className="relative rounded-xl overflow-hidden aspect-[16/9] bg-stone-900 flex items-center justify-center">
                         <img src={formImageUrl} alt={formHeadline} className="w-full h-full object-cover opacity-80" />
-                        <div className="absolute w-10 h-10 rounded-full bg-[#b90064] text-white flex items-center justify-center shadow-lg">
+                        <div className="absolute w-10 h-10 rounded-full bg-[#6B2D8C] text-white flex items-center justify-center shadow-lg">
                           <Play className="w-4 h-4 fill-white ml-0.5" />
                         </div>
                       </div>
 
                       <div className="space-y-1">
-                        <span className="text-[10px] text-blue-600 font-extrabold uppercase tracking-wider">
+                        <span className="text-[10px] text-purple-700 font-extrabold uppercase tracking-wider">
                           16:9 Video Showcase
                         </span>
                         <h4 className="font-extrabold text-sm text-stone-900">
@@ -1647,20 +1647,20 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                         </h4>
                       </div>
 
-                      <button className="w-full bg-[#b90064] text-white text-xs font-extrabold py-2.5 rounded-xl">
+                      <button className="w-full bg-[#6B2D8C] text-white text-xs font-extrabold py-2.5 rounded-xl">
                         {formCtaText}
                       </button>
                     </div>
                   )}
 
                   {/* Est daily metrics */}
-                  <div className="bg-[#fcf9f8] p-3.5 rounded-xl border border-stone-200 text-xs space-y-1.5">
+                  <div className="bg-[#FDFBF7] p-3.5 rounded-xl border border-stone-200 text-xs space-y-1.5">
                     <span className="font-extrabold text-[10px] text-stone-500 uppercase tracking-wider block">
                       Estimated Daily Delivery
                     </span>
                     <div className="flex justify-between font-bold text-stone-800">
                       <span>Daily Reach</span>
-                      <span className="text-[#b90064]">~{Math.round(formDailyBudget * 80)} impressions</span>
+                      <span className="text-[#6B2D8C]">~{Math.round(formDailyBudget * 80)} impressions</span>
                     </div>
                     <div className="flex justify-between font-bold text-stone-800">
                       <span>Est. Direct RFQs</span>
@@ -1673,7 +1673,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
             </div>
 
             {/* Modal Footer Actions */}
-            <div className="p-4 border-t border-[#e8e8e8] bg-stone-50 flex items-center justify-between shrink-0">
+            <div className="p-4 border-t border-[#E8DEEF] bg-stone-50 flex items-center justify-between shrink-0">
               <button
                 onClick={() => setShowCreateModal(false)}
                 className="px-4 py-2 text-xs font-bold text-stone-600 hover:text-stone-900 cursor-pointer"
@@ -1690,7 +1690,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                 </button>
                 <button
                   onClick={() => handleSaveCampaign(true)}
-                  className="px-5 py-2 text-xs font-bold bg-[#b90064] hover:bg-[#a00056] text-white rounded-lg cursor-pointer transition-all shadow-sm"
+                  className="px-5 py-2 text-xs font-bold bg-[#6B2D8C] hover:bg-[#4A2560] text-white rounded-lg cursor-pointer transition-all shadow-sm"
                 >
                   {editingCampaignId ? 'Update & Launch' : 'Launch Campaign'}
                 </button>
@@ -1706,11 +1706,11 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
       {/* ========================================================================= */}
       {analyticsDetailCampaign && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 md:p-6 overflow-y-auto">
-          <div className="bg-white rounded-2xl border border-[#e8e8e8] shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden my-auto">
+          <div className="bg-white rounded-2xl border border-[#E8DEEF] shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden my-auto">
             
-            <div className="p-4 md:p-5 border-b border-[#e8e8e8] flex items-center justify-between bg-stone-50 shrink-0">
+            <div className="p-4 md:p-5 border-b border-[#E8DEEF] flex items-center justify-between bg-stone-50 shrink-0">
               <div>
-                <span className="text-[10px] text-[#b90064] font-extrabold uppercase tracking-wider">
+                <span className="text-[10px] text-[#6B2D8C] font-extrabold uppercase tracking-wider">
                   Attribution & Performance Analytics
                 </span>
                 <h3 className="font-extrabold text-base text-zinc-900">
@@ -1737,26 +1737,26 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
 
                 <div className="bg-stone-50 p-3 rounded-xl border border-stone-200 text-center">
                   <span className="text-[10px] text-stone-500 uppercase font-bold block">Clicks</span>
-                  <span className="text-lg font-black text-[#b90064]">{analyticsDetailCampaign.clicks.toLocaleString()}</span>
+                  <span className="text-lg font-black text-[#6B2D8C]">{analyticsDetailCampaign.clicks.toLocaleString()}</span>
                   <span className="text-[9px] text-stone-500 font-bold block">{analyticsDetailCampaign.ctr}% CTR</span>
                 </div>
 
                 <div className="bg-stone-50 p-3 rounded-xl border border-stone-200 text-center">
                   <span className="text-[10px] text-stone-500 uppercase font-bold block">Product Views</span>
-                  <span className="text-lg font-black text-blue-700">{analyticsDetailCampaign.productClicks || Math.round(analyticsDetailCampaign.clicks * 0.65)}</span>
+                  <span className="text-lg font-black text-purple-800">{analyticsDetailCampaign.productClicks || Math.round(analyticsDetailCampaign.clicks * 0.65)}</span>
                   <span className="text-[9px] text-stone-500 font-bold block">Direct PDP</span>
                 </div>
 
-                <div className="bg-pink-50 p-3 rounded-xl border border-pink-200 text-center">
-                  <span className="text-[10px] text-[#b90064] uppercase font-bold block">RFQs Generated</span>
-                  <span className="text-lg font-black text-[#b90064]">{analyticsDetailCampaign.rfqsGenerated || Math.round(analyticsDetailCampaign.clicks * 0.1)}</span>
-                  <span className="text-[9px] text-[#b90064] font-bold block">Converted Leads</span>
+                <div className="bg-purple-50 p-3 rounded-xl border border-purple-200 text-center">
+                  <span className="text-[10px] text-[#6B2D8C] uppercase font-bold block">RFQs Generated</span>
+                  <span className="text-lg font-black text-[#6B2D8C]">{analyticsDetailCampaign.rfqsGenerated || Math.round(analyticsDetailCampaign.clicks * 0.1)}</span>
+                  <span className="text-[9px] text-[#6B2D8C] font-bold block">Converted Leads</span>
                 </div>
               </div>
 
               {/* Video Engagement if applicable */}
               {analyticsDetailCampaign.videoStats && (
-                <div className="bg-[#fdf8f8] border border-stone-200 rounded-xl p-4 space-y-3">
+                <div className="bg-[#FDFBF7] border border-stone-200 rounded-xl p-4 space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="font-extrabold text-xs text-stone-900 flex items-center gap-1.5">
                       <Film className="w-4 h-4 text-purple-600" />
@@ -1795,13 +1795,13 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                   Target: <b className="text-stone-900">{analyticsDetailCampaign.targetType === 'product' ? `Product: ${analyticsDetailCampaign.product_id}` : 'Supplier Profile'}</b>
                 </p>
                 <p className="text-stone-600">
-                  Destination URL: <code className="bg-white px-2 py-0.5 rounded border border-stone-200 text-[#b90064]">{analyticsDetailCampaign.destinationUrl || `/product/${analyticsDetailCampaign.product_id}`}</code>
+                  Destination URL: <code className="bg-white px-2 py-0.5 rounded border border-stone-200 text-[#6B2D8C]">{analyticsDetailCampaign.destinationUrl || `/product/${analyticsDetailCampaign.product_id}`}</code>
                 </p>
               </div>
 
             </div>
 
-            <div className="p-4 border-t border-[#e8e8e8] bg-stone-50 flex justify-end">
+            <div className="p-4 border-t border-[#E8DEEF] bg-stone-50 flex justify-end">
               <button
                 onClick={() => setAnalyticsDetailCampaign(null)}
                 className="px-4 py-2 bg-stone-900 text-white font-bold rounded-lg cursor-pointer"
@@ -1822,7 +1822,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
           <div className="bg-white rounded-2xl border border-stone-200 shadow-2xl w-full max-w-md p-6 space-y-5 text-xs">
             <div className="flex justify-between items-center border-b border-stone-200 pb-3">
               <div className="flex items-center gap-2">
-                <Wallet className="w-5 h-5 text-[#b90064]" />
+                <Wallet className="w-5 h-5 text-[#6B2D8C]" />
                 <h3 className="font-extrabold text-sm text-stone-900">Top Up Ad Account Balance</h3>
               </div>
               <button onClick={() => setShowTopUpModal(false)} className="text-stone-400 hover:text-stone-800">
@@ -1840,7 +1840,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                   key={amt}
                   onClick={() => setTopUpAmount(amt)}
                   className={`p-3 rounded-xl border text-center transition-all cursor-pointer font-black text-sm ${
-                    topUpAmount === amt ? 'border-[#b90064] bg-[#fde7f3] text-[#b90064]' : 'border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-800'
+                    topUpAmount === amt ? 'border-[#6B2D8C] bg-[#F5EEF8] text-[#6B2D8C]' : 'border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-800'
                   }`}
                 >
                   ${amt}
@@ -1856,7 +1856,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                 setShowTopUpModal(false);
                 alert(`✓ Successfully added $${topUpAmount} (₹${(topUpAmount * 82).toLocaleString('en-IN')}) to your advertising balance!`);
               }}
-              className="w-full bg-[#b90064] hover:bg-[#a00056] text-white font-extrabold py-3 rounded-xl transition-colors cursor-pointer shadow-md"
+              className="w-full bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold py-3 rounded-xl transition-colors cursor-pointer shadow-md"
             >
               Deposit ${topUpAmount} Credits
             </button>
@@ -1880,12 +1880,12 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
             <div className="rounded-xl overflow-hidden border border-stone-200 shadow-xs">
               <img src={previewModalCampaign.imageUrl} alt={previewModalCampaign.adTitle} className="w-full h-44 object-cover" />
               <div className="p-4 space-y-2 bg-white">
-                <span className="text-[10px] text-[#b90064] font-extrabold uppercase tracking-wider">
+                <span className="text-[10px] text-[#6B2D8C] font-extrabold uppercase tracking-wider">
                   {previewModalCampaign.supplierName} • Sponsored
                 </span>
                 <h4 className="font-extrabold text-sm text-stone-900">{previewModalCampaign.adTitle}</h4>
                 <p className="text-xs text-stone-600">{previewModalCampaign.subtitle}</p>
-                <button className="w-full bg-[#b90064] text-white font-extrabold py-2.5 rounded-lg mt-2">
+                <button className="w-full bg-[#6B2D8C] text-white font-extrabold py-2.5 rounded-lg mt-2">
                   {previewModalCampaign.ctaText}
                 </button>
               </div>

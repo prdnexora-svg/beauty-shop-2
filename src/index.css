@@ -1,61 +1,280 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&display=swap');
 @import "tailwindcss";
+
+@config "../tailwind.config.ts";
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NEXORA LUXE — Premium Indian B2B Beauty Marketplace Design System
+   Deep Royal Purple · Luxe Gold · Soft Cream
+   ══════════════════════════════════════════════════════════════════════════ */
 
 @layer base {
   :root {
-    /* Brand Colors - Master Stitch Instructions */
-    --color-nexora-pink: #b90064;
-    --color-pink-vibrant: #e6007e;
-    --color-page-bg: #fdf8f8;
-    --color-off-white: #fcf9f8;
-    --color-text-primary: #1c1b1b;
-    --color-text-secondary: #594047;
-    --color-business-blue: #0050d6;
-    
-    /* Semantic Layout Colors */
-    --color-surface: var(--color-page-bg);
-    --color-on-surface: var(--color-text-primary);
-    --color-on-surface-variant: var(--color-text-secondary);
-    
-    --color-primary: var(--color-nexora-pink);
-    --color-secondary: var(--color-business-blue);
-    
-    --color-outline: #e8e8e8;
-    --color-outline-variant: #e0bec6;
+    /* ── Core NEXORA LUXE palette ─────────────────────────────────────── */
+    --color-primary: #3D1E4E;            /* Deep Royal Purple */
+    --color-primary-foreground: #FFFFFF; /* White */
+    --color-secondary: #C9A961;          /* Luxe Gold */
+    --color-secondary-foreground: #2A0E3F;
+    --color-accent: #E8D5F2;             /* Light Lavender */
+    --color-accent-foreground: #3D1E4E;
+    --color-background: #FDFBF7;         /* Soft cream */
+    --color-foreground: #2A0E3F;         /* Dark purple */
+    --color-muted: #F5EEF8;              /* Light mauve */
+    --color-muted-foreground: #6E5A7E;
+    --color-card: #FFFFFF;
+    --color-card-foreground: #2A0E3F;
+    --color-border: #E5D4ED;             /* Soft purple */
+    --color-input: #E5D4ED;
+    --color-ring: #C9A961;               /* Luxe Gold focus ring */
+
+    /* ── Status ───────────────────────────────────────────────────────── */
+    --color-success: #10B981;            /* Emerald */
+    --color-warning: #F59E0B;            /* Amber */
+    --color-destructive: #E11D48;        /* Rose */
+
+    /* ── Legacy aliases (kept for backward compatibility) ─────────────── */
+    --color-page-bg: var(--color-background);
+    --color-off-white: #FDFBF7;
+    --color-text-primary: var(--color-foreground);
+    --color-text-secondary: var(--color-muted-foreground);
+    --color-nexora-purple: var(--color-primary);
+    --color-royal-purple: #6B2D8C;
+    --color-luxe-gold: var(--color-secondary);
+    --color-lavender: #E8D5F2;
+    --color-mauve: #F5EEF8;
+    --color-cream: #FDFBF7;
+    --color-gold-bright: #E8C547;
+    --color-outline: #E8DEF0;
+    --color-outline-variant: #D9C3E8;
+
+    --color-surface: var(--color-card);
+    --color-on-surface: var(--color-foreground);
+    --color-on-surface-variant: var(--color-muted-foreground);
   }
 
-  html, body {
+  html,
+  body {
     max-width: 100vw;
     overflow-x: hidden;
     scroll-behavior: smooth;
   }
 
   body {
-    background-color: var(--color-page-bg);
-    color: var(--color-text-primary);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  ::selection {
+    background: #E8D5F2;
+    color: #3D1E4E;
+  }
+
+  /* Elegant slim scrollbar in brand tones */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #F5EEF8;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #C9AFC9;
+    background: linear-gradient(180deg, #B57FCF 0%, #C9A961 100%);
+    border-radius: 999px;
+    border: 2px solid #F5EEF8;
+  }
+}
+
+/* ── Theme tokens (Tailwind v4) ─────────────────────────────────────────── */
+@theme {
+  /* Typography — Playfair Display for headings, Inter for body */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-cormorant: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+
+  /* Royal purple scale (overrides Tailwind default purple) */
+  --color-purple-50: #F8F3FB;
+  --color-purple-100: #F1E7F7;
+  --color-purple-200: #E5D4ED;
+  --color-purple-300: #D4B8E4;
+  --color-purple-400: #B57FCF;
+  --color-purple-500: #9C55B8;
+  --color-purple-600: #8236A0;
+  --color-purple-700: #6B2D8C;
+  --color-purple-800: #4A2560;
+  --color-purple-900: #3D1E4E;
+  --color-purple-950: #2A0E3F;
+
+  /* Luxe gold scale */
+  --color-gold-50: #FBF7EC;
+  --color-gold-100: #F6EEDA;
+  --color-gold-200: #EBD9A8;
+  --color-gold-300: #E3C87F;
+  --color-gold-400: #D9B96A;
+  --color-gold-500: #C9A961;
+  --color-gold-600: #B08D45;
+  --color-gold-700: #8F6F35;
+  --color-gold-bright: #E8C547;
+
+  /* Semantic tokens */
+  --color-primary: #3D1E4E;
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: #C9A961;
+  --color-secondary-foreground: #2A0E3F;
+  --color-accent: #E8D5F2;
+  --color-accent-foreground: #3D1E4E;
+  --color-background: #FDFBF7;
+  --color-foreground: #2A0E3F;
+  --color-muted: #F5EEF8;
+  --color-muted-foreground: #6E5A7E;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #2A0E3F;
+  --color-border: #E5D4ED;
+  --color-input: #E5D4ED;
+  --color-ring: #C9A961;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-destructive: #E11D48;
+  --color-lavender: #E8D5F2;
+  --color-mauve: #F5EEF8;
+  --color-cream: #FDFBF7;
+  --color-royal: #6B2D8C;
+  --color-ink: #2A0E3F;
+
+  /* Custom shadows */
+  --shadow-luxe: 0 10px 34px -14px rgba(42, 14, 63, 0.16);
+  --shadow-luxe-lg: 0 22px 48px -16px rgba(42, 14, 63, 0.26);
+  --shadow-gold-glow: 0 12px 36px -10px rgba(201, 169, 97, 0.55);
+
+  /* Custom radius */
+  --radius-luxe: 12px;
+
+  /* Brand animations */
+  --animate-shimmer: gold-shimmer 2.6s linear infinite;
+  --animate-twinkle: nl-twinkle 3.4s ease-in-out infinite;
+
+  @keyframes gold-shimmer {
+    0% { background-position: -200% 50%; }
+    100% { background-position: 200% 50%; }
   }
 }
 
 @layer utilities {
-  /* ── NEXORA LUXE purple-gold design system ─────────────────────────── */
+  /* ── NEXORA LUXE typography ───────────────────────────────────────── */
   .font-display {
     font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
   }
-  .text-gold-gradient {
-    background: linear-gradient(92deg, #b08d45 0%, #e9d29a 45%, #c9a961 100%);
+  .font-cormorant {
+    font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  }
+
+  /* ── Signature gradients ──────────────────────────────────────────── */
+  /* Hero / banner gradient: royal purple → violet → gold */
+  .bg-luxe-gradient {
+    background: linear-gradient(135deg, #3D1E4E 0%, #6B2D8C 50%, #C9A961 100%);
+  }
+  /* Deep royal surface for buttons & badges */
+  .bg-royal-gradient {
+    background: linear-gradient(135deg, #3D1E4E 0%, #54276E 60%, #3D1E4E 100%);
+  }
+  /* Gold surface for premium CTAs */
+  .bg-gold-gradient {
+    background: linear-gradient(135deg, #C9A961 0%, #E8C547 55%, #C9A961 100%);
+  }
+  .bg-gold-gradient-soft {
+    background: linear-gradient(135deg, #D9BD7E 0%, #C9A961 55%, #B08D45 100%);
+  }
+  /* Gold text gradient */
+  .text-gold-gradient,
+  .text-gradient-luxe {
+    background: linear-gradient(92deg, #B08D45 0%, #E9D29A 45%, #C9A961 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
-  .bg-gold-gradient {
-    background: linear-gradient(135deg, #d9bd7e 0%, #c9a961 55%, #b08d45 100%);
+  .bg-clip-text-luxe {
+    -webkit-background-clip: text;
+    background-clip: text;
   }
-  .bg-royal-gradient {
-    background: linear-gradient(135deg, #3d1e4e 0%, #54276e 60%, #3d1e4e 100%);
+
+  /* ── Signature buttons ────────────────────────────────────────────── */
+  .btn-luxe-primary {
+    background: linear-gradient(135deg, #3D1E4E 0%, #54276E 100%);
+    color: #FFFFFF;
+    border-radius: 12px;
+    font-weight: 500;
+    box-shadow: 0 10px 34px -14px rgba(42, 14, 63, 0.16);
+    transition: all 0.25s ease;
   }
+  .btn-luxe-primary:hover {
+    background: linear-gradient(135deg, #2A0E3F 0%, #4A2560 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 16px 38px -14px rgba(42, 14, 63, 0.35);
+  }
+  .btn-luxe-secondary {
+    background: transparent;
+    color: #3D1E4E;
+    border: 2px solid #C9A961;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.25s ease;
+  }
+  .btn-luxe-secondary:hover {
+    background: rgba(201, 169, 97, 0.1);
+    transform: translateY(-1px);
+  }
+  .btn-luxe-gold {
+    background: linear-gradient(135deg, #C9A961 0%, #E8C547 55%, #C9A961 100%);
+    color: #2A0E3F;
+    border-radius: 12px;
+    font-weight: 600;
+    box-shadow: 0 12px 36px -10px rgba(201, 169, 97, 0.55);
+    transition: all 0.25s ease;
+  }
+  .btn-luxe-gold:hover {
+    filter: brightness(1.06);
+    transform: translateY(-1px);
+  }
+
+  /* Gold shine sweep on premium CTAs */
+  .btn-shine {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .btn-shine::after {
+    content: '';
+    position: absolute;
+    top: -40%;
+    bottom: -40%;
+    left: -80%;
+    width: 55%;
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.14) 40%,
+      rgba(255, 255, 255, 0.42) 50%,
+      rgba(255, 255, 255, 0.14) 60%,
+      transparent 100%
+    );
+    transform: skewX(-22deg);
+    animation: nl-shine 3.2s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
+  @keyframes nl-shine {
+    0% { left: -80%; }
+    55% { left: 130%; }
+    100% { left: 130%; }
+  }
+
+  /* ── Cards ────────────────────────────────────────────────────────── */
   .luxe-card {
-    background: #ffffff;
-    border: 1px solid #ecdfef;
+    background: #FFFFFF;
+    border: 1px solid #E5D4ED;
     border-radius: 12px;
     box-shadow: 0 10px 34px -14px rgba(42, 14, 63, 0.14);
   }
@@ -64,9 +283,47 @@
   }
   .luxe-card-hover:hover {
     transform: translateY(-4px);
-    border-color: #d9b96a;
-    box-shadow: 0 20px 44px -16px rgba(42, 14, 63, 0.22);
+    border-color: #D9B96A;
+    box-shadow: 0 20px 44px -16px rgba(42, 14, 63, 0.22), 0 0 0 1px rgba(201, 169, 97, 0.35);
   }
+  .card-hover-fx {
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .card-hover-fx:hover {
+    box-shadow: 0 10px 25px -5px rgba(42, 14, 63, 0.1), 0 8px 10px -6px rgba(42, 14, 63, 0.05);
+    transform: translateY(-2px) scale(1.02);
+  }
+  .editorial-shadow {
+    box-shadow: 0 20px 40px -10px rgba(42, 14, 63, 0.08);
+  }
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+  }
+  .glass-dark {
+    background: rgba(42, 14, 63, 0.38);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+  }
+
+  /* ── Ornaments: dividers, patterns, sparkles ──────────────────────── */
+  .gold-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(201, 169, 97, 0.65) 50%, transparent 100%);
+  }
+  .floral-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%233D1E4E' stroke-opacity='0.05' stroke-width='1.1'%3E%3Ccircle cx='60' cy='60' r='14'/%3E%3Cpath d='M60 30c6 10 6 20 0 30-6-10-6-20 0-30z'/%3E%3Cpath d='M60 90c6-10 6-20 0-30-6 10-6 20 0 30z'/%3E%3Cpath d='M30 60c10-6 20-6 30 0-10 6-20 6-30 0z'/%3E%3Cpath d='M90 60c-10 6-20 6-30 0 10-6 20-6 30 0z'/%3E%3Ccircle cx='60' cy='60' r='30' stroke-dasharray='2 5'/%3E%3Ccircle cx='12' cy='12' r='5'/%3E%3Ccircle cx='108' cy='12' r='5'/%3E%3Ccircle cx='12' cy='108' r='5'/%3E%3Ccircle cx='108' cy='108' r='5'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 120px 120px;
+  }
+  .floral-pattern-gold {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23C9A961' stroke-opacity='0.12' stroke-width='1.1'%3E%3Ccircle cx='60' cy='60' r='14'/%3E%3Cpath d='M60 30c6 10 6 20 0 30-6-10-6-20 0-30z'/%3E%3Cpath d='M60 90c6-10 6-20 0-30-6 10-6 20 0 30z'/%3E%3Cpath d='M30 60c10-6 20-6 30 0-10 6-20 6-30 0z'/%3E%3Cpath d='M90 60c-10 6-20 6-30 0 10-6 20-6 30 0z'/%3E%3Ccircle cx='60' cy='60' r='30' stroke-dasharray='2 5'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 120px 120px;
+  }
+
+  /* ── Hero bokeh / sparkle animation ───────────────────────────────── */
   @keyframes nl-twinkle {
     0%, 100% { opacity: 0.12; transform: scale(0.65); }
     50% { opacity: 0.95; transform: scale(1.15); }
@@ -83,22 +340,55 @@
   .nl-float { animation: nl-float 7s ease-in-out infinite; }
   .nl-float-delayed { animation: nl-float-delayed 9s ease-in-out infinite; }
 
+  /* ── Fade-in on scroll ────────────────────────────────────────────── */
+  @keyframes nl-fade-up {
+    from { opacity: 0; transform: translateY(26px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+  }
+  .reveal-left { transform: translateX(-26px); }
+  .reveal-right { transform: translateX(26px); }
+  .reveal-fade { transform: none; }
+  .reveal-visible {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .reveal-left, .reveal-right { opacity: 1; transform: none; transition: none; }
+    .nl-twinkle, .nl-float, .nl-float-delayed, .btn-shine::after { animation: none; }
+  }
+
+  /* ── Forms ────────────────────────────────────────────────────────── */
+  .input-luxe {
+    border: 1px solid #E5D4ED;
+    border-radius: 12px;
+    background: #FFFFFF;
+    color: #2A0E3F;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .input-luxe::placeholder {
+    color: #B9A8C6;
+  }
+  .input-luxe:focus {
+    outline: none;
+    border-color: #C9A961;
+    box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.2);
+  }
+  .label-luxe {
+    color: #2A0E3F;
+    font-weight: 500;
+  }
+
+  /* ── Editorial helpers ────────────────────────────────────────────── */
   .text-editorial-tight {
     letter-spacing: -0.02em;
     line-height: 1.1;
   }
-  
-  .glass-panel {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-  }
-
-  .editorial-shadow {
-    box-shadow: 0 20px 40px -10px rgba(185, 0, 100, 0.08);
-  }
-  
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -127,14 +417,3 @@
 .animate-marquee:hover {
   animation-play-state: paused;
 }
-
-/* Interaction Design - Master Stitch */
-.card-hover-fx {
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.card-hover-fx:hover {
-  box-shadow: 0 10px 25px -5px rgba(185, 0, 100, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-  transform: translateY(-2px) scale(1.02);
-}
-

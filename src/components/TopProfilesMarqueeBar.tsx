@@ -311,8 +311,8 @@ export const TopProfilesMarqueeBar: React.FC<TopProfilesMarqueeBarProps> = ({
     <section className="w-full relative py-2 select-none">
       {/* Toast notification */}
       {toastMessage && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-60 bg-[#1c1b1b] text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-2xl border border-stone-700 flex items-center gap-2 animate-in slide-in-from-top-3">
-          <CheckCircle2 className="w-4 h-4 text-[#e6007e]" />
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-60 bg-[#2A0E3F] text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-2xl border border-stone-700 flex items-center gap-2 animate-in slide-in-from-top-3">
+          <CheckCircle2 className="w-4 h-4 text-[#8236A0]" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -320,27 +320,27 @@ export const TopProfilesMarqueeBar: React.FC<TopProfilesMarqueeBarProps> = ({
       {/* HEADER SECTION */}
       <div className="flex items-center justify-between gap-3 mb-2.5 px-1">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#b90064] to-[#e6007e] text-white flex items-center justify-center shadow-xs">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#6B2D8C] to-[#8236A0] text-white flex items-center justify-center shadow-xs">
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm sm:text-base font-extrabold text-[#1c1b1b] tracking-tight flex items-center gap-1.5">
+              <h2 className="text-sm sm:text-base font-extrabold text-[#2A0E3F] tracking-tight flex items-center gap-1.5">
                 <span>🔥 Newly Joined Network Partners</span>
-                <span className="text-[11px] font-normal text-[#8c7077] hidden sm:inline">• 10 Verified Profiles</span>
+                <span className="text-[11px] font-normal text-[#7E6C96] hidden sm:inline">• 10 Verified Profiles</span>
               </h2>
-              <span className="px-2 py-0.5 rounded-full bg-[#fde7f3] text-[#b90064] text-[10px] font-black uppercase tracking-wider hidden md:inline-flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#b90064] animate-pulse" />
+              <span className="px-2 py-0.5 rounded-full bg-[#F5EEF8] text-[#6B2D8C] text-[10px] font-black uppercase tracking-wider hidden md:inline-flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#6B2D8C] animate-pulse" />
                 Live Auto-Scroll
               </span>
             </div>
-            <p className="text-[11px] text-[#594047] font-medium hidden sm:block">
+            <p className="text-[11px] text-[#5B4A6E] font-medium hidden sm:block">
               Connect directly with recently onboarded manufacturers, OEM formulators, and verified buyers. Hover to pause.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs text-[#8c7077] font-semibold">
+        <div className="flex items-center gap-1.5 text-xs text-[#7E6C96] font-semibold">
           <span className="hidden sm:inline">Hover card to pause</span>
         </div>
       </div>
@@ -348,15 +348,15 @@ export const TopProfilesMarqueeBar: React.FC<TopProfilesMarqueeBarProps> = ({
       {/* HORIZONTAL CONTINUOUS AUTO-SCROLLING MARQUEE TRACK */}
       <div className="relative w-full overflow-hidden group">
         {/* Soft edge gradient fades */}
-        <div className="absolute left-0 top-0 bottom-0 w-10 sm:w-16 bg-gradient-to-r from-[#fdf8f8] to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-10 sm:w-16 bg-gradient-to-l from-[#fdf8f8] to-transparent z-10 pointer-events-none" />
+        <div className="absolute left-0 top-0 bottom-0 w-10 sm:w-16 bg-gradient-to-r from-[#FDFBF7] to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-10 sm:w-16 bg-gradient-to-l from-[#FDFBF7] to-transparent z-10 pointer-events-none" />
 
         <div className="animate-marquee flex items-center gap-3.5 py-2 px-2">
           {marqueeItems.map((member, idx) => (
             <div
               key={`${member.id}-${idx}`}
               onClick={() => handleCardClick(member)}
-              className="shrink-0 w-[300px] sm:w-[325px] bg-white border border-[#e8e8e8] hover:border-[#b90064]/60 hover:shadow-lg rounded-2xl p-3 sm:p-3.5 transition-all duration-200 cursor-pointer flex flex-col justify-between group/card relative select-none"
+              className="shrink-0 w-[300px] sm:w-[325px] bg-white border border-[#E8DEEF] hover:border-[#6B2D8C]/60 hover:shadow-lg rounded-2xl p-3 sm:p-3.5 transition-all duration-200 cursor-pointer flex flex-col justify-between group/card relative select-none"
             >
               {/* Top Row: Avatar, Name, GST Badge, Follow Button */}
               <div className="flex items-start gap-2.5">
@@ -364,53 +364,53 @@ export const TopProfilesMarqueeBar: React.FC<TopProfilesMarqueeBarProps> = ({
                   <img
                     src={member.avatar}
                     alt={member.name}
-                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover border border-[#e8e8e8] shadow-2xs group-hover/card:scale-105 transition-transform"
+                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover border border-[#E8DEEF] shadow-2xs group-hover/card:scale-105 transition-transform"
                     loading="lazy"
                   />
                   {member.isVerified && (
-                    <div className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-white border border-green-200 flex items-center justify-center shadow-xs">
-                      <ShieldCheck className="w-3 h-3 text-green-600" />
+                    <div className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-white border border-emerald-200 flex items-center justify-center shadow-xs">
+                      <ShieldCheck className="w-3 h-3 text-emerald-600" />
                     </div>
                   )}
                 </div>
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <h3 className="text-xs sm:text-sm font-extrabold text-[#1c1b1b] group-hover/card:text-[#b90064] transition-colors truncate">
+                    <h3 className="text-xs sm:text-sm font-extrabold text-[#2A0E3F] group-hover/card:text-[#6B2D8C] transition-colors truncate">
                       {member.name}
                     </h3>
                   </div>
 
                   <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                     {member.isGstVerified && (
-                      <span className="px-1.5 py-0.2 rounded bg-green-50 text-green-700 border border-green-200 text-[9px] font-black uppercase tracking-tight">
+                      <span className="px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-black uppercase tracking-tight">
                         GST Verified
                       </span>
                     )}
-                    <span className="text-[10px] font-bold text-[#b90064] truncate">
+                    <span className="text-[10px] font-bold text-[#6B2D8C] truncate">
                       {member.businessType}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1 text-[10.5px] text-[#8c7077] mt-0.5 truncate">
-                    <MapPin className="w-3 h-3 text-[#0050d6] shrink-0" />
+                  <div className="flex items-center gap-1 text-[10.5px] text-[#7E6C96] mt-0.5 truncate">
+                    <MapPin className="w-3 h-3 text-[#6B2D8C] shrink-0" />
                     <span className="truncate">{member.location}</span>
                   </div>
                 </div>
               </div>
 
               {/* Specialty & Badge snippet */}
-              <div className="mt-2.5 pt-2 border-t border-[#f0edec] space-y-1">
-                <div className="text-[10.5px] text-[#594047] line-clamp-1 font-medium">
-                  <span className="text-[#8c7077] font-semibold">Specialty: </span>
+              <div className="mt-2.5 pt-2 border-t border-[#F4F0E9] space-y-1">
+                <div className="text-[10.5px] text-[#5B4A6E] line-clamp-1 font-medium">
+                  <span className="text-[#7E6C96] font-semibold">Specialty: </span>
                   {member.specialty}
                 </div>
               </div>
 
               {/* Bottom Action Bar: WhatsApp Button & Follow / Unfollow */}
-              <div className="mt-2.5 pt-2 border-t border-[#f0edec] flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1 text-[10.5px] text-[#8c7077] font-semibold">
-                  <Users className="w-3 h-3 text-[#b90064]" />
+              <div className="mt-2.5 pt-2 border-t border-[#F4F0E9] flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1 text-[10.5px] text-[#7E6C96] font-semibold">
+                  <Users className="w-3 h-3 text-[#6B2D8C]" />
                   <span>{member.followersCount} Followers</span>
                 </div>
 
@@ -432,18 +432,18 @@ export const TopProfilesMarqueeBar: React.FC<TopProfilesMarqueeBarProps> = ({
                     onClick={(e) => handleToggleFollow(e, member.id, member.name)}
                     className={`px-2.5 py-1 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer flex items-center gap-1 shadow-2xs active:scale-95 border ${
                       member.isFollowing
-                        ? 'bg-[#fde7f3] border-[#b90064]/30 text-[#b90064] hover:bg-[#fbc5e3]'
-                        : 'bg-white border-[#e8e8e8] text-[#1c1b1b] hover:border-[#b90064] hover:text-[#b90064]'
+                        ? 'bg-[#F5EEF8] border-[#6B2D8C]/30 text-[#6B2D8C] hover:bg-[#fbc5e3]'
+                        : 'bg-white border-[#E8DEEF] text-[#2A0E3F] hover:border-[#6B2D8C] hover:text-[#6B2D8C]'
                     }`}
                   >
                     {member.isFollowing ? (
                       <>
-                        <Check className="w-3 h-3 text-[#b90064]" />
+                        <Check className="w-3 h-3 text-[#6B2D8C]" />
                         <span>Following</span>
                       </>
                     ) : (
                       <>
-                        <UserPlus className="w-3 h-3 text-[#8c7077]" />
+                        <UserPlus className="w-3 h-3 text-[#7E6C96]" />
                         <span>Follow</span>
                       </>
                     )}

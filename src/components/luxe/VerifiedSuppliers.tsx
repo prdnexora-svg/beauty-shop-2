@@ -150,7 +150,7 @@ export const VerifiedSuppliers: React.FC<VerifiedSuppliersProps> = ({
             </button>
             <button
               onClick={() => onSendEnquiry(s.name)}
-              className="flex-1 text-[12.5px] font-semibold text-white bg-royal-gradient hover:brightness-110 rounded-full px-4 py-2 shadow-[0_8px_18px_-8px_rgba(61,30,78,0.55)] transition-all whitespace-nowrap"
+              className="flex-1 text-[12.5px] font-semibold text-white bg-royal-gradient hover:brightness-110 rounded-full px-4 py-2 ring-1 ring-[#C9A961]/60 shadow-[0_8px_18px_-8px_rgba(61,30,78,0.55)] transition-all whitespace-nowrap"
             >
               Send Enquiry
             </button>

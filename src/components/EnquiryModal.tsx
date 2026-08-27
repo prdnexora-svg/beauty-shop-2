@@ -353,18 +353,18 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 16 }}
         transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-[#FCF9F8] rounded-2xl border border-[#E8DFE3] w-full max-w-[640px] max-h-[92vh] flex flex-col shadow-2xl overflow-hidden relative text-[#1C1B1B]"
+        className="bg-[#FDFBF7] rounded-2xl border border-[#E5D8EE] w-full max-w-[640px] max-h-[92vh] flex flex-col shadow-2xl overflow-hidden relative text-[#2A0E3F]"
       >
         {/* Top Header */}
-        <header className="px-5 py-3.5 border-b border-[#E8DFE3] flex justify-between items-center bg-white shrink-0">
+        <header className="px-5 py-3.5 border-b border-[#E5D8EE] flex justify-between items-center bg-white shrink-0">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-[#1C1B1B] flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-bold text-[#2A0E3F] flex items-center gap-2">
               <span>Send Product Enquiry</span>
-              <span className="bg-[#FDE7F3] text-[#B90064] text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full tracking-wider">
+              <span className="bg-[#F5EEF8] text-[#6B2D8C] text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full tracking-wider">
                 B2B Sourcing
               </span>
             </h2>
-            <p className="text-xs text-[#594047] mt-0.5">
+            <p className="text-xs text-[#5B4A6E] mt-0.5">
               Connect directly with verified beauty manufacturers and request wholesale quotes.
             </p>
           </div>
@@ -372,7 +372,7 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
             id="btn-close-enquiry-modal"
             aria-label="Close modal"
             onClick={onClose}
-            className="w-8 h-8 rounded-xl hover:bg-[#F7F2F2] flex items-center justify-center transition-colors text-[#594047] hover:text-[#1C1B1B] cursor-pointer"
+            className="w-8 h-8 rounded-xl hover:bg-[#F6F1FA] flex items-center justify-center transition-colors text-[#5B4A6E] hover:text-[#2A0E3F] cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -382,9 +382,9 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
         <div className="overflow-y-auto p-5 space-y-5 flex-1 custom-scrollbar">
           
           {/* Header Section: Product & Supplier Summary Card (Compact Top Strip) */}
-          <div className="bg-white p-3.5 rounded-xl border border-[#E8DFE3] flex items-center gap-3.5 shadow-2xs">
+          <div className="bg-white p-3.5 rounded-xl border border-[#E5D8EE] flex items-center gap-3.5 shadow-2xs">
             {/* 80x80px Thumbnail Image */}
-            <div className="w-20 h-20 min-w-20 min-h-20 rounded-lg overflow-hidden border border-[#E8DFE3] bg-[#F7F2F2] shrink-0">
+            <div className="w-20 h-20 min-w-20 min-h-20 rounded-lg overflow-hidden border border-[#E5D8EE] bg-[#F6F1FA] shrink-0">
               <img
                 src={productImage}
                 alt={productName}
@@ -395,24 +395,24 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
 
             {/* Product & Supplier Details */}
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-bold text-[#1C1B1B] truncate" title={productName}>
+              <h3 className="text-sm font-bold text-[#2A0E3F] truncate" title={productName}>
                 {productName}
               </h3>
               
               <div className="flex flex-wrap items-center gap-2 mt-1 text-xs">
-                <span className="font-extrabold text-[#B90064]">{priceDisplay}</span>
-                <span className="text-[#8C7077]">•</span>
-                <span className="text-[#594047] font-medium bg-[#F7F2F2] px-2 py-0.5 rounded">MOQ: {moqText}</span>
+                <span className="font-extrabold text-[#6B2D8C]">{priceDisplay}</span>
+                <span className="text-[#7E6C96]">•</span>
+                <span className="text-[#5B4A6E] font-medium bg-[#F6F1FA] px-2 py-0.5 rounded">MOQ: {moqText}</span>
               </div>
 
-              <div className="flex items-center gap-2 mt-1.5 text-xs text-[#594047]">
-                <span className="font-semibold text-[#1C1B1B] truncate">{supplierName}</span>
+              <div className="flex items-center gap-2 mt-1.5 text-xs text-[#5B4A6E]">
+                <span className="font-semibold text-[#2A0E3F] truncate">{supplierName}</span>
                 <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 shrink-0">
                   <ShieldCheck className="w-3 h-3 text-emerald-600" />
                   Nexora Verified
                 </span>
-                <span className="text-[#8C7077] hidden sm:inline">•</span>
-                <span className="text-[#8C7077] hidden sm:inline-flex items-center gap-1">
+                <span className="text-[#7E6C96] hidden sm:inline">•</span>
+                <span className="text-[#7E6C96] hidden sm:inline-flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
                   {location}
                 </span>
@@ -425,19 +425,19 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
             <form onSubmit={handleSubmit} className="space-y-5">
               
               {/* SECTION A: REQUIREMENT DETAILS */}
-              <div className="bg-white p-4 rounded-xl border border-[#E8DFE3] space-y-4">
-                <div className="flex items-center justify-between border-b border-[#F0EDEC] pb-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#B90064] flex items-center gap-1.5">
+              <div className="bg-white p-4 rounded-xl border border-[#E5D8EE] space-y-4">
+                <div className="flex items-center justify-between border-b border-[#F4F0E9] pb-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#6B2D8C] flex items-center gap-1.5">
                     <Package className="w-3.5 h-3.5" />
                     Section A: Requirement Details
                   </span>
-                  <span className="text-[11px] text-[#8C7077]">Step 1 of 2</span>
+                  <span className="text-[11px] text-[#7E6C96]">Step 1 of 2</span>
                 </div>
 
                 {/* Quantity Required (Numeric Input + Unit Select) */}
                 <div>
-                  <label className="block text-xs font-bold text-[#1C1B1B] mb-1.5">
-                    Quantity Required <span className="text-[#B90064]">*</span>
+                  <label className="block text-xs font-bold text-[#2A0E3F] mb-1.5">
+                    Quantity Required <span className="text-[#6B2D8C]">*</span>
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <div className="sm:col-span-2 relative">
@@ -448,8 +448,8 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                         value={quantity}
                         onChange={(e) => setQuantity(e.target.value)}
                         placeholder="e.g. 500"
-                        className={`w-full bg-[#FCF9F8] border rounded-lg px-3.5 py-2 text-sm font-medium text-[#1C1B1B] focus:outline-none focus:border-[#B90064] focus:ring-1 focus:ring-[#B90064] transition-all ${
-                          formErrors.quantity ? 'border-red-500 bg-red-50/20' : 'border-[#E8DFE3]'
+                        className={`w-full bg-[#FDFBF7] border rounded-lg px-3.5 py-2 text-sm font-medium text-[#2A0E3F] focus:outline-none focus:border-[#C9A961] focus:ring-1 focus:ring-[#C9A961]/30 transition-all ${
+                          formErrors.quantity ? 'border-red-500 bg-red-50/20' : 'border-[#E5D8EE]'
                         }`}
                       />
                     </div>
@@ -458,7 +458,7 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                         id="select-enquiry-unit"
                         value={unit}
                         onChange={(e) => setUnit(e.target.value)}
-                        className="w-full bg-[#FCF9F8] border border-[#E8DFE3] rounded-lg px-3 py-2 text-sm font-semibold text-[#1C1B1B] focus:outline-none focus:border-[#B90064] transition-all cursor-pointer"
+                        className="w-full bg-[#FDFBF7] border border-[#E5D8EE] rounded-lg px-3 py-2 text-sm font-semibold text-[#2A0E3F] focus:outline-none focus:border-[#C9A961] transition-all cursor-pointer"
                       >
                         <option value="Units">Units</option>
                         <option value="Pieces">Pieces</option>
@@ -479,8 +479,8 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
 
                 {/* Requirement Type / Intent (Choice Chips) */}
                 <div>
-                  <label className="block text-xs font-bold text-[#1C1B1B] mb-1.5">
-                    Requirement Type / Intent <span className="text-[#B90064]">*</span>
+                  <label className="block text-xs font-bold text-[#2A0E3F] mb-1.5">
+                    Requirement Type / Intent <span className="text-[#6B2D8C]">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {(
@@ -499,12 +499,12 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                           onClick={() => handleIntentSelect(type)}
                           className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-all text-left flex items-center justify-between cursor-pointer ${
                             isSelected
-                              ? 'bg-[#FDE7F3] border-[#B90064] text-[#B90064] shadow-2xs'
-                              : 'bg-[#FCF9F8] border-[#E8DFE3] text-[#594047] hover:border-[#B90064] hover:text-[#1C1B1B]'
+                              ? 'bg-[#F5EEF8] border-[#6B2D8C] text-[#6B2D8C] shadow-2xs'
+                              : 'bg-[#FDFBF7] border-[#E5D8EE] text-[#5B4A6E] hover:border-[#6B2D8C] hover:text-[#2A0E3F]'
                           }`}
                         >
                           <span className="truncate">{type}</span>
-                          {isSelected && <Check className="w-3.5 h-3.5 text-[#B90064] shrink-0 ml-1" />}
+                          {isSelected && <Check className="w-3.5 h-3.5 text-[#6B2D8C] shrink-0 ml-1" />}
                         </button>
                       );
                     })}
@@ -514,10 +514,10 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                 {/* Requirement Details (Textarea) */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-bold text-[#1C1B1B]">
+                    <label className="text-xs font-bold text-[#2A0E3F]">
                       Requirement Specifications & Notes
                     </label>
-                    <span className={`text-[11px] font-mono ${description.length > 480 ? 'text-red-500 font-bold' : 'text-[#8C7077]'}`}>
+                    <span className={`text-[11px] font-mono ${description.length > 480 ? 'text-red-500 font-bold' : 'text-[#7E6C96]'}`}>
                       {description.length}/500 chars
                     </span>
                   </div>
@@ -528,14 +528,14 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Specify custom formulations, packaging preferences, estimated order frequency, or target delivery timelines..."
-                    className="w-full bg-[#FCF9F8] border border-[#E8DFE3] rounded-lg p-3 text-xs text-[#1C1B1B] focus:outline-none focus:border-[#B90064] focus:ring-1 focus:ring-[#B90064] resize-none leading-relaxed transition-all"
+                    className="w-full bg-[#FDFBF7] border border-[#E5D8EE] rounded-lg p-3 text-xs text-[#2A0E3F] focus:outline-none focus:border-[#C9A961] focus:ring-1 focus:ring-[#C9A961]/30 resize-none leading-relaxed transition-all"
                   />
                 </div>
 
                 {/* Attachment Upload (Optional Drag & Drop Zone) */}
                 <div>
-                  <label className="block text-xs font-bold text-[#1C1B1B] mb-1.5">
-                    Specs / Packaging Reference Attachment <span className="text-[#8C7077] font-normal">(Optional)</span>
+                  <label className="block text-xs font-bold text-[#2A0E3F] mb-1.5">
+                    Specs / Packaging Reference Attachment <span className="text-[#7E6C96] font-normal">(Optional)</span>
                   </label>
                   {!attachedFile ? (
                     <div
@@ -546,7 +546,7 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                       onDragLeave={() => setIsDragOver(false)}
                       onDrop={handleFileDrop}
                       className={`border-2 border-dashed rounded-xl p-3.5 text-center transition-all cursor-pointer ${
-                        isDragOver ? 'border-[#B90064] bg-[#FDE7F3]/30' : 'border-[#E8DFE3] bg-[#FCF9F8] hover:border-[#B90064]'
+                        isDragOver ? 'border-[#6B2D8C] bg-[#F5EEF8]/30' : 'border-[#E5D8EE] bg-[#FDFBF7] hover:border-[#6B2D8C]'
                       }`}
                       onClick={() => document.getElementById('enquiry-file-upload')?.click()}
                     >
@@ -557,25 +557,25 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                         onChange={handleFileInput}
                         className="hidden"
                       />
-                      <UploadCloud className="w-5 h-5 mx-auto text-[#B90064] mb-1" />
-                      <p className="text-xs font-semibold text-[#1C1B1B]">
-                        Drag & Drop or <span className="text-[#B90064] underline">Browse File</span>
+                      <UploadCloud className="w-5 h-5 mx-auto text-[#6B2D8C] mb-1" />
+                      <p className="text-xs font-semibold text-[#2A0E3F]">
+                        Drag & Drop or <span className="text-[#6B2D8C] underline">Browse File</span>
                       </p>
-                      <p className="text-[10px] text-[#8C7077] mt-0.5">
+                      <p className="text-[10px] text-[#7E6C96] mt-0.5">
                         Supports .pdf, .png, .jpg up to 5MB (Artwork, COA request, benchmark packaging)
                       </p>
                     </div>
                   ) : (
-                    <div className="bg-[#FAF1F5] border border-[#E0BEC6] rounded-xl p-2.5 flex items-center justify-between">
+                    <div className="bg-[#F5EEF8] border border-[#D9C3E8] rounded-xl p-2.5 flex items-center justify-between">
                       <div className="flex items-center gap-2 min-w-0">
-                        <FileText className="w-4 h-4 text-[#B90064] shrink-0" />
-                        <span className="text-xs font-bold text-[#1C1B1B] truncate">{attachedFile.name}</span>
-                        <span className="text-[10px] text-[#8C7077] shrink-0">({attachedFile.size})</span>
+                        <FileText className="w-4 h-4 text-[#6B2D8C] shrink-0" />
+                        <span className="text-xs font-bold text-[#2A0E3F] truncate">{attachedFile.name}</span>
+                        <span className="text-[10px] text-[#7E6C96] shrink-0">({attachedFile.size})</span>
                       </div>
                       <button
                         type="button"
                         onClick={() => setAttachedFile(null)}
-                        className="text-[#8C7077] hover:text-red-600 p-1 rounded transition-colors cursor-pointer"
+                        className="text-[#7E6C96] hover:text-red-600 p-1 rounded transition-colors cursor-pointer"
                         title="Remove file"
                       >
                         <X className="w-3.5 h-3.5" />
@@ -592,9 +592,9 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
               </div>
 
               {/* SECTION B: BUYER CONTACT DETAILS */}
-              <div className="bg-white p-4 rounded-xl border border-[#E8DFE3] space-y-3.5">
-                <div className="flex items-center justify-between border-b border-[#F0EDEC] pb-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#B90064] flex items-center gap-1.5">
+              <div className="bg-white p-4 rounded-xl border border-[#E5D8EE] space-y-3.5">
+                <div className="flex items-center justify-between border-b border-[#F4F0E9] pb-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#6B2D8C] flex items-center gap-1.5">
                     <Building2 className="w-3.5 h-3.5" />
                     Section B: Buyer Contact Details
                   </span>
@@ -606,8 +606,8 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                 {/* 2-Column: Full Name & Company Name */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-[#1C1B1B] mb-1">
-                      Full Name <span className="text-[#B90064]">*</span>
+                    <label className="block text-xs font-bold text-[#2A0E3F] mb-1">
+                      Full Name <span className="text-[#6B2D8C]">*</span>
                     </label>
                     <input
                       id="input-enquiry-buyer-name"
@@ -615,8 +615,8 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                       value={buyerName}
                       onChange={(e) => setBuyerName(e.target.value)}
                       placeholder="e.g. Priya Sharma"
-                      className={`w-full bg-[#FCF9F8] border rounded-lg px-3 py-2 text-xs font-medium text-[#1C1B1B] focus:outline-none focus:border-[#B90064] transition-all ${
-                        formErrors.buyerName ? 'border-red-500 bg-red-50/20' : 'border-[#E8DFE3]'
+                      className={`w-full bg-[#FDFBF7] border rounded-lg px-3 py-2 text-xs font-medium text-[#2A0E3F] focus:outline-none focus:border-[#C9A961] transition-all ${
+                        formErrors.buyerName ? 'border-red-500 bg-red-50/20' : 'border-[#E5D8EE]'
                       }`}
                     />
                     {formErrors.buyerName && (
@@ -625,8 +625,8 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-[#1C1B1B] mb-1">
-                      Company / Business Name <span className="text-[#B90064]">*</span>
+                    <label className="block text-xs font-bold text-[#2A0E3F] mb-1">
+                      Company / Business Name <span className="text-[#6B2D8C]">*</span>
                     </label>
                     <input
                       id="input-enquiry-company-name"
@@ -634,8 +634,8 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
                       placeholder="e.g. Luxe Glow Clinics"
-                      className={`w-full bg-[#FCF9F8] border rounded-lg px-3 py-2 text-xs font-medium text-[#1C1B1B] focus:outline-none focus:border-[#B90064] transition-all ${
-                        formErrors.companyName ? 'border-red-500 bg-red-50/20' : 'border-[#E8DFE3]'
+                      className={`w-full bg-[#FDFBF7] border rounded-lg px-3 py-2 text-xs font-medium text-[#2A0E3F] focus:outline-none focus:border-[#C9A961] transition-all ${
+                        formErrors.companyName ? 'border-red-500 bg-red-50/20' : 'border-[#E5D8EE]'
                       }`}
                     />
                     {formErrors.companyName && (
@@ -647,14 +647,14 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                 {/* Mobile Number with Country Code & OTP status */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-bold text-[#1C1B1B]">
-                      Mobile Number <span className="text-[#B90064]">*</span>
+                    <label className="text-xs font-bold text-[#2A0E3F]">
+                      Mobile Number <span className="text-[#6B2D8C]">*</span>
                     </label>
                     {!isOtpVerified ? (
                       <button
                         type="button"
                         onClick={() => setShowOtpInput(true)}
-                        className="text-[10px] font-bold text-[#B90064] hover:underline cursor-pointer flex items-center gap-1"
+                        className="text-[10px] font-bold text-[#6B2D8C] hover:underline cursor-pointer flex items-center gap-1"
                       >
                         <ShieldCheck className="w-3 h-3" />
                         Verify via OTP
@@ -672,7 +672,7 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                       <select
                         value={countryCode}
                         onChange={(e) => setCountryCode(e.target.value)}
-                        className="w-full bg-[#FCF9F8] border border-[#E8DFE3] rounded-lg px-2.5 py-2 text-xs font-bold text-[#1C1B1B] focus:outline-none focus:border-[#B90064]"
+                        className="w-full bg-[#FDFBF7] border border-[#E5D8EE] rounded-lg px-2.5 py-2 text-xs font-bold text-[#2A0E3F] focus:outline-none focus:border-[#C9A961]"
                       >
                         <option value="+91">+91 (IN)</option>
                         <option value="+1">+1 (US)</option>
@@ -688,8 +688,8 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                         value={mobileNumber}
                         onChange={(e) => setMobileNumber(e.target.value)}
                         placeholder="98201 44521"
-                        className={`w-full bg-[#FCF9F8] border rounded-lg px-3 py-2 text-xs font-medium text-[#1C1B1B] focus:outline-none focus:border-[#B90064] ${
-                          formErrors.mobile ? 'border-red-500 bg-red-50/20' : 'border-[#E8DFE3]'
+                        className={`w-full bg-[#FDFBF7] border rounded-lg px-3 py-2 text-xs font-medium text-[#2A0E3F] focus:outline-none focus:border-[#C9A961] ${
+                          formErrors.mobile ? 'border-red-500 bg-red-50/20' : 'border-[#E5D8EE]'
                         }`}
                       />
                     </div>
@@ -703,7 +703,7 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
-                      className="mt-2 p-2.5 bg-[#FAF1F5] rounded-lg border border-[#E0BEC6] flex items-center gap-2"
+                      className="mt-2 p-2.5 bg-[#F5EEF8] rounded-lg border border-[#D9C3E8] flex items-center gap-2"
                     >
                       <input
                         type="text"
@@ -711,7 +711,7 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                         value={otpCode}
                         onChange={(e) => setOtpCode(e.target.value)}
                         placeholder="Enter 4-digit OTP (1234)"
-                        className="w-40 bg-white border border-[#E8DFE3] rounded px-2.5 py-1 text-xs text-center font-bold tracking-widest text-[#1C1B1B] focus:outline-none focus:border-[#B90064]"
+                        className="w-40 bg-white border border-[#E5D8EE] rounded px-2.5 py-1 text-xs text-center font-bold tracking-widest text-[#2A0E3F] focus:outline-none focus:border-[#C9A961]"
                       />
                       <button
                         type="button"
@@ -721,14 +721,14 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                             setShowOtpInput(false);
                           }
                         }}
-                        className="px-3 py-1 bg-[#B90064] text-white text-xs font-bold rounded hover:bg-[#a00057] transition-colors cursor-pointer"
+                        className="px-3 py-1 bg-[#6B2D8C] text-white text-xs font-bold rounded hover:bg-[#a00057] transition-colors cursor-pointer"
                       >
                         Confirm
                       </button>
                       <button
                         type="button"
                         onClick={() => setShowOtpInput(false)}
-                        className="text-xs text-[#8C7077] hover:text-[#1C1B1B] ml-auto cursor-pointer"
+                        className="text-xs text-[#7E6C96] hover:text-[#2A0E3F] ml-auto cursor-pointer"
                       >
                         Skip
                       </button>
@@ -739,8 +739,8 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                 {/* Delivery Pincode / City */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-[#1C1B1B] mb-1">
-                      Delivery Pincode <span className="text-[#B90064]">*</span>
+                    <label className="block text-xs font-bold text-[#2A0E3F] mb-1">
+                      Delivery Pincode <span className="text-[#6B2D8C]">*</span>
                     </label>
                     <input
                       id="input-enquiry-pincode"
@@ -749,8 +749,8 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                       value={pincode}
                       onChange={handlePincodeChange}
                       placeholder="e.g. 400001"
-                      className={`w-full bg-[#FCF9F8] border rounded-lg px-3 py-2 text-xs font-medium text-[#1C1B1B] focus:outline-none focus:border-[#B90064] ${
-                        formErrors.pincode ? 'border-red-500 bg-red-50/20' : 'border-[#E8DFE3]'
+                      className={`w-full bg-[#FDFBF7] border rounded-lg px-3 py-2 text-xs font-medium text-[#2A0E3F] focus:outline-none focus:border-[#C9A961] ${
+                        formErrors.pincode ? 'border-red-500 bg-red-50/20' : 'border-[#E5D8EE]'
                       }`}
                     />
                     {formErrors.pincode && (
@@ -758,7 +758,7 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                     )}
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-[#1C1B1B] mb-1">
+                    <label className="block text-xs font-bold text-[#2A0E3F] mb-1">
                       Destination City / State
                     </label>
                     <div className="relative">
@@ -767,31 +767,31 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                         value={cityLocation}
                         onChange={(e) => setCityLocation(e.target.value)}
                         placeholder="Mumbai, Maharashtra"
-                        className="w-full bg-[#FAF1F5] border border-[#E8DFE3] rounded-lg px-3 py-2 text-xs font-semibold text-[#594047] focus:outline-none focus:border-[#B90064]"
+                        className="w-full bg-[#F5EEF8] border border-[#E5D8EE] rounded-lg px-3 py-2 text-xs font-semibold text-[#5B4A6E] focus:outline-none focus:border-[#C9A961]"
                       />
-                      <MapPin className="w-3.5 h-3.5 text-[#8C7077] absolute right-3 top-2.5" />
+                      <MapPin className="w-3.5 h-3.5 text-[#7E6C96] absolute right-3 top-2.5" />
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* SECTION C: LEAD ROUTING & MULTI-SOURCING (IndiaMART-style Core Switch) */}
-              <div className="bg-[#FAF1F5] p-3.5 rounded-xl border border-[#E0BEC6] space-y-2">
+              <div className="bg-[#F5EEF8] p-3.5 rounded-xl border border-[#D9C3E8] space-y-2">
                 <label className="flex items-start gap-2.5 cursor-pointer">
                   <input
                     id="checkbox-multi-sourcing"
                     type="checkbox"
                     checked={broadcastToSimilar}
                     onChange={(e) => setBroadcastToSimilar(e.target.checked)}
-                    className="mt-0.5 w-4 h-4 rounded text-[#B90064] focus:ring-[#B90064] border-[#E0BEC6] accent-[#B90064] cursor-pointer"
+                    className="mt-0.5 w-4 h-4 rounded text-[#6B2D8C] focus:ring-[#C9A961]/30 border-[#D9C3E8] accent-[#6B2D8C] cursor-pointer"
                   />
                   <div>
-                    <span className="text-xs font-bold text-[#1C1B1B] flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-[#2A0E3F] flex items-center gap-1.5">
                       Send this enquiry to other verified suppliers of similar beauty products to get competitive rates.
-                      <Sparkles className="w-3.5 h-3.5 text-[#B90064] shrink-0" />
+                      <Sparkles className="w-3.5 h-3.5 text-[#6B2D8C] shrink-0" />
                     </span>
-                    <p className="text-[11px] text-[#594047] mt-0.5 leading-relaxed">
-                      Increases response speed by <strong className="text-[#B90064]">3x</strong> by notifying up to 4 top-rated beauty manufacturers matching your specs.
+                    <p className="text-[11px] text-[#5B4A6E] mt-0.5 leading-relaxed">
+                      Increases response speed by <strong className="text-[#6B2D8C]">3x</strong> by notifying up to 4 top-rated beauty manufacturers matching your specs.
                     </p>
                   </div>
                 </label>
@@ -803,7 +803,7 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                   id="btn-submit-enquiry"
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-[#B90064] hover:bg-[#a00057] active:bg-[#88004a] text-white font-bold text-sm py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+                  className="w-full bg-[#6B2D8C] hover:bg-[#a00057] active:bg-[#88004a] text-white font-bold text-sm py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <>
@@ -819,7 +819,7 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                   )}
                 </button>
 
-                <p className="text-center text-[11px] text-[#8C7077] mt-2 flex items-center justify-center gap-1.5">
+                <p className="text-center text-[11px] text-[#7E6C96] mt-2 flex items-center justify-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                   Free B2B matchmaking • Zero commission • Direct supplier contact
                 </p>
@@ -838,20 +838,20 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                 <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border-2 border-emerald-200 shadow-sm">
                   <CheckCircle2 className="w-9 h-9" />
                 </div>
-                <h3 className="text-lg font-extrabold text-[#1C1B1B]">
+                <h3 className="text-lg font-extrabold text-[#2A0E3F]">
                   Enquiry Sent Successfully!
                 </h3>
-                <p className="text-xs text-[#594047] max-w-md mx-auto">
+                <p className="text-xs text-[#5B4A6E] max-w-md mx-auto">
                   Your business requirement has been delivered directly to the primary supplier's sales desk and recorded in the Nexora Sourcing Network.
                 </p>
 
                 {/* Reference ID badge */}
-                <div className="inline-flex items-center gap-2 bg-[#FAF1F5] px-3 py-1.5 rounded-lg border border-[#E0BEC6] mt-2">
-                  <span className="text-xs font-bold text-[#594047]">Reference ID:</span>
-                  <span className="text-xs font-mono font-black text-[#B90064]">{referenceId}</span>
+                <div className="inline-flex items-center gap-2 bg-[#F5EEF8] px-3 py-1.5 rounded-lg border border-[#D9C3E8] mt-2">
+                  <span className="text-xs font-bold text-[#5B4A6E]">Reference ID:</span>
+                  <span className="text-xs font-mono font-black text-[#6B2D8C]">{referenceId}</span>
                   <button
                     onClick={handleCopyReference}
-                    className="text-[#8C7077] hover:text-[#B90064] p-1 transition-colors cursor-pointer"
+                    className="text-[#7E6C96] hover:text-[#6B2D8C] p-1 transition-colors cursor-pointer"
                     title="Copy Reference ID"
                   >
                     {copiedRef ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
@@ -860,9 +860,9 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
               </div>
 
               {/* Matched Suppliers List */}
-              <div className="bg-white p-4 rounded-xl border border-[#E8DFE3] space-y-3">
-                <div className="flex items-center justify-between border-b border-[#F0EDEC] pb-2">
-                  <span className="text-xs font-bold text-[#1C1B1B] flex items-center gap-1.5">
+              <div className="bg-white p-4 rounded-xl border border-[#E5D8EE] space-y-3">
+                <div className="flex items-center justify-between border-b border-[#F4F0E9] pb-2">
+                  <span className="text-xs font-bold text-[#2A0E3F] flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4 text-emerald-600" />
                     Suppliers Notified ({dispatchedSuppliers.length})
                   </span>
@@ -875,18 +875,18 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                   {dispatchedSuppliers.map((supp, index) => (
                     <div
                       key={supp.id || index}
-                      className="p-2.5 rounded-lg border border-[#F0EDEC] bg-[#FCF9F8] flex items-center justify-between gap-2 text-xs"
+                      className="p-2.5 rounded-lg border border-[#F4F0E9] bg-[#FDFBF7] flex items-center justify-between gap-2 text-xs"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-8 h-8 rounded-lg bg-[#FAF1F5] text-[#B90064] font-bold flex items-center justify-center text-xs shrink-0 border border-[#E0BEC6]">
+                        <div className="w-8 h-8 rounded-lg bg-[#F5EEF8] text-[#6B2D8C] font-bold flex items-center justify-center text-xs shrink-0 border border-[#D9C3E8]">
                           {supp.name.charAt(0)}
                         </div>
                         <div className="min-w-0">
-                          <p className="font-bold text-[#1C1B1B] truncate flex items-center gap-1">
+                          <p className="font-bold text-[#2A0E3F] truncate flex items-center gap-1">
                             {supp.name}
                             <span className="text-[10px] text-emerald-600 font-normal">✓</span>
                           </p>
-                          <p className="text-[11px] text-[#8C7077] truncate">
+                          <p className="text-[11px] text-[#7E6C96] truncate">
                             {supp.city} • {supp.badge}
                           </p>
                         </div>
@@ -914,7 +914,7 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                       onClose();
                     }
                   }}
-                  className="w-full bg-[#B90064] hover:bg-[#a00057] text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full bg-[#6B2D8C] hover:bg-[#a00057] text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <FileText className="w-3.5 h-3.5" />
                   <span>View Sent Enquiries</span>
@@ -924,7 +924,7 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                   id="btn-continue-browsing"
                   type="button"
                   onClick={onClose}
-                  className="w-full bg-white hover:bg-[#F7F2F2] border border-[#E8DFE3] text-[#594047] hover:text-[#1C1B1B] font-bold text-xs py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full bg-white hover:bg-[#F6F1FA] border border-[#E5D8EE] text-[#5B4A6E] hover:text-[#2A0E3F] font-bold text-xs py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <span>Continue Browsing</span>
                   <ArrowRight className="w-3.5 h-3.5" />

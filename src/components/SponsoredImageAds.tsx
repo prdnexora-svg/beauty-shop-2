@@ -311,13 +311,13 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
       case 'YouTube':
         return { label: 'YouTube Short', bg: 'bg-red-600' };
       case 'Instagram':
-        return { label: 'Instagram Reel', bg: 'bg-gradient-to-r from-purple-600 to-pink-500' };
+        return { label: 'Instagram Reel', bg: 'bg-gradient-to-r from-purple-600 to-purple-600' };
       case 'Facebook':
-        return { label: 'Facebook Reel', bg: 'bg-blue-600' };
+        return { label: 'Facebook Reel', bg: 'bg-purple-700' };
       case 'LinkedIn':
-        return { label: 'LinkedIn Video', bg: 'bg-blue-700' };
+        return { label: 'LinkedIn Video', bg: 'bg-purple-800' };
       default:
-        return { label: '9:16 Video', bg: 'bg-[#b90064]' };
+        return { label: '9:16 Video', bg: 'bg-[#6B2D8C]' };
     }
   };
 
@@ -330,19 +330,19 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
       {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 px-1">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-[#fde7f3] border border-[#f7c5e0] flex items-center justify-center text-[#b90064] shadow-xs shrink-0">
-            <Sparkles className="w-4 h-4 md:w-4.5 md:h-4.5 text-[#b90064]" />
+          <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-[#F5EEF8] border border-[#E8D5F2] flex items-center justify-center text-[#6B2D8C] shadow-xs shrink-0">
+            <Sparkles className="w-4 h-4 md:w-4.5 md:h-4.5 text-[#6B2D8C]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg md:text-xl font-black text-[#1c1b1b] tracking-tight">
+              <h2 className="text-base sm:text-lg md:text-xl font-black text-[#2A0E3F] tracking-tight">
                 Sponsored Showcase
               </h2>
-              <span className="px-2 py-0.5 rounded-full bg-[#fde7f3] border border-[#f7c5e0] text-[#b90064] text-[9.5px] md:text-[10px] font-black uppercase tracking-wider">
+              <span className="px-2 py-0.5 rounded-full bg-[#F5EEF8] border border-[#E8D5F2] text-[#6B2D8C] text-[9.5px] md:text-[10px] font-black uppercase tracking-wider">
                 Featured Ads
               </span>
             </div>
-            <p className="text-xs text-[#594047] font-medium hidden sm:block mt-0.5">
+            <p className="text-xs text-[#5B4A6E] font-medium hidden sm:block mt-0.5">
               Verified supplier promotions, 9:16 video demos & direct bulk sourcing showcases
             </p>
           </div>
@@ -353,7 +353,7 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
           {onOpenAdManager && (
             <button
               onClick={onOpenAdManager}
-              className="bg-[#b90064] hover:bg-[#a00056] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0"
+              className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0"
             >
               <Plus className="w-3.5 h-3.5 text-white" />
               <span>Create Ad</span>
@@ -376,8 +376,8 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer whitespace-nowrap ${
                 activeMobileTab === 'reels_priority'
-                  ? 'bg-[#b90064] text-white shadow-xs'
-                  : 'bg-white text-[#594047] border border-[#e8e8e8] hover:border-[#b90064]/40'
+                  ? 'bg-[#6B2D8C] text-white shadow-xs'
+                  : 'bg-white text-[#5B4A6E] border border-[#E8DEEF] hover:border-[#6B2D8C]/40'
               }`}
             >
               <Film className="w-3.5 h-3.5 text-current" />
@@ -391,8 +391,8 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer whitespace-nowrap ${
                 activeMobileTab === 'banners'
-                  ? 'bg-[#b90064] text-white shadow-xs'
-                  : 'bg-white text-[#594047] border border-[#e8e8e8] hover:border-[#b90064]/40'
+                  ? 'bg-[#6B2D8C] text-white shadow-xs'
+                  : 'bg-white text-[#5B4A6E] border border-[#E8DEEF] hover:border-[#6B2D8C]/40'
               }`}
             >
               <Layers className="w-3.5 h-3.5 text-current" />
@@ -406,8 +406,8 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer whitespace-nowrap ${
                 activeMobileTab === 'all'
-                  ? 'bg-[#b90064] text-white shadow-xs'
-                  : 'bg-white text-[#594047] border border-[#e8e8e8] hover:border-[#b90064]/40'
+                  ? 'bg-[#6B2D8C] text-white shadow-xs'
+                  : 'bg-white text-[#5B4A6E] border border-[#E8DEEF] hover:border-[#6B2D8C]/40'
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 text-current" />
@@ -419,14 +419,14 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
           <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={handleScrollLeft}
-              className="w-7 h-7 rounded-full bg-white border border-[#e8e8e8] hover:border-[#b90064] flex items-center justify-center text-zinc-700 active:scale-95 shadow-2xs"
+              className="w-7 h-7 rounded-full bg-white border border-[#E8DEEF] hover:border-[#6B2D8C] flex items-center justify-center text-zinc-700 active:scale-95 shadow-2xs"
               aria-label="Previous Ad"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={handleScrollRight}
-              className="w-7 h-7 rounded-full bg-white border border-[#e8e8e8] hover:border-[#b90064] flex items-center justify-center text-zinc-700 active:scale-95 shadow-2xs"
+              className="w-7 h-7 rounded-full bg-white border border-[#E8DEEF] hover:border-[#6B2D8C] flex items-center justify-center text-zinc-700 active:scale-95 shadow-2xs"
               aria-label="Next Ad"
             >
               <ChevronRight className="w-4 h-4" />
@@ -451,7 +451,7 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
                   data-ad-id={reel.video_ad_id}
                   data-is-reel="true"
                   onClick={() => setActiveModalVideo(reel)}
-                  className="sponsored-impression-target group relative shrink-0 w-[190px] aspect-[9/16] rounded-2xl overflow-hidden border border-[#e8dfe3] bg-[#1a1718] cursor-pointer shadow-sm active:scale-[0.99] transition-all snap-start flex flex-col justify-between"
+                  className="sponsored-impression-target group relative shrink-0 w-[190px] aspect-[9/16] rounded-2xl overflow-hidden border border-[#E5D8EE] bg-[#1a1718] cursor-pointer shadow-sm active:scale-[0.99] transition-all snap-start flex flex-col justify-between"
                 >
                   {/* Poster Image */}
                   <img
@@ -480,14 +480,14 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
 
                   {/* Center Animated Play Ring */}
                   <div className="relative z-10 flex items-center justify-center my-auto pointer-events-none">
-                    <div className="w-11 h-11 rounded-full bg-white/30 backdrop-blur-md border border-white/50 flex items-center justify-center group-hover:scale-110 group-hover:bg-[#b90064] transition-all shadow-lg">
+                    <div className="w-11 h-11 rounded-full bg-white/30 backdrop-blur-md border border-white/50 flex items-center justify-center group-hover:scale-110 group-hover:bg-[#6B2D8C] transition-all shadow-lg">
                       <Play className="w-5 h-5 text-white fill-white ml-0.5" />
                     </div>
                   </div>
 
                   {/* Bottom Information & 1-Tap Watch / Enquire */}
                   <div className="relative z-10 p-3 space-y-1.5">
-                    <span className="text-[10px] font-bold text-pink-300 tracking-wide truncate block uppercase">
+                    <span className="text-[10px] font-bold text-purple-300 tracking-wide truncate block uppercase">
                       {reel.supplierName}
                     </span>
 
@@ -496,7 +496,7 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
                     </h3>
 
                     <div className="pt-1">
-                      <div className="w-full py-1.5 bg-[#b90064] text-white text-[11px] font-black rounded-xl text-center flex items-center justify-center gap-1 shadow-xs">
+                      <div className="w-full py-1.5 bg-[#6B2D8C] text-white text-[11px] font-black rounded-xl text-center flex items-center justify-center gap-1 shadow-xs">
                         <span>Watch Demo</span>
                         <ArrowRight className="w-3 h-3 text-white" />
                       </div>
@@ -524,7 +524,7 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
                   });
                   onProductClick?.(ad);
                 }}
-                className="sponsored-impression-target group shrink-0 w-[265px] bg-white border border-[#e8e8e8] hover:border-[#b90064]/50 rounded-2xl overflow-hidden shadow-xs active:scale-[0.99] transition-all snap-start flex flex-col justify-between"
+                className="sponsored-impression-target group shrink-0 w-[265px] bg-white border border-[#E8DEEF] hover:border-[#6B2D8C]/50 rounded-2xl overflow-hidden shadow-xs active:scale-[0.99] transition-all snap-start flex flex-col justify-between"
               >
                 {/* Product Image */}
                 <div className="relative w-full h-[145px] overflow-hidden bg-stone-100">
@@ -542,15 +542,15 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
                 {/* Content & Actions */}
                 <div className="p-3 flex flex-col justify-between space-y-2.5 flex-1">
                   <div>
-                    <div className="flex items-center justify-between text-[10.5px] font-bold text-[#8c7077] mb-1">
+                    <div className="flex items-center justify-between text-[10.5px] font-bold text-[#7E6C96] mb-1">
                       <span
                         onClick={(e) => {
                           e.stopPropagation();
                           onSupplierClick?.(ad.seller_id);
                         }}
-                        className="truncate flex items-center gap-1 text-[#b90064] font-black"
+                        className="truncate flex items-center gap-1 text-[#6B2D8C] font-black"
                       >
-                        <ShieldCheck className="w-3.5 h-3.5 text-[#b90064]" />
+                        <ShieldCheck className="w-3.5 h-3.5 text-[#6B2D8C]" />
                         {ad.supplierName}
                       </span>
                       <span className="text-[9px] bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-mono">
@@ -561,7 +561,7 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
                     <h3 className="text-xs font-black text-zinc-950 leading-snug line-clamp-1">
                       {ad.adTitle}
                     </h3>
-                    <p className="text-[11px] text-[#594047] font-medium line-clamp-1 mt-0.5">
+                    <p className="text-[11px] text-[#5B4A6E] font-medium line-clamp-1 mt-0.5">
                       {ad.subtitle}
                     </p>
                   </div>
@@ -578,7 +578,7 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
                       }}
                       className="flex items-center justify-center gap-0.5 bg-stone-50 border border-stone-200 text-stone-800 text-[10px] font-bold py-1.5 rounded-xl cursor-pointer"
                     >
-                      <Phone className="w-3 h-3 text-[#b90064]" />
+                      <Phone className="w-3 h-3 text-[#6B2D8C]" />
                       <span>Call</span>
                     </button>
 
@@ -622,7 +622,7 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
                           }
                         );
                       }}
-                      className="flex items-center justify-center gap-0.5 bg-[#b90064] text-white text-[10px] font-black py-1.5 rounded-xl cursor-pointer shadow-xs"
+                      className="flex items-center justify-center gap-0.5 bg-[#6B2D8C] text-white text-[10px] font-black py-1.5 rounded-xl cursor-pointer shadow-xs"
                     >
                       <Send className="w-3 h-3 text-white" />
                       <span>Chat</span>
@@ -634,9 +634,9 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
         </div>
 
         {/* Mobile Swipe Hint & Active Slide Tracker */}
-        <div className="flex items-center justify-between px-2 pt-1 text-[10.5px] text-[#594047]">
+        <div className="flex items-center justify-between px-2 pt-1 text-[10.5px] text-[#5B4A6E]">
           <span className="font-semibold flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#b90064] animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#6B2D8C] animate-pulse" />
             <span>Swipe horizontally to browse</span>
           </span>
           <span className="font-mono font-bold text-zinc-900">
@@ -656,8 +656,8 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
       <div className="hidden md:block">
         <div className="relative w-full overflow-x-auto hide-scrollbar group">
           {/* Edge Gradients */}
-          <div className="absolute left-0 top-0 bottom-0 w-12 lg:w-20 bg-gradient-to-r from-[#fdf8f8] to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-12 lg:w-20 bg-gradient-to-l from-[#fdf8f8] to-transparent z-10 pointer-events-none" />
+          <div className="absolute left-0 top-0 bottom-0 w-12 lg:w-20 bg-gradient-to-r from-[#FDFBF7] to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-12 lg:w-20 bg-gradient-to-l from-[#FDFBF7] to-transparent z-10 pointer-events-none" />
 
           <div className="animate-marquee flex items-center gap-4 py-3 px-2">
             {marqueeItems.map((ad, index) => (
@@ -676,7 +676,7 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
                   });
                   onProductClick?.(ad);
                 }}
-                className="sponsored-impression-target group/card shrink-0 cursor-pointer bg-white border border-[#e8e8e8] hover:border-[#b90064]/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl relative flex flex-col justify-between w-[320px] lg:w-[350px]"
+                className="sponsored-impression-target group/card shrink-0 cursor-pointer bg-white border border-[#E8DEEF] hover:border-[#6B2D8C]/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl relative flex flex-col justify-between w-[320px] lg:w-[350px]"
               >
                 {/* HD Product Banner Image */}
                 <div className="relative w-full h-[180px] lg:h-[200px] overflow-hidden bg-stone-100">
@@ -694,26 +694,26 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
                 {/* Bottom Details & Actions */}
                 <div className="p-4 flex flex-col justify-between space-y-3 bg-white">
                   <div>
-                    <div className="flex items-center justify-between text-[11px] font-bold text-[#8c7077] uppercase tracking-wider mb-1">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-[#7E6C96] uppercase tracking-wider mb-1">
                       <span 
                         onClick={(e) => {
                           e.stopPropagation();
                           onSupplierClick?.(ad.seller_id);
                         }}
-                        className="truncate flex items-center gap-1 text-[#b90064] hover:underline cursor-pointer font-extrabold"
+                        className="truncate flex items-center gap-1 text-[#6B2D8C] hover:underline cursor-pointer font-extrabold"
                         title="View Supplier Profile"
                       >
-                        <ShieldCheck className="w-3.5 h-3.5 text-[#b90064]" />
+                        <ShieldCheck className="w-3.5 h-3.5 text-[#6B2D8C]" />
                         {ad.supplierName}
                       </span>
                       <span className="text-[10px] bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-mono">B2B Verified</span>
                     </div>
 
-                    <h3 className="text-sm font-extrabold text-zinc-950 leading-snug line-clamp-1 group-hover/card:text-[#b90064] transition-colors">
+                    <h3 className="text-sm font-extrabold text-zinc-950 leading-snug line-clamp-1 group-hover/card:text-[#6B2D8C] transition-colors">
                       {ad.adTitle}
                     </h3>
 
-                    <p className="text-xs text-[#594047] font-medium line-clamp-1 mt-0.5">
+                    <p className="text-xs text-[#5B4A6E] font-medium line-clamp-1 mt-0.5">
                       {ad.subtitle}
                     </p>
                   </div>
@@ -731,7 +731,7 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
                       className="flex items-center justify-center gap-1 bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-800 text-[11px] font-bold py-2 rounded-xl transition-all cursor-pointer shadow-xs"
                       title="Call Supplier"
                     >
-                      <Phone className="w-3 h-3 text-[#b90064]" />
+                      <Phone className="w-3 h-3 text-[#6B2D8C]" />
                       <span>Call</span>
                     </button>
 
@@ -776,7 +776,7 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
                           }
                         );
                       }}
-                      className="flex items-center justify-center gap-1 bg-[#b90064] hover:bg-[#a00056] text-white text-[11px] font-extrabold py-2 rounded-xl transition-all cursor-pointer shadow-xs"
+                      className="flex items-center justify-center gap-1 bg-[#6B2D8C] hover:bg-[#4A2560] text-white text-[11px] font-extrabold py-2 rounded-xl transition-all cursor-pointer shadow-xs"
                       title="Send Enquiry / Chat"
                     >
                       <Send className="w-3 h-3 text-white" />

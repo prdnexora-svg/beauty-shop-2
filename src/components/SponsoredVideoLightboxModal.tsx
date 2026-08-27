@@ -133,11 +133,11 @@ export const SponsoredVideoLightboxModal: React.FC<SponsoredVideoLightboxModalPr
   const getPlatformBadgeColor = () => {
     switch (video.platform) {
       case 'YouTube': return 'bg-red-600 text-white';
-      case 'Instagram': return 'bg-gradient-to-r from-purple-600 to-pink-500 text-white';
-      case 'Facebook': return 'bg-blue-600 text-white';
+      case 'Instagram': return 'bg-gradient-to-r from-purple-600 to-purple-600 text-white';
+      case 'Facebook': return 'bg-purple-700 text-white';
       case 'X': return 'bg-black text-white';
-      case 'LinkedIn': return 'bg-blue-700 text-white';
-      default: return 'bg-[#b90064] text-white';
+      case 'LinkedIn': return 'bg-purple-800 text-white';
+      default: return 'bg-[#6B2D8C] text-white';
     }
   };
 
@@ -199,7 +199,7 @@ export const SponsoredVideoLightboxModal: React.FC<SponsoredVideoLightboxModalPr
       onClick={onClose}
     >
       <div 
-        className={`relative bg-white text-[#1c1b1b] w-full rounded-2xl overflow-hidden border border-[#e8dfe3] shadow-2xl my-auto flex flex-col max-h-[92vh] ${
+        className={`relative bg-white text-[#2A0E3F] w-full rounded-2xl overflow-hidden border border-[#E5D8EE] shadow-2xl my-auto flex flex-col max-h-[92vh] ${
           isReel 
             ? 'max-w-md md:max-w-2xl md:flex-row' 
             : 'max-w-2xl lg:max-w-3xl md:flex-col'
@@ -261,7 +261,7 @@ export const SponsoredVideoLightboxModal: React.FC<SponsoredVideoLightboxModalPr
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={handlePlatformClick}
-                  className="w-full py-2.5 px-4 bg-[#b90064] hover:bg-[#a00056] text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg"
+                  className="w-full py-2.5 px-4 bg-[#6B2D8C] hover:bg-[#4A2560] text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg"
                 >
                   <ExternalLink className="w-4 h-4" />
                   <span>{platformActionText}</span>
@@ -272,27 +272,27 @@ export const SponsoredVideoLightboxModal: React.FC<SponsoredVideoLightboxModalPr
         </div>
 
         {/* Video Info & CTAs - Light Theme */}
-        <div className="p-5 flex flex-col justify-between flex-1 bg-[#fdf8f8] text-[#1c1b1b] overflow-y-auto space-y-4">
+        <div className="p-5 flex flex-col justify-between flex-1 bg-[#FDFBF7] text-[#2A0E3F] overflow-y-auto space-y-4">
           <div>
             {/* Header badges */}
             <div className="flex items-center justify-between gap-2 mb-2.5">
               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${getPlatformBadgeColor()}`}>
                 {video.platform} {isReel ? 'Reel (9:16)' : 'Full Video (16:9)'}
               </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-[#fde7f3] border border-[#f7c5e0] text-[#b90064] text-[10px] font-extrabold uppercase tracking-wider">
+              <span className="px-2.5 py-0.5 rounded-full bg-[#F5EEF8] border border-[#E8D5F2] text-[#6B2D8C] text-[10px] font-extrabold uppercase tracking-wider">
                 Sponsored Ad
               </span>
             </div>
 
             {/* Title */}
-            <h3 className="text-base sm:text-lg font-bold text-[#1c1b1b] leading-snug mb-2">
+            <h3 className="text-base sm:text-lg font-bold text-[#2A0E3F] leading-snug mb-2">
               {video.display_title}
             </h3>
 
             {/* Supplier / Brand Name */}
-            <div className="flex items-center gap-2 text-xs font-bold text-[#594047] mb-3">
-              <Building2 className="w-4 h-4 text-[#b90064]" />
-              <span className="text-[#1c1b1b]">{video.supplierName}</span>
+            <div className="flex items-center gap-2 text-xs font-bold text-[#5B4A6E] mb-3">
+              <Building2 className="w-4 h-4 text-[#6B2D8C]" />
+              <span className="text-[#2A0E3F]">{video.supplierName}</span>
             </div>
 
             {/* Minimal & Accurate Supplier Trust Badges */}
@@ -317,20 +317,20 @@ export const SponsoredVideoLightboxModal: React.FC<SponsoredVideoLightboxModalPr
 
             {/* Description */}
             {video.display_description && (
-              <p className="text-xs text-[#594047] leading-relaxed bg-white p-3 rounded-xl border border-[#e8dfe3] mb-2">
+              <p className="text-xs text-[#5B4A6E] leading-relaxed bg-white p-3 rounded-xl border border-[#E5D8EE] mb-2">
                 {video.display_description}
               </p>
             )}
           </div>
 
           {/* Action CTAs */}
-          <div className="pt-3 border-t border-[#e8dfe3] space-y-2">
+          <div className="pt-3 border-t border-[#E5D8EE] space-y-2">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {/* View Product CTA - Only shown if product_id is valid & active */}
               {hasValidProduct && video.product_id && (
                 <button
                   onClick={handleProductClick}
-                  className="py-2.5 px-3 bg-[#b90064] hover:bg-[#a00056] text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
+                  className="py-2.5 px-3 bg-[#6B2D8C] hover:bg-[#4A2560] text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
                 >
                   <ArrowRight className="w-3.5 h-3.5" />
                   <span>View Product</span>
@@ -340,16 +340,16 @@ export const SponsoredVideoLightboxModal: React.FC<SponsoredVideoLightboxModalPr
               {/* View Supplier CTA */}
               <button
                 onClick={handleSupplierClick}
-                className="py-2.5 px-3 bg-stone-100 hover:bg-stone-200 text-[#1c1b1b] text-xs font-bold rounded-xl transition-all border border-stone-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                className="py-2.5 px-3 bg-stone-100 hover:bg-stone-200 text-[#2A0E3F] text-xs font-bold rounded-xl transition-all border border-stone-300 flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <Building2 className="w-3.5 h-3.5 text-[#b90064]" />
+                <Building2 className="w-3.5 h-3.5 text-[#6B2D8C]" />
                 <span>View Supplier</span>
               </button>
 
               {/* Enquire Now CTA */}
               <button
                 onClick={handleEnquireClick}
-                className="py-2.5 px-3 bg-gradient-to-r from-[#b90064] to-[#e6007e] hover:from-[#a00056] hover:to-[#c4006c] text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
+                className="py-2.5 px-3 bg-gradient-to-r from-[#6B2D8C] to-[#8236A0] hover:from-[#4A2560] hover:to-[#c4006c] text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>Enquire Now</span>
@@ -362,9 +362,9 @@ export const SponsoredVideoLightboxModal: React.FC<SponsoredVideoLightboxModalPr
               target="_blank"
               rel="noopener noreferrer"
               onClick={handlePlatformClick}
-              className="w-full py-2.5 px-4 bg-stone-100 hover:bg-stone-200 text-[#1c1b1b] text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer border border-stone-200"
+              className="w-full py-2.5 px-4 bg-stone-100 hover:bg-stone-200 text-[#2A0E3F] text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer border border-stone-200"
             >
-              <ExternalLink className="w-3.5 h-3.5 text-[#b90064]" />
+              <ExternalLink className="w-3.5 h-3.5 text-[#6B2D8C]" />
               <span>{platformActionText}</span>
             </a>
           </div>

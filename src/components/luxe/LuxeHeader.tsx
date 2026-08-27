@@ -22,13 +22,13 @@ const NAV_ITEMS = [
 export const LuxeLogo: React.FC<{ dark?: boolean; compact?: boolean }> = ({ dark, compact }) => (
   <div className="flex flex-col items-center leading-none select-none cursor-pointer group">
     <span
-      className={`font-display font-bold tracking-[0.16em] ${compact ? 'text-[21px]' : 'text-[24px]'} ${
+      className={`font-display font-bold italic tracking-[0.14em] ${compact ? 'text-[21px]' : 'text-[24px]'} ${
         dark ? 'text-white' : 'text-[#2A0E3F]'
       } group-hover:text-[#3D1E4E] transition-colors`}
     >
       NEXORA
     </span>
-    <span className="font-display italic text-gold-gradient tracking-[0.55em] text-[11px] font-semibold -mt-0.5 pl-1">
+    <span className="font-cormorant italic text-gold-gradient tracking-[0.55em] text-[13px] font-semibold -mt-0.5 pl-1">
       LUXE
     </span>
   </div>
@@ -55,7 +55,7 @@ export const LuxeHeader: React.FC<LuxeHeaderProps> = ({
     <header className="fixed top-0 inset-x-0 z-50">
       {/* Gold hairline */}
       <div className="h-[3px] bg-gold-gradient" />
-      <div className="bg-white/95 backdrop-blur-xl border-b border-[#EFE4F2] shadow-[0_4px_24px_-12px_rgba(42,14,63,0.18)]">
+      <div className="bg-white/95 backdrop-blur-xl border-b border-[#E5D4ED] shadow-[0_4px_24px_-12px_rgba(42,14,63,0.18)]">
         <div className="max-w-[1280px] mx-auto px-4 md:px-6 h-[68px] flex items-center gap-4">
           {/* Logo */}
           <button onClick={() => go('explore')} aria-label="Nexora Luxe home" className="shrink-0">
@@ -106,13 +106,13 @@ export const LuxeHeader: React.FC<LuxeHeaderProps> = ({
               {isLoggedIn ? initial : <User className="w-[18px] h-[18px]" />}
             </button>
 
-            {/* Post Requirement pill */}
+            {/* Post Requirement pill — royal purple gradient with gold border */}
             <button
               onClick={() => onNavigate('post-rfq')}
-              className="hidden sm:inline-flex items-center gap-1.5 bg-royal-gradient hover:brightness-110 text-white text-[13px] font-semibold pl-4 pr-5 py-2.5 rounded-full shadow-[0_8px_20px_-6px_rgba(61,30,78,0.5)] hover:shadow-[0_10px_26px_-6px_rgba(61,30,78,0.55)] transition-all hover:-translate-y-px"
+              className="btn-shine hidden sm:inline-flex items-center gap-1.5 bg-royal-gradient hover:brightness-110 text-white text-[13px] font-semibold pl-4 pr-5 py-2.5 rounded-full ring-1 ring-[#C9A961]/70 hover:ring-[#C9A961] shadow-[0_8px_20px_-6px_rgba(61,30,78,0.5)] hover:shadow-[0_10px_26px_-6px_rgba(61,30,78,0.55)] transition-all hover:-translate-y-px"
             >
-              <Plus className="w-4 h-4 text-[#E9D29A]" />
-              Post Requirement
+              <Plus className="relative z-10 w-4 h-4 text-[#E9D29A]" />
+              <span className="relative z-10">Post Requirement</span>
             </button>
 
             {/* Mobile menu */}

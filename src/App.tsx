@@ -14,6 +14,8 @@ import { SupplierCta } from './components/luxe/SupplierCta';
 import { SourcingCities } from './components/luxe/SourcingCities';
 import { HowItWorks } from './components/luxe/HowItWorks';
 import { LuxeFooter } from './components/luxe/LuxeFooter';
+import { Reveal } from './components/luxe/Reveal';
+import { GoldDivider } from './components/luxe/GoldDivider';
 import { DirectoryHubScreen } from './components/DirectoryHubScreen';
 import { EnquiryModal } from './components/EnquiryModal';
 import { AuthModal } from './components/AuthModal';
@@ -455,10 +457,10 @@ function NexoraShopApp() {
 
   if (isConfigured && !authReady) {
     return (
-      <div className="min-h-screen bg-[#fdf8f8] flex items-center justify-center p-4 text-center">
+      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4 text-center">
         <div className="space-y-3">
-          <div className="w-10 h-10 border-4 border-[#b90064] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm font-bold text-[#594047]">Securing your Nexora session…</p>
+          <div className="w-10 h-10 border-4 border-[#6B2D8C] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm font-bold text-[#5B4A6E]">Securing your Nexora session…</p>
         </div>
       </div>
     );
@@ -473,10 +475,10 @@ function NexoraShopApp() {
     && (isAuthCallbackPath || (authReady && isProtectedScreen))
   ) {
     return (
-      <div className="min-h-screen bg-[#fdf8f8] flex items-center justify-center p-4 text-center">
+      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4 text-center">
         <div className="space-y-3">
-          <div className="w-10 h-10 border-4 border-[#b90064] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm font-bold text-[#594047]">
+          <div className="w-10 h-10 border-4 border-[#6B2D8C] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm font-bold text-[#5B4A6E]">
             {authCallbackPresent && !authReady ? 'Completing secure sign-in…' : 'Redirecting to secure sign-in…'}
           </p>
         </div>
@@ -489,17 +491,17 @@ function NexoraShopApp() {
   if (isConfigured && isAuthLoginPath) {
     if (!authReady) {
       return (
-        <div className="min-h-screen bg-[#fdf8f8] flex items-center justify-center p-4 text-center">
-          <div className="w-10 h-10 border-4 border-[#b90064] border-t-transparent rounded-full animate-spin mx-auto" />
+        <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4 text-center">
+          <div className="w-10 h-10 border-4 border-[#6B2D8C] border-t-transparent rounded-full animate-spin mx-auto" />
         </div>
       );
     }
     if (session?.user) {
       // Already authenticated: the effect below normalizes the URL back to "/".
       return (
-        <div className="min-h-screen bg-[#fdf8f8] flex items-center justify-center p-4 text-center">
-          <div className="w-10 h-10 border-4 border-[#b90064] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm font-bold text-[#594047] mt-3">Redirecting to Nexora…</p>
+        <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4 text-center">
+          <div className="w-10 h-10 border-4 border-[#6B2D8C] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm font-bold text-[#5B4A6E] mt-3">Redirecting to Nexora…</p>
         </div>
       );
     }
@@ -520,12 +522,12 @@ function NexoraShopApp() {
   }
 
   return (
-      <div className="min-h-screen bg-[#fdf8f8] text-[#1c1b1b] flex flex-col font-sans selection:bg-[#fde7f3] selection:text-[#b90064] pb-16 md:pb-0">
+      <div className="min-h-screen bg-[#FDFBF7] text-[#2A0E3F] flex flex-col font-sans selection:bg-[#E8D5F2] selection:text-[#3D1E4E] pb-16 md:pb-0">
       
       {/* Toast Banner */}
       {toastMessage && (
-        <div className="fixed bottom-22 right-6 z-50 bg-[#1c1b1b] text-white px-4 py-3 rounded-xl shadow-xl border border-[#313030] flex items-center gap-2.5 animate-in slide-in-from-bottom-5 duration-200">
-          <CheckCircle2 className="w-4 h-4 text-[#e6007e]" />
+        <div className="fixed bottom-22 right-6 z-50 bg-[#2A0E3F] text-white px-4 py-3 rounded-xl shadow-xl border border-[#352B44] flex items-center gap-2.5 animate-in slide-in-from-bottom-5 duration-200">
+          <CheckCircle2 className="w-4 h-4 text-[#8236A0]" />
           <span className="text-[13px] font-medium">{toastMessage}</span>
         </div>
       )}
@@ -567,7 +569,7 @@ function NexoraShopApp() {
         />
         {/* Screen 01: Homepage / Explore Hub — NEXORA LUXE purple-gold edition */}
         {currentScreen === 'explore' && (
-          <main className="flex-1 -mt-20 bg-[linear-gradient(180deg,#FDF9FB_0%,#FBF6FB_45%,#F8F2FA_100%)]">
+          <main className="flex-1 -mt-20 bg-[linear-gradient(180deg,#FDFBF7_0%,#FAF6EF_45%,#F5EEF8_100%)]">
             <LuxeHero
               onSearch={(q, loc) => handleSearchSubmit({ query: q, location: loc })}
               onTabChange={(scope) => {
@@ -583,6 +585,7 @@ function NexoraShopApp() {
               }}
             />
 
+            <Reveal>
             <BuySmartCard
               onGetQuotes={() => {
                 handleNavigate('post-rfq');
@@ -591,6 +594,11 @@ function NexoraShopApp() {
               onPostDetailed={() => handleNavigate('post-rfq')}
             />
 
+            </Reveal>
+
+            <GoldDivider className="pt-14 md:pt-16" />
+
+            <Reveal>
             <CategoryStrip
               onCategoryClick={(label) => {
                 if (label === 'OEM/Private Label') {
@@ -601,6 +609,11 @@ function NexoraShopApp() {
               }}
             />
 
+            </Reveal>
+
+            <GoldDivider className="pt-14 md:pt-16" />
+
+            <Reveal>
             <VerifiedSuppliers
               onViewProfile={(id) => handleNavigate('supplier-profile', { supplierId: id })}
               onSendEnquiry={(name) => {
@@ -614,6 +627,11 @@ function NexoraShopApp() {
               onViewAll={() => handleNavigate('supplier-directory')}
             />
 
+            </Reveal>
+
+            <GoldDivider className="pt-14 md:pt-16" />
+
+            <Reveal>
             <TrendingProducts
               onViewDetails={(id) => handleNavigate('product-detail', { productId: id })}
               onSendEnquiry={(title, supplier) => {
@@ -627,21 +645,40 @@ function NexoraShopApp() {
               onViewAll={() => handleNavigate('plp')}
             />
 
+            </Reveal>
+
+            <GoldDivider className="pt-14 md:pt-16" />
+
+            <Reveal direction="none">
             <OemBanner
               onExplore={() => handleNavigate('oem-hub')}
               onPostRequirement={() => handleNavigate('post-rfq')}
             />
 
+            </Reveal>
+
+            <Reveal>
             <SupplierCta
               onJoin={() => handleNavigate('onboarding')}
               onLogin={() => handleOpenAuthModal('login')}
             />
 
+            </Reveal>
+
+            <GoldDivider className="pt-14 md:pt-16" />
+
+            <Reveal>
             <SourcingCities
               onCityClick={(city) => handleSearchSubmit({ query: '', location: city })}
             />
 
+            </Reveal>
+
+            <GoldDivider className="pt-14 md:pt-16" />
+
+            <Reveal>
             <HowItWorks onPost={() => handleNavigate('post-rfq')} />
+            </Reveal>
           </main>
         )}
 
@@ -1014,10 +1051,10 @@ function NexoraShopApp() {
           ? 'Phase 4 Relational Database Inspector & Live Location Synced'
           : 'Phase 4 Relational Database Inspector (8 Entities & Live Event Engine)'}
         onClick={() => setIsDatabaseModalOpen(prev => !prev)}
-        className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 bg-[#1C1B1B] hover:bg-[#B90064] text-white py-2.5 px-3.5 rounded-full shadow-xl flex items-center gap-2 text-xs font-bold transition-all transform hover:scale-105 cursor-pointer border border-white/20 group"
+        className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 bg-[#2A0E3F] hover:bg-[#6B2D8C] text-white py-2.5 px-3.5 rounded-full shadow-xl flex items-center gap-2 text-xs font-bold transition-all transform hover:scale-105 cursor-pointer border border-white/20 group"
       >
         <div className="relative">
-          <Database className="w-4 h-4 text-[#FDE7F3] group-hover:text-white" />
+          <Database className="w-4 h-4 text-[#F5EEF8] group-hover:text-white" />
           <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
         </div>
         <span className="hidden sm:inline">DB Inspector</span>

@@ -87,11 +87,11 @@ export const SponsoredFullVideoSection: React.FC<SponsoredFullVideoSectionProps>
   const getPlatformBadgeColor = (platform: string) => {
     switch (platform) {
       case 'YouTube': return 'bg-red-600 text-white';
-      case 'Instagram': return 'bg-gradient-to-r from-purple-600 to-pink-500 text-white';
-      case 'Facebook': return 'bg-blue-600 text-white';
+      case 'Instagram': return 'bg-gradient-to-r from-purple-600 to-purple-600 text-white';
+      case 'Facebook': return 'bg-purple-700 text-white';
       case 'X': return 'bg-black text-white';
-      case 'LinkedIn': return 'bg-blue-700 text-white';
-      default: return 'bg-[#b90064] text-white';
+      case 'LinkedIn': return 'bg-purple-800 text-white';
+      default: return 'bg-[#6B2D8C] text-white';
     }
   };
 
@@ -100,19 +100,19 @@ export const SponsoredFullVideoSection: React.FC<SponsoredFullVideoSectionProps>
       {/* Section Header - Nexora Light Theme */}
       <div className="flex items-center justify-between mb-4 px-1">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-[#fde7f3] border border-[#f7c5e0] flex items-center justify-center text-[#b90064] shadow-xs">
-            <Tv className="w-5 h-5 text-[#b90064]" />
+          <div className="w-9 h-9 rounded-xl bg-[#F5EEF8] border border-[#E8D5F2] flex items-center justify-center text-[#6B2D8C] shadow-xs">
+            <Tv className="w-5 h-5 text-[#6B2D8C]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg md:text-xl font-extrabold text-[#1c1b1b] tracking-tight">
+              <h2 className="text-lg md:text-xl font-extrabold text-[#2A0E3F] tracking-tight">
                 Sponsored Supplier Videos
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full bg-[#fde7f3] border border-[#f7c5e0] text-[#b90064] text-[10px] font-extrabold uppercase tracking-wider">
+              <span className="px-2.5 py-0.5 rounded-full bg-[#F5EEF8] border border-[#E8D5F2] text-[#6B2D8C] text-[10px] font-extrabold uppercase tracking-wider">
                 16:9 Showcase
               </span>
             </div>
-            <p className="text-xs text-[#594047] font-medium hidden sm:block mt-0.5">
+            <p className="text-xs text-[#5B4A6E] font-medium hidden sm:block mt-0.5">
               Watch formulation demos, lab tours & product walk-throughs from verified suppliers
             </p>
           </div>
@@ -123,7 +123,7 @@ export const SponsoredFullVideoSection: React.FC<SponsoredFullVideoSectionProps>
           {onOpenAdManager && (
             <button
               onClick={onOpenAdManager}
-              className="bg-[#b90064] hover:bg-[#a00056] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs mr-1"
+              className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs mr-1"
             >
               <Plus className="w-3.5 h-3.5 text-white" />
               <span>Manage / Create Ads</span>
@@ -133,14 +133,14 @@ export const SponsoredFullVideoSection: React.FC<SponsoredFullVideoSectionProps>
           <button
             onClick={() => handleScroll('left')}
             aria-label="Scroll left"
-            className="w-8 h-8 rounded-full bg-white border border-[#e8dfe3] text-[#1c1b1b] hover:bg-[#fde7f3] hover:text-[#b90064] hover:border-[#f7c5e0] flex items-center justify-center transition-all cursor-pointer shadow-xs"
+            className="w-8 h-8 rounded-full bg-white border border-[#E5D8EE] text-[#2A0E3F] hover:bg-[#F5EEF8] hover:text-[#6B2D8C] hover:border-[#E8D5F2] flex items-center justify-center transition-all cursor-pointer shadow-xs"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={() => handleScroll('right')}
             aria-label="Scroll right"
-            className="w-8 h-8 rounded-full bg-white border border-[#e8dfe3] text-[#1c1b1b] hover:bg-[#fde7f3] hover:text-[#b90064] hover:border-[#f7c5e0] flex items-center justify-center transition-all cursor-pointer shadow-xs"
+            className="w-8 h-8 rounded-full bg-white border border-[#E5D8EE] text-[#2A0E3F] hover:bg-[#F5EEF8] hover:text-[#6B2D8C] hover:border-[#E8D5F2] flex items-center justify-center transition-all cursor-pointer shadow-xs"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -157,7 +157,7 @@ export const SponsoredFullVideoSection: React.FC<SponsoredFullVideoSectionProps>
             key={video.video_ad_id}
             data-ad-id={video.video_ad_id}
             onClick={() => setActiveModalVideo(video)}
-            className="sponsored-fullvideo-card group relative w-[260px] sm:w-[280px] md:w-[300px] shrink-0 bg-white rounded-2xl overflow-hidden border border-[#e8dfe3] hover:border-[#b90064] transition-all duration-300 shadow-xs hover:shadow-md cursor-pointer flex flex-col snap-start"
+            className="sponsored-fullvideo-card group relative w-[260px] sm:w-[280px] md:w-[300px] shrink-0 bg-white rounded-2xl overflow-hidden border border-[#E5D8EE] hover:border-[#6B2D8C] transition-all duration-300 shadow-xs hover:shadow-md cursor-pointer flex flex-col snap-start"
           >
             {/* YouTube 16:9 Compact Thumbnail */}
             <div className="relative aspect-[16/9] bg-stone-900 overflow-hidden">
@@ -180,7 +180,7 @@ export const SponsoredFullVideoSection: React.FC<SponsoredFullVideoSectionProps>
 
               {/* Center Play Button Overlay */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-10 h-10 rounded-full bg-black/50 group-hover:bg-[#b90064] border border-white/30 text-white flex items-center justify-center transition-all duration-300 transform group-hover:scale-110 shadow-md">
+                <div className="w-10 h-10 rounded-full bg-black/50 group-hover:bg-[#6B2D8C] border border-white/30 text-white flex items-center justify-center transition-all duration-300 transform group-hover:scale-110 shadow-md">
                   <Play className="w-4 h-4 fill-white ml-0.5 text-white" />
                 </div>
               </div>
@@ -189,20 +189,20 @@ export const SponsoredFullVideoSection: React.FC<SponsoredFullVideoSectionProps>
             {/* Light Theme Text Info Below Thumbnail */}
             <div className="p-3 flex flex-col justify-between flex-1 space-y-2">
               <div>
-                <h3 className="text-xs font-bold text-[#1c1b1b] line-clamp-2 leading-snug group-hover:text-[#b90064] transition-colors">
+                <h3 className="text-xs font-bold text-[#2A0E3F] line-clamp-2 leading-snug group-hover:text-[#6B2D8C] transition-colors">
                   {video.display_title}
                 </h3>
-                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#594047] mt-1.5">
-                  <Building2 className="w-3.5 h-3.5 text-[#b90064] shrink-0" />
+                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#5B4A6E] mt-1.5">
+                  <Building2 className="w-3.5 h-3.5 text-[#6B2D8C] shrink-0" />
                   <span className="truncate">{video.supplierName}</span>
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-[#f0edec] flex items-center justify-between text-[10px] text-[#594047] font-bold">
-                <span className="text-[#b90064] flex items-center gap-1">
+              <div className="pt-2 border-t border-[#F4F0E9] flex items-center justify-between text-[10px] text-[#5B4A6E] font-bold">
+                <span className="text-[#6B2D8C] flex items-center gap-1">
                   <Play className="w-3 h-3" /> Watch Video
                 </span>
-                <span className="flex items-center gap-0.5 text-[#594047] group-hover:text-[#b90064]">
+                <span className="flex items-center gap-0.5 text-[#5B4A6E] group-hover:text-[#6B2D8C]">
                   Details <ExternalLink className="w-2.5 h-2.5" />
                 </span>
               </div>

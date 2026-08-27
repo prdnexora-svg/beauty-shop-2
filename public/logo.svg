@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 120">
+  <defs>
+    <linearGradient id="goldText" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#B08D45"/>
+      <stop offset="0.45" stop-color="#E9D29A"/>
+      <stop offset="1" stop-color="#C9A961"/>
+    </linearGradient>
+    <linearGradient id="goldBar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#C9A961"/>
+      <stop offset="0.5" stop-color="#E8C547"/>
+      <stop offset="1" stop-color="#C9A961"/>
+    </linearGradient>
+  </defs>
+
+  <!-- NL monogram medallion -->
+  <circle cx="58" cy="52" r="40" fill="#3D1E4E"/>
+  <circle cx="58" cy="52" r="40" fill="none" stroke="url(#goldBar)" stroke-width="2"/>
+  <circle cx="58" cy="52" r="34" fill="none" stroke="url(#goldBar)" stroke-opacity="0.45" stroke-width="1" stroke-dasharray="2 4"/>
+  <text x="58" y="66" text-anchor="middle" font-family="Playfair Display, Georgia, 'Times New Roman', serif" font-weight="700" font-style="italic" font-size="36" letter-spacing="-1" fill="url(#goldText)">NL</text>
+
+  <!-- Wordmark -->
+  <text x="116" y="52" font-family="Playfair Display, Georgia, 'Times New Roman', serif" font-weight="700" font-style="italic" font-size="44" letter-spacing="4" fill="#2A0E3F">NEXORA</text>
+  <text x="119" y="82" font-family="Cormorant Garamond, Georgia, 'Times New Roman', serif" font-weight="600" font-style="italic" font-size="24" letter-spacing="13" fill="url(#goldText)">LUXE</text>
+  <rect x="120" y="92" width="150" height="2.4" rx="1.2" fill="url(#goldBar)"/>
+
+  <!-- Sparkle -->
+  <path d="M420 30 L424 42 L436 46 L424 50 L420 62 L416 50 L404 46 L416 42 Z" fill="url(#goldBar)"/>
+  <path d="M392 62 l2.2 6.2 6.2 2.2 -6.2 2.2 -2.2 6.2 -2.2 -6.2 -6.2 -2.2 6.2 -2.2 Z" fill="#C9A961" opacity="0.8"/>
+</svg>

@@ -16,13 +16,14 @@ export const OemBanner: React.FC<{
 }> = ({ onExplore }) => (
   <section className="max-w-[1280px] mx-auto px-4 md:px-6 pt-16 md:pt-20">
     <div className="relative rounded-[24px] overflow-hidden shadow-[0_36px_90px_-30px_rgba(36,11,51,0.7)]">
-      {/* Gradient base */}
+      {/* Gradient base — royal purple flowing into luxe gold */}
       <div
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(120deg, #2A0E3F 0%, #3D1E4E 42%, #5E2B77 78%, #7A3E8F 100%)',
+          background: 'linear-gradient(120deg, #2A0E3F 0%, #3D1E4E 38%, #6B2D8C 72%, #C9A961 128%)',
         }}
       />
+      <div className="absolute inset-0 floral-pattern-gold opacity-50" />
       <Sparkles opacity={0.7} />
 
       {/* Floral decor — left */}
@@ -62,9 +63,11 @@ export const OemBanner: React.FC<{
 
         <button
           onClick={onExplore}
-          className="mt-7 inline-flex items-center gap-2 bg-gold-gradient hover:brightness-110 text-[#2A0E3F] text-[14px] font-bold px-8 py-3.5 rounded-full shadow-[0_14px_34px_-10px_rgba(201,169,97,0.65)] transition-all hover:-translate-y-px"
+          className="btn-shine mt-7 inline-flex items-center gap-2 bg-gold-gradient hover:brightness-110 text-[#2A0E3F] text-[14px] font-bold px-8 py-3.5 rounded-full shadow-gold-glow transition-all hover:-translate-y-px"
         >
-          Explore OEM Solutions <ArrowRight className="w-4 h-4" />
+          <span className="relative z-10 inline-flex items-center gap-2">
+            Explore OEM Solutions <ArrowRight className="w-4 h-4" />
+          </span>
         </button>
 
         <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-0">

@@ -65,12 +65,12 @@ export const MarketplaceColumns: React.FC<MarketplaceColumnsProps> = ({
       {/* Verified Suppliers Column */}
       <section>
         <div className="flex justify-between items-end mb-6">
-          <h2 className="font-serif text-[22px] md:text-[24px] font-bold text-[#500037]">
+          <h2 className="font-serif text-[22px] md:text-[24px] font-bold text-[#2A0E3F]">
             Featured Suppliers
           </h2>
           <button
             onClick={onViewAllSuppliers}
-            className="text-[13px] font-semibold text-[#500037] hover:text-[#53103B] hover:underline transition-colors cursor-pointer"
+            className="text-[13px] font-semibold text-[#2A0E3F] hover:text-[#53103B] hover:underline transition-colors cursor-pointer"
           >
             View All
           </button>
@@ -80,19 +80,19 @@ export const MarketplaceColumns: React.FC<MarketplaceColumnsProps> = ({
           {suppliers.map((supplier) => (
             <div
               key={supplier.id}
-              className="bg-white border border-[#E8DFE3] rounded-xl p-4 sm:p-5 shadow-sm flex flex-col h-full hover:shadow-md transition-all duration-300 hover:scale-[1.01]"
+              className="bg-white border border-[#E5D8EE] rounded-xl p-4 sm:p-5 shadow-sm flex flex-col h-full hover:shadow-md transition-all duration-300 hover:scale-[1.01]"
             >
               <div className="flex items-start gap-3 mb-4">
-                <div className="w-12 h-12 rounded-lg bg-[#FAF1F5] flex items-center justify-center shrink-0 border border-[#F0E8EB]">
-                  <span className="font-serif text-[#500037] text-xl font-bold">
+                <div className="w-12 h-12 rounded-lg bg-[#F5EEF8] flex items-center justify-center shrink-0 border border-[#F0E8EB]">
+                  <span className="font-serif text-[#2A0E3F] text-xl font-bold">
                     {supplier.shortCode}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-[15px] font-semibold text-[#1e1a1d] line-clamp-1">
+                  <h3 className="text-[15px] font-semibold text-[#241531] line-clamp-1">
                     {supplier.name}
                   </h3>
-                  <div className="flex items-center gap-1 mt-1 text-[#8D8087] text-[12px]">
+                  <div className="flex items-center gap-1 mt-1 text-[#8B7FA3] text-[12px]">
                     <MapPin className="w-3.5 h-3.5 shrink-0" />
                     <span className="truncate">{supplier.city}, {supplier.state}</span>
                   </div>
@@ -119,13 +119,13 @@ export const MarketplaceColumns: React.FC<MarketplaceColumnsProps> = ({
                       type: 'supplier',
                     })
                   }
-                  className="flex-1 bg-[#500037] text-white font-semibold text-[12px] py-2 rounded-lg hover:bg-[#53103B] transition-colors cursor-pointer"
+                  className="flex-1 bg-[#2A0E3F] text-white font-semibold text-[12px] py-2 rounded-lg hover:bg-[#53103B] transition-colors cursor-pointer"
                 >
                   Send Enquiry
                 </button>
                 <button
                   onClick={() => onSupplierClick?.(supplier.id)}
-                  className="flex-1 bg-[#F5EBEF] text-[#500037] font-semibold text-[12px] py-2 rounded-lg hover:bg-[#E9E0E4] transition-colors cursor-pointer"
+                  className="flex-1 bg-[#F5EBEF] text-[#2A0E3F] font-semibold text-[12px] py-2 rounded-lg hover:bg-[#E9E0E4] transition-colors cursor-pointer"
                 >
                   View Profile
                 </button>
@@ -138,12 +138,12 @@ export const MarketplaceColumns: React.FC<MarketplaceColumnsProps> = ({
       {/* Trending Products Column */}
       <section>
         <div className="flex justify-between items-end mb-6">
-          <h2 className="font-serif text-[22px] md:text-[24px] font-bold text-[#500037]">
+          <h2 className="font-serif text-[22px] md:text-[24px] font-bold text-[#2A0E3F]">
             Trending Sourcing
           </h2>
           <button
             onClick={onViewAllProducts}
-            className="text-[13px] font-semibold text-[#500037] hover:text-[#53103B] hover:underline transition-colors cursor-pointer"
+            className="text-[13px] font-semibold text-[#2A0E3F] hover:text-[#53103B] hover:underline transition-colors cursor-pointer"
           >
             View All
           </button>
@@ -153,9 +153,9 @@ export const MarketplaceColumns: React.FC<MarketplaceColumnsProps> = ({
           {products.map((product) => (
             <div
               key={product.id}
-              className="bg-white border border-[#E8DFE3] rounded-xl overflow-hidden shadow-sm flex flex-col h-full group hover:shadow-md transition-all duration-300 hover:scale-[1.01]"
+              className="bg-white border border-[#E5D8EE] rounded-xl overflow-hidden shadow-sm flex flex-col h-full group hover:shadow-md transition-all duration-300 hover:scale-[1.01]"
             >
-              <div className="h-36 overflow-hidden bg-[#FAF1F5]">
+              <div className="h-36 overflow-hidden bg-[#F5EEF8]">
                 <img
                   src={product.image}
                   alt={product.name}
@@ -164,7 +164,7 @@ export const MarketplaceColumns: React.FC<MarketplaceColumnsProps> = ({
               </div>
 
               <div className="p-4 flex flex-col flex-1">
-                <h3 className="text-[15px] font-semibold text-[#1e1a1d] mb-0.5 line-clamp-1">
+                <h3 className="text-[15px] font-semibold text-[#241531] mb-0.5 line-clamp-1">
                   {product.name}
                 </h3>
                 <p className="text-[12px] text-[#6F626A] mb-3 line-clamp-1">
@@ -173,10 +173,10 @@ export const MarketplaceColumns: React.FC<MarketplaceColumnsProps> = ({
 
                 <div className="flex justify-between items-end mb-4 bg-[#FCF8F7] p-2 rounded-lg border border-[#F0E8EB]">
                   <div>
-                    <span className="block text-[10px] text-[#8D8087] uppercase font-semibold">
+                    <span className="block text-[10px] text-[#8B7FA3] uppercase font-semibold">
                       B2B Price
                     </span>
-                    <span className="font-bold text-[#500037] text-[14px]">
+                    <span className="font-bold text-[#2A0E3F] text-[14px]">
                       {product.price}{' '}
                       <span className="text-[11px] font-normal text-[#6F626A]">
                         {product.unit}
@@ -184,10 +184,10 @@ export const MarketplaceColumns: React.FC<MarketplaceColumnsProps> = ({
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="block text-[10px] text-[#8D8087] uppercase font-semibold">
+                    <span className="block text-[10px] text-[#8B7FA3] uppercase font-semibold">
                       MOQ
                     </span>
-                    <span className="text-[13px] font-semibold text-[#1e1a1d]">
+                    <span className="text-[13px] font-semibold text-[#241531]">
                       {product.moq}
                     </span>
                   </div>
@@ -202,13 +202,13 @@ export const MarketplaceColumns: React.FC<MarketplaceColumnsProps> = ({
                         type: 'product',
                       })
                     }
-                    className="flex-1 bg-[#500037] text-white font-semibold text-[12px] py-2 rounded-lg hover:bg-[#53103B] transition-colors cursor-pointer"
+                    className="flex-1 bg-[#2A0E3F] text-white font-semibold text-[12px] py-2 rounded-lg hover:bg-[#53103B] transition-colors cursor-pointer"
                   >
                     Send Enquiry
                   </button>
                   <button
                     onClick={() => onProductClick?.(product.id)}
-                    className="flex-none text-[#500037] p-2 rounded-lg border border-[#500037] hover:bg-[#FAF1F5] transition-colors flex items-center justify-center cursor-pointer"
+                    className="flex-none text-[#2A0E3F] p-2 rounded-lg border border-[#2A0E3F] hover:bg-[#F5EEF8] transition-colors flex items-center justify-center cursor-pointer"
                     title="View Details"
                   >
                     <Eye className="w-4 h-4" />

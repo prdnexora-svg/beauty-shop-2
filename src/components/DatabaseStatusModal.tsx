@@ -504,7 +504,7 @@ CREATE TABLE IF NOT EXISTS follow_ups (
     {
       id: 'profiles_supplier',
       name: 'profiles_supplier',
-      icon: <Building2 className="w-4 h-4 text-[#B90064]" />,
+      icon: <Building2 className="w-4 h-4 text-[#6B2D8C]" />,
       count: dbState.profiles_supplier.length,
       description: 'Verified manufacturing hubs, GSTIN, trust score'
     },
@@ -525,7 +525,7 @@ CREATE TABLE IF NOT EXISTS follow_ups (
     {
       id: 'quotes',
       name: 'quotes',
-      icon: <CheckCircle2 className="w-4 h-4 text-indigo-600" />,
+      icon: <CheckCircle2 className="w-4 h-4 text-purple-700" />,
       count: dbState.quotes.length,
       description: 'Commercial supplier quotes, counter-offers, terms'
     },
@@ -568,28 +568,28 @@ CREATE TABLE IF NOT EXISTS follow_ups (
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 15 }}
         transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-white rounded-2xl border border-[#E8DFE3] w-full max-w-6xl max-h-[92vh] shadow-2xl overflow-hidden flex flex-col relative text-[#1C1B1B]"
+        className="bg-white rounded-2xl border border-[#E5D8EE] w-full max-w-6xl max-h-[92vh] shadow-2xl overflow-hidden flex flex-col relative text-[#2A0E3F]"
       >
         
         {/* Top Header Bar */}
-        <header className="px-5 py-4 border-b border-[#E8DFE3] flex items-center justify-between bg-[#FCF9F8] shrink-0">
+        <header className="px-5 py-4 border-b border-[#E5D8EE] flex items-center justify-between bg-[#FDFBF7] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#FDE7F3] text-[#B90064] flex items-center justify-center shadow-xs shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-[#F5EEF8] text-[#6B2D8C] flex items-center justify-center shadow-xs shrink-0">
               <Database className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-bold text-[#1C1B1B]">
+                <h2 className="text-base sm:text-lg font-bold text-[#2A0E3F]">
                   Phase 4 Relational Schema &amp; Storage Engine
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 uppercase tracking-wider">
                   Live &amp; Synced
                 </span>
-                <span className="hidden md:inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FAF1F5] text-[#B90064] border border-[#E0BEC6]">
+                <span className="hidden md:inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#F5EEF8] text-[#6B2D8C] border border-[#D9C3E8]">
                   {totalRecords} Total Records
                 </span>
               </div>
-              <p className="text-xs text-[#594047] font-medium mt-0.5">
+              <p className="text-xs text-[#5B4A6E] font-medium mt-0.5">
                 8 Relational Entities • Foreign Key Indexing • Multi-Supplier Lead Distribution • Real-Time Event Bus
               </p>
             </div>
@@ -598,7 +598,7 @@ CREATE TABLE IF NOT EXISTS follow_ups (
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handleResetDatabase}
-              className="px-3 py-1.5 rounded-xl border border-[#E8DFE3] bg-white hover:bg-[#FAF1F5] hover:border-[#B90064] text-xs font-bold text-[#594047] hover:text-[#B90064] flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+              className="px-3 py-1.5 rounded-xl border border-[#E5D8EE] bg-white hover:bg-[#F5EEF8] hover:border-[#6B2D8C] text-xs font-bold text-[#5B4A6E] hover:text-[#6B2D8C] flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
               title="Reset all tables to initial seed records"
             >
               <RefreshCw className="w-3.5 h-3.5" />
@@ -610,7 +610,7 @@ CREATE TABLE IF NOT EXISTS follow_ups (
               aria-label="Close Database Inspector"
               title="Close Database Inspector (Esc)"
               onClick={onClose}
-              className="w-9 h-9 rounded-xl text-[#594047] hover:text-[#B90064] bg-stone-100 hover:bg-[#FDE7F3] border border-[#E8DFE3] hover:border-[#B90064]/30 flex items-center justify-center transition-all cursor-pointer shadow-2xs hover:scale-105"
+              className="w-9 h-9 rounded-xl text-[#5B4A6E] hover:text-[#6B2D8C] bg-stone-100 hover:bg-[#F5EEF8] border border-[#E5D8EE] hover:border-[#6B2D8C]/30 flex items-center justify-center transition-all cursor-pointer shadow-2xs hover:scale-105"
             >
               <X className="w-5 h-5" />
             </button>
@@ -618,14 +618,14 @@ CREATE TABLE IF NOT EXISTS follow_ups (
         </header>
 
         {/* View Mode Tabs */}
-        <div className="px-5 py-2.5 bg-white border-b border-[#E8DFE3] flex items-center justify-between gap-4 shrink-0">
+        <div className="px-5 py-2.5 bg-white border-b border-[#E5D8EE] flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveTab('supabase')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'supabase'
-                  ? 'bg-[#3ECF8E] text-[#1C1B1B] shadow-xs'
-                  : 'bg-[#FCF9F8] text-[#594047] hover:bg-[#FAF1F5] hover:text-[#B90064] border border-[#E8DFE3]'
+                  ? 'bg-[#3ECF8E] text-[#2A0E3F] shadow-xs'
+                  : 'bg-[#FDFBF7] text-[#5B4A6E] hover:bg-[#F5EEF8] hover:text-[#6B2D8C] border border-[#E5D8EE]'
               }`}
             >
               <Cloud className="w-3.5 h-3.5" />
@@ -641,8 +641,8 @@ CREATE TABLE IF NOT EXISTS follow_ups (
               onClick={() => setActiveTab('records')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'records'
-                  ? 'bg-[#B90064] text-white shadow-xs'
-                  : 'bg-[#FCF9F8] text-[#594047] hover:bg-[#FAF1F5] hover:text-[#B90064] border border-[#E8DFE3]'
+                  ? 'bg-[#6B2D8C] text-white shadow-xs'
+                  : 'bg-[#FDFBF7] text-[#5B4A6E] hover:bg-[#F5EEF8] hover:text-[#6B2D8C] border border-[#E5D8EE]'
               }`}
             >
               <TableIcon className="w-3.5 h-3.5" />
@@ -653,8 +653,8 @@ CREATE TABLE IF NOT EXISTS follow_ups (
               onClick={() => setActiveTab('schema')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'schema'
-                  ? 'bg-[#B90064] text-white shadow-xs'
-                  : 'bg-[#FCF9F8] text-[#594047] hover:bg-[#FAF1F5] hover:text-[#B90064] border border-[#E8DFE3]'
+                  ? 'bg-[#6B2D8C] text-white shadow-xs'
+                  : 'bg-[#FDFBF7] text-[#5B4A6E] hover:bg-[#F5EEF8] hover:text-[#6B2D8C] border border-[#E5D8EE]'
               }`}
             >
               <Code2 className="w-3.5 h-3.5" />
@@ -665,8 +665,8 @@ CREATE TABLE IF NOT EXISTS follow_ups (
               onClick={() => setActiveTab('simulator')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'simulator'
-                  ? 'bg-[#B90064] text-white shadow-xs'
-                  : 'bg-[#FCF9F8] text-[#594047] hover:bg-[#FAF1F5] hover:text-[#B90064] border border-[#E8DFE3]'
+                  ? 'bg-[#6B2D8C] text-white shadow-xs'
+                  : 'bg-[#FDFBF7] text-[#5B4A6E] hover:bg-[#F5EEF8] hover:text-[#6B2D8C] border border-[#E5D8EE]'
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -676,24 +676,24 @@ CREATE TABLE IF NOT EXISTS follow_ups (
 
           {activeTab === 'records' && (
             <div className="relative w-48 sm:w-64">
-              <Search className="w-3.5 h-3.5 text-[#8C7077] absolute left-2.5 top-2.5" />
+              <Search className="w-3.5 h-3.5 text-[#7E6C96] absolute left-2.5 top-2.5" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder={`Search in ${activeTable}...`}
-                className="w-full pl-8 pr-3 py-1 bg-[#FCF9F8] border border-[#E8DFE3] rounded-lg text-xs text-[#1C1B1B] focus:outline-none focus:border-[#B90064]"
+                className="w-full pl-8 pr-3 py-1 bg-[#FDFBF7] border border-[#E5D8EE] rounded-lg text-xs text-[#2A0E3F] focus:outline-none focus:border-[#C9A961]"
               />
             </div>
           )}
         </div>
 
         {/* Content Layout */}
-        <div className="flex-1 flex overflow-hidden min-h-0 bg-[#FAF1F5]/40">
+        <div className="flex-1 flex overflow-hidden min-h-0 bg-[#F5EEF8]/40">
           
           {/* Table Selector Sidebar */}
-          <aside className="w-64 sm:w-72 border-r border-[#E8DFE3] bg-[#FCF9F8] p-3 overflow-y-auto space-y-1 shrink-0 custom-scrollbar">
-            <p className="px-2 py-1 text-[11px] font-black text-[#8C7077] uppercase tracking-wider">
+          <aside className="w-64 sm:w-72 border-r border-[#E5D8EE] bg-[#FDFBF7] p-3 overflow-y-auto space-y-1 shrink-0 custom-scrollbar">
+            <p className="px-2 py-1 text-[11px] font-black text-[#7E6C96] uppercase tracking-wider">
               Relational Tables ({tables.length})
             </p>
 
@@ -705,8 +705,8 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                   onClick={() => setActiveTable(tbl.id)}
                   className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center justify-between cursor-pointer ${
                     isActive
-                      ? 'bg-white shadow-xs border border-[#B90064]/30 text-[#B90064]'
-                      : 'hover:bg-white/80 text-[#594047]'
+                      ? 'bg-white shadow-xs border border-[#6B2D8C]/30 text-[#6B2D8C]'
+                      : 'hover:bg-white/80 text-[#5B4A6E]'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -715,11 +715,11 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                     </div>
                     <div className="truncate">
                       <p className="text-xs font-bold truncate">{tbl.name}</p>
-                      <p className="text-[10px] text-[#8C7077] truncate">{tbl.count} records</p>
+                      <p className="text-[10px] text-[#7E6C96] truncate">{tbl.count} records</p>
                     </div>
                   </div>
                   <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
-                    isActive ? 'bg-[#FDE7F3] text-[#B90064]' : 'bg-stone-200 text-stone-700'
+                    isActive ? 'bg-[#F5EEF8] text-[#6B2D8C]' : 'bg-stone-200 text-stone-700'
                   }`}>
                     {tbl.count}
                   </span>
@@ -728,12 +728,12 @@ CREATE TABLE IF NOT EXISTS follow_ups (
             })}
 
             {/* Quick Helper Banner */}
-            <div className="mt-4 p-3 bg-white rounded-xl border border-[#E8DFE3] space-y-1.5 shadow-2xs">
+            <div className="mt-4 p-3 bg-white rounded-xl border border-[#E5D8EE] space-y-1.5 shadow-2xs">
               <div className="flex items-center gap-1.5 text-emerald-700">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span className="text-[11px] font-bold">Relational Integrity</span>
               </div>
-              <p className="text-[10px] text-[#594047] leading-relaxed">
+              <p className="text-[10px] text-[#5B4A6E] leading-relaxed">
                 All foreign keys are cross-referenced across users, RFQs, quotes, and chats with cascade protection.
               </p>
             </div>
@@ -743,11 +743,11 @@ CREATE TABLE IF NOT EXISTS follow_ups (
           <main className="flex-1 flex flex-col bg-white overflow-hidden min-h-0">
             
             {/* Table Meta Bar */}
-            <div className="p-3.5 border-b border-[#E8DFE3] flex items-center justify-between bg-stone-50/70 shrink-0">
+            <div className="p-3.5 border-b border-[#E5D8EE] flex items-center justify-between bg-stone-50/70 shrink-0">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs sm:text-sm font-bold text-[#1C1B1B]">
-                    table: <strong className="text-[#B90064]">{activeTable}</strong>
+                  <span className="font-mono text-xs sm:text-sm font-bold text-[#2A0E3F]">
+                    table: <strong className="text-[#6B2D8C]">{activeTable}</strong>
                   </span>
                   <span className="text-xs font-bold text-stone-500">
                     ({currentRecords.length} of {dbState[activeTable]?.length || 0} records)
@@ -764,7 +764,7 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                     onClose();
                     onNavigateToScreen('buyer-rfqs');
                   }}
-                  className="text-xs font-bold text-[#B90064] hover:underline flex items-center gap-1 cursor-pointer shrink-0"
+                  className="text-xs font-bold text-[#6B2D8C] hover:underline flex items-center gap-1 cursor-pointer shrink-0"
                 >
                   <span>Open Buyer RFQ View</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -774,16 +774,16 @@ CREATE TABLE IF NOT EXISTS follow_ups (
 
             {/* TAB 4: SUPABASE CLOUD DATABASE INTEGRATION */}
             {activeTab === 'supabase' && (
-              <div className="flex-1 overflow-auto p-5 space-y-5 custom-scrollbar bg-[#FCF9F8]">
+              <div className="flex-1 overflow-auto p-5 space-y-5 custom-scrollbar bg-[#FDFBF7]">
                 {/* Supabase Status Banner */}
-                <div className="p-4 rounded-2xl bg-white border border-[#E8DFE3] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="p-4 rounded-2xl bg-white border border-[#E5D8EE] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-start gap-3.5">
                     <div className="w-12 h-12 rounded-xl bg-[#3ECF8E]/15 text-[#3ECF8E] flex items-center justify-center shrink-0 border border-[#3ECF8E]/30">
                       <Cloud className="w-6 h-6" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-base font-black text-[#1C1B1B]">Supabase PostgreSQL Cloud Engine</h3>
+                        <h3 className="text-base font-black text-[#2A0E3F]">Supabase PostgreSQL Cloud Engine</h3>
                         {isSupabaseConfigured() ? (
                           <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -796,7 +796,7 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-[#594047] font-medium mt-1">
+                      <p className="text-xs text-[#5B4A6E] font-medium mt-1">
                         Connect your live Supabase database to persist products, RFQs, quotes, messages, and profiles across real-time PostgreSQL sessions.
                       </p>
                     </div>
@@ -806,7 +806,7 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                     <button
                       onClick={handleTestSupabase}
                       disabled={isTestingSupabase}
-                      className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#FAF1F5] border border-[#E8DFE3] hover:border-[#B90064] text-xs font-bold text-[#1C1B1B] flex items-center gap-2 transition-all cursor-pointer shadow-2xs disabled:opacity-50"
+                      className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#F5EEF8] border border-[#E5D8EE] hover:border-[#6B2D8C] text-xs font-bold text-[#2A0E3F] flex items-center gap-2 transition-all cursor-pointer shadow-2xs disabled:opacity-50"
                     >
                       <Zap className={`w-3.5 h-3.5 text-[#3ECF8E] ${isTestingSupabase ? 'animate-spin' : ''}`} />
                       <span>{isTestingSupabase ? 'Testing...' : 'Test Connection'}</span>
@@ -815,7 +815,7 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                     <button
                       onClick={handleSyncToSupabase}
                       disabled={isSyncingSupabase}
-                      className="px-3.5 py-2 rounded-xl bg-[#3ECF8E] hover:bg-[#34b27b] text-[#1C1B1B] text-xs font-black flex items-center gap-2 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                      className="px-3.5 py-2 rounded-xl bg-[#3ECF8E] hover:bg-[#34b27b] text-[#2A0E3F] text-xs font-black flex items-center gap-2 transition-all cursor-pointer shadow-xs disabled:opacity-50"
                     >
                       <RefreshCw className={`w-3.5 h-3.5 ${isSyncingSupabase ? 'animate-spin' : ''}`} />
                       <span>{isSyncingSupabase ? 'Syncing Tables...' : 'Sync Tables to Supabase'}</span>
@@ -869,38 +869,38 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                 {/* Configuration Details & Setup Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Left Column: Credentials & Environment Setup */}
-                  <div className="bg-white p-4 rounded-xl border border-[#E8DFE3] shadow-2xs space-y-3">
+                  <div className="bg-white p-4 rounded-xl border border-[#E5D8EE] shadow-2xs space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-xs font-black text-[#1C1B1B]">
-                        <KeyRound className="w-4 h-4 text-[#B90064]" />
+                      <div className="flex items-center gap-2 text-xs font-black text-[#2A0E3F]">
+                        <KeyRound className="w-4 h-4 text-[#6B2D8C]" />
                         <span>Supabase Credentials Status</span>
                       </div>
-                      <span className="text-[10px] font-bold text-[#8C7077]">.env / Secrets</span>
+                      <span className="text-[10px] font-bold text-[#7E6C96]">.env / Secrets</span>
                     </div>
 
                     <div className="space-y-2 text-xs">
-                      <div className="p-2.5 rounded-lg bg-[#FCF9F8] border border-[#E8DFE3]">
-                        <div className="text-[10px] uppercase font-bold text-[#8C7077]">Project URL (VITE_SUPABASE_URL)</div>
-                        <div className="font-mono text-xs text-[#1C1B1B] truncate mt-0.5">
+                      <div className="p-2.5 rounded-lg bg-[#FDFBF7] border border-[#E5D8EE]">
+                        <div className="text-[10px] uppercase font-bold text-[#7E6C96]">Project URL (VITE_SUPABASE_URL)</div>
+                        <div className="font-mono text-xs text-[#2A0E3F] truncate mt-0.5">
                           {getSupabaseConfigInfo().url || 'https://your-project.supabase.co (defaulting to local fallback)'}
                         </div>
                       </div>
 
-                      <div className="p-2.5 rounded-lg bg-[#FCF9F8] border border-[#E8DFE3]">
-                        <div className="text-[10px] uppercase font-bold text-[#8C7077]">Anon Key (VITE_SUPABASE_ANON_KEY)</div>
-                        <div className="font-mono text-xs text-[#1C1B1B] truncate mt-0.5">
+                      <div className="p-2.5 rounded-lg bg-[#FDFBF7] border border-[#E5D8EE]">
+                        <div className="text-[10px] uppercase font-bold text-[#7E6C96]">Anon Key (VITE_SUPABASE_ANON_KEY)</div>
+                        <div className="font-mono text-xs text-[#2A0E3F] truncate mt-0.5">
                           {getSupabaseConfigInfo().anonKeyTruncated}
                         </div>
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-[#E8DFE3] flex items-center justify-between text-[11px] text-[#594047]">
-                      <span>Declared in <code className="text-[#B90064] font-mono">.env.example</code></span>
+                    <div className="pt-2 border-t border-[#E5D8EE] flex items-center justify-between text-[11px] text-[#5B4A6E]">
+                      <span>Declared in <code className="text-[#6B2D8C] font-mono">.env.example</code></span>
                       <a
                         href="https://supabase.com/dashboard"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#0050D6] font-bold hover:underline flex items-center gap-1"
+                        className="text-[#6B2D8C] font-bold hover:underline flex items-center gap-1"
                       >
                         <span>Open Supabase Dashboard</span>
                         <ExternalLink className="w-3 h-3" />
@@ -909,10 +909,10 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                   </div>
 
                   {/* Right Column: 1-Click SQL Schema Copy */}
-                  <div className="bg-white p-4 rounded-xl border border-[#E8DFE3] shadow-2xs space-y-3 flex flex-col justify-between">
+                  <div className="bg-white p-4 rounded-xl border border-[#E5D8EE] shadow-2xs space-y-3 flex flex-col justify-between">
                     <div>
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-xs font-black text-[#1C1B1B]">
+                        <div className="flex items-center gap-2 text-xs font-black text-[#2A0E3F]">
                           <Code2 className="w-4 h-4 text-[#3ECF8E]" />
                           <span>Supabase PostgreSQL Migration SQL</span>
                         </div>
@@ -920,14 +920,14 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                           8 Tables + FKs
                         </span>
                       </div>
-                      <p className="text-xs text-[#594047] mt-1.5 leading-relaxed">
+                      <p className="text-xs text-[#5B4A6E] mt-1.5 leading-relaxed">
                         Copy the complete DDL schema and paste it into the <strong>SQL Editor</strong> in your Supabase dashboard to create all 8 tables in 1 click.
                       </p>
                     </div>
 
                     <button
                       onClick={handleCopySupabaseSql}
-                      className="w-full py-2.5 px-4 rounded-xl bg-[#1C1B1B] hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                      className="w-full py-2.5 px-4 rounded-xl bg-[#2A0E3F] hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
                     >
                       {copiedSql ? (
                         <>
@@ -945,12 +945,12 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                 </div>
 
                 {/* 8 Tables Synchronization Status Matrix */}
-                <div className="bg-white p-4 rounded-xl border border-[#E8DFE3] shadow-2xs space-y-3">
-                  <div className="flex items-center justify-between border-b border-[#E8DFE3] pb-2">
-                    <h4 className="text-xs font-black text-[#1C1B1B] uppercase tracking-wider">
+                <div className="bg-white p-4 rounded-xl border border-[#E5D8EE] shadow-2xs space-y-3">
+                  <div className="flex items-center justify-between border-b border-[#E5D8EE] pb-2">
+                    <h4 className="text-xs font-black text-[#2A0E3F] uppercase tracking-wider">
                       Relational Database Tables Ready for Supabase ({tables.length})
                     </h4>
-                    <span className="text-[11px] font-bold text-[#8C7077]">
+                    <span className="text-[11px] font-bold text-[#7E6C96]">
                       {totalRecords} Total Local Records Available to Sync
                     </span>
                   </div>
@@ -959,13 +959,13 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                     {tables.map((t) => (
                       <div
                         key={t.id}
-                        className="p-2.5 rounded-lg bg-[#FCF9F8] border border-[#E8DFE3] flex items-center justify-between"
+                        className="p-2.5 rounded-lg bg-[#FDFBF7] border border-[#E5D8EE] flex items-center justify-between"
                       >
                         <div className="flex items-center gap-2 min-w-0">
                           {t.icon}
-                          <span className="font-mono text-xs font-bold text-[#1C1B1B] truncate">{t.name}</span>
+                          <span className="font-mono text-xs font-bold text-[#2A0E3F] truncate">{t.name}</span>
                         </div>
-                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-white border border-[#E8DFE3] text-[#B90064]">
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-white border border-[#E5D8EE] text-[#6B2D8C]">
                           {t.count}
                         </span>
                       </div>
@@ -974,13 +974,13 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                 </div>
 
                 {/* Step by step connection instructions */}
-                <div className="bg-white p-4 rounded-xl border border-[#E8DFE3] shadow-2xs space-y-2.5 text-xs text-[#594047]">
-                  <h4 className="font-black text-[#1C1B1B] flex items-center gap-1.5">
-                    <Info className="w-4 h-4 text-[#0050D6]" />
+                <div className="bg-white p-4 rounded-xl border border-[#E5D8EE] shadow-2xs space-y-2.5 text-xs text-[#5B4A6E]">
+                  <h4 className="font-black text-[#2A0E3F] flex items-center gap-1.5">
+                    <Info className="w-4 h-4 text-[#6B2D8C]" />
                     <span>How to connect your live Supabase Project in 3 steps:</span>
                   </h4>
                   <ol className="list-decimal list-inside space-y-1.5 text-xs leading-relaxed ml-1">
-                    <li>Create a project at <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-[#0050D6] font-bold underline">supabase.com</a>.</li>
+                    <li>Create a project at <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-[#6B2D8C] font-bold underline">supabase.com</a>.</li>
                     <li>Go to the <strong>SQL Editor</strong> in Supabase, click <em>New Query</em>, paste the copied SQL schema, and click <strong>Run</strong>.</li>
                     <li>Go to <strong>Project Settings &gt; API</strong>, copy your <code>Project URL</code> and <code>anon public key</code>, and configure them as <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code>.</li>
                   </ol>
@@ -1003,15 +1003,15 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                     return (
                       <div
                         key={recordId}
-                        className="p-3.5 bg-[#FCF9F8] rounded-xl border border-[#E8DFE3] hover:border-[#B90064]/40 transition-colors shadow-2xs space-y-2"
+                        className="p-3.5 bg-[#FDFBF7] rounded-xl border border-[#E5D8EE] hover:border-[#6B2D8C]/40 transition-colors shadow-2xs space-y-2"
                       >
-                        <div className="flex items-center justify-between border-b border-[#E8DFE3] pb-2">
+                        <div className="flex items-center justify-between border-b border-[#E5D8EE] pb-2">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-mono font-black text-[#B90064]">
+                            <span className="text-xs font-mono font-black text-[#6B2D8C]">
                               {record.id || `Record #${idx + 1}`}
                             </span>
                             {record.role && (
-                              <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-[#FDE7F3] text-[#B90064]">
+                              <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-[#F5EEF8] text-[#6B2D8C]">
                                 {record.role}
                               </span>
                             )}
@@ -1023,12 +1023,12 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-[#8C7077]">
+                            <span className="text-[10px] text-[#7E6C96]">
                               {record.created_at ? new Date(record.created_at).toLocaleString() : ''}
                             </span>
                             <button
                               onClick={() => handleCopyJson(record, recordId)}
-                              className="px-2 py-0.5 rounded bg-white hover:bg-[#FAF1F5] border border-[#E8DFE3] text-[10px] font-bold text-[#594047] hover:text-[#B90064] flex items-center gap-1 transition-colors cursor-pointer"
+                              className="px-2 py-0.5 rounded bg-white hover:bg-[#F5EEF8] border border-[#E5D8EE] text-[10px] font-bold text-[#5B4A6E] hover:text-[#6B2D8C] flex items-center gap-1 transition-colors cursor-pointer"
                               title="Copy record JSON"
                             >
                               {isCopied ? (
@@ -1046,7 +1046,7 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                           </div>
                         </div>
 
-                        <pre className="text-xs font-mono text-[#1C1B1B] whitespace-pre-wrap overflow-x-auto max-h-56 p-2.5 bg-white rounded-lg border border-[#F0EDEC] leading-relaxed custom-scrollbar">
+                        <pre className="text-xs font-mono text-[#2A0E3F] whitespace-pre-wrap overflow-x-auto max-h-56 p-2.5 bg-white rounded-lg border border-[#F4F0E9] leading-relaxed custom-scrollbar">
                           {JSON.stringify(record, null, 2)}
                         </pre>
                       </div>
@@ -1059,17 +1059,17 @@ CREATE TABLE IF NOT EXISTS follow_ups (
             {/* TAB 2: SCHEMA & FOREIGN KEYS */}
             {activeTab === 'schema' && (
               <div className="flex-1 overflow-auto p-4 custom-scrollbar">
-                <div className="bg-[#FCF9F8] rounded-xl border border-[#E8DFE3] overflow-hidden shadow-2xs">
-                  <div className="px-4 py-3 bg-white border-b border-[#E8DFE3] flex items-center justify-between">
+                <div className="bg-[#FDFBF7] rounded-xl border border-[#E5D8EE] overflow-hidden shadow-2xs">
+                  <div className="px-4 py-3 bg-white border-b border-[#E5D8EE] flex items-center justify-between">
                     <div>
-                      <h4 className="text-xs font-bold text-[#1C1B1B] uppercase tracking-wider">
+                      <h4 className="text-xs font-bold text-[#2A0E3F] uppercase tracking-wider">
                         Table Columns &amp; Data Types
                       </h4>
-                      <p className="text-[11px] text-[#594047]">
-                        Relational schema definition for <strong className="text-[#B90064]">{activeTable}</strong>
+                      <p className="text-[11px] text-[#5B4A6E]">
+                        Relational schema definition for <strong className="text-[#6B2D8C]">{activeTable}</strong>
                       </p>
                     </div>
-                    <span className="text-[11px] font-mono text-[#8C7077]">
+                    <span className="text-[11px] font-mono text-[#7E6C96]">
                       {currentSchema.columns.length} columns defined
                     </span>
                   </div>
@@ -1077,20 +1077,20 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
-                        <tr className="bg-stone-50 border-b border-[#E8DFE3] text-[#594047] font-bold text-[11px]">
+                        <tr className="bg-stone-50 border-b border-[#E5D8EE] text-[#5B4A6E] font-bold text-[11px]">
                           <th className="py-2.5 px-4">Column Name</th>
                           <th className="py-2.5 px-4">Data Type</th>
                           <th className="py-2.5 px-4">Key / Relation</th>
                           <th className="py-2.5 px-4">Description</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#E8DFE3] bg-white">
+                      <tbody className="divide-y divide-[#E5D8EE] bg-white">
                         {currentSchema.columns.map((col) => (
-                          <tr key={col.name} className="hover:bg-[#FAF1F5]/50 transition-colors">
-                            <td className="py-2.5 px-4 font-mono font-bold text-[#1C1B1B]">
+                          <tr key={col.name} className="hover:bg-[#F5EEF8]/50 transition-colors">
+                            <td className="py-2.5 px-4 font-mono font-bold text-[#2A0E3F]">
                               {col.name}
                             </td>
-                            <td className="py-2.5 px-4 font-mono text-[#B90064] text-[11px]">
+                            <td className="py-2.5 px-4 font-mono text-[#6B2D8C] text-[11px]">
                               {col.type}
                             </td>
                             <td className="py-2.5 px-4">
@@ -1105,10 +1105,10 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                                   FK → {col.fkTarget}
                                 </span>
                               ) : (
-                                <span className="text-[10px] text-[#8C7077]">—</span>
+                                <span className="text-[10px] text-[#7E6C96]">—</span>
                               )}
                             </td>
-                            <td className="py-2.5 px-4 text-[#594047] text-[11px]">
+                            <td className="py-2.5 px-4 text-[#5B4A6E] text-[11px]">
                               {col.description}
                             </td>
                           </tr>
@@ -1123,18 +1123,18 @@ CREATE TABLE IF NOT EXISTS follow_ups (
             {/* TAB 3: LEAD ROUTING SIMULATOR */}
             {activeTab === 'simulator' && (
               <div className="flex-1 overflow-auto p-5 custom-scrollbar space-y-4">
-                <div className="bg-white p-4 rounded-xl border border-[#E8DFE3] space-y-3 shadow-2xs">
-                  <div className="flex items-center gap-2 text-[#B90064]">
+                <div className="bg-white p-4 rounded-xl border border-[#E5D8EE] space-y-3 shadow-2xs">
+                  <div className="flex items-center gap-2 text-[#6B2D8C]">
                     <Sparkles className="w-4 h-4" />
                     <h4 className="text-sm font-bold">Live Lead Distribution &amp; Multi-Sourcing Test</h4>
                   </div>
-                  <p className="text-xs text-[#594047] leading-relaxed">
+                  <p className="text-xs text-[#5B4A6E] leading-relaxed">
                     Trigger a broadcast sourcing requirement to test the automated multi-supplier lead distribution logic across verified manufacturers.
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-1">
                     <div>
-                      <label className="block text-xs font-bold text-[#1C1B1B] mb-1">Master Category</label>
+                      <label className="block text-xs font-bold text-[#2A0E3F] mb-1">Master Category</label>
                       <select
                         value={testLeadCategory}
                         onChange={(e) => {
@@ -1143,7 +1143,7 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                           const subs = getSubcategoriesForCategoryName(cat);
                           setTestLeadSubcategory(subs[0] || '');
                         }}
-                        className="w-full text-xs p-2.5 bg-[#FCF9F8] border border-[#E8DFE3] rounded-lg focus:outline-none focus:border-[#B90064] cursor-pointer"
+                        className="w-full text-xs p-2.5 bg-[#FDFBF7] border border-[#E5D8EE] rounded-lg focus:outline-none focus:border-[#C9A961] cursor-pointer"
                       >
                         {Object.keys(CATEGORY_TAXONOMY).map((catKey) => (
                           <option key={catKey} value={catKey}>
@@ -1154,11 +1154,11 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[#1C1B1B] mb-1">Subcategory</label>
+                      <label className="block text-xs font-bold text-[#2A0E3F] mb-1">Subcategory</label>
                       <select
                         value={testLeadSubcategory}
                         onChange={(e) => setTestLeadSubcategory(e.target.value)}
-                        className="w-full text-xs p-2.5 bg-[#FCF9F8] border border-[#E8DFE3] rounded-lg focus:outline-none focus:border-[#B90064] cursor-pointer"
+                        className="w-full text-xs p-2.5 bg-[#FDFBF7] border border-[#E5D8EE] rounded-lg focus:outline-none focus:border-[#C9A961] cursor-pointer"
                       >
                         {getSubcategoriesForCategoryName(testLeadCategory).map((subKey) => (
                           <option key={subKey} value={subKey}>
@@ -1169,24 +1169,24 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[#1C1B1B] mb-1">Requirement Title</label>
+                      <label className="block text-xs font-bold text-[#2A0E3F] mb-1">Requirement Title</label>
                       <input
                         type="text"
                         value={testLeadTitle}
                         onChange={(e) => setTestLeadTitle(e.target.value)}
                         placeholder="Requirement Title"
-                        className="w-full text-xs p-2.5 bg-[#FCF9F8] border border-[#E8DFE3] rounded-lg focus:outline-none focus:border-[#B90064]"
+                        className="w-full text-xs p-2.5 bg-[#FDFBF7] border border-[#E5D8EE] rounded-lg focus:outline-none focus:border-[#C9A961]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[#1C1B1B] mb-1">Quantity (Units)</label>
+                      <label className="block text-xs font-bold text-[#2A0E3F] mb-1">Quantity (Units)</label>
                       <input
                         type="number"
                         value={testLeadQty}
                         onChange={(e) => setTestLeadQty(e.target.value)}
                         placeholder="Quantity"
-                        className="w-full text-xs p-2.5 bg-[#FCF9F8] border border-[#E8DFE3] rounded-lg focus:outline-none focus:border-[#B90064]"
+                        className="w-full text-xs p-2.5 bg-[#FDFBF7] border border-[#E5D8EE] rounded-lg focus:outline-none focus:border-[#C9A961]"
                       />
                     </div>
                   </div>
@@ -1196,13 +1196,13 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                       type="button"
                       disabled={isSimulating}
                       onClick={handleSimulateLeadRouting}
-                      className="bg-[#B90064] hover:bg-[#a00057] disabled:opacity-50 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+                      className="bg-[#6B2D8C] hover:bg-[#a00057] disabled:opacity-50 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition-all flex items-center gap-2 cursor-pointer shadow-sm"
                     >
                       <Send className="w-3.5 h-3.5" />
                       <span>{isSimulating ? 'Distributing Lead...' : 'Trigger Multi-Supplier Route'}</span>
                     </button>
 
-                    <span className="text-[11px] text-[#8C7077]">
+                    <span className="text-[11px] text-[#7E6C96]">
                       Writes to rfqs_enquiries &amp; generates follow-up queues
                     </span>
                   </div>
@@ -1231,7 +1231,7 @@ CREATE TABLE IF NOT EXISTS follow_ups (
         </div>
 
         {/* Modal Footer */}
-        <footer className="px-5 py-3 border-t border-[#E8DFE3] bg-[#FCF9F8] flex items-center justify-between text-xs text-[#594047] shrink-0">
+        <footer className="px-5 py-3 border-t border-[#E5D8EE] bg-[#FDFBF7] flex items-center justify-between text-xs text-[#5B4A6E] shrink-0">
           <div className="flex items-center gap-2 font-semibold">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="hidden sm:inline">
@@ -1244,7 +1244,7 @@ CREATE TABLE IF NOT EXISTS follow_ups (
           <button
             id="btn-done-db-modal"
             onClick={onClose}
-            className="px-4 py-1.5 bg-[#1C1B1B] hover:bg-black text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
+            className="px-4 py-1.5 bg-[#2A0E3F] hover:bg-black text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
           >
             Close Inspector
           </button>

@@ -202,22 +202,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   const content = (
-    <div className="bg-white rounded-3xl border border-[#e8e8e8] w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+    <div className="bg-white rounded-3xl border border-[#E8DEEF] w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
 
       {/* Modal Header */}
-      <div className="p-5 border-b border-[#e8e8e8] flex items-center justify-between bg-[#fcf9f8]">
+      <div className="p-5 border-b border-[#E8DEEF] flex items-center justify-between bg-[#FDFBF7]">
         <div>
-          <h3 className="text-base font-black text-[#1c1b1b]">
+          <h3 className="text-base font-black text-[#2A0E3F]">
             {verified ? 'Authentication Verified' : otpMode ? 'Verify Sourcing OTP' : mode === 'login' ? 'Sign In to Nexora Luxe' : 'Create Business Account'}
           </h3>
-          <p className="text-[12px] text-[#594047] font-medium">
+          <p className="text-[12px] text-[#5B4A6E] font-medium">
             {verified ? 'Session activated & security checks passed' : otpMode ? `OTP sent to ${phoneOrEmail}` : "Access India's premier B2B beauty sourcing network"}
           </p>
         </div>
         {!isFullPage && (
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-xl text-[#8c7077] hover:text-[#1c1b1b] hover:bg-[#f0edec] flex items-center justify-center transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-xl text-[#7E6C96] hover:text-[#2A0E3F] hover:bg-[#F4F0E9] flex items-center justify-center transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -246,14 +246,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <CheckCircle2 className="w-8 h-8" />
             </div>
             <div>
-              <h4 className="text-lg font-black text-[#1c1b1b]">Verification Complete!</h4>
-              <p className="text-[13px] text-[#594047] mt-1">
+              <h4 className="text-lg font-black text-[#2A0E3F]">Verification Complete!</h4>
+              <p className="text-[13px] text-[#5B4A6E] mt-1">
                 You are securely logged in as a <strong>{role === 'buyer' ? 'Professional Buyer' : 'Verified Supplier'}</strong>.
               </p>
             </div>
             <button
               onClick={handleReset}
-              className="w-full bg-[#b90064] hover:bg-[#8e004b] text-white font-extrabold text-[13px] py-3 rounded-xl shadow-md transition-all cursor-pointer"
+              className="w-full bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold text-[13px] py-3 rounded-xl shadow-md transition-all cursor-pointer"
             >
               Continue to {role === 'buyer' ? 'Buyer Dashboard' : 'Supplier Portal'}
             </button>
@@ -262,7 +262,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <form onSubmit={handleVerifyOtp} className="space-y-6">
             <div className="text-center space-y-6">
               <div>
-                <p className="text-[13px] text-[#594047] mb-4">Please enter the 4-digit code sent to your device.</p>
+                <p className="text-[13px] text-[#5B4A6E] mb-4">Please enter the 4-digit code sent to your device.</p>
                 <div className="flex justify-center gap-3">
                   {[0, 1, 2, 3].map((i) => (
                     <input
@@ -291,7 +291,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                           if (inputs && inputs[i - 1]) inputs[i - 1].focus();
                         }
                       }}
-                      className="w-12 h-14 bg-[#f7f2f2] border-2 border-[#e8e8e8] focus:border-[#b90064] rounded-xl text-center text-xl font-bold text-[#1c1b1b] focus:outline-none transition-all"
+                      className="w-12 h-14 bg-[#F6F1FA] border-2 border-[#E8DEEF] focus:border-[#C9A961] rounded-xl text-center text-xl font-bold text-[#2A0E3F] focus:outline-none transition-all"
                     />
                   ))}
                 </div>
@@ -299,8 +299,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
               {/* Demo Hint */}
               {!isConfigured && (
-                <div className="inline-block bg-[#fde7f3] border border-[#b90064]/20 px-4 py-2 rounded-xl animate-pulse mx-auto">
-                  <p className="text-[11px] font-black text-[#b90064] uppercase tracking-wider flex items-center gap-2">
+                <div className="inline-block bg-[#F5EEF8] border border-[#6B2D8C]/20 px-4 py-2 rounded-xl animate-pulse mx-auto">
+                  <p className="text-[11px] font-black text-[#6B2D8C] uppercase tracking-wider flex items-center gap-2">
                     <Sparkles className="w-3.5 h-3.5" />
                     For Demo, enter OTP: 1234
                   </p>
@@ -312,7 +312,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <button
                 type="submit"
                 disabled={otp.length !== 4}
-                className="w-full bg-[#b90064] hover:bg-[#8e004b] disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-[13px] py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full bg-[#6B2D8C] hover:bg-[#4A2560] disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-[13px] py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>Verify &amp; Continue</span>
                 <ArrowRight className="w-4 h-4" />
@@ -320,15 +320,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <button
                 type="button"
                 onClick={() => setOtpMode(false)}
-                className="w-full text-[12px] font-bold text-[#b90064] hover:underline cursor-pointer"
+                className="w-full text-[12px] font-bold text-[#6B2D8C] hover:underline cursor-pointer"
               >
                 Change Contact Details
               </button>
             </div>
 
             <div className="text-center">
-              <p className="text-[12px] text-[#8c7077]">
-                Didn't receive code? {!isConfigured && <button type="button" onClick={() => setOtp('1234')} className="text-[#b90064] font-bold hover:underline cursor-pointer">Auto-fill 1234</button>}
+              <p className="text-[12px] text-[#7E6C96]">
+                Didn't receive code? {!isConfigured && <button type="button" onClick={() => setOtp('1234')} className="text-[#6B2D8C] font-bold hover:underline cursor-pointer">Auto-fill 1234</button>}
               </p>
             </div>
           </form>
@@ -336,14 +336,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <form onSubmit={handleSubmit} className="space-y-4">
 
             {/* Role Toggle Selector (Buyer, Supplier) */}
-            <div className="grid grid-cols-2 gap-2 p-1 bg-[#f7f2f2] rounded-xl border border-[#e8e8e8]">
+            <div className="grid grid-cols-2 gap-2 p-1 bg-[#F6F1FA] rounded-xl border border-[#E8DEEF]">
               <button
                 type="button"
                 onClick={() => setRole('buyer')}
                 className={`py-2 text-[12px] font-black rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   role === 'buyer'
-                    ? 'bg-white text-[#b90064] shadow-xs'
-                    : 'text-[#594047] hover:text-[#1c1b1b]'
+                    ? 'bg-white text-[#6B2D8C] shadow-xs'
+                    : 'text-[#5B4A6E] hover:text-[#2A0E3F]'
                 }`}
               >
                 <ShoppingBag className="w-3.5 h-3.5" />
@@ -354,8 +354,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 onClick={() => setRole('supplier')}
                 className={`py-2 text-[12px] font-black rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   role === 'supplier'
-                    ? 'bg-white text-[#b90064] shadow-xs'
-                    : 'text-[#594047] hover:text-[#1c1b1b]'
+                    ? 'bg-white text-[#6B2D8C] shadow-xs'
+                    : 'text-[#5B4A6E] hover:text-[#2A0E3F]'
                 }`}
               >
                 <Building2 className="w-3.5 h-3.5" />
@@ -364,14 +364,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
 
             {/* Mode Toggle Tabs (Sign In vs Register) */}
-            <div className="flex border-b border-[#e8e8e8] text-[13px] font-bold">
+            <div className="flex border-b border-[#E8DEEF] text-[13px] font-bold">
               <button
                 type="button"
                 onClick={() => { setMode('login'); resetMessages(); }}
                 className={`flex-1 pb-2.5 border-b-2 transition-all cursor-pointer ${
                   mode === 'login'
-                    ? 'border-[#b90064] text-[#b90064]'
-                    : 'border-transparent text-[#594047]'
+                    ? 'border-[#6B2D8C] text-[#6B2D8C]'
+                    : 'border-transparent text-[#5B4A6E]'
                 }`}
               >
                 Sign In
@@ -381,8 +381,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 onClick={() => { setMode('register'); resetMessages(); }}
                 className={`flex-1 pb-2.5 border-b-2 transition-all cursor-pointer ${
                   mode === 'register'
-                    ? 'border-[#b90064] text-[#b90064]'
-                    : 'border-transparent text-[#594047]'
+                    ? 'border-[#6B2D8C] text-[#6B2D8C]'
+                    : 'border-transparent text-[#5B4A6E]'
                 }`}
               >
                 Register Business
@@ -390,12 +390,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
 
             {/* Auth Method (OTP vs Password) */}
-            <div className="flex items-center justify-end gap-3 text-[11px] font-bold text-[#594047]">
+            <div className="flex items-center justify-end gap-3 text-[11px] font-bold text-[#5B4A6E]">
               <span>Sign in using:</span>
               <button
                 type="button"
                 onClick={() => { setAuthMethod('otp'); resetMessages(); }}
-                className={`px-2 py-0.5 rounded cursor-pointer ${authMethod === 'otp' ? 'bg-[#fde7f3] text-[#b90064]' : 'hover:text-[#1c1b1b]'}`}
+                className={`px-2 py-0.5 rounded cursor-pointer ${authMethod === 'otp' ? 'bg-[#F5EEF8] text-[#6B2D8C]' : 'hover:text-[#2A0E3F]'}`}
               >
                 Mobile OTP
               </button>
@@ -403,7 +403,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <button
                 type="button"
                 onClick={() => { setAuthMethod('password'); resetMessages(); }}
-                className={`px-2 py-0.5 rounded cursor-pointer ${authMethod === 'password' ? 'bg-[#fde7f3] text-[#b90064]' : 'hover:text-[#1c1b1b]'}`}
+                className={`px-2 py-0.5 rounded cursor-pointer ${authMethod === 'password' ? 'bg-[#F5EEF8] text-[#6B2D8C]' : 'hover:text-[#2A0E3F]'}`}
               >
                 Password
               </button>
@@ -414,7 +414,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               type="button"
               onClick={handleOAuthGoogle}
               disabled={isGoogleLoading}
-              className="w-full bg-white hover:bg-stone-50 border border-[#e8e8e8] hover:border-stone-300 text-[#1c1b1b] font-bold text-[13px] py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
+              className="w-full bg-white hover:bg-stone-50 border border-[#E8DEEF] hover:border-stone-300 text-[#2A0E3F] font-bold text-[13px] py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -426,14 +426,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </button>
 
             <div className="flex items-center gap-3 my-2">
-              <div className="h-px bg-[#e8e8e8] flex-1" />
-              <span className="text-[11px] font-bold text-[#8c7077] uppercase tracking-wider">or</span>
-              <div className="h-px bg-[#e8e8e8] flex-1" />
+              <div className="h-px bg-[#E8DEEF] flex-1" />
+              <span className="text-[11px] font-bold text-[#7E6C96] uppercase tracking-wider">or</span>
+              <div className="h-px bg-[#E8DEEF] flex-1" />
             </div>
 
             {mode === 'register' && (
               <div>
-                <label className="block text-[12px] font-bold text-[#1c1b1b] mb-1">
+                <label className="block text-[12px] font-bold text-[#2A0E3F] mb-1">
                   Business / Company Name
                 </label>
                 <input
@@ -441,14 +441,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
                   placeholder="e.g. Luxe Skin Clinic / Aura Cosmetics"
-                  className="w-full bg-[#f7f2f2] border border-[#e8e8e8] focus:border-[#b90064] rounded-xl px-3.5 py-2.5 text-[13px] text-[#1c1b1b] focus:outline-none"
+                  className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-xl px-3.5 py-2.5 text-[13px] text-[#2A0E3F] focus:outline-none"
                   required
                 />
               </div>
             )}
 
             <div>
-              <label className="block text-[12px] font-bold text-[#1c1b1b] mb-1">
+              <label className="block text-[12px] font-bold text-[#2A0E3F] mb-1">
                 {authMethod === 'otp' ? 'Mobile Number / Business Email' : 'Business Email Address'}
               </label>
               <div className="relative">
@@ -457,20 +457,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={phoneOrEmail}
                   onChange={(e) => setPhoneOrEmail(e.target.value)}
                   placeholder={authMethod === 'otp' ? '+91 98201 54321 or name@business.com' : 'procurement@company.com'}
-                  className="w-full bg-[#f7f2f2] border border-[#e8e8e8] focus:border-[#b90064] rounded-xl pl-9 pr-3.5 py-2.5 text-[13px] text-[#1c1b1b] focus:outline-none"
+                  className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-xl pl-9 pr-3.5 py-2.5 text-[13px] text-[#2A0E3F] focus:outline-none"
                   required
                 />
                 {authMethod === 'otp' ? (
-                  <Phone className="w-4 h-4 text-[#8c7077] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Phone className="w-4 h-4 text-[#7E6C96] absolute left-3 top-1/2 -translate-y-1/2" />
                 ) : (
-                  <Mail className="w-4 h-4 text-[#8c7077] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Mail className="w-4 h-4 text-[#7E6C96] absolute left-3 top-1/2 -translate-y-1/2" />
                 )}
               </div>
             </div>
 
             {authMethod === 'password' && (
               <div>
-                <label className="block text-[12px] font-bold text-[#1c1b1b] mb-1">
+                <label className="block text-[12px] font-bold text-[#2A0E3F] mb-1">
                   Password
                 </label>
                 <div className="relative">
@@ -479,10 +479,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter account password"
-                    className="w-full bg-[#f7f2f2] border border-[#e8e8e8] focus:border-[#b90064] rounded-xl pl-9 pr-10 py-2.5 text-[13px] text-[#1c1b1b] focus:outline-none"
+                    className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-xl pl-9 pr-10 py-2.5 text-[13px] text-[#2A0E3F] focus:outline-none"
                     required
                   />
-                  <Lock className="w-4 h-4 text-[#8c7077] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Lock className="w-4 h-4 text-[#7E6C96] absolute left-3 top-1/2 -translate-y-1/2" />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -496,7 +496,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
             <button
               type="submit"
-              className="w-full bg-[#b90064] hover:bg-[#8e004b] text-white font-extrabold text-[13px] py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+              className="w-full bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold text-[13px] py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
             >
               <span>
                 {authMethod === 'otp'
@@ -507,17 +507,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </button>
 
             {/* Continue as Guest option */}
-            <div className="pt-2 text-center border-t border-[#f0edec]">
+            <div className="pt-2 text-center border-t border-[#F4F0E9]">
               <button
                 type="button"
                 onClick={handleGuestContinue}
-                className="text-[12px] font-bold text-[#594047] hover:text-[#b90064] hover:underline cursor-pointer"
+                className="text-[12px] font-bold text-[#5B4A6E] hover:text-[#6B2D8C] hover:underline cursor-pointer"
               >
                 Continue Browsing as Guest
               </button>
             </div>
 
-            <p className="text-[11px] text-[#8c7077] text-center">
+            <p className="text-[11px] text-[#7E6C96] text-center">
               By continuing, you agree to Nexora Luxe's B2B Terms of Sourcing &amp; Verified Supplier Privacy Code.
             </p>
 
@@ -530,7 +530,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   if (isFullPage) {
     return (
-      <div className="min-h-screen bg-[#fdf8f8] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4">
         {content}
       </div>
     );

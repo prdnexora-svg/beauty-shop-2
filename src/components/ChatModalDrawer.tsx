@@ -163,10 +163,10 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
         <div className={`w-full md:w-80 border-r border-stone-200 bg-stone-50 flex flex-col shrink-0 ${activeThreadId ? 'hidden md:flex' : 'flex'}`}>
           <div className="p-4 border-b border-stone-200 bg-white flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-[#b90064]" />
+              <MessageSquare className="w-5 h-5 text-[#6B2D8C]" />
               <h3 className="text-sm font-extrabold text-stone-900">Supplier Inquiries</h3>
             </div>
-            <span className="px-2 py-0.5 bg-[#fde7f3] text-[#b90064] text-[10px] font-black rounded-full">
+            <span className="px-2 py-0.5 bg-[#F5EEF8] text-[#6B2D8C] text-[10px] font-black rounded-full">
               {threads.length} Active
             </span>
           </div>
@@ -180,11 +180,11 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
                   key={thread.id}
                   onClick={() => setActiveThreadId(thread.id)}
                   className={`p-3.5 cursor-pointer transition-colors flex items-start gap-3 ${
-                    isActive ? 'bg-[#fde7f3]/50 border-l-4 border-[#b90064]' : 'hover:bg-white bg-transparent'
+                    isActive ? 'bg-[#F5EEF8]/50 border-l-4 border-[#6B2D8C]' : 'hover:bg-white bg-transparent'
                   }`}
                 >
                   <div className="relative shrink-0">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#b90064] to-[#70003c] text-white font-black flex items-center justify-center text-sm shadow-sm">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6B2D8C] to-[#70003c] text-white font-black flex items-center justify-center text-sm shadow-sm">
                       {thread.supplierName.charAt(0)}
                     </div>
                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
@@ -203,11 +203,11 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
                       {lastMsg?.text || 'Start conversation...'}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[9px] text-[#b90064] font-bold bg-white px-1.5 py-0.5 rounded border border-stone-200">
+                      <span className="text-[9px] text-[#6B2D8C] font-bold bg-white px-1.5 py-0.5 rounded border border-stone-200">
                         {thread.supplierLocation}
                       </span>
                       {thread.unreadCount > 0 && (
-                        <span className="bg-[#b90064] text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full">
+                        <span className="bg-[#6B2D8C] text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full">
                           {thread.unreadCount} new
                         </span>
                       )}
@@ -232,14 +232,14 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </button>
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#b90064] to-[#70003c] text-white font-black flex items-center justify-center text-sm shadow-sm">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6B2D8C] to-[#70003c] text-white font-black flex items-center justify-center text-sm shadow-sm">
                     {activeThread.supplierName.charAt(0)}
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5">
                       <h3 className="text-sm font-extrabold text-stone-900">{activeThread.supplierName}</h3>
                       {activeThread.isVerified && (
-                        <ShieldCheck className="w-4 h-4 text-[#b90064]" title="Nexora Verified Supplier" />
+                        <ShieldCheck className="w-4 h-4 text-[#6B2D8C]" title="Nexora Verified Supplier" />
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
@@ -273,14 +273,14 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
               </div>
 
               {/* Messages Container */}
-              <div className="flex-1 p-4 md:p-6 overflow-y-auto space-y-4 bg-[#fdf8f8]">
+              <div className="flex-1 p-4 md:p-6 overflow-y-auto space-y-4 bg-[#FDFBF7]">
                 
                 {/* Initial Product Card Context Banner if present */}
                 {initialProduct && displayMessages.length <= 1 && (
-                  <div className="bg-white p-3.5 rounded-2xl border border-pink-200 shadow-sm flex items-center gap-4 max-w-lg mx-auto mb-4">
+                  <div className="bg-white p-3.5 rounded-2xl border border-purple-200 shadow-sm flex items-center gap-4 max-w-lg mx-auto mb-4">
                     <img src={initialProduct.image} alt={initialProduct.title} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <span className="text-[10px] uppercase tracking-wider font-extrabold text-[#b90064] bg-[#fde7f3] px-2 py-0.5 rounded">Inquiring About Product</span>
+                      <span className="text-[10px] uppercase tracking-wider font-extrabold text-[#6B2D8C] bg-[#F5EEF8] px-2 py-0.5 rounded">Inquiring About Product</span>
                       <h4 className="text-xs font-bold text-stone-900 truncate mt-1">{initialProduct.title}</h4>
                       <p className="text-[11px] text-stone-500 font-medium">MOQ: {initialProduct.moq || '1,000 Units'} • {initialProduct.price || 'Price on request'}</p>
                     </div>
@@ -298,14 +298,14 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
 
                       <div className={`max-w-md p-3.5 rounded-2xl shadow-xs text-xs leading-relaxed ${
                         isBuyer 
-                          ? 'bg-[#b90064] text-white rounded-tr-xs' 
+                          ? 'bg-[#6B2D8C] text-white rounded-tr-xs' 
                           : 'bg-white text-stone-900 border border-stone-200 rounded-tl-xs'
                       }`}>
                         {msg.productContext && (
                           <div className={`p-2.5 rounded-xl mb-2.5 flex items-center gap-3 ${isBuyer ? 'bg-black/10' : 'bg-stone-50 border border-stone-200'}`}>
                             <img src={msg.productContext.image} alt="Product" className="w-12 h-12 rounded-lg object-cover shrink-0" />
                             <div className="min-w-0 flex-1">
-                              <p className={`text-[10px] font-bold truncate ${isBuyer ? 'text-pink-100' : 'text-[#b90064]'}`}>Context Product</p>
+                              <p className={`text-[10px] font-bold truncate ${isBuyer ? 'text-purple-100' : 'text-[#6B2D8C]'}`}>Context Product</p>
                               <p className={`text-xs font-extrabold truncate ${isBuyer ? 'text-white' : 'text-stone-900'}`}>{msg.productContext.title}</p>
                             </div>
                           </div>
@@ -330,13 +330,13 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
               {/* Quick Inquiry Chips */}
               <div className="px-4 py-2 bg-white border-t border-stone-100 flex items-center gap-2 overflow-x-auto shrink-0 scrollbar-none">
                 <span className="text-[10px] font-bold text-stone-400 shrink-0">Quick Enquiries:</span>
-                <button onClick={() => handleQuickChip("Request Wholesale Price Quote & Tiered Pricing")} className="px-3 py-1 bg-stone-100 hover:bg-[#fde7f3] hover:text-[#b90064] text-stone-700 text-[11px] font-bold rounded-full transition-colors whitespace-nowrap cursor-pointer">
+                <button onClick={() => handleQuickChip("Request Wholesale Price Quote & Tiered Pricing")} className="px-3 py-1 bg-stone-100 hover:bg-[#F5EEF8] hover:text-[#6B2D8C] text-stone-700 text-[11px] font-bold rounded-full transition-colors whitespace-nowrap cursor-pointer">
                   💰 Request Wholesale Quote
                 </button>
-                <button onClick={() => handleQuickChip("What is your exact MOQ and lead time for bulk supply?")} className="px-3 py-1 bg-stone-100 hover:bg-[#fde7f3] hover:text-[#b90064] text-stone-700 text-[11px] font-bold rounded-full transition-colors whitespace-nowrap cursor-pointer">
+                <button onClick={() => handleQuickChip("What is your exact MOQ and lead time for bulk supply?")} className="px-3 py-1 bg-stone-100 hover:bg-[#F5EEF8] hover:text-[#6B2D8C] text-stone-700 text-[11px] font-bold rounded-full transition-colors whitespace-nowrap cursor-pointer">
                   📦 Ask for MOQ & Lead Time
                 </button>
-                <button onClick={() => handleQuickChip("Please send sample kit and COA document for evaluation")} className="px-3 py-1 bg-stone-100 hover:bg-[#fde7f3] hover:text-[#b90064] text-stone-700 text-[11px] font-bold rounded-full transition-colors whitespace-nowrap cursor-pointer">
+                <button onClick={() => handleQuickChip("Please send sample kit and COA document for evaluation")} className="px-3 py-1 bg-stone-100 hover:bg-[#F5EEF8] hover:text-[#6B2D8C] text-stone-700 text-[11px] font-bold rounded-full transition-colors whitespace-nowrap cursor-pointer">
                   🧪 Request Sample Kit & COA
                 </button>
               </div>
@@ -345,7 +345,7 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
               <div className="p-3.5 border-t border-stone-200 bg-white flex items-center gap-3 shrink-0 relative">
                 {attachedFile && (
                   <div className="absolute bottom-16 left-4 bg-stone-900 text-white px-3 py-1.5 rounded-xl text-xs flex items-center gap-2 shadow-lg">
-                    <Paperclip className="w-3.5 h-3.5 text-pink-400" />
+                    <Paperclip className="w-3.5 h-3.5 text-purple-400" />
                     <span>{attachedFile.name}</span>
                     <button onClick={() => setAttachedFile(null)} className="text-stone-400 hover:text-white ml-2 cursor-pointer font-bold">×</button>
                   </div>
@@ -365,13 +365,13 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
                   onChange={(e) => setMessageInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                   placeholder="Type your message to the supplier..."
-                  className="flex-1 bg-stone-100 border border-stone-200 rounded-xl px-4 py-2.5 text-xs text-stone-900 focus:outline-none focus:border-[#b90064] transition-colors"
+                  className="flex-1 bg-stone-100 border border-stone-200 rounded-xl px-4 py-2.5 text-xs text-stone-900 focus:outline-none focus:border-[#C9A961] transition-colors"
                 />
 
                 <button
                   onClick={() => handleSend()}
                   disabled={isSending || (!messageInput.trim() && !attachedFile)}
-                  className="bg-[#b90064] hover:bg-[#a00056] disabled:opacity-50 text-white font-bold px-5 py-2.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-sm text-xs"
+                  className="bg-[#6B2D8C] hover:bg-[#4A2560] disabled:opacity-50 text-white font-bold px-5 py-2.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-sm text-xs"
                 >
                   <Send className="w-4 h-4" />
                   <span>{isSending ? 'Sending...' : 'Send'}</span>

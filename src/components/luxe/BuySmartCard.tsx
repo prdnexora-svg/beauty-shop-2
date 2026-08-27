@@ -59,7 +59,7 @@ export const BuySmartCard: React.FC<BuySmartCardProps> = ({ onGetQuotes, onPostD
                   value={requirement}
                   onChange={(e) => setRequirement(e.target.value)}
                   placeholder="e.g. Vitamin C face serum 30ml, private label"
-                  className="w-full border border-[#E4D6E9] rounded-xl px-4 py-3 text-[13.5px] text-[#2A0E3F] placeholder:text-[#B0A0BC] outline-none focus:border-[#3D1E4E] focus:ring-2 focus:ring-[#3D1E4E]/10 transition"
+                  className="w-full border border-[#E4D6E9] rounded-xl px-4 py-3 text-[13.5px] text-[#2A0E3F] placeholder:text-[#B0A0BC] outline-none focus:border-[#C9A961] focus:ring-2 focus:ring-[#C9A961]/20 transition"
                 />
               </div>
 
@@ -69,7 +69,7 @@ export const BuySmartCard: React.FC<BuySmartCardProps> = ({ onGetQuotes, onPostD
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
                   placeholder="e.g. 500 pcs"
-                  className="w-full border border-[#E4D6E9] rounded-xl px-4 py-3 text-[13.5px] text-[#2A0E3F] placeholder:text-[#B0A0BC] outline-none focus:border-[#3D1E4E] focus:ring-2 focus:ring-[#3D1E4E]/10 transition"
+                  className="w-full border border-[#E4D6E9] rounded-xl px-4 py-3 text-[13.5px] text-[#2A0E3F] placeholder:text-[#B0A0BC] outline-none focus:border-[#C9A961] focus:ring-2 focus:ring-[#C9A961]/20 transition"
                 />
               </div>
 
