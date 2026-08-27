@@ -1,6 +1,6 @@
 import React from 'react';
 import { Facebook, Instagram, Linkedin, Youtube, ShieldCheck, MapPin, ChevronRight } from 'lucide-react';
-import { LuxeLogo } from './LuxeHeader';
+import { LuxeLogo } from './LuxeLogo';
 
 interface LuxeFooterProps {
   onNavigate: (screen: any, params?: any) => void;

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MessageCircle, User, Plus, Menu, X, ShoppingBag, Building2, Gem, FlaskConical } from 'lucide-react';
 import { BuyerProfileData } from '../EditProfileModal';
+import { LuxeLogo } from './LuxeLogo';
 
 interface LuxeHeaderProps {
   currentScreen: any;
@@ -18,21 +19,6 @@ const NAV_ITEMS = [
   { label: 'Brands', screen: 'brands' },
   { label: 'OEM/Private Label', screen: 'oem-hub' },
 ];
-
-export const LuxeLogo: React.FC<{ dark?: boolean; compact?: boolean }> = ({ dark, compact }) => (
-  <div className="logo-luxe flex flex-col items-center leading-none select-none">
-    <span
-      className={`logo-nexora font-display font-bold italic tracking-[0.14em] ${compact ? 'text-[21px]' : 'text-[24px]'} ${
-        dark ? 'text-white' : 'text-[#2A0E3F]'
-      } transition-colors`}
-    >
-      NEXORA
-    </span>
-    <span className="logo-luxe-text font-cormorant italic text-gold-shimmer tracking-[0.55em] text-[13px] font-semibold -mt-0.5 pl-1">
-      LUXE
-    </span>
-  </div>
-);
 
 export const LuxeHeader: React.FC<LuxeHeaderProps> = ({
   onNavigate,
@@ -58,9 +44,7 @@ export const LuxeHeader: React.FC<LuxeHeaderProps> = ({
       <div className="bg-white/95 backdrop-blur-xl border-b border-[#E5D4ED] shadow-[0_4px_24px_-12px_rgba(42,14,63,0.18)]">
         <div className="max-w-[1280px] mx-auto px-4 md:px-6 h-[68px] flex items-center gap-4">
           {/* Logo */}
-          <button onClick={() => go('explore')} aria-label="Nexora Luxe home" className="shrink-0">
-            <LuxeLogo compact />
-          </button>
+          <LuxeLogo compact onClick={() => go('explore')} className="shrink-0" />
 
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-1 ml-8">
