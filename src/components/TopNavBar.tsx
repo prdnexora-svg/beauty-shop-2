@@ -96,21 +96,21 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
   const profileCompletion = userProfile?.isGstVerified ? 90 : 70;
 
   return (
-    <header className="fixed top-0 z-50 w-full bg-[#FFFDFC]/90 backdrop-blur-xl border-b border-[#E8DFE3] shadow-xs">
+    <header className="fixed top-0 z-50 w-full bg-[#FFFDFC]/90 backdrop-blur-xl border-b border-[#E5D8EE] shadow-xs">
       <div className="max-w-[1440px] mx-auto px-4 md:px-8 h-20 flex items-center justify-between">
         {/* Brand & Logo */}
         <div
           onClick={() => handleNavClick('explore')}
           className="flex items-center gap-2.5 cursor-pointer group"
         >
-          <div className="w-9 h-9 bg-gradient-to-br from-[#B90064] to-[#500037] rounded-xl flex items-center justify-center shadow-md shadow-[#B90064]/20 transition-transform group-hover:scale-105">
+          <div className="w-9 h-9 bg-gradient-to-br from-[#6B2D8C] to-[#2A0E3F] rounded-xl flex items-center justify-center shadow-md shadow-[#6B2D8C]/20 transition-transform group-hover:scale-105">
             <span className="text-white font-serif font-bold text-xl leading-none">N</span>
           </div>
           <div>
-            <span className="font-serif text-xl font-bold tracking-tight text-[#1C1B1B] block leading-none">
-              Nexora<span className="text-[#B90064] ml-1 font-sans text-lg font-light">Luxe</span>
+            <span className="font-serif text-xl font-bold tracking-tight text-[#2A0E3F] block leading-none">
+              Nexora<span className="text-[#6B2D8C] ml-1 font-sans text-lg font-light">Luxe</span>
             </span>
-            <span className="text-[10px] font-bold tracking-widest uppercase text-[#8D8087] block mt-0.5">
+            <span className="text-[10px] font-bold tracking-widest uppercase text-[#8B7FA3] block mt-0.5">
               B2B Beauty Marketplace
             </span>
           </div>
@@ -126,13 +126,13 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                 onClick={() => handleNavClick(item.id)}
                 className={`text-[14px] py-1.5 transition-all cursor-pointer relative font-medium ${
                   isActive
-                    ? 'text-[#B90064] font-bold'
-                    : 'text-[#534249] hover:text-[#B90064]'
+                    ? 'text-[#6B2D8C] font-bold'
+                    : 'text-[#4E3D63] hover:text-[#6B2D8C]'
                 }`}
               >
                 {item.label}
                 {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#B90064] rounded-full animate-in fade-in duration-200"></span>
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#6B2D8C] rounded-full animate-in fade-in duration-200"></span>
                 )}
               </button>
             );
@@ -141,18 +141,18 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
 
         {/* Actions & Interactive User Profile */}
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="hidden sm:flex items-center gap-2 text-[#500037]">
+          <div className="hidden sm:flex items-center gap-2 text-[#2A0E3F]">
             <button 
               aria-label="Supplier Portal & Ad Campaigns"
               title="Supplier Admin Portal & Sponsored Ad Manager"
               onClick={() => handleNavClick('supplier-portal')}
               className={`px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-[13px] font-bold ${
                 currentScreen === 'supplier-portal' 
-                  ? 'bg-[#B90064] text-white shadow-sm' 
-                  : 'bg-[#fde7f3] hover:bg-[#fbcfe8] text-[#b90064] border border-[#f7c5e0]'
+                  ? 'bg-[#6B2D8C] text-white shadow-sm' 
+                  : 'bg-[#F5EEF8] hover:bg-[#E8D5F2] text-[#6B2D8C] border border-[#E8D5F2]'
               }`}
             >
-              <Sparkles className="w-4 h-4 text-[#b90064]" />
+              <Sparkles className="w-4 h-4 text-[#6B2D8C]" />
               <span className="hidden md:inline">Supplier Portal & Ads</span>
             </button>
 
@@ -164,13 +164,13 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                 onClick={() => setNotificationsOpen(prev => !prev)}
                 className={`p-2.5 rounded-xl border transition-all cursor-pointer relative ${
                   notificationsOpen
-                    ? 'bg-[#FAF1F5] border-[#B90064] text-[#B90064] shadow-xs'
-                    : 'bg-[#FCF9F8] hover:bg-[#FAF1F5] border-[#E8DFE3] hover:border-[#B90064] text-[#534249] hover:text-[#B90064]'
+                    ? 'bg-[#F5EEF8] border-[#6B2D8C] text-[#6B2D8C] shadow-xs'
+                    : 'bg-[#FDFBF7] hover:bg-[#F5EEF8] border-[#E5D8EE] hover:border-[#6B2D8C] text-[#4E3D63] hover:text-[#6B2D8C]'
                 }`}
               >
                 <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#B90064] text-[9px] font-black text-white shadow-xs animate-pulse">
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#6B2D8C] text-[9px] font-black text-white shadow-xs animate-pulse">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
@@ -198,9 +198,9 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                   aria-label="User Profile Menu"
                   title="Profile & Settings"
                   onClick={() => setProfileDropdownOpen(prev => !prev)}
-                  className="flex items-center gap-2 p-1.5 pl-2 pr-2.5 bg-[#fcf9f8] hover:bg-[#FAF1F5] border border-[#E8DFE3] hover:border-[#b90064] rounded-xl transition-all cursor-pointer shadow-2xs group"
+                  className="flex items-center gap-2 p-1.5 pl-2 pr-2.5 bg-[#FDFBF7] hover:bg-[#F5EEF8] border border-[#E5D8EE] hover:border-[#6B2D8C] rounded-xl transition-all cursor-pointer shadow-2xs group"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#b90064] to-[#e6007e] text-white flex items-center justify-center font-bold text-xs shadow-xs overflow-hidden">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#6B2D8C] to-[#8236A0] text-white flex items-center justify-center font-bold text-xs shadow-xs overflow-hidden">
                     {userProfile?.avatarUrl ? (
                       <img src={userProfile.avatarUrl} alt={displayName} className="w-full h-full object-cover" />
                     ) : (
@@ -208,23 +208,23 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                     )}
                   </div>
                   <div className="hidden md:flex flex-col text-left">
-                    <span className="text-[12px] font-bold text-[#1c1b1b] leading-tight group-hover:text-[#b90064] truncate max-w-[110px]">
+                    <span className="text-[12px] font-bold text-[#2A0E3F] leading-tight group-hover:text-[#6B2D8C] truncate max-w-[110px]">
                       {displayName.split(' ')[0]}
                     </span>
-                    <span className="text-[10px] text-[#8c7077] leading-none capitalize">
+                    <span className="text-[10px] text-[#7E6C96] leading-none capitalize">
                       {userRole || 'Buyer'}
                     </span>
                   </div>
-                  <ChevronDown className={`w-3.5 h-3.5 text-[#8c7077] transition-transform ${profileDropdownOpen ? 'rotate-180 text-[#b90064]' : ''}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 text-[#7E6C96] transition-transform ${profileDropdownOpen ? 'rotate-180 text-[#6B2D8C]' : ''}`} />
                 </button>
 
                 {/* Floating Profile Dropdown Menu */}
                 {profileDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl border border-[#e8e8e8] shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl border border-[#E8DEEF] shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
                     {/* User Header Summary */}
-                    <div className="p-4 bg-[#fcf9f8] border-b border-[#e8e8e8]">
+                    <div className="p-4 bg-[#FDFBF7] border-b border-[#E8DEEF]">
                       <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#b90064] to-[#e6007e] text-white flex items-center justify-center font-bold text-base shadow-sm overflow-hidden shrink-0">
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#6B2D8C] to-[#8236A0] text-white flex items-center justify-center font-bold text-base shadow-sm overflow-hidden shrink-0">
                           {userProfile?.avatarUrl ? (
                             <img src={userProfile.avatarUrl} alt={displayName} className="w-full h-full object-cover" />
                           ) : (
@@ -232,15 +232,15 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-xs font-bold text-[#1c1b1b] truncate">{displayName}</h4>
-                          <p className="text-[11px] text-[#594047] truncate">{displayEmail}</p>
+                          <h4 className="text-xs font-bold text-[#2A0E3F] truncate">{displayName}</h4>
+                          <p className="text-[11px] text-[#5B4A6E] truncate">{displayEmail}</p>
                           <div className="flex items-center gap-1 mt-1">
-                            <span className="px-1.5 py-0.5 rounded bg-[#fde7f3] text-[#b90064] text-[9px] font-bold">
+                            <span className="px-1.5 py-0.5 rounded bg-[#F5EEF8] text-[#6B2D8C] text-[9px] font-bold">
                               {userRole === 'supplier' ? 'Verified Supplier' : 'Verified Buyer'}
                             </span>
                             {userProfile?.isGstVerified && (
-                              <span className="flex items-center gap-0.5 text-[9px] font-bold text-green-700">
-                                <CheckCircle2 className="w-2.5 h-2.5 text-green-600" /> GST Active
+                              <span className="flex items-center gap-0.5 text-[9px] font-bold text-emerald-700">
+                                <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" /> GST Active
                               </span>
                             )}
                           </div>
@@ -248,14 +248,14 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                       </div>
 
                       {/* Profile Strength Progress */}
-                      <div className="mt-3 pt-2.5 border-t border-[#f0edec]">
-                        <div className="flex justify-between text-[10px] font-bold text-[#594047] mb-1">
+                      <div className="mt-3 pt-2.5 border-t border-[#F4F0E9]">
+                        <div className="flex justify-between text-[10px] font-bold text-[#5B4A6E] mb-1">
                           <span>Profile Strength</span>
-                          <span className="text-[#b90064]">{profileCompletion}%</span>
+                          <span className="text-[#6B2D8C]">{profileCompletion}%</span>
                         </div>
-                        <div className="w-full h-1.5 bg-[#e8e8e8] rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 bg-[#E8DEEF] rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-gradient-to-r from-[#b90064] to-[#e6007e] rounded-full transition-all duration-300"
+                            className="h-full bg-gradient-to-r from-[#6B2D8C] to-[#8236A0] rounded-full transition-all duration-300"
                             style={{ width: `${profileCompletion}%` }}
                           />
                         </div>
@@ -273,9 +273,9 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                             handleNavClick('buyer-profile');
                           }
                         }}
-                        className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#FAF1F5] text-xs font-bold text-[#1c1b1b] hover:text-[#b90064] flex items-center gap-2.5 transition-colors cursor-pointer"
+                        className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#F5EEF8] text-xs font-bold text-[#2A0E3F] hover:text-[#6B2D8C] flex items-center gap-2.5 transition-colors cursor-pointer"
                       >
-                        <User className="w-4 h-4 text-[#b90064]" />
+                        <User className="w-4 h-4 text-[#6B2D8C]" />
                         <span>View My Profile</span>
                       </button>
 
@@ -284,9 +284,9 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                           setProfileDropdownOpen(false);
                           onOpenEditProfile();
                         }}
-                        className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#FAF1F5] text-xs font-bold text-[#1c1b1b] hover:text-[#b90064] flex items-center gap-2.5 transition-colors cursor-pointer"
+                        className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#F5EEF8] text-xs font-bold text-[#2A0E3F] hover:text-[#6B2D8C] flex items-center gap-2.5 transition-colors cursor-pointer"
                       >
-                        <Edit3 className="w-4 h-4 text-[#b90064]" />
+                        <Edit3 className="w-4 h-4 text-[#6B2D8C]" />
                         <span>Edit Profile & Business Details</span>
                       </button>
 
@@ -295,9 +295,9 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                           setProfileDropdownOpen(false);
                           handleNavClick('supplier-portal');
                         }}
-                        className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#FAF1F5] text-xs font-bold text-[#b90064] flex items-center gap-2.5 transition-colors cursor-pointer"
+                        className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#F5EEF8] text-xs font-bold text-[#6B2D8C] flex items-center gap-2.5 transition-colors cursor-pointer"
                       >
-                        <Sparkles className="w-4 h-4 text-[#b90064]" />
+                        <Sparkles className="w-4 h-4 text-[#6B2D8C]" />
                         <span>Supplier Portal & Ad Campaigns</span>
                       </button>
 
@@ -306,9 +306,9 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                           setProfileDropdownOpen(false);
                           handleNavClick('buyer-dashboard');
                         }}
-                        className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#FAF1F5] text-xs font-semibold text-[#594047] hover:text-[#1c1b1b] flex items-center gap-2.5 transition-colors cursor-pointer"
+                        className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#F5EEF8] text-xs font-semibold text-[#5B4A6E] hover:text-[#2A0E3F] flex items-center gap-2.5 transition-colors cursor-pointer"
                       >
-                        <Briefcase className="w-4 h-4 text-[#8c7077]" />
+                        <Briefcase className="w-4 h-4 text-[#7E6C96]" />
                         <span>Buyer RFQ & Sourcing Dashboard</span>
                       </button>
 
@@ -317,13 +317,13 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                           setProfileDropdownOpen(false);
                           onOpenEditProfile();
                         }}
-                        className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#FAF1F5] text-xs font-semibold text-[#594047] hover:text-[#1c1b1b] flex items-center gap-2.5 transition-colors cursor-pointer"
+                        className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#F5EEF8] text-xs font-semibold text-[#5B4A6E] hover:text-[#2A0E3F] flex items-center gap-2.5 transition-colors cursor-pointer"
                       >
-                        <Settings className="w-4 h-4 text-[#8c7077]" />
+                        <Settings className="w-4 h-4 text-[#7E6C96]" />
                         <span>Account & Security Settings</span>
                       </button>
 
-                      <div className="pt-1.5 mt-1.5 border-t border-[#f0edec]">
+                      <div className="pt-1.5 mt-1.5 border-t border-[#F4F0E9]">
                         <button
                           onClick={() => {
                             setProfileDropdownOpen(false);
@@ -344,7 +344,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                 aria-label="Profile"
                 title="Supplier / Buyer Sign In"
                 onClick={() => onOpenAuthModal('login')}
-                className="p-2 hover:bg-[#FAF1F5] text-[#534249] hover:text-[#B90064] rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+                className="p-2 hover:bg-[#F5EEF8] text-[#4E3D63] hover:text-[#6B2D8C] rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
               >
                 <User className="w-5 h-5" />
                 <span className="hidden md:inline">Sign In</span>
@@ -354,7 +354,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
           
           <button
             onClick={onOpenRFQModal}
-            className="bg-[#B90064] hover:bg-[#A00057] active:scale-[0.98] text-white text-[13px] font-bold px-4 sm:px-5 py-2.5 rounded-xl transition-all duration-200 shadow-sm shadow-[#B90064]/25 cursor-pointer flex items-center gap-1.5"
+            className="bg-[#6B2D8C] hover:bg-[#A00057] active:scale-[0.98] text-white text-[13px] font-bold px-4 sm:px-5 py-2.5 rounded-xl transition-all duration-200 shadow-sm shadow-[#6B2D8C]/25 cursor-pointer flex items-center gap-1.5"
           >
             <PlusCircle className="w-4 h-4 shrink-0" />
             <span className="whitespace-nowrap">Post Requirement</span>
@@ -363,7 +363,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
           {/* Mobile Menu Button */}
           <button 
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-xl hover:bg-[#FAF1F5] text-[#500037] cursor-pointer"
+            className="lg:hidden p-2 rounded-xl hover:bg-[#F5EEF8] text-[#2A0E3F] cursor-pointer"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -373,7 +373,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
 
       {/* Mobile Drawer Navigation Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-[#E8DFE3] bg-[#FFFDFC] shadow-xl px-4 py-4 animate-in slide-in-from-top-2 duration-200">
+        <div className="lg:hidden border-t border-[#E5D8EE] bg-[#FFFDFC] shadow-xl px-4 py-4 animate-in slide-in-from-top-2 duration-200">
           <div className="flex flex-col gap-1.5">
             {navItems.map((item) => {
               const isActive = currentScreen === item.id || (item.id === 'supplier-directory' && currentScreen === 'directory');
@@ -383,12 +383,12 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                   onClick={() => handleNavClick(item.id)}
                   className={`text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold transition-colors flex items-center justify-between ${
                     isActive
-                      ? 'bg-[#FAF1F5] text-[#B90064]'
-                      : 'text-[#1C1B1B] hover:bg-[#FAF5F7]'
+                      ? 'bg-[#F5EEF8] text-[#6B2D8C]'
+                      : 'text-[#2A0E3F] hover:bg-[#FAF5F7]'
                   }`}
                 >
                   <span>{item.label}</span>
-                  {isActive && <CheckCircle2 className="w-4 h-4 text-[#B90064]" />}
+                  {isActive && <CheckCircle2 className="w-4 h-4 text-[#6B2D8C]" />}
                 </button>
               );
             })}
@@ -396,13 +396,13 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             <div className="pt-3 mt-2 border-t border-[#F0E8EB] flex flex-col gap-2">
               {isLoggedIn ? (
                 <>
-                  <div className="p-3 bg-[#fcf9f8] rounded-xl flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#b90064] to-[#e6007e] text-white flex items-center justify-center font-bold text-sm">
+                  <div className="p-3 bg-[#FDFBF7] rounded-xl flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6B2D8C] to-[#8236A0] text-white flex items-center justify-center font-bold text-sm">
                       {initials}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs font-bold text-[#1c1b1b] truncate">{displayName}</div>
-                      <div className="text-[11px] text-[#594047] truncate">{displayEmail}</div>
+                      <div className="text-xs font-bold text-[#2A0E3F] truncate">{displayName}</div>
+                      <div className="text-[11px] text-[#5B4A6E] truncate">{displayEmail}</div>
                     </div>
                   </div>
                   <button
@@ -410,7 +410,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                       setMobileMenuOpen(false);
                       onOpenEditProfile();
                     }}
-                    className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#b90064] bg-[#FAF1F5] flex items-center gap-2"
+                    className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#6B2D8C] bg-[#F5EEF8] flex items-center gap-2"
                   >
                     <Edit3 className="w-4 h-4" />
                     <span>Edit Profile & Business Settings</span>
@@ -420,23 +420,23 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                       setMobileMenuOpen(false);
                       onNavigate('buyer-dashboard', { tab: 'notifications' });
                     }}
-                    className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#1C1B1B] hover:bg-[#FAF1F5] flex items-center justify-between"
+                    className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#2A0E3F] hover:bg-[#F5EEF8] flex items-center justify-between"
                   >
                     <div className="flex items-center gap-2">
-                      <Bell className="w-4 h-4 text-[#B90064]" />
+                      <Bell className="w-4 h-4 text-[#6B2D8C]" />
                       <span>Notifications & Alerts</span>
                     </div>
                     {unreadCount > 0 && (
-                      <span className="px-2 py-0.5 rounded-full bg-[#B90064] text-white text-[10px] font-bold">
+                      <span className="px-2 py-0.5 rounded-full bg-[#6B2D8C] text-white text-[10px] font-bold">
                         {unreadCount} new
                       </span>
                     )}
                   </button>
                   <button
                     onClick={() => handleNavClick('buyer-dashboard')}
-                    className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#534249] hover:bg-[#FAF1F5] flex items-center gap-2"
+                    className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#4E3D63] hover:bg-[#F5EEF8] flex items-center gap-2"
                   >
-                    <Mail className="w-4 h-4 text-[#B90064]" />
+                    <Mail className="w-4 h-4 text-[#6B2D8C]" />
                     <span>Buyer Workspace & Enquiries</span>
                   </button>
                   <button
@@ -454,9 +454,9 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                 <>
                   <button
                     onClick={() => handleNavClick('buyer-dashboard')}
-                    className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#534249] hover:bg-[#FAF1F5] flex items-center gap-2"
+                    className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#4E3D63] hover:bg-[#F5EEF8] flex items-center gap-2"
                   >
-                    <Mail className="w-4 h-4 text-[#B90064]" />
+                    <Mail className="w-4 h-4 text-[#6B2D8C]" />
                     <span>Buyer Workspace & Enquiries</span>
                   </button>
                   <button
@@ -464,9 +464,9 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                       setMobileMenuOpen(false);
                       onOpenAuthModal('login');
                     }}
-                    className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#534249] hover:bg-[#FAF1F5] flex items-center gap-2"
+                    className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#4E3D63] hover:bg-[#F5EEF8] flex items-center gap-2"
                   >
-                    <User className="w-4 h-4 text-[#B90064]" />
+                    <User className="w-4 h-4 text-[#6B2D8C]" />
                     <span>Supplier / Buyer Sign In</span>
                   </button>
                 </>

@@ -40,9 +40,9 @@ export const QuickRFQSection: React.FC<QuickRFQSectionProps> = ({
 
   return (
     <section className="my-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 rounded-2xl overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#e8e8e8] bg-white">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 rounded-2xl overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#E8DEEF] bg-white">
         {/* Left Info Panel */}
-        <div className="bg-[#650034] p-8 md:p-12 text-white flex flex-col justify-center relative overflow-hidden">
+        <div className="bg-[#2A0E3F] p-8 md:p-12 text-white flex flex-col justify-center relative overflow-hidden">
           <div className="relative z-10">
             <h2 className="text-[28px] md:text-[32px] font-bold tracking-tight mb-6">
               Buy Smart. Source Better.
@@ -66,15 +66,15 @@ export const QuickRFQSection: React.FC<QuickRFQSectionProps> = ({
 
         {/* Right Form Panel */}
         <div className="p-8 md:p-12 bg-white flex flex-col justify-center">
-          <h3 className="text-[20px] font-bold text-[#1c1b1b] mb-6">
+          <h3 className="text-[20px] font-bold text-[#2A0E3F] mb-6">
             Quick RFQ (Request for Quotation)
           </h3>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[13px] font-semibold text-[#574147] mb-1">
-                  Category <span className="text-[#ba1a1a]">*</span>
+                <label className="block text-[13px] font-semibold text-[#534364] mb-1">
+                  Category <span className="text-[#E11D48]">*</span>
                 </label>
                 <select
                   value={category}
@@ -84,7 +84,7 @@ export const QuickRFQSection: React.FC<QuickRFQSectionProps> = ({
                     const subs = getSubcategoriesForCategoryName(newCat);
                     if (subs.length > 0) setSubcategory(subs[0]);
                   }}
-                  className="w-full border border-[#e8e8e8] bg-[#f7f2f2] rounded-lg p-2.5 text-[13.5px] text-[#1c1b1b] focus:border-[#650034] outline-none cursor-pointer"
+                  className="w-full border border-[#E8DEEF] bg-[#F6F1FA] rounded-lg p-2.5 text-[13.5px] text-[#2A0E3F] focus:border-[#C9A961] outline-none cursor-pointer"
                 >
                   {Object.keys(CATEGORY_TAXONOMY).map((catName) => (
                     <option key={catName} value={catName}>
@@ -95,13 +95,13 @@ export const QuickRFQSection: React.FC<QuickRFQSectionProps> = ({
               </div>
 
               <div>
-                <label className="block text-[13px] font-semibold text-[#574147] mb-1">
-                  Subcategory <span className="text-[#ba1a1a]">*</span>
+                <label className="block text-[13px] font-semibold text-[#534364] mb-1">
+                  Subcategory <span className="text-[#E11D48]">*</span>
                 </label>
                 <select
                   value={subcategory}
                   onChange={(e) => setSubcategory(e.target.value)}
-                  className="w-full border border-[#e8e8e8] bg-[#f7f2f2] rounded-lg p-2.5 text-[13.5px] text-[#1c1b1b] focus:border-[#650034] outline-none cursor-pointer"
+                  className="w-full border border-[#E8DEEF] bg-[#F6F1FA] rounded-lg p-2.5 text-[13.5px] text-[#2A0E3F] focus:border-[#C9A961] outline-none cursor-pointer"
                 >
                   {getSubcategoriesForCategoryName(category).map((subItem) => (
                     <option key={subItem} value={subItem}>
@@ -112,8 +112,8 @@ export const QuickRFQSection: React.FC<QuickRFQSectionProps> = ({
               </div>
             </div>
             <div>
-              <label className="block text-[13px] font-semibold text-[#574147] mb-1">
-                Product / Requirement <span className="text-[#ba1a1a]">*</span>
+              <label className="block text-[13px] font-semibold text-[#534364] mb-1">
+                Product / Requirement <span className="text-[#E11D48]">*</span>
               </label>
               <input
                 type="text"
@@ -121,13 +121,13 @@ export const QuickRFQSection: React.FC<QuickRFQSectionProps> = ({
                 onChange={(e) => setProduct(e.target.value)}
                 required
                 placeholder="e.g. 50ml Airless Pump Bottles"
-                className="w-full border border-[#e8e8e8] bg-[#f7f2f2] rounded-lg p-3 text-[14px] text-[#1c1b1b] focus:border-[#650034] focus:ring-1 focus:ring-[#650034] outline-none transition-colors"
+                className="w-full border border-[#E8DEEF] bg-[#F6F1FA] rounded-lg p-3 text-[14px] text-[#2A0E3F] focus:border-[#C9A961] focus:ring-1 focus:ring-[#C9A961]/30 outline-none transition-colors"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[13px] font-semibold text-[#574147] mb-1">
+                <label className="block text-[13px] font-semibold text-[#534364] mb-1">
                   Required Quantity
                 </label>
                 <input
@@ -135,12 +135,12 @@ export const QuickRFQSection: React.FC<QuickRFQSectionProps> = ({
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
                   placeholder="e.g. 5000 pcs"
-                  className="w-full border border-[#e8e8e8] bg-[#f7f2f2] rounded-lg p-3 text-[14px] text-[#1c1b1b] focus:border-[#650034] focus:ring-1 focus:ring-[#650034] outline-none transition-colors"
+                  className="w-full border border-[#E8DEEF] bg-[#F6F1FA] rounded-lg p-3 text-[14px] text-[#2A0E3F] focus:border-[#C9A961] focus:ring-1 focus:ring-[#C9A961]/30 outline-none transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-[13px] font-semibold text-[#574147] mb-1">
+                <label className="block text-[13px] font-semibold text-[#534364] mb-1">
                   City
                 </label>
                 <input
@@ -148,17 +148,17 @@ export const QuickRFQSection: React.FC<QuickRFQSectionProps> = ({
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="Delivery location"
-                  className="w-full border border-[#e8e8e8] bg-[#f7f2f2] rounded-lg p-3 text-[14px] text-[#1c1b1b] focus:border-[#650034] focus:ring-1 focus:ring-[#650034] outline-none transition-colors"
+                  className="w-full border border-[#E8DEEF] bg-[#F6F1FA] rounded-lg p-3 text-[14px] text-[#2A0E3F] focus:border-[#C9A961] focus:ring-1 focus:ring-[#C9A961]/30 outline-none transition-colors"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-[13px] font-semibold text-[#574147] mb-1">
-                Mobile Number <span className="text-[#ba1a1a]">*</span>
+              <label className="block text-[13px] font-semibold text-[#534364] mb-1">
+                Mobile Number <span className="text-[#E11D48]">*</span>
               </label>
-              <div className="flex rounded-lg border border-[#e8e8e8] bg-[#f7f2f2] overflow-hidden focus-within:border-[#650034] focus-within:ring-1 focus-within:ring-[#650034]">
-                <span className="px-3.5 py-3 text-[14px] font-semibold text-[#574147] bg-[#ece7e7] border-r border-[#e8e8e8]">
+              <div className="flex rounded-lg border border-[#E8DEEF] bg-[#F6F1FA] overflow-hidden focus-within:border-[#2A0E3F] focus-within:ring-1 focus-within:ring-[#2A0E3F]">
+                <span className="px-3.5 py-3 text-[14px] font-semibold text-[#534364] bg-[#ece7e7] border-r border-[#E8DEEF]">
                   +91
                 </span>
                 <input
@@ -167,27 +167,27 @@ export const QuickRFQSection: React.FC<QuickRFQSectionProps> = ({
                   onChange={(e) => setPhone(e.target.value)}
                   required
                   placeholder="10-digit mobile number"
-                  className="w-full bg-transparent p-3 text-[14px] text-[#1c1b1b] outline-none"
+                  className="w-full bg-transparent p-3 text-[14px] text-[#2A0E3F] outline-none"
                 />
               </div>
             </div>
 
             {submitted ? (
-              <div className="p-3 bg-green-50 border border-green-200 text-green-700 text-center font-semibold rounded-lg text-[13px]">
+              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-center font-semibold rounded-lg text-[13px]">
                 Requirement received! Connecting you with top beauty suppliers.
               </div>
             ) : (
               <div className="mt-3 flex flex-col sm:flex-row gap-3">
                 <button
                   type="submit"
-                  className="bg-[#650034] text-white text-[13px] font-semibold py-3 px-6 rounded-lg hover:bg-[#8e004b] transition-colors flex-1 text-center shadow-sm"
+                  className="bg-[#2A0E3F] text-white text-[13px] font-semibold py-3 px-6 rounded-lg hover:bg-[#4A2560] transition-colors flex-1 text-center shadow-sm"
                 >
                   Get Supplier Quotes
                 </button>
                 <button
                   type="button"
                   onClick={onPostDetailedClick}
-                  className="border border-[#650034] text-[#650034] text-[13px] font-semibold py-3 px-6 rounded-lg hover:bg-[#fde7f3] transition-colors text-center whitespace-nowrap"
+                  className="border border-[#2A0E3F] text-[#2A0E3F] text-[13px] font-semibold py-3 px-6 rounded-lg hover:bg-[#F5EEF8] transition-colors text-center whitespace-nowrap"
                 >
                   Post Detailed Requirement
                 </button>

@@ -270,17 +270,17 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#fdf8f8] text-[#1c1b1b] font-sans relative pb-20 md:pb-0">
+    <div className="min-h-screen bg-[#FDFBF7] text-[#2A0E3F] font-sans relative pb-20 md:pb-0">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-20 right-6 z-50 bg-[#1c1b1b] text-white text-[13px] font-semibold px-4 py-3 rounded-xl shadow-2xl border border-[#313030] flex items-center gap-2.5 animate-in slide-in-from-bottom-5">
-          <CheckCircle2 className="w-4 h-4 text-[#e6007e]" />
+        <div className="fixed bottom-20 right-6 z-50 bg-[#2A0E3F] text-white text-[13px] font-semibold px-4 py-3 rounded-xl shadow-2xl border border-[#352B44] flex items-center gap-2.5 animate-in slide-in-from-bottom-5">
+          <CheckCircle2 className="w-4 h-4 text-[#8236A0]" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Hero Banner Section */}
-      <section className="relative w-full min-h-[580px] md:min-h-[620px] flex items-center justify-center overflow-hidden bg-[#1c1b1b] py-12 md:py-16">
+      <section className="relative w-full min-h-[580px] md:min-h-[620px] flex items-center justify-center overflow-hidden bg-[#2A0E3F] py-12 md:py-16">
         {/* Background Image Overlay */}
         <div className="absolute inset-0 z-0 opacity-40">
           <img
@@ -296,13 +296,13 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
             {/* Verified Badge */}
             <div className="flex items-center justify-center gap-2 mb-5 flex-wrap">
               <VerifiedBadge trustScore={98} overallRating={4.9} size="md" />
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#fde7f3] text-[#e6007e] font-bold text-[11px] uppercase tracking-wider border border-[#e0bec6]">
-                <ShieldCheck className="w-3.5 h-3.5 fill-[#b90064] text-white" />
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#F5EEF8] text-[#8236A0] font-bold text-[11px] uppercase tracking-wider border border-[#D9C3E8]">
+                <ShieldCheck className="w-3.5 h-3.5 fill-[#6B2D8C] text-white" />
                 <span>Nexora Verified Partner</span>
               </div>
             </div>
 
-            <h1 className="text-2xl md:text-4xl font-extrabold text-[#1c1b1b] mb-1 tracking-tight">
+            <h1 className="text-2xl md:text-4xl font-extrabold text-[#2A0E3F] mb-1 tracking-tight">
               Aura Labs &amp; Manufacturing
             </h1>
 
@@ -312,20 +312,20 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star 
                     key={star} 
-                    className="w-4 h-4 fill-amber-400 text-amber-400" 
+                    className="w-4 h-4 fill-gold-400 text-gold-400" 
                   />
                 ))}
               </div>
               <div className="flex items-center gap-1.5 ml-1">
-                <span className="text-[15px] font-bold text-[#1c1b1b]">4.9</span>
-                <span className="text-[15px] text-[#8c7077]">•</span>
-                <span className="text-[13px] font-semibold text-[#594047] hover:text-[#b90064] cursor-pointer underline-offset-4 hover:underline transition-colors">
+                <span className="text-[15px] font-bold text-[#2A0E3F]">4.9</span>
+                <span className="text-[15px] text-[#7E6C96]">•</span>
+                <span className="text-[13px] font-semibold text-[#5B4A6E] hover:text-[#6B2D8C] cursor-pointer underline-offset-4 hover:underline transition-colors">
                   128 Verified Business Reviews
                 </span>
               </div>
             </div>
 
-            <p className="text-[14px] md:text-[15px] text-[#594047] mb-6 max-w-2xl mx-auto leading-relaxed font-medium">
+            <p className="text-[14px] md:text-[15px] text-[#5B4A6E] mb-6 max-w-2xl mx-auto leading-relaxed font-medium">
               Specializing in high-efficacy botanical serums and luxury foundations. Providing end-to-end OEM/ODM services for premier global brands.
             </p>
 
@@ -334,7 +334,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
               <div className="flex items-start gap-3">
                 <Building2 className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-[13px] font-black text-[#1c1b1b]">Are you the owner of Aura Beauty Labs?</h4>
+                  <h4 className="text-[13px] font-black text-[#2A0E3F]">Are you the owner of Aura Beauty Labs?</h4>
                   <p className="text-[11.5px] text-amber-900 font-medium mt-0.5">Claim this verified directory profile to directly manage your cosmetic listings, upload fresh lab reports, and respond to incoming buyer RFQs.</p>
                 </div>
               </div>
@@ -354,16 +354,16 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto mb-8 text-left">
               {/* Badge 1: Physical Address Verified */}
               <div className="p-3.5 bg-[#f0f6ff] border border-[#d2e3fc] rounded-xl flex items-start gap-3 shadow-3xs transition-all hover:shadow-2xs">
-                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 border border-blue-200 text-[#0050d6]">
-                  <MapPin className="w-4 h-4 fill-blue-500/20 text-[#0050d6]" />
+                <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0 border border-purple-200 text-[#6B2D8C]">
+                  <MapPin className="w-4 h-4 fill-purple-600/20 text-[#6B2D8C]" />
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[11px] font-extrabold text-blue-950 uppercase tracking-wide">Physical Site</span>
+                    <span className="text-[11px] font-extrabold text-purple-950 uppercase tracking-wide">Physical Site</span>
                     <span className="text-[9px] font-black text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-300">Verified</span>
                   </div>
-                  <p className="text-[11px] text-blue-900/85 mt-1 leading-snug font-medium">SGS site auditor visit passed on Jun 12, 2026.</p>
-                  <p className="text-[9.5px] font-bold text-[#0050d6] mt-1 font-mono">ID: SGS-PV-2026-092</p>
+                  <p className="text-[11px] text-purple-950/85 mt-1 leading-snug font-medium">SGS site auditor visit passed on Jun 12, 2026.</p>
+                  <p className="text-[9.5px] font-bold text-[#6B2D8C] mt-1 font-mono">ID: SGS-PV-2026-092</p>
                 </div>
               </div>
 
@@ -384,8 +384,8 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
 
               {/* Badge 3: Manufacturing License */}
               <div className="p-3.5 bg-[#fef8f9] border border-[#fbdde1] rounded-xl flex items-start gap-3 shadow-3xs transition-all hover:shadow-2xs">
-                <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center shrink-0 border border-rose-200 text-[#b90064]">
-                  <Award className="w-4 h-4 text-[#b90064]" />
+                <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center shrink-0 border border-rose-200 text-[#6B2D8C]">
+                  <Award className="w-4 h-4 text-[#6B2D8C]" />
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5 flex-wrap">
@@ -393,30 +393,30 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                     <span className="text-[9px] font-black text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-300">Approved</span>
                   </div>
                   <p className="text-[11px] text-rose-900/85 mt-1 leading-snug font-medium">FDA &amp; CDSCO certified formulation site.</p>
-                  <p className="text-[9.5px] font-bold text-[#b90064] mt-1 font-mono">No: M-COS/MH/100432</p>
+                  <p className="text-[9.5px] font-bold text-[#6B2D8C] mt-1 font-mono">No: M-COS/MH/100432</p>
                 </div>
               </div>
             </div>
 
             {/* KPI Cards Bar */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mb-8">
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3.5 md:p-4 flex flex-col items-center border border-[#e8e8e8] shadow-2xs">
-                <span className="text-xl md:text-2xl font-black text-[#b90064]">98%</span>
-                <span className="text-[11px] font-bold text-[#8c7077] uppercase tracking-wider mt-1">Response Rate</span>
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3.5 md:p-4 flex flex-col items-center border border-[#E8DEEF] shadow-2xs">
+                <span className="text-xl md:text-2xl font-black text-[#6B2D8C]">98%</span>
+                <span className="text-[11px] font-bold text-[#7E6C96] uppercase tracking-wider mt-1">Response Rate</span>
               </div>
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3.5 md:p-4 flex flex-col items-center border border-[#e8e8e8] shadow-2xs">
-                <span className="text-xl md:text-2xl font-black text-[#b90064]">5k+</span>
-                <span className="text-[11px] font-bold text-[#8c7077] uppercase tracking-wider mt-1">Min. Order (MOQ)</span>
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3.5 md:p-4 flex flex-col items-center border border-[#E8DEEF] shadow-2xs">
+                <span className="text-xl md:text-2xl font-black text-[#6B2D8C]">5k+</span>
+                <span className="text-[11px] font-bold text-[#7E6C96] uppercase tracking-wider mt-1">Min. Order (MOQ)</span>
               </div>
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3.5 md:p-4 flex flex-col items-center border border-[#e8e8e8] shadow-2xs">
-                <span className="text-xl md:text-2xl font-black text-[#b90064]">15 Yrs</span>
-                <span className="text-[11px] font-bold text-[#8c7077] uppercase tracking-wider mt-1">Experience</span>
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3.5 md:p-4 flex flex-col items-center border border-[#E8DEEF] shadow-2xs">
+                <span className="text-xl md:text-2xl font-black text-[#6B2D8C]">15 Yrs</span>
+                <span className="text-[11px] font-bold text-[#7E6C96] uppercase tracking-wider mt-1">Experience</span>
               </div>
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3.5 md:p-4 flex flex-col items-center border border-[#e8e8e8] shadow-2xs">
-                <span className="text-xl md:text-2xl font-black text-[#b90064] flex items-center gap-1">
-                  <Star className="w-4 h-4 fill-amber-400 text-amber-500" /> 4.9
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3.5 md:p-4 flex flex-col items-center border border-[#E8DEEF] shadow-2xs">
+                <span className="text-xl md:text-2xl font-black text-[#6B2D8C] flex items-center gap-1">
+                  <Star className="w-4 h-4 fill-gold-400 text-amber-500" /> 4.9
                 </span>
-                <span className="text-[11px] font-bold text-[#8c7077] uppercase tracking-wider mt-1">Rating</span>
+                <span className="text-[11px] font-bold text-[#7E6C96] uppercase tracking-wider mt-1">Rating</span>
               </div>
             </div>
 
@@ -427,7 +427,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                   if (onOpenRFQModal) onOpenRFQModal();
                   else setIsRfqModalOpen(true);
                 }}
-                className="bg-[#b90064] text-white px-7 py-3.5 rounded-xl font-bold text-[13.5px] hover:bg-[#8e004b] transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer"
+                className="bg-[#6B2D8C] text-white px-7 py-3.5 rounded-xl font-bold text-[13.5px] hover:bg-[#4A2560] transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer"
               >
                 <Mail className="w-4 h-4" />
                 <span>Request Quote</span>
@@ -444,7 +444,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                     setIsRfqModalOpen(true);
                   }
                 }}
-                className="bg-white/80 border border-[#b90064] text-[#b90064] px-7 py-3.5 rounded-xl font-bold text-[13.5px] hover:bg-[#fde7f3] transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                className="bg-white/80 border border-[#6B2D8C] text-[#6B2D8C] px-7 py-3.5 rounded-xl font-bold text-[13.5px] hover:bg-[#F5EEF8] transition-colors flex items-center justify-center gap-2 cursor-pointer"
               >
                 <MessageSquare className="w-4 h-4" />
                 <span>Message Supplier</span>
@@ -455,7 +455,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                   if (isLoggedIn) onCallSupplier('Aura Labs & Manufacturing');
                   else onOpenAuth();
                 }}
-                className="bg-white border border-[#0050d6] text-[#0050d6] px-7 py-3.5 rounded-xl font-bold text-[13.5px] hover:bg-[#eef4ff] transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                className="bg-white border border-[#6B2D8C] text-[#6B2D8C] px-7 py-3.5 rounded-xl font-bold text-[13.5px] hover:bg-[#eef4ff] transition-colors flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Phone className="w-4 h-4" />
                 <span>{isLoggedIn ? 'Call Directly' : 'View Contact Number'}</span>
@@ -472,23 +472,23 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
 
             {/* Response Time Badge */}
             <div className="mt-5 flex items-center justify-center">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#fdf8f8] border border-[#e0bec6] rounded-full text-[12px] font-bold text-[#b90064] shadow-sm">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FDFBF7] border border-[#D9C3E8] rounded-full text-[12px] font-bold text-[#6B2D8C] shadow-sm">
                 <Clock className="w-3.5 h-3.5" />
                 <span>Usually responds in &lt; 2 hours</span>
               </div>
             </div>
 
             {/* Mobile Contact Visibility Barrier */}
-            <div className="mt-6 pt-6 border-t border-[#f0edec] flex flex-col items-center">
+            <div className="mt-6 pt-6 border-t border-[#F4F0E9] flex flex-col items-center">
               <div className="flex items-center gap-2 mb-2">
-                <Phone className="w-4 h-4 text-[#8c7077]" />
-                <span className="text-lg font-black text-[#1c1b1b] tracking-tight">
+                <Phone className="w-4 h-4 text-[#7E6C96]" />
+                <span className="text-lg font-black text-[#2A0E3F] tracking-tight">
                   {isLoggedIn ? '+91 98201 55443' : '+91 98XXX XXXXX'}
                 </span>
               </div>
               {!isLoggedIn && (
-                <p className="text-[12px] text-[#594047] font-medium">
-                  Verified Business Number. <button onClick={onOpenAuth} className="text-[#b90064] font-bold hover:underline">Login to reveal</button>
+                <p className="text-[12px] text-[#5B4A6E] font-medium">
+                  Verified Business Number. <button onClick={onOpenAuth} className="text-[#6B2D8C] font-bold hover:underline">Login to reveal</button>
                 </p>
               )}
             </div>
@@ -499,101 +499,101 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
       {/* The Aura Process (Narrative Section) */}
       <section className="py-12 md:py-16 px-4 md:px-10 max-w-[1440px] mx-auto">
         <div className="text-center mb-10">
-          <span className="text-[11px] font-extrabold text-[#b90064] uppercase tracking-widest bg-[#fde7f3] px-3 py-1 rounded-full inline-block mb-2">
+          <span className="text-[11px] font-extrabold text-[#6B2D8C] uppercase tracking-widest bg-[#F5EEF8] px-3 py-1 rounded-full inline-block mb-2">
             End-to-End Excellence
           </span>
-          <h2 className="text-2xl md:text-3xl font-bold text-[#1c1b1b] mb-2 tracking-tight">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#2A0E3F] mb-2 tracking-tight">
             The Aura Process
           </h2>
-          <p className="text-[14px] text-[#594047] max-w-lg mx-auto font-medium">
+          <p className="text-[14px] text-[#5B4A6E] max-w-lg mx-auto font-medium">
             Precision engineering and certified standards at every stage of production.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {/* Step 1 */}
-          <div className="bg-white border border-[#e8e8e8] rounded-2xl overflow-hidden hover:shadow-md transition-shadow duration-300 group flex flex-col">
+          <div className="bg-white border border-[#E8DEEF] rounded-2xl overflow-hidden hover:shadow-md transition-shadow duration-300 group flex flex-col">
             <div className="h-52 overflow-hidden relative">
               <img
                 src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=800&q=80"
                 alt="Two cosmetic scientists analyzing formulations in a R&D laboratory"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[11px] font-bold text-[#b90064] border border-[#e8e8e8]">
+              <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[11px] font-bold text-[#6B2D8C] border border-[#E8DEEF]">
                 Phase 01
               </div>
             </div>
             <div className="p-6 flex-1 flex flex-col justify-between">
               <div>
-                <h3 className="text-lg font-bold text-[#1c1b1b] mb-2 flex items-center gap-2">
-                  <FlaskConical className="w-4 h-4 text-[#b90064]" />
+                <h3 className="text-lg font-bold text-[#2A0E3F] mb-2 flex items-center gap-2">
+                  <FlaskConical className="w-4 h-4 text-[#6B2D8C]" />
                   <span>Research &amp; Development</span>
                 </h3>
-                <p className="text-[13px] text-[#594047] leading-relaxed font-normal">
+                <p className="text-[13px] text-[#5B4A6E] leading-relaxed font-normal">
                   Our team of expert cosmetic chemists develop bespoke formulations using cutting-edge active ingredients, ensuring high efficacy and clinical stability.
                 </p>
               </div>
-              <div className="mt-4 pt-3 border-t border-[#f0edec] flex items-center justify-between text-[11.5px] font-semibold text-[#8c7077]">
+              <div className="mt-4 pt-3 border-t border-[#F4F0E9] flex items-center justify-between text-[11.5px] font-semibold text-[#7E6C96]">
                 <span>R&amp;D Turnaround</span>
-                <span className="text-[#b90064] font-bold">3–5 Days</span>
+                <span className="text-[#6B2D8C] font-bold">3–5 Days</span>
               </div>
             </div>
           </div>
 
           {/* Step 2 */}
-          <div className="bg-white border border-[#e8e8e8] rounded-2xl overflow-hidden hover:shadow-md transition-shadow duration-300 group flex flex-col">
+          <div className="bg-white border border-[#E8DEEF] rounded-2xl overflow-hidden hover:shadow-md transition-shadow duration-300 group flex flex-col">
             <div className="h-52 overflow-hidden relative">
               <img
                 src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80"
                 alt="Cleanroom environment showing automated mixing vats"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[11px] font-bold text-[#b90064] border border-[#e8e8e8]">
+              <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[11px] font-bold text-[#6B2D8C] border border-[#E8DEEF]">
                 Phase 02
               </div>
             </div>
             <div className="p-6 flex-1 flex flex-col justify-between">
               <div>
-                <h3 className="text-lg font-bold text-[#1c1b1b] mb-2 flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-[#b90064]" />
+                <h3 className="text-lg font-bold text-[#2A0E3F] mb-2 flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-[#6B2D8C]" />
                   <span>Precision Manufacturing</span>
                 </h3>
-                <p className="text-[13px] text-[#594047] leading-relaxed font-normal">
+                <p className="text-[13px] text-[#5B4A6E] leading-relaxed font-normal">
                   ISO 22716 certified cleanroom facilities equipped with automated mixing lines, guaranteeing consistency across large-scale commercial production runs.
                 </p>
               </div>
-              <div className="mt-4 pt-3 border-t border-[#f0edec] flex items-center justify-between text-[11.5px] font-semibold text-[#8c7077]">
+              <div className="mt-4 pt-3 border-t border-[#F4F0E9] flex items-center justify-between text-[11.5px] font-semibold text-[#7E6C96]">
                 <span>Daily Yield</span>
-                <span className="text-[#00875a] font-bold">50,000+ Units</span>
+                <span className="text-[#059669] font-bold">50,000+ Units</span>
               </div>
             </div>
           </div>
 
           {/* Step 3 */}
-          <div className="bg-white border border-[#e8e8e8] rounded-2xl overflow-hidden hover:shadow-md transition-shadow duration-300 group flex flex-col">
+          <div className="bg-white border border-[#E8DEEF] rounded-2xl overflow-hidden hover:shadow-md transition-shadow duration-300 group flex flex-col">
             <div className="h-52 overflow-hidden relative">
               <img
                 src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80"
                 alt="Automated packaging line filling luxury serum bottles"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[11px] font-bold text-[#b90064] border border-[#e8e8e8]">
+              <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[11px] font-bold text-[#6B2D8C] border border-[#E8DEEF]">
                 Phase 03
               </div>
             </div>
             <div className="p-6 flex-1 flex flex-col justify-between">
               <div>
-                <h3 className="text-lg font-bold text-[#1c1b1b] mb-2 flex items-center gap-2">
-                  <PackageCheck className="w-4 h-4 text-[#b90064]" />
+                <h3 className="text-lg font-bold text-[#2A0E3F] mb-2 flex items-center gap-2">
+                  <PackageCheck className="w-4 h-4 text-[#6B2D8C]" />
                   <span>Premium Packaging</span>
                 </h3>
-                <p className="text-[13px] text-[#594047] leading-relaxed font-normal">
+                <p className="text-[13px] text-[#5B4A6E] leading-relaxed font-normal">
                   We source and assemble luxury packaging components, from frosted glass droppers to sustainable airless pumps, ensuring an unboxing experience matching global luxury standards.
                 </p>
               </div>
-              <div className="mt-4 pt-3 border-t border-[#f0edec] flex items-center justify-between text-[11.5px] font-semibold text-[#8c7077]">
+              <div className="mt-4 pt-3 border-t border-[#F4F0E9] flex items-center justify-between text-[11.5px] font-semibold text-[#7E6C96]">
                 <span>Defect Tolerance</span>
-                <span className="text-[#0050d6] font-bold">&lt; 0.01%</span>
+                <span className="text-[#6B2D8C] font-bold">&lt; 0.01%</span>
               </div>
             </div>
           </div>
@@ -602,48 +602,48 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
 
       {/* Trade & Export Specifications Section */}
       <section className="pb-12 md:pb-16 px-4 md:px-10 max-w-[1440px] mx-auto">
-        <div className="bg-white rounded-2xl p-6 md:p-10 border border-[#e8e8e8] shadow-xs">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#f0edec]">
-            <Truck className="w-5 h-5 text-[#b90064]" />
-            <h2 className="text-xl font-bold text-[#1c1b1b]">Trade &amp; Export Specifications</h2>
+        <div className="bg-white rounded-2xl p-6 md:p-10 border border-[#E8DEEF] shadow-xs">
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#F4F0E9]">
+            <Truck className="w-5 h-5 text-[#6B2D8C]" />
+            <h2 className="text-xl font-bold text-[#2A0E3F]">Trade &amp; Export Specifications</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             <div className="flex flex-col gap-1">
-              <span className="text-[10.5px] font-bold text-[#8c7077] uppercase tracking-wider">
+              <span className="text-[10.5px] font-bold text-[#7E6C96] uppercase tracking-wider">
                 Accepted Delivery Terms
               </span>
-              <span className="text-base font-bold text-[#1c1b1b]">FOB, CIF, EXW, DDP</span>
+              <span className="text-base font-bold text-[#2A0E3F]">FOB, CIF, EXW, DDP</span>
             </div>
 
             <div className="flex flex-col gap-1">
-              <span className="text-[10.5px] font-bold text-[#8c7077] uppercase tracking-wider">
+              <span className="text-[10.5px] font-bold text-[#7E6C96] uppercase tracking-wider">
                 Standard Production Lead Time
               </span>
-              <span className="text-base font-bold text-[#1c1b1b]">7–15 Business Days</span>
+              <span className="text-base font-bold text-[#2A0E3F]">7–15 Business Days</span>
             </div>
 
             <div className="flex flex-col gap-1">
-              <span className="text-[10.5px] font-bold text-[#8c7077] uppercase tracking-wider">
+              <span className="text-[10.5px] font-bold text-[#7E6C96] uppercase tracking-wider">
                 Accepted Payment Modes
               </span>
-              <span className="text-base font-bold text-[#1c1b1b]">Bank Transfer (T/T), L/C, Advance</span>
+              <span className="text-base font-bold text-[#2A0E3F]">Bank Transfer (T/T), L/C, Advance</span>
             </div>
 
             <div className="flex flex-col gap-1 lg:col-span-2">
-              <span className="text-[10.5px] font-bold text-[#8c7077] uppercase tracking-wider">
+              <span className="text-[10.5px] font-bold text-[#7E6C96] uppercase tracking-wider">
                 Customization Capabilities
               </span>
-              <span className="text-base font-bold text-[#1c1b1b]">
+              <span className="text-base font-bold text-[#2A0E3F]">
                 OEM Custom Formulation, Custom Color Matching, Private Labeling, Sustainable Packaging
               </span>
             </div>
 
             <div className="flex flex-col gap-1">
-              <span className="text-[10.5px] font-bold text-[#8c7077] uppercase tracking-wider">
+              <span className="text-[10.5px] font-bold text-[#7E6C96] uppercase tracking-wider">
                 Sample Lead Time
               </span>
-              <span className="text-base font-bold text-[#b90064]">3–5 Days (Express Dispatch)</span>
+              <span className="text-base font-bold text-[#6B2D8C]">3–5 Days (Express Dispatch)</span>
             </div>
           </div>
         </div>
@@ -651,18 +651,18 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
 
       {/* Compliance & Audit Reports Hub Section */}
       <section id="compliance-vault" className="pb-12 md:pb-16 px-4 md:px-10 max-w-[1440px] mx-auto">
-        <div className="bg-white rounded-3xl p-6 md:p-10 border border-[#e8e8e8] shadow-sm">
+        <div className="bg-white rounded-3xl p-6 md:p-10 border border-[#E8DEEF] shadow-sm">
           
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4 pb-6 border-b border-[#f0edec]">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4 pb-6 border-b border-[#F4F0E9]">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#e6f4ea] text-[#00875a] font-bold text-[11px] uppercase tracking-wider mb-2">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#00875a]" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D1FAE5] text-[#059669] font-bold text-[11px] uppercase tracking-wider mb-2">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#059669]" />
                 <span>NEXORA VERIFIED TRUST VAULT</span>
               </div>
-              <h2 className="text-2xl font-bold text-[#1c1b1b] tracking-tight">
+              <h2 className="text-2xl font-bold text-[#2A0E3F] tracking-tight">
                 Quality Certifications &amp; Lab Reports
               </h2>
-              <p className="text-[13.5px] text-[#594047] font-medium mt-1">
+              <p className="text-[13.5px] text-[#5B4A6E] font-medium mt-1">
                 View or download authentic audited certificates (ISO, WHO-GMP, US FDA) and batch-wise Certificates of Analysis (COA).
               </p>
             </div>
@@ -675,8 +675,8 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                   onClick={() => setActiveComplianceCategory(cat)}
                   className={`px-4 py-2 rounded-xl text-[12px] font-bold transition-all cursor-pointer ${
                     activeComplianceCategory === cat
-                      ? 'bg-[#00875a] text-white shadow-xs'
-                      : 'bg-[#fcf9f8] text-[#594047] hover:bg-[#e6f4ea] hover:text-[#00875a] border border-[#e8e8e8]'
+                      ? 'bg-[#059669] text-white shadow-xs'
+                      : 'bg-[#FDFBF7] text-[#5B4A6E] hover:bg-[#D1FAE5] hover:text-[#059669] border border-[#E8DEEF]'
                   }`}
                 >
                   {cat}
@@ -692,42 +692,42 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
               .map((rep) => (
                 <div
                   key={rep.id}
-                  className="bg-[#fcf9f8] border border-[#e8e8e8] hover:border-[#00875a] rounded-2xl p-6 transition-all duration-300 hover:shadow-md flex flex-col justify-between group relative overflow-hidden"
+                  className="bg-[#FDFBF7] border border-[#E8DEEF] hover:border-[#059669] rounded-2xl p-6 transition-all duration-300 hover:shadow-md flex flex-col justify-between group relative overflow-hidden"
                 >
                   {/* Subtle green aura for local certificates */}
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-[#00875a]/3 rounded-full blur-xl pointer-events-none"></div>
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-[#059669]/3 rounded-full blur-xl pointer-events-none"></div>
 
                   <div>
                     <div className="flex justify-between items-start mb-3">
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider bg-[#e6f4ea] text-[#00875a] px-2.5 py-1 rounded-md border border-[#00875a]/20">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider bg-[#D1FAE5] text-[#059669] px-2.5 py-1 rounded-md border border-[#059669]/20">
                         {rep.type}
                       </span>
-                      <span className="text-[10.5px] font-bold text-[#00875a] flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#00875a]" />
+                      <span className="text-[10.5px] font-bold text-[#059669] flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#059669]" />
                         {rep.status}
                       </span>
                     </div>
 
-                    <h4 className="text-[15px] font-bold text-[#1c1b1b] mb-2 leading-snug group-hover:text-[#00875a] transition-colors line-clamp-2">
+                    <h4 className="text-[15px] font-bold text-[#2A0E3F] mb-2 leading-snug group-hover:text-[#059669] transition-colors line-clamp-2">
                       {rep.title}
                     </h4>
 
-                    <div className="text-[11.5px] text-[#8c7077] space-y-1 mb-3 font-medium">
-                      <p>Issuing Body: <span className="text-[#1c1b1b] font-bold">{rep.issuedBy}</span></p>
-                      <p>Accreditation #: <span className="text-[#0050d6] font-mono">{rep.accreditationNumber}</span></p>
+                    <div className="text-[11.5px] text-[#7E6C96] space-y-1 mb-3 font-medium">
+                      <p>Issuing Body: <span className="text-[#2A0E3F] font-bold">{rep.issuedBy}</span></p>
+                      <p>Accreditation #: <span className="text-[#6B2D8C] font-mono">{rep.accreditationNumber}</span></p>
                       <p>Valid: {rep.issueDate} {rep.validUntil ? `— ${rep.validUntil}` : ''}</p>
                     </div>
 
-                    <p className="text-[12.5px] text-[#594047] mb-5 leading-relaxed bg-white p-3 rounded-xl border border-[#e8e8e8] min-h-[72px] line-clamp-3">
+                    <p className="text-[12.5px] text-[#5B4A6E] mb-5 leading-relaxed bg-white p-3 rounded-xl border border-[#E8DEEF] min-h-[72px] line-clamp-3">
                       {rep.summary}
                     </p>
                   </div>
 
-                  <div className="pt-4 border-t border-[#e8e8e8] space-y-3">
-                    <div className="flex justify-between items-center text-[11px] font-bold text-[#8c7077]">
+                  <div className="pt-4 border-t border-[#E8DEEF] space-y-3">
+                    <div className="flex justify-between items-center text-[11px] font-bold text-[#7E6C96]">
                       <span>PDF ({rep.fileSize})</span>
-                      <span className="text-[#00875a] bg-[#e6f4ea]/80 px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
-                        <Lock className="w-3 h-3 text-[#00875a]" /> Secure Vault
+                      <span className="text-[#059669] bg-[#D1FAE5]/80 px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
+                        <Lock className="w-3 h-3 text-[#059669]" /> Secure Vault
                       </span>
                     </div>
 
@@ -738,7 +738,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                           setActivePreviewTab('Document');
                           setPreviewZoom(1);
                         }}
-                        className="bg-white border border-[#00875a] hover:bg-[#e6f4ea]/30 text-[#00875a] text-[11.5px] font-bold py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer active:scale-98"
+                        className="bg-white border border-[#059669] hover:bg-[#D1FAE5]/30 text-[#059669] text-[11.5px] font-bold py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer active:scale-98"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         <span>View Scanned</span>
@@ -750,16 +750,16 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                           setActivePreviewTab('TrustLedger');
                           setPreviewZoom(1);
                         }}
-                        className="bg-white border border-[#e8e8e8] hover:bg-[#f0edec] text-[#594047] text-[11.5px] font-bold py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-98"
+                        className="bg-white border border-[#E8DEEF] hover:bg-[#F4F0E9] text-[#5B4A6E] text-[11.5px] font-bold py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-98"
                       >
-                        <ShieldCheck className="w-3.5 h-3.5 text-[#00875a]" />
+                        <ShieldCheck className="w-3.5 h-3.5 text-[#059669]" />
                         <span>Verify Ledger</span>
                       </button>
                     </div>
 
                     <button
                       onClick={() => showToast(`Downloaded ${rep.title} (PDF)...`)}
-                      className="w-full bg-[#00875a] hover:bg-[#006e49] text-white text-[12px] font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-98"
+                      className="w-full bg-[#059669] hover:bg-[#006e49] text-white text-[12px] font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-98"
                     >
                       <Download className="w-3.5 h-3.5" />
                       <span>Download Certified PDF</span>
@@ -770,14 +770,14 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
           </div>
 
           {/* 🧪 B2B Lab Test Report & Batch-Wise Attachment Portal */}
-          <div className="border-t border-[#f0edec] pt-10 mt-6">
+          <div className="border-t border-[#F4F0E9] pt-10 mt-6">
             <div className="flex items-center gap-2.5 mb-6">
-              <FlaskConical className="w-6 h-6 text-[#b90064] fill-[#fde7f3]" />
+              <FlaskConical className="w-6 h-6 text-[#6B2D8C] fill-[#F5EEF8]" />
               <div>
-                <h3 className="text-lg font-bold text-[#1c1b1b]">
+                <h3 className="text-lg font-bold text-[#2A0E3F]">
                   Formulation &amp; Batch-Wise Lab Testing Vault
                 </h3>
-                <p className="text-[13px] text-[#594047] font-medium">
+                <p className="text-[13px] text-[#5B4A6E] font-medium">
                   Add batch-specific stability, heavy metal analysis, or microbiological challenge test reports to maintain absolute B2B compliance logs.
                 </p>
               </div>
@@ -786,18 +786,18 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               
               {/* Form & Upload Area (Left 5-columns) */}
-              <div className="lg:col-span-5 bg-[#fcf9f8] border border-[#e8e8e8] p-5 md:p-6 rounded-2xl space-y-4">
-                <span className="text-[11px] font-extrabold uppercase text-[#b90064] tracking-widest bg-[#fde7f3] px-2.5 py-1 rounded-md inline-block">
+              <div className="lg:col-span-5 bg-[#FDFBF7] border border-[#E8DEEF] p-5 md:p-6 rounded-2xl space-y-4">
+                <span className="text-[11px] font-extrabold uppercase text-[#6B2D8C] tracking-widest bg-[#F5EEF8] px-2.5 py-1 rounded-md inline-block">
                   Attachment Portal (Supplier/Brand Action)
                 </span>
                 
                 <div className="space-y-3.5">
                   <div className="space-y-1">
-                    <label className="block text-[12px] font-bold text-[#1c1b1b]">Formulation / Product Name</label>
+                    <label className="block text-[12px] font-bold text-[#2A0E3F]">Formulation / Product Name</label>
                     <select
                       value={attachProductName}
                       onChange={(e) => setAttachProductName(e.target.value)}
-                      className="w-full rounded-xl border border-[#e8e8e8] bg-white text-[13px] p-2.5 focus:ring-1 focus:ring-[#b90064] font-medium"
+                      className="w-full rounded-xl border border-[#E8DEEF] bg-white text-[13px] p-2.5 focus:ring-1 focus:ring-[#C9A961]/30 font-medium"
                     >
                       <option>Botanical Peptide Barrier Cream</option>
                       <option>Professional Retinol 1% Serum Base</option>
@@ -809,33 +809,33 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="block text-[12px] font-bold text-[#1c1b1b]">Batch Number</label>
+                      <label className="block text-[12px] font-bold text-[#2A0E3F]">Batch Number</label>
                       <input
                         type="text"
                         value={attachBatchNo}
                         onChange={(e) => setAttachBatchNo(e.target.value)}
                         placeholder="e.g., B-RET-2026-X"
-                        className="w-full rounded-xl border border-[#e8e8e8] bg-white text-[13px] p-2.5 focus:ring-1 focus:ring-[#b90064] font-medium text-[#1c1b1b]"
+                        className="w-full rounded-xl border border-[#E8DEEF] bg-white text-[13px] p-2.5 focus:ring-1 focus:ring-[#C9A961]/30 font-medium text-[#2A0E3F]"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="block text-[12px] font-bold text-[#1c1b1b]">Accredited Testing Lab</label>
+                      <label className="block text-[12px] font-bold text-[#2A0E3F]">Accredited Testing Lab</label>
                       <input
                         type="text"
                         value={attachLabName}
                         onChange={(e) => setAttachLabName(e.target.value)}
                         placeholder="e.g., SGS India Laboratories"
-                        className="w-full rounded-xl border border-[#e8e8e8] bg-white text-[13px] p-2.5 focus:ring-1 focus:ring-[#b90064] font-medium text-[#1c1b1b]"
+                        className="w-full rounded-xl border border-[#E8DEEF] bg-white text-[13px] p-2.5 focus:ring-1 focus:ring-[#C9A961]/30 font-medium text-[#2A0E3F]"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="block text-[12px] font-bold text-[#1c1b1b]">Laboratory Report / Analysis Type</label>
+                    <label className="block text-[12px] font-bold text-[#2A0E3F]">Laboratory Report / Analysis Type</label>
                     <select
                       value={attachLabType}
                       onChange={(e) => setAttachLabType(e.target.value)}
-                      className="w-full rounded-xl border border-[#e8e8e8] bg-white text-[13px] p-2.5 focus:ring-1 focus:ring-[#b90064] font-medium"
+                      className="w-full rounded-xl border border-[#E8DEEF] bg-white text-[13px] p-2.5 focus:ring-1 focus:ring-[#C9A961]/30 font-medium"
                     >
                       <option value="Stability Testing">Stability Testing Report (Accelerated Temp &amp; Shelf Life)</option>
                       <option value="Heavy Metal Analysis">Heavy Metal Assay (ICP-MS Spectrum Analysis)</option>
@@ -846,7 +846,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
 
                   {/* Drag-and-Drop Zone */}
                   <div className="space-y-1">
-                    <label className="block text-[12px] font-bold text-[#1c1b1b]">Scanned Laboratory Document Attachment</label>
+                    <label className="block text-[12px] font-bold text-[#2A0E3F]">Scanned Laboratory Document Attachment</label>
                     
                     {!attachedFileName && !isAttaching ? (
                       <div
@@ -871,38 +871,38 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                             }
                           }, 250);
                         }}
-                        className="border-2 border-dashed border-[#e8e8e8] hover:border-[#b90064] hover:bg-[#fde7f3]/10 bg-white transition-colors rounded-xl p-5 text-center cursor-pointer flex flex-col items-center justify-center min-h-[110px]"
+                        className="border-2 border-dashed border-[#E8DEEF] hover:border-[#6B2D8C] hover:bg-[#F5EEF8]/10 bg-white transition-colors rounded-xl p-5 text-center cursor-pointer flex flex-col items-center justify-center min-h-[110px]"
                       >
-                        <UploadCloud className="w-7 h-7 text-[#b90064] mb-1" />
-                        <span className="text-[12.5px] font-bold text-[#1c1b1b]">Click to attach scanned lab PDF</span>
-                        <span className="text-[11px] text-[#8c7077] mt-0.5">Stability, Heavy Metals, Challenge results (Max 15MB)</span>
+                        <UploadCloud className="w-7 h-7 text-[#6B2D8C] mb-1" />
+                        <span className="text-[12.5px] font-bold text-[#2A0E3F]">Click to attach scanned lab PDF</span>
+                        <span className="text-[11px] text-[#7E6C96] mt-0.5">Stability, Heavy Metals, Challenge results (Max 15MB)</span>
                       </div>
                     ) : isAttaching ? (
-                      <div className="bg-white border border-[#e8e8e8] rounded-xl p-4 flex flex-col justify-center min-h-[110px]">
-                        <div className="flex justify-between items-center mb-1 text-[12px] font-bold text-[#1c1b1b]">
+                      <div className="bg-white border border-[#E8DEEF] rounded-xl p-4 flex flex-col justify-center min-h-[110px]">
+                        <div className="flex justify-between items-center mb-1 text-[12px] font-bold text-[#2A0E3F]">
                           <span className="flex items-center gap-1.5">
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#b90064]" />
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#6B2D8C]" />
                             Scanning and Verifying Certificate Integrity...
                           </span>
                           <span>{attachProgress}%</span>
                         </div>
-                        <div className="w-full bg-[#e8e8e8] h-2 rounded-full overflow-hidden">
+                        <div className="w-full bg-[#E8DEEF] h-2 rounded-full overflow-hidden">
                           <div
-                            className="bg-[#b90064] h-2 transition-all duration-300 rounded-full"
+                            className="bg-[#6B2D8C] h-2 transition-all duration-300 rounded-full"
                             style={{ width: `${attachProgress}%` }}
                           ></div>
                         </div>
-                        <span className="text-[10px] text-[#8c7077] mt-1.5 font-medium">Extracting cryptographic registrar seal, CDSCO logs, and chemical batch assays...</span>
+                        <span className="text-[10px] text-[#7E6C96] mt-1.5 font-medium">Extracting cryptographic registrar seal, CDSCO logs, and chemical batch assays...</span>
                       </div>
                     ) : (
-                      <div className="bg-[#e6f4ea] border border-[#a3cfb1] rounded-xl p-3 flex items-center justify-between">
+                      <div className="bg-[#D1FAE5] border border-[#a3cfb1] rounded-xl p-3 flex items-center justify-between">
                         <div className="flex items-center gap-2 overflow-hidden mr-2">
-                          <div className="w-8 h-8 rounded bg-[#a3cfb1]/30 text-[#137333] flex items-center justify-center shrink-0">
+                          <div className="w-8 h-8 rounded bg-[#a3cfb1]/30 text-[#047857] flex items-center justify-center shrink-0">
                             <FileText className="w-4 h-4" />
                           </div>
                           <div className="overflow-hidden">
-                            <div className="text-[12px] font-bold text-[#137333] truncate">{attachedFileName}</div>
-                            <div className="text-[10px] text-[#137333]/80 font-semibold uppercase">Cryptographically Checked &amp; Cleared</div>
+                            <div className="text-[12px] font-bold text-[#047857] truncate">{attachedFileName}</div>
+                            <div className="text-[10px] text-[#047857]/80 font-semibold uppercase">Cryptographically Checked &amp; Cleared</div>
                           </div>
                         </div>
                         <button
@@ -962,7 +962,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                       setAttachBatchNo('');
                       showToast(`Lab Test Report attached to ${attachProductName} successfully!`);
                     }}
-                    className="w-full bg-[#b90064] hover:bg-[#8e004b] text-white font-bold text-[13px] py-3 rounded-xl flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all active:scale-98"
+                    className="w-full bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-bold text-[13px] py-3 rounded-xl flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all active:scale-98"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                     <span>Attach Lab Report to Batch Ledger</span>
@@ -972,42 +972,42 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
 
               {/* Live Laboratory Batch Reports Ledger (Right 7-columns) */}
               <div className="lg:col-span-7 space-y-4">
-                <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-[#e8e8e8] shadow-2xs">
-                  <span className="text-[12px] font-bold text-[#1c1b1b] flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#00875a] animate-pulse"></span>
+                <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-[#E8DEEF] shadow-2xs">
+                  <span className="text-[12px] font-bold text-[#2A0E3F] flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#059669] animate-pulse"></span>
                     Live Batch Compliance Log ({reportsList.filter(r => r.type === 'Lab Tests').length} Active Reports)
                   </span>
-                  <span className="text-[11px] text-[#8c7077] font-semibold">CDSCO &amp; NABL Standard Traceability</span>
+                  <span className="text-[11px] text-[#7E6C96] font-semibold">CDSCO &amp; NABL Standard Traceability</span>
                 </div>
 
-                <div className="bg-white border border-[#e8e8e8] rounded-2xl overflow-hidden shadow-2xs">
+                <div className="bg-white border border-[#E8DEEF] rounded-2xl overflow-hidden shadow-2xs">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="bg-[#fcf9f8] border-b border-[#e8e8e8] text-[11px] font-extrabold text-[#8c7077] uppercase tracking-wider">
+                        <tr className="bg-[#FDFBF7] border-b border-[#E8DEEF] text-[11px] font-extrabold text-[#7E6C96] uppercase tracking-wider">
                           <th className="py-3 px-4">Batch / Product</th>
                           <th className="py-3 px-4">Lab / Accreditation</th>
                           <th className="py-3 px-4">Test Type</th>
                           <th className="py-3 px-4 text-right">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#f0edec] text-[12.5px]">
+                      <tbody className="divide-y divide-[#F4F0E9] text-[12.5px]">
                         {reportsList
                           .filter((rep) => rep.type === 'Lab Tests')
                           .map((rep) => (
-                            <tr key={rep.id} className="hover:bg-[#fdf8f8]/40 transition-colors">
-                              <td className="py-3.5 px-4 font-medium text-[#1c1b1b]">
-                                <div className="font-bold text-[#1c1b1b]">{rep.validUntil?.startsWith('Batch') ? rep.validUntil : `Batch AL-24`}</div>
-                                <div className="text-[11px] text-[#594047] truncate max-w-[180px]" title={rep.title}>
+                            <tr key={rep.id} className="hover:bg-[#FDFBF7]/40 transition-colors">
+                              <td className="py-3.5 px-4 font-medium text-[#2A0E3F]">
+                                <div className="font-bold text-[#2A0E3F]">{rep.validUntil?.startsWith('Batch') ? rep.validUntil : `Batch AL-24`}</div>
+                                <div className="text-[11px] text-[#5B4A6E] truncate max-w-[180px]" title={rep.title}>
                                   {rep.title.replace('ICP-MS Heavy Metals & USP <61> Microbiological Test Report', 'Heavy Metals & Microbiological').replace('Certificate of Analysis (COA) & Accelerated Stability Study', 'COA & Stability')}
                                 </div>
                               </td>
-                              <td className="py-3.5 px-4 text-[#594047]">
-                                <div className="font-semibold text-[#1c1b1b]">{rep.issuedBy}</div>
-                                <div className="text-[10.5px] font-mono text-[#0050d6]">{rep.accreditationNumber}</div>
+                              <td className="py-3.5 px-4 text-[#5B4A6E]">
+                                <div className="font-semibold text-[#2A0E3F]">{rep.issuedBy}</div>
+                                <div className="text-[10.5px] font-mono text-[#6B2D8C]">{rep.accreditationNumber}</div>
                               </td>
                               <td className="py-3.5 px-4">
-                                <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-[#e6f4ea] text-[#137333] border border-[#a3cfb1]">
+                                <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-[#D1FAE5] text-[#047857] border border-[#a3cfb1]">
                                   {rep.docType || 'Lab Report'}
                                 </span>
                               </td>
@@ -1019,14 +1019,14 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                                       setActivePreviewTab('Document');
                                       setPreviewZoom(1);
                                     }}
-                                    className="p-1.5 bg-[#fde7f3] text-[#b90064] hover:bg-[#b90064] hover:text-white rounded-lg transition-all cursor-pointer"
+                                    className="p-1.5 bg-[#F5EEF8] text-[#6B2D8C] hover:bg-[#6B2D8C] hover:text-white rounded-lg transition-all cursor-pointer"
                                     title="Preview Scanned Lab Sheet"
                                   >
                                     <Eye className="w-4 h-4" />
                                   </button>
                                   <button
                                     onClick={() => showToast(`Downloading ${rep.title}...`)}
-                                    className="p-1.5 bg-[#f0edec] text-[#594047] hover:bg-[#1c1b1b] hover:text-white rounded-lg transition-all cursor-pointer"
+                                    className="p-1.5 bg-[#F4F0E9] text-[#5B4A6E] hover:bg-[#2A0E3F] hover:text-white rounded-lg transition-all cursor-pointer"
                                     title="Download PDF"
                                   >
                                     <Download className="w-4 h-4" />
@@ -1060,16 +1060,16 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
       </section>
 
       {/* Featured Formulations / Product Catalog Section */}
-      <section className="py-12 md:py-16 px-4 md:px-10 max-w-[1440px] mx-auto bg-[#fcf9f8] rounded-3xl mb-16 border border-[#e8e8e8]">
+      <section className="py-12 md:py-16 px-4 md:px-10 max-w-[1440px] mx-auto bg-[#FDFBF7] rounded-3xl mb-16 border border-[#E8DEEF]">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
           <div>
-            <span className="text-[11px] font-extrabold text-[#b90064] uppercase tracking-widest bg-[#fde7f3] px-3 py-1 rounded-full inline-block mb-2">
+            <span className="text-[11px] font-extrabold text-[#6B2D8C] uppercase tracking-widest bg-[#F5EEF8] px-3 py-1 rounded-full inline-block mb-2">
               Ready to Label
             </span>
-            <h2 className="text-2xl font-bold text-[#1c1b1b] tracking-tight">
+            <h2 className="text-2xl font-bold text-[#2A0E3F] tracking-tight">
               Featured Formulations
             </h2>
-            <p className="text-[13.5px] text-[#594047] font-medium mt-1">
+            <p className="text-[13.5px] text-[#5B4A6E] font-medium mt-1">
               High-demand base formulas available for immediate OEM customization.
             </p>
           </div>
@@ -1077,7 +1077,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsDocModalOpen(true)}
-              className="text-[#b90064] font-bold text-[13px] hover:underline flex items-center gap-1.5 cursor-pointer"
+              className="text-[#6B2D8C] font-bold text-[13px] hover:underline flex items-center gap-1.5 cursor-pointer"
             >
               <Download className="w-4 h-4" />
               <span>Download Product Catalog</span>
@@ -1088,8 +1088,8 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
         {/* Formulations Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Card 1 */}
-          <div className="bg-white rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all duration-300 border border-[#e8e8e8] flex flex-col justify-between group">
-            <div className="aspect-square bg-[#fdf8f8] overflow-hidden relative p-3">
+          <div className="bg-white rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all duration-300 border border-[#E8DEEF] flex flex-col justify-between group">
+            <div className="aspect-square bg-[#FDFBF7] overflow-hidden relative p-3">
               <img
                 src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80"
                 alt="Radiance Vit-C Serum"
@@ -1097,30 +1097,30 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
               />
               <button
                 onClick={() => setIsBookmarked(!isBookmarked)}
-                className="absolute top-5 right-5 bg-white/90 rounded-full p-2 shadow-xs hover:bg-[#fde7f3] transition-colors"
+                className="absolute top-5 right-5 bg-white/90 rounded-full p-2 shadow-xs hover:bg-[#F5EEF8] transition-colors"
               >
-                <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-[#b90064] text-[#b90064]' : 'text-[#8c7077]'}`} />
+                <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-[#6B2D8C] text-[#6B2D8C]' : 'text-[#7E6C96]'}`} />
               </button>
             </div>
 
             <div className="p-5 flex-1 flex flex-col justify-between">
               <div>
-                <span className="text-[10.5px] font-bold text-[#8c7077] uppercase tracking-wider block mb-1">
+                <span className="text-[10.5px] font-bold text-[#7E6C96] uppercase tracking-wider block mb-1">
                   Skincare • Serum
                 </span>
-                <h4 className="text-base font-bold text-[#1c1b1b] mb-1">Radiance Vit-C Serum</h4>
-                <p className="text-[12.5px] text-[#594047] mb-4 line-clamp-2">
+                <h4 className="text-base font-bold text-[#2A0E3F] mb-1">Radiance Vit-C Serum</h4>
+                <p className="text-[12.5px] text-[#5B4A6E] mb-4 line-clamp-2">
                   15% L-Ascorbic Acid + Hyaluronic Acid &amp; Ferulic. Shelf Life: 24 Months.
                 </p>
 
-                <div className="space-y-1.5 mb-4 bg-[#fcf9f8] p-3 rounded-xl border border-[#e8e8e8] text-[12px]">
+                <div className="space-y-1.5 mb-4 bg-[#FDFBF7] p-3 rounded-xl border border-[#E8DEEF] text-[12px]">
                   <div className="flex justify-between">
-                    <span className="text-[#8c7077]">500–1K pcs</span>
-                    <span className="font-bold text-[#b90064]">₹350 / unit</span>
+                    <span className="text-[#7E6C96]">500–1K pcs</span>
+                    <span className="font-bold text-[#6B2D8C]">₹350 / unit</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#8c7077]">1K–5K pcs</span>
-                    <span className="font-bold text-[#b90064]">₹280 / unit</span>
+                    <span className="text-[#7E6C96]">1K–5K pcs</span>
+                    <span className="font-bold text-[#6B2D8C]">₹280 / unit</span>
                   </div>
                 </div>
               </div>
@@ -1138,24 +1138,24 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                       setIsRfqModalOpen(true);
                     }
                   }}
-                  className="flex-1 bg-[#b90064] hover:bg-[#8e004b] text-white py-2.5 rounded-xl font-bold text-[12.5px] transition-colors cursor-pointer"
+                  className="flex-1 bg-[#6B2D8C] hover:bg-[#4A2560] text-white py-2.5 rounded-xl font-bold text-[12.5px] transition-colors cursor-pointer"
                 >
                   Send RFQ
                 </button>
                 <button
                   onClick={() => showToast('Sample formula specs copied!')}
-                  className="px-3 py-2.5 border border-[#e8e8e8] rounded-xl text-[#1c1b1b] hover:bg-[#f0edec] transition-colors cursor-pointer"
+                  className="px-3 py-2.5 border border-[#E8DEEF] rounded-xl text-[#2A0E3F] hover:bg-[#F4F0E9] transition-colors cursor-pointer"
                   title="View Formula Specs"
                 >
-                  <FlaskConical className="w-4 h-4 text-[#b90064]" />
+                  <FlaskConical className="w-4 h-4 text-[#6B2D8C]" />
                 </button>
               </div>
             </div>
           </div>
 
           {/* Card 2 */}
-          <div className="bg-white rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all duration-300 border border-[#e8e8e8] flex flex-col justify-between group">
-            <div className="aspect-square bg-[#fdf8f8] overflow-hidden relative p-3">
+          <div className="bg-white rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all duration-300 border border-[#E8DEEF] flex flex-col justify-between group">
+            <div className="aspect-square bg-[#FDFBF7] overflow-hidden relative p-3">
               <img
                 src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=600&q=80"
                 alt="Lumina Radiance Foundation"
@@ -1165,22 +1165,22 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
 
             <div className="p-5 flex-1 flex flex-col justify-between">
               <div>
-                <span className="text-[10.5px] font-bold text-[#8c7077] uppercase tracking-wider block mb-1">
+                <span className="text-[10.5px] font-bold text-[#7E6C96] uppercase tracking-wider block mb-1">
                   Cosmetics • Complexion
                 </span>
-                <h4 className="text-base font-bold text-[#1c1b1b] mb-1">Lumina Foundation</h4>
-                <p className="text-[12.5px] text-[#594047] mb-4 line-clamp-2">
+                <h4 className="text-base font-bold text-[#2A0E3F] mb-1">Lumina Foundation</h4>
+                <p className="text-[12.5px] text-[#5B4A6E] mb-4 line-clamp-2">
                   SPF 30 / PA+++. 40 Inclusive Shade range. Sweat-resistant lightweight coverage.
                 </p>
 
-                <div className="space-y-1.5 mb-4 bg-[#fcf9f8] p-3 rounded-xl border border-[#e8e8e8] text-[12px]">
+                <div className="space-y-1.5 mb-4 bg-[#FDFBF7] p-3 rounded-xl border border-[#E8DEEF] text-[12px]">
                   <div className="flex justify-between">
-                    <span className="text-[#8c7077]">500–1K pcs</span>
-                    <span className="font-bold text-[#b90064]">₹420 / unit</span>
+                    <span className="text-[#7E6C96]">500–1K pcs</span>
+                    <span className="font-bold text-[#6B2D8C]">₹420 / unit</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#8c7077]">1K+ pcs</span>
-                    <span className="font-bold text-[#b90064]">₹380 / unit</span>
+                    <span className="text-[#7E6C96]">1K+ pcs</span>
+                    <span className="font-bold text-[#6B2D8C]">₹380 / unit</span>
                   </div>
                 </div>
               </div>
@@ -1197,23 +1197,23 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                       setIsRfqModalOpen(true);
                     }
                   }}
-                  className="flex-1 bg-[#b90064] hover:bg-[#8e004b] text-white py-2.5 rounded-xl font-bold text-[12.5px] transition-colors cursor-pointer"
+                  className="flex-1 bg-[#6B2D8C] hover:bg-[#4A2560] text-white py-2.5 rounded-xl font-bold text-[12.5px] transition-colors cursor-pointer"
                 >
                   Send RFQ
                 </button>
                 <button
                   onClick={() => showToast('Sample formula specs copied!')}
-                  className="px-3 py-2.5 border border-[#e8e8e8] rounded-xl text-[#1c1b1b] hover:bg-[#f0edec] transition-colors cursor-pointer"
+                  className="px-3 py-2.5 border border-[#E8DEEF] rounded-xl text-[#2A0E3F] hover:bg-[#F4F0E9] transition-colors cursor-pointer"
                 >
-                  <FlaskConical className="w-4 h-4 text-[#b90064]" />
+                  <FlaskConical className="w-4 h-4 text-[#6B2D8C]" />
                 </button>
               </div>
             </div>
           </div>
 
           {/* Card 3 */}
-          <div className="bg-white rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all duration-300 border border-[#e8e8e8] flex flex-col justify-between group">
-            <div className="aspect-square bg-[#fdf8f8] overflow-hidden relative p-3">
+          <div className="bg-white rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all duration-300 border border-[#E8DEEF] flex flex-col justify-between group">
+            <div className="aspect-square bg-[#FDFBF7] overflow-hidden relative p-3">
               <img
                 src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80"
                 alt="Restorative Keratin Mask"
@@ -1223,22 +1223,22 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
 
             <div className="p-5 flex-1 flex flex-col justify-between">
               <div>
-                <span className="text-[10.5px] font-bold text-[#8c7077] uppercase tracking-wider block mb-1">
+                <span className="text-[10.5px] font-bold text-[#7E6C96] uppercase tracking-wider block mb-1">
                   Haircare • Treatment
                 </span>
-                <h4 className="text-base font-bold text-[#1c1b1b] mb-1">Keratin Repair Mask</h4>
-                <p className="text-[12.5px] text-[#594047] mb-4 line-clamp-2">
+                <h4 className="text-base font-bold text-[#2A0E3F] mb-1">Keratin Repair Mask</h4>
+                <p className="text-[12.5px] text-[#5B4A6E] mb-4 line-clamp-2">
                   Pure Argan Oil &amp; Organic Shea Butter. Sulfate &amp; Paraben free salon formula.
                 </p>
 
-                <div className="space-y-1.5 mb-4 bg-[#fcf9f8] p-3 rounded-xl border border-[#e8e8e8] text-[12px]">
+                <div className="space-y-1.5 mb-4 bg-[#FDFBF7] p-3 rounded-xl border border-[#E8DEEF] text-[12px]">
                   <div className="flex justify-between">
-                    <span className="text-[#8c7077]">500–1K pcs</span>
-                    <span className="font-bold text-[#b90064]">₹290 / unit</span>
+                    <span className="text-[#7E6C96]">500–1K pcs</span>
+                    <span className="font-bold text-[#6B2D8C]">₹290 / unit</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#8c7077]">1K+ pcs</span>
-                    <span className="font-bold text-[#b90064]">₹240 / unit</span>
+                    <span className="text-[#7E6C96]">1K+ pcs</span>
+                    <span className="font-bold text-[#6B2D8C]">₹240 / unit</span>
                   </div>
                 </div>
               </div>
@@ -1255,32 +1255,32 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                       setIsRfqModalOpen(true);
                     }
                   }}
-                  className="flex-1 bg-[#b90064] hover:bg-[#8e004b] text-white py-2.5 rounded-xl font-bold text-[12.5px] transition-colors cursor-pointer"
+                  className="flex-1 bg-[#6B2D8C] hover:bg-[#4A2560] text-white py-2.5 rounded-xl font-bold text-[12.5px] transition-colors cursor-pointer"
                 >
                   Send RFQ
                 </button>
                 <button
                   onClick={() => showToast('Sample formula specs copied!')}
-                  className="px-3 py-2.5 border border-[#e8e8e8] rounded-xl text-[#1c1b1b] hover:bg-[#f0edec] transition-colors cursor-pointer"
+                  className="px-3 py-2.5 border border-[#E8DEEF] rounded-xl text-[#2A0E3F] hover:bg-[#F4F0E9] transition-colors cursor-pointer"
                 >
-                  <FlaskConical className="w-4 h-4 text-[#b90064]" />
+                  <FlaskConical className="w-4 h-4 text-[#6B2D8C]" />
                 </button>
               </div>
             </div>
           </div>
 
           {/* Card 4: View Catalog Launcher */}
-          <div className="bg-white rounded-2xl overflow-hidden border border-dashed border-[#b90064]/40 hover:border-[#b90064] transition-all p-6 flex flex-col items-center justify-center text-center cursor-pointer group hover:bg-[#fde7f3]/20">
-            <div className="w-14 h-14 rounded-full bg-[#fde7f3] text-[#b90064] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+          <div className="bg-white rounded-2xl overflow-hidden border border-dashed border-[#6B2D8C]/40 hover:border-[#6B2D8C] transition-all p-6 flex flex-col items-center justify-center text-center cursor-pointer group hover:bg-[#F5EEF8]/20">
+            <div className="w-14 h-14 rounded-full bg-[#F5EEF8] text-[#6B2D8C] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
               <FileSpreadsheet className="w-7 h-7" />
             </div>
-            <h4 className="text-lg font-bold text-[#1c1b1b] mb-1">View 124+ Formulas</h4>
-            <p className="text-[12.5px] text-[#594047] mb-4">
+            <h4 className="text-lg font-bold text-[#2A0E3F] mb-1">View 124+ Formulas</h4>
+            <p className="text-[12.5px] text-[#5B4A6E] mb-4">
               Explore complete formulation library with MOQs and pricing tiers.
             </p>
             <button
               onClick={() => setIsDocModalOpen(true)}
-              className="text-[#b90064] font-bold text-[13px] hover:underline flex items-center gap-1 cursor-pointer"
+              className="text-[#6B2D8C] font-bold text-[13px] hover:underline flex items-center gap-1 cursor-pointer"
             >
               <span>Browse Full Catalog</span>
               <ChevronRight className="w-4 h-4" />
@@ -1293,17 +1293,17 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
       <section className="pb-16 px-4 md:px-10 max-w-[1440px] mx-auto">
         <div className="flex justify-between items-end mb-8">
           <div>
-            <h2 className="text-xl md:text-2xl font-bold text-[#1c1b1b] mb-1">
+            <h2 className="text-xl md:text-2xl font-bold text-[#2A0E3F] mb-1">
               Similar Verified Suppliers
             </h2>
-            <p className="text-[13.5px] text-[#594047] font-medium">
+            <p className="text-[13.5px] text-[#5B4A6E] font-medium">
               Top-rated OEM &amp; private label manufacturing partners in Western India.
             </p>
           </div>
           {onNavigateToDirectory && (
             <button
               onClick={onNavigateToDirectory}
-              className="text-[#b90064] font-bold text-[13px] hover:underline cursor-pointer"
+              className="text-[#6B2D8C] font-bold text-[13px] hover:underline cursor-pointer"
             >
               View All Suppliers
             </button>
@@ -1312,32 +1312,32 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Similar Card 1 */}
-          <div className="bg-white border border-[#e8e8e8] rounded-2xl p-6 hover:shadow-md transition-all duration-300">
+          <div className="bg-white border border-[#E8DEEF] rounded-2xl p-6 hover:shadow-md transition-all duration-300">
             <div className="flex justify-between items-start mb-3">
               <div>
-                <div className="flex items-center gap-1.5 text-[#b90064] text-[12px] font-bold mb-0.5">
-                  <ShieldCheck className="w-4 h-4 fill-[#b90064] text-white" />
+                <div className="flex items-center gap-1.5 text-[#6B2D8C] text-[12px] font-bold mb-0.5">
+                  <ShieldCheck className="w-4 h-4 fill-[#6B2D8C] text-white" />
                   <span>Nexora Verified</span>
                 </div>
-                <h3 className="text-lg font-bold text-[#1c1b1b]">Lumina Skin Labs</h3>
+                <h3 className="text-lg font-bold text-[#2A0E3F]">Lumina Skin Labs</h3>
               </div>
-              <span className="text-[11.5px] font-bold text-[#8c7077] bg-[#f0edec] px-2.5 py-0.5 rounded-full">
+              <span className="text-[11.5px] font-bold text-[#7E6C96] bg-[#F4F0E9] px-2.5 py-0.5 rounded-full">
                 Mumbai
               </span>
             </div>
 
-            <p className="text-[12.5px] text-[#594047] mb-4">
+            <p className="text-[12.5px] text-[#5B4A6E] mb-4">
               Organic Skincare &amp; Herbal OEM Formulations with ISO 9001.
             </p>
 
-            <div className="grid grid-cols-2 gap-3 mb-5 p-3 bg-[#fcf9f8] rounded-xl border border-[#e8e8e8] text-[12px]">
+            <div className="grid grid-cols-2 gap-3 mb-5 p-3 bg-[#FDFBF7] rounded-xl border border-[#E8DEEF] text-[12px]">
               <div>
-                <span className="text-[10px] text-[#8c7077] uppercase font-bold block">Min Order</span>
-                <span className="font-bold text-[#1c1b1b]">500 units</span>
+                <span className="text-[10px] text-[#7E6C96] uppercase font-bold block">Min Order</span>
+                <span className="font-bold text-[#2A0E3F]">500 units</span>
               </div>
               <div>
-                <span className="text-[10px] text-[#8c7077] uppercase font-bold block">Response</span>
-                <span className="font-bold text-[#00875a]">&gt; 98%</span>
+                <span className="text-[10px] text-[#7E6C96] uppercase font-bold block">Response</span>
+                <span className="font-bold text-[#059669]">&gt; 98%</span>
               </div>
             </div>
 
@@ -1353,14 +1353,14 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                     setIsRfqModalOpen(true);
                   }
                 }}
-                className="flex-1 bg-[#b90064] hover:bg-[#8e004b] text-white py-2 rounded-xl text-[12.5px] font-bold transition-colors cursor-pointer"
+                className="flex-1 bg-[#6B2D8C] hover:bg-[#4A2560] text-white py-2 rounded-xl text-[12.5px] font-bold transition-colors cursor-pointer"
               >
                 Contact
               </button>
               {onNavigateToDirectory && (
                 <button
                   onClick={onNavigateToDirectory}
-                  className="flex-1 border border-[#e8e8e8] text-[#1c1b1b] hover:bg-[#f0edec] py-2 rounded-xl text-[12.5px] font-bold transition-colors cursor-pointer"
+                  className="flex-1 border border-[#E8DEEF] text-[#2A0E3F] hover:bg-[#F4F0E9] py-2 rounded-xl text-[12.5px] font-bold transition-colors cursor-pointer"
                 >
                   View Profile
                 </button>
@@ -1369,32 +1369,32 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
           </div>
 
           {/* Similar Card 2 */}
-          <div className="bg-white border border-[#e8e8e8] rounded-2xl p-6 hover:shadow-md transition-all duration-300">
+          <div className="bg-white border border-[#E8DEEF] rounded-2xl p-6 hover:shadow-md transition-all duration-300">
             <div className="flex justify-between items-start mb-3">
               <div>
-                <div className="flex items-center gap-1.5 text-[#b90064] text-[12px] font-bold mb-0.5">
-                  <ShieldCheck className="w-4 h-4 fill-[#b90064] text-white" />
+                <div className="flex items-center gap-1.5 text-[#6B2D8C] text-[12px] font-bold mb-0.5">
+                  <ShieldCheck className="w-4 h-4 fill-[#6B2D8C] text-white" />
                   <span>Nexora Verified</span>
                 </div>
-                <h3 className="text-lg font-bold text-[#1c1b1b]">PureEssence Mfg</h3>
+                <h3 className="text-lg font-bold text-[#2A0E3F]">PureEssence Mfg</h3>
               </div>
-              <span className="text-[11.5px] font-bold text-[#8c7077] bg-[#f0edec] px-2.5 py-0.5 rounded-full">
+              <span className="text-[11.5px] font-bold text-[#7E6C96] bg-[#F4F0E9] px-2.5 py-0.5 rounded-full">
                 Delhi NCR
               </span>
             </div>
 
-            <p className="text-[12.5px] text-[#594047] mb-4">
+            <p className="text-[12.5px] text-[#5B4A6E] mb-4">
               Bulk Essential Oils, Cold Pressed Actives &amp; Serum Bases.
             </p>
 
-            <div className="grid grid-cols-2 gap-3 mb-5 p-3 bg-[#fcf9f8] rounded-xl border border-[#e8e8e8] text-[12px]">
+            <div className="grid grid-cols-2 gap-3 mb-5 p-3 bg-[#FDFBF7] rounded-xl border border-[#E8DEEF] text-[12px]">
               <div>
-                <span className="text-[10px] text-[#8c7077] uppercase font-bold block">Min Order</span>
-                <span className="font-bold text-[#1c1b1b]">1,000 units</span>
+                <span className="text-[10px] text-[#7E6C96] uppercase font-bold block">Min Order</span>
+                <span className="font-bold text-[#2A0E3F]">1,000 units</span>
               </div>
               <div>
-                <span className="text-[10px] text-[#8c7077] uppercase font-bold block">Response</span>
-                <span className="font-bold text-[#00875a]">&gt; 95%</span>
+                <span className="text-[10px] text-[#7E6C96] uppercase font-bold block">Response</span>
+                <span className="font-bold text-[#059669]">&gt; 95%</span>
               </div>
             </div>
 
@@ -1410,14 +1410,14 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                     setIsRfqModalOpen(true);
                   }
                 }}
-                className="flex-1 bg-[#b90064] hover:bg-[#8e004b] text-white py-2 rounded-xl text-[12.5px] font-bold transition-colors cursor-pointer"
+                className="flex-1 bg-[#6B2D8C] hover:bg-[#4A2560] text-white py-2 rounded-xl text-[12.5px] font-bold transition-colors cursor-pointer"
               >
                 Contact
               </button>
               {onNavigateToDirectory && (
                 <button
                   onClick={onNavigateToDirectory}
-                  className="flex-1 border border-[#e8e8e8] text-[#1c1b1b] hover:bg-[#f0edec] py-2 rounded-xl text-[12.5px] font-bold transition-colors cursor-pointer"
+                  className="flex-1 border border-[#E8DEEF] text-[#2A0E3F] hover:bg-[#F4F0E9] py-2 rounded-xl text-[12.5px] font-bold transition-colors cursor-pointer"
                 >
                   View Profile
                 </button>
@@ -1426,32 +1426,32 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
           </div>
 
           {/* Similar Card 3 */}
-          <div className="bg-white border border-[#e8e8e8] rounded-2xl p-6 hover:shadow-md transition-all duration-300">
+          <div className="bg-white border border-[#E8DEEF] rounded-2xl p-6 hover:shadow-md transition-all duration-300">
             <div className="flex justify-between items-start mb-3">
               <div>
-                <div className="flex items-center gap-1.5 text-[#b90064] text-[12px] font-bold mb-0.5">
-                  <ShieldCheck className="w-4 h-4 fill-[#b90064] text-white" />
+                <div className="flex items-center gap-1.5 text-[#6B2D8C] text-[12px] font-bold mb-0.5">
+                  <ShieldCheck className="w-4 h-4 fill-[#6B2D8C] text-white" />
                   <span>Nexora Verified</span>
                 </div>
-                <h3 className="text-lg font-bold text-[#1c1b1b]">Velvet Touch</h3>
+                <h3 className="text-lg font-bold text-[#2A0E3F]">Velvet Touch</h3>
               </div>
-              <span className="text-[11.5px] font-bold text-[#8c7077] bg-[#f0edec] px-2.5 py-0.5 rounded-full">
+              <span className="text-[11.5px] font-bold text-[#7E6C96] bg-[#F4F0E9] px-2.5 py-0.5 rounded-full">
                 Mumbai
               </span>
             </div>
 
-            <p className="text-[12.5px] text-[#594047] mb-4">
+            <p className="text-[12.5px] text-[#5B4A6E] mb-4">
               Luxury Color Cosmetics, Matte Lipsticks &amp; Highlighters.
             </p>
 
-            <div className="grid grid-cols-2 gap-3 mb-5 p-3 bg-[#fcf9f8] rounded-xl border border-[#e8e8e8] text-[12px]">
+            <div className="grid grid-cols-2 gap-3 mb-5 p-3 bg-[#FDFBF7] rounded-xl border border-[#E8DEEF] text-[12px]">
               <div>
-                <span className="text-[10px] text-[#8c7077] uppercase font-bold block">Min Order</span>
-                <span className="font-bold text-[#1c1b1b]">500 units</span>
+                <span className="text-[10px] text-[#7E6C96] uppercase font-bold block">Min Order</span>
+                <span className="font-bold text-[#2A0E3F]">500 units</span>
               </div>
               <div>
-                <span className="text-[10px] text-[#8c7077] uppercase font-bold block">Response</span>
-                <span className="font-bold text-[#00875a]">&gt; 97%</span>
+                <span className="text-[10px] text-[#7E6C96] uppercase font-bold block">Response</span>
+                <span className="font-bold text-[#059669]">&gt; 97%</span>
               </div>
             </div>
 
@@ -1467,14 +1467,14 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                     setIsRfqModalOpen(true);
                   }
                 }}
-                className="flex-1 bg-[#b90064] hover:bg-[#8e004b] text-white py-2 rounded-xl text-[12.5px] font-bold transition-colors cursor-pointer"
+                className="flex-1 bg-[#6B2D8C] hover:bg-[#4A2560] text-white py-2 rounded-xl text-[12.5px] font-bold transition-colors cursor-pointer"
               >
                 Contact
               </button>
               {onNavigateToDirectory && (
                 <button
                   onClick={onNavigateToDirectory}
-                  className="flex-1 border border-[#e8e8e8] text-[#1c1b1b] hover:bg-[#f0edec] py-2 rounded-xl text-[12.5px] font-bold transition-colors cursor-pointer"
+                  className="flex-1 border border-[#E8DEEF] text-[#2A0E3F] hover:bg-[#F4F0E9] py-2 rounded-xl text-[12.5px] font-bold transition-colors cursor-pointer"
                 >
                   View Profile
                 </button>
@@ -1485,13 +1485,13 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
       </section>
 
       {/* Mobile Bottom Sticky Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-[#e8e8e8] p-3.5 md:hidden z-40 flex gap-3 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-[#E8DEEF] p-3.5 md:hidden z-40 flex gap-3 shadow-lg">
         <button
           onClick={() => {
             if (onOpenRFQModal) onOpenRFQModal();
             else setIsRfqModalOpen(true);
           }}
-          className="flex-1 bg-[#b90064] text-white py-3 rounded-xl font-bold text-[13.5px] hover:bg-[#8e004b] transition-colors flex items-center justify-center gap-2"
+          className="flex-1 bg-[#6B2D8C] text-white py-3 rounded-xl font-bold text-[13.5px] hover:bg-[#4A2560] transition-colors flex items-center justify-center gap-2"
         >
           <Mail className="w-4 h-4" />
           <span>Request Quote</span>
@@ -1517,7 +1517,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
               setIsRfqModalOpen(true);
             }
           }}
-          className="p-3 border border-[#b90064] text-[#b90064] rounded-xl hover:bg-[#fde7f3] transition-colors flex items-center justify-center"
+          className="p-3 border border-[#6B2D8C] text-[#6B2D8C] rounded-xl hover:bg-[#F5EEF8] transition-colors flex items-center justify-center"
         >
           <MessageSquare className="w-5 h-5" />
         </button>
@@ -1526,39 +1526,39 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
       {/* Corporate Brochure PDF Modal (`doc-modal`) */}
       {isDocModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in-50">
-          <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-[#e8e8e8]">
-            <div className="flex justify-between items-center p-4 md:p-5 border-b border-[#f0edec] bg-[#fcf9f8]">
-              <h3 className="font-bold text-[16px] text-[#1c1b1b] flex items-center gap-2">
-                <FileText className="w-5 h-5 text-[#b90064]" />
+          <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-[#E8DEEF]">
+            <div className="flex justify-between items-center p-4 md:p-5 border-b border-[#F4F0E9] bg-[#FDFBF7]">
+              <h3 className="font-bold text-[16px] text-[#2A0E3F] flex items-center gap-2">
+                <FileText className="w-5 h-5 text-[#6B2D8C]" />
                 <span>Aura Labs Corporate Brochure &amp; Technical Specs</span>
               </h3>
               <button
                 onClick={() => setIsDocModalOpen(false)}
-                className="p-1.5 text-[#8c7077] hover:text-[#1c1b1b] hover:bg-[#f0edec] rounded-full transition-colors cursor-pointer"
+                className="p-1.5 text-[#7E6C96] hover:text-[#2A0E3F] hover:bg-[#F4F0E9] rounded-full transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="flex-1 bg-[#f0edec] p-6 md:p-8 flex items-center justify-center overflow-y-auto min-h-[360px]">
-              <div className="bg-white w-full max-w-xl aspect-[1/1.3] shadow-md p-8 md:p-12 flex flex-col items-center justify-center text-center border border-[#e8e8e8] rounded-2xl relative">
-                <div className="w-16 h-16 bg-[#fde7f3] rounded-full flex items-center justify-center mb-4 text-[#b90064]">
+            <div className="flex-1 bg-[#F4F0E9] p-6 md:p-8 flex items-center justify-center overflow-y-auto min-h-[360px]">
+              <div className="bg-white w-full max-w-xl aspect-[1/1.3] shadow-md p-8 md:p-12 flex flex-col items-center justify-center text-center border border-[#E8DEEF] rounded-2xl relative">
+                <div className="w-16 h-16 bg-[#F5EEF8] rounded-full flex items-center justify-center mb-4 text-[#6B2D8C]">
                   <Sparkles className="w-8 h-8" />
                 </div>
-                <h2 className="text-xl font-bold text-[#1c1b1b] mb-2">Aura Labs Corporate Dossier</h2>
-                <p className="text-[13px] text-[#594047] max-w-md leading-relaxed">
+                <h2 className="text-xl font-bold text-[#2A0E3F] mb-2">Aura Labs Corporate Dossier</h2>
+                <p className="text-[13px] text-[#5B4A6E] max-w-md leading-relaxed">
                   Comprehensive overview of facility certifications (WHO-GMP, ISO 22716, US-FDA), formula library specs, MOQ tiers, and export delivery terms.
                 </p>
-                <div className="mt-6 py-1.5 px-4 bg-[#f0edec] rounded-full text-[11.5px] font-bold text-[#8c7077]">
+                <div className="mt-6 py-1.5 px-4 bg-[#F4F0E9] rounded-full text-[11.5px] font-bold text-[#7E6C96]">
                   Page 1 of 12 (Verified PDF)
                 </div>
               </div>
             </div>
 
-            <div className="p-4 border-t border-[#f0edec] bg-white flex justify-end gap-3">
+            <div className="p-4 border-t border-[#F4F0E9] bg-white flex justify-end gap-3">
               <button
                 onClick={() => setIsDocModalOpen(false)}
-                className="px-5 py-2.5 rounded-xl text-[13px] font-bold border border-[#e8e8e8] text-[#594047] hover:bg-[#f0edec] transition-colors cursor-pointer"
+                className="px-5 py-2.5 rounded-xl text-[13px] font-bold border border-[#E8DEEF] text-[#5B4A6E] hover:bg-[#F4F0E9] transition-colors cursor-pointer"
               >
                 Close Preview
               </button>
@@ -1567,7 +1567,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                   setIsDocModalOpen(false);
                   showToast('Corporate Brochure PDF downloaded to device!');
                 }}
-                className="px-6 py-2.5 rounded-xl text-[13px] font-bold bg-[#b90064] text-white hover:bg-[#8e004b] transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
+                className="px-6 py-2.5 rounded-xl text-[13px] font-bold bg-[#6B2D8C] text-white hover:bg-[#4A2560] transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
               >
                 <Download className="w-4 h-4" />
                 <span>Save PDF (4.2 MB)</span>
@@ -1580,15 +1580,15 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
       {/* Supplier RFQ & Direct Quote Modal (`rfq-modal`) */}
       {isRfqModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in-50">
-          <div className="bg-white rounded-2xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-[#e8e8e8]">
-            <div className="flex justify-between items-center p-5 border-b border-[#f0edec] bg-[#fcf9f8]">
+          <div className="bg-white rounded-2xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-[#E8DEEF]">
+            <div className="flex justify-between items-center p-5 border-b border-[#F4F0E9] bg-[#FDFBF7]">
               <div>
-                <h3 className="font-bold text-lg text-[#1c1b1b]">Request Custom Quote &amp; Send Enquiry</h3>
-                <p className="text-[12px] text-[#8c7077]">Direct inquiry to Aura Labs &amp; Manufacturing</p>
+                <h3 className="font-bold text-lg text-[#2A0E3F]">Request Custom Quote &amp; Send Enquiry</h3>
+                <p className="text-[12px] text-[#7E6C96]">Direct inquiry to Aura Labs &amp; Manufacturing</p>
               </div>
               <button
                 onClick={() => setIsRfqModalOpen(false)}
-                className="p-1.5 text-[#8c7077] hover:text-[#1c1b1b] hover:bg-[#f0edec] rounded-full transition-colors cursor-pointer"
+                className="p-1.5 text-[#7E6C96] hover:text-[#2A0E3F] hover:bg-[#F4F0E9] rounded-full transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1597,11 +1597,11 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
             <form onSubmit={handleSendRfqSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="block text-[12px] font-bold text-[#1c1b1b]">Product Interest</label>
+                  <label className="block text-[12px] font-bold text-[#2A0E3F]">Product Interest</label>
                   <select
                     value={rfqProductInterest}
                     onChange={(e) => setRfqProductInterest(e.target.value)}
-                    className="w-full rounded-xl border border-[#e8e8e8] bg-white text-[13px] p-2.5 focus:ring-1 focus:ring-[#b90064] font-medium"
+                    className="w-full rounded-xl border border-[#E8DEEF] bg-white text-[13px] p-2.5 focus:ring-1 focus:ring-[#C9A961]/30 font-medium"
                   >
                     <option>Skincare • Serum Base</option>
                     <option>Cosmetics • Foundation</option>
@@ -1611,78 +1611,78 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block text-[12px] font-bold text-[#1c1b1b]">Estimated Order Volume</label>
+                  <label className="block text-[12px] font-bold text-[#2A0E3F]">Estimated Order Volume</label>
                   <input
                     type="text"
                     required
                     value={rfqVolume}
                     onChange={(e) => setRfqVolume(e.target.value)}
                     placeholder="e.g., 10,000 units"
-                    className="w-full rounded-xl border border-[#e8e8e8] bg-white text-[13px] p-2.5 focus:ring-1 focus:ring-[#b90064] font-medium"
+                    className="w-full rounded-xl border border-[#E8DEEF] bg-white text-[13px] p-2.5 focus:ring-1 focus:ring-[#C9A961]/30 font-medium"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[12px] font-bold text-[#1c1b1b]">Message &amp; Custom Requirements</label>
+                <label className="block text-[12px] font-bold text-[#2A0E3F]">Message &amp; Custom Requirements</label>
                 <textarea
                   rows={4}
                   required
                   value={rfqMessage}
                   onChange={(e) => setRfqMessage(e.target.value)}
                   placeholder="Detail your target launch date, active ingredient preferences, packaging specifications, or target price..."
-                  className="w-full rounded-xl border border-[#e8e8e8] bg-white text-[13px] p-2.5 focus:ring-1 focus:ring-[#b90064] font-medium"
+                  className="w-full rounded-xl border border-[#E8DEEF] bg-white text-[13px] p-2.5 focus:ring-1 focus:ring-[#C9A961]/30 font-medium"
                 />
               </div>
 
               {/* Multi-file Dropzone */}
               <div className="space-y-2">
-                <label className="block text-[12px] font-bold text-[#1c1b1b]">Technical Artwork &amp; Specs</label>
+                <label className="block text-[12px] font-bold text-[#2A0E3F]">Technical Artwork &amp; Specs</label>
                 <div
                   onClick={() => {
                     setUploadedFile('custom_formula_brief_v1.pdf');
                     showToast('File custom_formula_brief_v1.pdf attached!');
                   }}
-                  className="border-2 border-dashed border-[#e8e8e8] bg-[#fcf9f8] hover:bg-[#f0edec] transition-colors rounded-xl p-5 text-center cursor-pointer flex flex-col items-center"
+                  className="border-2 border-dashed border-[#E8DEEF] bg-[#FDFBF7] hover:bg-[#F4F0E9] transition-colors rounded-xl p-5 text-center cursor-pointer flex flex-col items-center"
                 >
-                  <UploadCloud className="w-8 h-8 text-[#b90064] mb-1.5" />
-                  <div className="text-[13px] font-bold text-[#1c1b1b]">Click to upload or drag &amp; drop artwork</div>
-                  <div className="text-[11.5px] text-[#8c7077] mt-0.5">
+                  <UploadCloud className="w-8 h-8 text-[#6B2D8C] mb-1.5" />
+                  <div className="text-[13px] font-bold text-[#2A0E3F]">Click to upload or drag &amp; drop artwork</div>
+                  <div className="text-[11.5px] text-[#7E6C96] mt-0.5">
                     Technical specs, packaging artwork, or formula brief (PDF, PNG, JPG up to 10MB)
                   </div>
                 </div>
 
                 {/* Uploaded File Progress Bar */}
                 {uploadedFile && (
-                  <div className="bg-[#fdf8f8] border border-[#e8e8e8] rounded-xl p-3 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-[#fde7f3] flex items-center justify-center text-[#b90064] shrink-0">
+                  <div className="bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl p-3 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-[#F5EEF8] flex items-center justify-center text-[#6B2D8C] shrink-0">
                       <FileText className="w-4 h-4" />
                     </div>
                     <div className="flex-1">
                       <div className="flex justify-between items-center mb-1">
-                        <span className="text-[12px] font-bold text-[#1c1b1b]">{uploadedFile}</span>
-                        <span className="text-[10px] font-bold text-[#00875a]">100% Uploaded</span>
+                        <span className="text-[12px] font-bold text-[#2A0E3F]">{uploadedFile}</span>
+                        <span className="text-[10px] font-bold text-[#059669]">100% Uploaded</span>
                       </div>
-                      <div className="w-full bg-[#e8e8e8] rounded-full h-1.5 overflow-hidden">
-                        <div className="bg-[#00875a] h-1.5 rounded-full w-full"></div>
+                      <div className="w-full bg-[#E8DEEF] rounded-full h-1.5 overflow-hidden">
+                        <div className="bg-[#059669] h-1.5 rounded-full w-full"></div>
                       </div>
                     </div>
-                    <CheckCircle2 className="w-5 h-5 text-[#00875a] shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-[#059669] shrink-0" />
                   </div>
                 )}
               </div>
 
-              <div className="pt-2 flex justify-end gap-3 border-t border-[#f0edec]">
+              <div className="pt-2 flex justify-end gap-3 border-t border-[#F4F0E9]">
                 <button
                   type="button"
                   onClick={() => setIsRfqModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl text-[13px] font-bold border border-[#e8e8e8] text-[#594047] hover:bg-[#f0edec]"
+                  className="px-5 py-2.5 rounded-xl text-[13px] font-bold border border-[#E8DEEF] text-[#5B4A6E] hover:bg-[#F4F0E9]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl text-[13px] font-bold bg-[#b90064] text-white hover:bg-[#8e004b] flex items-center gap-1.5 shadow-xs"
+                  className="px-6 py-2.5 rounded-xl text-[13px] font-bold bg-[#6B2D8C] text-white hover:bg-[#4A2560] flex items-center gap-1.5 shadow-xs"
                 >
                   <Send className="w-4 h-4" />
                   <span>Send Request</span>
@@ -1696,7 +1696,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
       {/* 🛡️ Document Verification Viewer Modal (`selectedReportForPreview`) */}
       {selectedReportForPreview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 md:p-6 animate-in fade-in-50">
-          <div className="bg-white rounded-2xl w-full max-w-6xl h-[90vh] md:h-[85vh] flex flex-col md:flex-row overflow-hidden shadow-2xl border border-[#e8e8e8] animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-2xl w-full max-w-6xl h-[90vh] md:h-[85vh] flex flex-col md:flex-row overflow-hidden shadow-2xl border border-[#E8DEEF] animate-in zoom-in-95 duration-200">
             
             {/* Left Pane: Interactive Document Previewer */}
             <div className="flex-1 bg-zinc-900 flex flex-col justify-between overflow-hidden relative select-none">
@@ -1760,7 +1760,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                     
                     {/* Watermark Overlay */}
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden opacity-3">
-                      <div className="text-[#00875a] font-black text-6xl tracking-widest uppercase border-12 border-dashed border-[#00875a]/30 p-4 rounded-3xl -rotate-25 whitespace-nowrap">
+                      <div className="text-[#059669] font-black text-6xl tracking-widest uppercase border-12 border-dashed border-[#059669]/30 p-4 rounded-3xl -rotate-25 whitespace-nowrap">
                         NEXORA SECURE VERIFIED
                       </div>
                     </div>
@@ -1928,7 +1928,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                         </div>
                       ) : (
                         // Standard Gold Border ISO / CDSCO / WHO Certificate layout
-                        <div className="border-4 border-[#b90064]/20 p-6 rounded-lg space-y-4 bg-[#fcf9f8]">
+                        <div className="border-4 border-[#6B2D8C]/20 p-6 rounded-lg space-y-4 bg-[#FDFBF7]">
                           <p className="text-[12.5px] font-semibold text-zinc-900 text-center leading-relaxed">
                             {selectedReportForPreview.summary}
                           </p>
@@ -1939,7 +1939,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                             </div>
                             <div className="flex justify-between border-b border-zinc-200 pb-1.5">
                               <span>Scope of Certification:</span>
-                              <span className="font-semibold text-[#0050d6] text-right truncate max-w-[240px]" title={selectedReportForPreview.scopeOfAudit || 'Aseptic Manufacturing and Cosmetic GMP Quality Control'}>
+                              <span className="font-semibold text-[#6B2D8C] text-right truncate max-w-[240px]" title={selectedReportForPreview.scopeOfAudit || 'Aseptic Manufacturing and Cosmetic GMP Quality Control'}>
                                 {selectedReportForPreview.scopeOfAudit || 'Aseptic Manufacturing and Cosmetic GMP Quality Control'}
                               </span>
                             </div>
@@ -2003,15 +2003,15 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
             </div>
 
             {/* Right Pane: Compliance & Verification Sidebar */}
-            <div className="w-full md:w-80 border-t md:border-t-0 md:border-l border-[#e8e8e8] flex flex-col justify-between bg-[#fcf9f8]">
+            <div className="w-full md:w-80 border-t md:border-t-0 md:border-l border-[#E8DEEF] flex flex-col justify-between bg-[#FDFBF7]">
               
               {/* Header Info */}
-              <div className="p-5 border-b border-[#f0edec] bg-white">
-                <h3 className="font-black text-[15px] text-[#1c1b1b] flex items-center gap-1.5">
-                  <ShieldCheck className="w-5 h-5 text-[#00875a]" />
+              <div className="p-5 border-b border-[#F4F0E9] bg-white">
+                <h3 className="font-black text-[15px] text-[#2A0E3F] flex items-center gap-1.5">
+                  <ShieldCheck className="w-5 h-5 text-[#059669]" />
                   <span>Trust &amp; Audit Log</span>
                 </h3>
-                <p className="text-[12px] text-[#594047] font-medium mt-0.5">
+                <p className="text-[12px] text-[#5B4A6E] font-medium mt-0.5">
                   Secure cryptographic registrar tracking and annual auditing logs.
                 </p>
               </div>
@@ -2020,15 +2020,15 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
               <div className="flex-1 overflow-y-auto p-5 space-y-5">
                 
                 {/* Tab buttons */}
-                <div className="grid grid-cols-3 gap-1 p-1 bg-[#f0edec] rounded-xl text-[11px] font-bold">
+                <div className="grid grid-cols-3 gap-1 p-1 bg-[#F4F0E9] rounded-xl text-[11px] font-bold">
                   {(['Document', 'AuditLog', 'TrustLedger'] as const).map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActivePreviewTab(tab)}
                       className={`py-1.5 rounded-lg text-center cursor-pointer transition-all ${
                         activePreviewTab === tab
-                          ? 'bg-white text-[#1c1b1b] shadow-xs'
-                          : 'text-[#594047] hover:text-[#1c1b1b]'
+                          ? 'bg-white text-[#2A0E3F] shadow-xs'
+                          : 'text-[#5B4A6E] hover:text-[#2A0E3F]'
                       }`}
                     >
                       {tab === 'Document' ? 'Info' : tab === 'AuditLog' ? 'Audit Log' : 'Ledger'}
@@ -2039,35 +2039,35 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                 {/* Tab content 1: Document Info */}
                 {activePreviewTab === 'Document' && (
                   <div className="space-y-4 animate-in fade-in duration-200">
-                    <div className="bg-white p-4 rounded-xl border border-[#e8e8e8] space-y-2.5 text-[12px]">
-                      <div className="flex justify-between font-semibold text-[#594047]">
+                    <div className="bg-white p-4 rounded-xl border border-[#E8DEEF] space-y-2.5 text-[12px]">
+                      <div className="flex justify-between font-semibold text-[#5B4A6E]">
                         <span>Title:</span>
-                        <span className="font-bold text-[#1c1b1b] text-right max-w-[160px] truncate">{selectedReportForPreview.title}</span>
+                        <span className="font-bold text-[#2A0E3F] text-right max-w-[160px] truncate">{selectedReportForPreview.title}</span>
                       </div>
-                      <div className="flex justify-between font-semibold text-[#594047]">
+                      <div className="flex justify-between font-semibold text-[#5B4A6E]">
                         <span>Format:</span>
-                        <span className="font-bold text-[#1c1b1b]">Adobe Secure PDF</span>
+                        <span className="font-bold text-[#2A0E3F]">Adobe Secure PDF</span>
                       </div>
-                      <div className="flex justify-between font-semibold text-[#594047]">
+                      <div className="flex justify-between font-semibold text-[#5B4A6E]">
                         <span>File Size:</span>
-                        <span className="font-bold text-[#1c1b1b]">{selectedReportForPreview.fileSize}</span>
+                        <span className="font-bold text-[#2A0E3F]">{selectedReportForPreview.fileSize}</span>
                       </div>
-                      <div className="flex justify-between font-semibold text-[#594047]">
+                      <div className="flex justify-between font-semibold text-[#5B4A6E]">
                         <span>Issued On:</span>
-                        <span className="font-bold text-[#1c1b1b]">{selectedReportForPreview.issueDate}</span>
+                        <span className="font-bold text-[#2A0E3F]">{selectedReportForPreview.issueDate}</span>
                       </div>
-                      <div className="flex justify-between font-semibold text-[#594047]">
+                      <div className="flex justify-between font-semibold text-[#5B4A6E]">
                         <span>Target Batch:</span>
-                        <span className="font-mono font-bold text-[#0050d6]">{selectedReportForPreview.validUntil || 'Facility Global'}</span>
+                        <span className="font-mono font-bold text-[#6B2D8C]">{selectedReportForPreview.validUntil || 'Facility Global'}</span>
                       </div>
                     </div>
 
-                    <div className="bg-[#e6f4ea] p-4 rounded-xl border border-[#a3cfb1] text-[12.5px] text-[#137333] font-medium space-y-2">
+                    <div className="bg-[#D1FAE5] p-4 rounded-xl border border-[#a3cfb1] text-[12.5px] text-[#047857] font-medium space-y-2">
                       <div className="font-bold flex items-center gap-1.5">
-                        <CheckCircle2 className="w-4 h-4 text-[#137333]" />
+                        <CheckCircle2 className="w-4 h-4 text-[#047857]" />
                         Verified Integrity Check
                       </div>
-                      <p className="text-[11.5px] leading-relaxed text-[#137333]/90">
+                      <p className="text-[11.5px] leading-relaxed text-[#047857]/90">
                         This document has been cryptographically scanned. The issuing authority signature and physical seal match the registrar records in the Indian CDSCO database.
                       </p>
                     </div>
@@ -2077,28 +2077,28 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                 {/* Tab content 2: Audit Logs */}
                 {activePreviewTab === 'AuditLog' && (
                   <div className="space-y-3 animate-in fade-in duration-200 text-[12px]">
-                    <span className="text-[10px] font-extrabold uppercase text-[#b90064] tracking-wider block">Recent Inspection Timeline</span>
+                    <span className="text-[10px] font-extrabold uppercase text-[#6B2D8C] tracking-wider block">Recent Inspection Timeline</span>
                     
                     <div className="relative pl-5 border-l-2 border-zinc-300 space-y-4">
                       <div className="relative">
                         <div className="absolute -left-[25px] top-1 w-2.5 h-2.5 rounded-full bg-emerald-600 border border-white"></div>
-                        <div className="font-bold text-[#1c1b1b]">Annual Physical Audit Completed</div>
-                        <div className="text-[11px] text-[#8c7077] font-semibold">Jan 18, 2026 • CDSCO Grade A+</div>
-                        <p className="text-[11.5px] text-[#594047] mt-0.5">Cleanroom air particle count test: Class 10,000 verified. Zero particulate contaminants found.</p>
+                        <div className="font-bold text-[#2A0E3F]">Annual Physical Audit Completed</div>
+                        <div className="text-[11px] text-[#7E6C96] font-semibold">Jan 18, 2026 • CDSCO Grade A+</div>
+                        <p className="text-[11.5px] text-[#5B4A6E] mt-0.5">Cleanroom air particle count test: Class 10,000 verified. Zero particulate contaminants found.</p>
                       </div>
 
                       <div className="relative">
                         <div className="absolute -left-[25px] top-1 w-2.5 h-2.5 rounded-full bg-emerald-600 border border-white"></div>
-                        <div className="font-bold text-[#1c1b1b]">Microbial Lab Recertification</div>
-                        <div className="text-[11px] text-[#8c7077] font-semibold">Nov 04, 2025 • NABL Compliance</div>
-                        <p className="text-[11.5px] text-[#594047] mt-0.5">Independently certified to perform pathogen challenge tests (USP &lt;51&gt;) in-house.</p>
+                        <div className="font-bold text-[#2A0E3F]">Microbial Lab Recertification</div>
+                        <div className="text-[11px] text-[#7E6C96] font-semibold">Nov 04, 2025 • NABL Compliance</div>
+                        <p className="text-[11.5px] text-[#5B4A6E] mt-0.5">Independently certified to perform pathogen challenge tests (USP &lt;51&gt;) in-house.</p>
                       </div>
 
                       <div className="relative">
                         <div className="absolute -left-[25px] top-1 w-2.5 h-2.5 rounded-full bg-zinc-400 border border-white"></div>
-                        <div className="font-bold text-[#1c1b1b]">Pre-Production Routine Audit</div>
-                        <div className="text-[11px] text-[#8c7077] font-semibold">Jul 12, 2025 • SGS Inspectorate</div>
-                        <p className="text-[11.5px] text-[#594047] mt-0.5">Facility pipeline aseptic clearance validation. Heavy metals trace level calibration confirmed.</p>
+                        <div className="font-bold text-[#2A0E3F]">Pre-Production Routine Audit</div>
+                        <div className="text-[11px] text-[#7E6C96] font-semibold">Jul 12, 2025 • SGS Inspectorate</div>
+                        <p className="text-[11.5px] text-[#5B4A6E] mt-0.5">Facility pipeline aseptic clearance validation. Heavy metals trace level calibration confirmed.</p>
                       </div>
                     </div>
                   </div>
@@ -2107,9 +2107,9 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                 {/* Tab content 3: Registrar Trust Ledger */}
                 {activePreviewTab === 'TrustLedger' && (
                   <div className="space-y-4 animate-in fade-in duration-200 text-[12px]">
-                    <div className="bg-[#0050d6]/5 border border-[#0050d6]/20 p-4 rounded-xl space-y-2">
-                      <div className="font-bold text-[#0050d6] flex items-center gap-1.5 text-[12.5px]">
-                        <Lock className="w-4 h-4 text-[#0050d6]" />
+                    <div className="bg-[#6B2D8C]/5 border border-[#6B2D8C]/20 p-4 rounded-xl space-y-2">
+                      <div className="font-bold text-[#6B2D8C] flex items-center gap-1.5 text-[12.5px]">
+                        <Lock className="w-4 h-4 text-[#6B2D8C]" />
                         CDSCO Sync Verified
                       </div>
                       <p className="text-[11.5px] leading-relaxed text-zinc-600">
@@ -2118,15 +2118,15 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                     </div>
 
                     <div className="space-y-1.5">
-                      <span className="text-[10px] font-extrabold text-[#8c7077] uppercase tracking-wider block">Registrar Ledger Details</span>
-                      <div className="bg-white p-3.5 rounded-xl border border-[#e8e8e8] space-y-2 font-mono text-[10.5px] text-zinc-600">
+                      <span className="text-[10px] font-extrabold text-[#7E6C96] uppercase tracking-wider block">Registrar Ledger Details</span>
+                      <div className="bg-white p-3.5 rounded-xl border border-[#E8DEEF] space-y-2 font-mono text-[10.5px] text-zinc-600">
                         <div>
                           <div className="text-[9px] font-extrabold text-zinc-400 uppercase">LEDGER SYNC TIMESTAMP</div>
                           <div className="font-bold text-zinc-800">{selectedReportForPreview.registrarSync || 'Aug 16, 2026 - 17:00:25 GMT'}</div>
                         </div>
                         <div>
                           <div className="text-[9px] font-extrabold text-zinc-400 uppercase">BLOCKCHAIN SHA-256 HASH</div>
-                          <div className="font-bold text-[#0050d6] break-all">
+                          <div className="font-bold text-[#6B2D8C] break-all">
                             {selectedReportForPreview.blockchainHash || '0x6e9f21b7c8a4d0e9a112f438100bcda265fa1a098471bd766a5e12f68b3dc8ef'}
                           </div>
                         </div>
@@ -2142,19 +2142,19 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
               </div>
 
               {/* Bottom Actions */}
-              <div className="p-5 border-t border-[#f0edec] bg-white space-y-2">
+              <div className="p-5 border-t border-[#F4F0E9] bg-white space-y-2">
                 <button
                   onClick={() => {
                     showToast(`Downloading certified file: ${selectedReportForPreview.title}...`);
                   }}
-                  className="w-full bg-[#00875a] hover:bg-[#006e49] text-white font-bold text-[13px] py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-98"
+                  className="w-full bg-[#059669] hover:bg-[#006e49] text-white font-bold text-[13px] py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-98"
                 >
                   <Download className="w-4 h-4" />
                   <span>Download Certified Copy</span>
                 </button>
                 <button
                   onClick={() => setSelectedReportForPreview(null)}
-                  className="w-full bg-white border border-[#e8e8e8] hover:bg-[#f0edec] text-[#594047] font-bold text-[13px] py-2.5 rounded-xl transition-all cursor-pointer"
+                  className="w-full bg-white border border-[#E8DEEF] hover:bg-[#F4F0E9] text-[#5B4A6E] font-bold text-[13px] py-2.5 rounded-xl transition-all cursor-pointer"
                 >
                   Close Document Viewer
                 </button>
@@ -2168,7 +2168,7 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
       {/* Premium Directory Claim Profile Flow Modal */}
       {isClaimModalOpen && (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full border border-[#e8e8e8] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 text-left relative">
+          <div className="bg-white rounded-3xl max-w-lg w-full border border-[#E8DEEF] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 text-left relative">
             <button 
               type="button"
               onClick={() => setIsClaimModalOpen(false)}
@@ -2187,11 +2187,11 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                     <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
                       Owner Verification Portal
                     </span>
-                    <h3 className="text-lg font-black text-[#1c1b1b] mt-1">Claim Aura Beauty Labs</h3>
+                    <h3 className="text-lg font-black text-[#2A0E3F] mt-1">Claim Aura Beauty Labs</h3>
                   </div>
                 </div>
 
-                <p className="text-[13px] text-[#594047] leading-relaxed mb-6 font-medium">
+                <p className="text-[13px] text-[#5B4A6E] leading-relaxed mb-6 font-medium">
                   Establish identity to gain administration rights for this directory listing. Verified owners can update pricing, MOQs, respond to RFQs, and chat with buyers.
                 </p>
 
@@ -2211,60 +2211,60 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                   className="space-y-4 text-[13px]"
                 >
                   <div>
-                    <label className="block text-[#1c1b1b] font-bold mb-1.5">Authorized Sourcing Specialist Name *</label>
+                    <label className="block text-[#2A0E3F] font-bold mb-1.5">Authorized Sourcing Specialist Name *</label>
                     <input 
                       type="text"
                       required
                       value={claimFormName}
                       onChange={(e) => setClaimFormName(e.target.value)}
                       placeholder="e.g. Shalini Sen"
-                      className="w-full bg-[#fdfaf9] border border-[#e8d4d8] rounded-xl px-4 py-2.5 text-[#1c1b1b] placeholder:text-[#8c7077] focus:outline-none focus:ring-2 focus:ring-[#b90064] focus:border-[#b90064] font-medium"
+                      className="w-full bg-[#FDFBF7] border border-[#E5D4ED] rounded-xl px-4 py-2.5 text-[#2A0E3F] placeholder:text-[#B9A8C6] focus:outline-none focus:ring-2 focus:ring-[#C9A961]/30 focus:border-[#C9A961] font-medium"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[#1c1b1b] font-bold mb-1.5">Official Corporate Email *</label>
+                      <label className="block text-[#2A0E3F] font-bold mb-1.5">Official Corporate Email *</label>
                       <input 
                         type="email"
                         required
                         value={claimFormEmail}
                         onChange={(e) => setClaimFormEmail(e.target.value)}
                         placeholder="shalini@aurabeautylabs.com"
-                        className="w-full bg-[#fdfaf9] border border-[#e8d4d8] rounded-xl px-4 py-2.5 text-[#1c1b1b] placeholder:text-[#8c7077] focus:outline-none focus:ring-2 focus:ring-[#b90064] focus:border-[#b90064] font-medium"
+                        className="w-full bg-[#FDFBF7] border border-[#E5D4ED] rounded-xl px-4 py-2.5 text-[#2A0E3F] placeholder:text-[#B9A8C6] focus:outline-none focus:ring-2 focus:ring-[#C9A961]/30 focus:border-[#C9A961] font-medium"
                       />
                       <span className="text-[10px] text-stone-500 block mt-1 font-medium">Must match official company domain.</span>
                     </div>
                     <div>
-                      <label className="block text-[#1c1b1b] font-bold mb-1.5">Direct Sourcing Contact Number *</label>
+                      <label className="block text-[#2A0E3F] font-bold mb-1.5">Direct Sourcing Contact Number *</label>
                       <input 
                         type="tel"
                         required
                         value={claimFormPhone}
                         onChange={(e) => setClaimFormPhone(e.target.value)}
                         placeholder="+91 98201 55443"
-                        className="w-full bg-[#fdfaf9] border border-[#e8d4d8] rounded-xl px-4 py-2.5 text-[#1c1b1b] placeholder:text-[#8c7077] focus:outline-none focus:ring-2 focus:ring-[#b90064] focus:border-[#b90064] font-medium"
+                        className="w-full bg-[#FDFBF7] border border-[#E5D4ED] rounded-xl px-4 py-2.5 text-[#2A0E3F] placeholder:text-[#B9A8C6] focus:outline-none focus:ring-2 focus:ring-[#C9A961]/30 focus:border-[#C9A961] font-medium"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[#1c1b1b] font-bold mb-1.5">GSTIN / Business Registration ID (for demo)</label>
+                    <label className="block text-[#2A0E3F] font-bold mb-1.5">GSTIN / Business Registration ID (for demo)</label>
                     <input 
                       type="text"
                       value={claimFormGst}
                       onChange={(e) => setClaimFormGst(e.target.value)}
                       placeholder="e.g. 27AAAAA1111A1Z1"
-                      className="w-full bg-[#fdfaf9] border border-[#e8d4d8] rounded-xl px-4 py-2.5 text-[#1c1b1b] font-mono focus:outline-none focus:ring-2 focus:ring-[#b90064] focus:border-[#b90064] font-medium"
+                      className="w-full bg-[#FDFBF7] border border-[#E5D4ED] rounded-xl px-4 py-2.5 text-[#2A0E3F] font-mono focus:outline-none focus:ring-2 focus:ring-[#C9A961]/30 focus:border-[#C9A961] font-medium"
                     />
                   </div>
 
                   {/* Drag-and-drop simulated file upload */}
                   <div>
-                    <label className="block text-[#1c1b1b] font-bold mb-1.5">Upload Authority Proof (GST Certificate / MoA) *</label>
+                    <label className="block text-[#2A0E3F] font-bold mb-1.5">Upload Authority Proof (GST Certificate / MoA) *</label>
                     <div 
                       onClick={() => setClaimFormDoc("gst_cert_attachment.pdf")}
-                      className="border-2 border-dashed border-[#e8d4d8] hover:border-[#b90064] bg-[#fdfaf9] p-5 rounded-2xl text-center cursor-pointer transition-all"
+                      className="border-2 border-dashed border-[#E5D4ED] hover:border-[#6B2D8C] bg-[#FDFBF7] p-5 rounded-2xl text-center cursor-pointer transition-all"
                     >
                       <UploadCloud className="w-8 h-8 text-amber-600 mx-auto mb-2" />
                       {claimFormDoc ? (
@@ -2274,18 +2274,18 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                         </div>
                       ) : (
                         <div>
-                          <p className="font-bold text-[#1c1b1b] text-[12.5px]">Drag &amp; Drop or Click to Upload</p>
-                          <p className="text-[10.5px] text-[#8c7077] mt-0.5">Support PDF, PNG, JPG (Max 5MB)</p>
+                          <p className="font-bold text-[#2A0E3F] text-[12.5px]">Drag &amp; Drop or Click to Upload</p>
+                          <p className="text-[10.5px] text-[#7E6C96] mt-0.5">Support PDF, PNG, JPG (Max 5MB)</p>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-[#f0edec] flex justify-end gap-3">
+                  <div className="pt-3 border-t border-[#F4F0E9] flex justify-end gap-3">
                     <button
                       type="button"
                       onClick={() => setIsClaimModalOpen(false)}
-                      className="bg-white hover:bg-[#f0edec] border border-[#e8e8e8] text-[#594047] font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer"
+                      className="bg-white hover:bg-[#F4F0E9] border border-[#E8DEEF] text-[#5B4A6E] font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -2304,8 +2304,8 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
             {claimStatus === 'submitting' && (
               <div className="p-10 text-center space-y-4">
                 <RefreshCw className="w-10 h-10 text-amber-600 animate-spin mx-auto" />
-                <h3 className="text-base font-black text-[#1c1b1b]">Verifying Corporate Authority</h3>
-                <p className="text-[12.5px] text-[#594047] max-w-sm mx-auto leading-relaxed">
+                <h3 className="text-base font-black text-[#2A0E3F]">Verifying Corporate Authority</h3>
+                <p className="text-[12.5px] text-[#5B4A6E] max-w-sm mx-auto leading-relaxed">
                   Executing secure domain registry lookups and authenticating uploaded GST credentials against registrar databases...
                 </p>
               </div>
@@ -2321,21 +2321,21 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                   Claim Registered Successfully
                 </span>
 
-                <h3 className="text-xl font-black text-[#1c1b1b] mt-4 mb-2">Claim ID: NEX-CLAIM-99218</h3>
-                <p className="text-[13px] text-[#594047] leading-relaxed mb-6 max-w-md mx-auto">
-                  Aura Beauty Labs claim details have been successfully submitted for certification audit. Our legal onboarding cell will audit your authorized domain email (<strong className="text-[#1c1b1b] font-bold">{claimFormEmail}</strong>) and attached GST records within 24 hours.
+                <h3 className="text-xl font-black text-[#2A0E3F] mt-4 mb-2">Claim ID: NEX-CLAIM-99218</h3>
+                <p className="text-[13px] text-[#5B4A6E] leading-relaxed mb-6 max-w-md mx-auto">
+                  Aura Beauty Labs claim details have been successfully submitted for certification audit. Our legal onboarding cell will audit your authorized domain email (<strong className="text-[#2A0E3F] font-bold">{claimFormEmail}</strong>) and attached GST records within 24 hours.
                 </p>
 
-                <div className="bg-[#fcf9f8] rounded-xl p-4 border border-[#e8e8e8] text-left mb-6 space-y-1.5 text-[12px] text-[#594047]">
-                  <p>• Candidate: <strong className="text-[#1c1b1b] font-bold">{claimFormName}</strong></p>
-                  <p>• Sourcing line: <strong className="text-[#1c1b1b]">{claimFormPhone}</strong></p>
+                <div className="bg-[#FDFBF7] rounded-xl p-4 border border-[#E8DEEF] text-left mb-6 space-y-1.5 text-[12px] text-[#5B4A6E]">
+                  <p>• Candidate: <strong className="text-[#2A0E3F] font-bold">{claimFormName}</strong></p>
+                  <p>• Sourcing line: <strong className="text-[#2A0E3F]">{claimFormPhone}</strong></p>
                   <p>• Status: <span className="text-amber-700 font-extrabold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Pending Registrar Call</span></p>
                 </div>
 
                 <button
                   type="button"
                   onClick={() => setIsClaimModalOpen(false)}
-                  className="w-full bg-[#1c1b1b] hover:bg-stone-800 text-white font-extrabold text-[13.5px] py-3 rounded-xl shadow-md transition-all cursor-pointer"
+                  className="w-full bg-[#2A0E3F] hover:bg-stone-800 text-white font-extrabold text-[13.5px] py-3 rounded-xl shadow-md transition-all cursor-pointer"
                 >
                   Return to Supplier Profile
                 </button>

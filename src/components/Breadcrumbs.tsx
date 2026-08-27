@@ -74,14 +74,14 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ currentScreen, onNavig
   if (crumbs.length === 0) return null;
 
   return (
-    <nav className="flex items-center space-x-1.5 text-[11px] md:text-[12px] font-medium text-[#594047] mb-4 md:mb-6 px-4 md:px-8 max-w-[1440px] mx-auto w-full overflow-x-auto whitespace-nowrap scrollbar-hide py-2">
+    <nav className="flex items-center space-x-1.5 text-[11px] md:text-[12px] font-medium text-[#5B4A6E] mb-4 md:mb-6 px-4 md:px-8 max-w-[1440px] mx-auto w-full overflow-x-auto whitespace-nowrap scrollbar-hide py-2">
       {crumbs.map((crumb, index) => (
         <React.Fragment key={crumb.screen + index}>
-          {index > 0 && <ChevronRight className="w-3 h-3 text-[#E8DFE3] shrink-0" />}
+          {index > 0 && <ChevronRight className="w-3 h-3 text-[#E5D8EE] shrink-0" />}
           <button
             onClick={() => onNavigate(crumb.screen)}
-            className={`transition-colors hover:text-[#B90064] ${
-              index === crumbs.length - 1 ? 'text-[#B90064] font-bold' : ''
+            className={`transition-colors hover:text-[#6B2D8C] ${
+              index === crumbs.length - 1 ? 'text-[#6B2D8C] font-bold' : ''
             }`}
           >
             {crumb.label === 'Home' ? (

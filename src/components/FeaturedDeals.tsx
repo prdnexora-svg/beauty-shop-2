@@ -16,21 +16,21 @@ export const FeaturedDeals: React.FC<FeaturedDealsProps> = ({
   onWhatsAppSupplier
 }) => {
   return (
-    <section className="py-14 bg-white border-t border-[#e8e8e8]">
+    <section className="py-14 bg-white border-t border-[#E8DEEF]">
       <div className="max-w-[1440px] mx-auto px-5 md:px-10">
         
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold uppercase tracking-widest text-[#b90064]">BULK SOURCING DISCOUNTS</span>
-              <span className="text-[10px] font-bold bg-[#fde7f3] text-[#b90064] px-2 py-0.5 rounded-full">TIERED SAVINGS</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-[#6B2D8C]">BULK SOURCING DISCOUNTS</span>
+              <span className="text-[10px] font-bold bg-[#F5EEF8] text-[#6B2D8C] px-2 py-0.5 rounded-full">TIERED SAVINGS</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#1c1b1b] mt-1 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#2A0E3F] mt-1 tracking-tight">
               Featured B2B Deals
             </h2>
           </div>
-          <p className="text-[13px] text-[#594047]">
+          <p className="text-[13px] text-[#5B4A6E]">
             Factory-direct contracts with volume price breaks and sample guarantees.
           </p>
         </div>
@@ -40,10 +40,10 @@ export const FeaturedDeals: React.FC<FeaturedDealsProps> = ({
           {deals.map((deal) => (
             <div
               key={deal.id}
-              className="bg-[#fcf9f8] rounded-2xl border border-[#e8e8e8] overflow-hidden flex flex-col justify-between card-hover-fx"
+              className="bg-[#FDFBF7] rounded-2xl border border-[#E8DEEF] overflow-hidden flex flex-col justify-between card-hover-fx"
             >
               {/* Image & Discount Badge */}
-              <div className="relative h-48 w-full bg-[#f0edec] overflow-hidden">
+              <div className="relative h-48 w-full bg-[#F4F0E9] overflow-hidden">
                 <img
                   src={deal.image}
                   alt={deal.title}
@@ -52,19 +52,19 @@ export const FeaturedDeals: React.FC<FeaturedDealsProps> = ({
                 />
                 
                 {/* Discount Badge */}
-                <div className="absolute top-3 left-3 bg-[#b90064] text-white text-[11px] font-extrabold px-2.5 py-1 rounded-md shadow-sm flex items-center gap-1">
+                <div className="absolute top-3 left-3 bg-[#6B2D8C] text-white text-[11px] font-extrabold px-2.5 py-1 rounded-md shadow-sm flex items-center gap-1">
                   <Tag className="w-3 h-3" />
                   <span>{deal.discountPercentage}% OFF</span>
                 </div>
 
                 {/* Bulk Tier Pill */}
-                <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-xs text-[#1c1b1b] text-[11px] font-bold px-2.5 py-1 rounded-md border border-[#e8e8e8] shadow-2xs">
+                <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-xs text-[#2A0E3F] text-[11px] font-bold px-2.5 py-1 rounded-md border border-[#E8DEEF] shadow-2xs">
                   {deal.bulkTierLabel}
                 </div>
 
                 {/* Estimated Delivery Ribbon */}
                 <div className="absolute bottom-2 left-3 bg-black/75 backdrop-blur-xs text-white text-[10px] font-medium px-2 py-0.5 rounded flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-[#ffd9e2]" />
+                  <Clock className="w-3 h-3 text-[#E8D5F2]" />
                   <span>{deal.estimatedDelivery}</span>
                 </div>
               </div>
@@ -75,24 +75,24 @@ export const FeaturedDeals: React.FC<FeaturedDealsProps> = ({
                   
                   {/* Supplier & Verification */}
                   <div className="flex items-center justify-between text-[11px] mb-2">
-                    <span className="font-semibold text-[#594047] flex items-center gap-1">
+                    <span className="font-semibold text-[#5B4A6E] flex items-center gap-1">
                       {deal.supplierName}
                       {deal.isVerified && (
-                        <ShieldCheck className="w-3.5 h-3.5 text-[#b90064]" />
+                        <ShieldCheck className="w-3.5 h-3.5 text-[#6B2D8C]" />
                       )}
                     </span>
-                    <span className="text-[#8c7077]">{deal.supplierLocation}</span>
+                    <span className="text-[#7E6C96]">{deal.supplierLocation}</span>
                   </div>
 
                   {/* Product Title */}
-                  <h3 className="text-[15px] font-bold text-[#1c1b1b] line-clamp-2 leading-snug mb-3">
+                  <h3 className="text-[15px] font-bold text-[#2A0E3F] line-clamp-2 leading-snug mb-3">
                     {deal.title}
                   </h3>
 
                   {/* Tags */}
                   <div className="flex flex-wrap gap-1.5 mb-4">
                     {deal.tags.map((t) => (
-                      <span key={t} className="text-[10px] font-medium bg-white border border-[#e8e8e8] text-[#594047] px-2 py-0.5 rounded">
+                      <span key={t} className="text-[10px] font-medium bg-white border border-[#E8DEEF] text-[#5B4A6E] px-2 py-0.5 rounded">
                         {t}
                       </span>
                     ))}
@@ -101,16 +101,16 @@ export const FeaturedDeals: React.FC<FeaturedDealsProps> = ({
                 </div>
 
                 {/* Pricing Tiers & MOQs */}
-                <div className="pt-3 border-t border-[#e8e8e8] space-y-3">
+                <div className="pt-3 border-t border-[#E8DEEF] space-y-3">
                   
                   <div className="flex items-baseline justify-between">
                     <div>
-                      <span className="text-[11px] text-[#8c7077] line-through mr-1.5">{deal.originalPrice}</span>
-                      <span className="text-[18px] font-extrabold text-[#b90064]">{deal.dealPrice}</span>
+                      <span className="text-[11px] text-[#7E6C96] line-through mr-1.5">{deal.originalPrice}</span>
+                      <span className="text-[18px] font-extrabold text-[#6B2D8C]">{deal.dealPrice}</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-[11px] text-[#8c7077] block">MOQ Requirement</span>
-                      <span className="text-[12px] font-bold text-[#1c1b1b]">{deal.moq}</span>
+                      <span className="text-[11px] text-[#7E6C96] block">MOQ Requirement</span>
+                      <span className="text-[12px] font-bold text-[#2A0E3F]">{deal.moq}</span>
                     </div>
                   </div>
 
@@ -120,7 +120,7 @@ export const FeaturedDeals: React.FC<FeaturedDealsProps> = ({
                     {/* Primary Send Enquiry Button (3 cols) */}
                     <button
                       onClick={() => onOpenEnquiry(deal)}
-                      className="col-span-3 bg-[#b90064] hover:bg-[#8e004b] text-white text-[12px] font-bold py-2.5 rounded-lg shadow-2xs transition-all flex items-center justify-center gap-1.5 active:scale-98 cursor-pointer"
+                      className="col-span-3 bg-[#6B2D8C] hover:bg-[#4A2560] text-white text-[12px] font-bold py-2.5 rounded-lg shadow-2xs transition-all flex items-center justify-center gap-1.5 active:scale-98 cursor-pointer"
                     >
                       <Send className="w-3.5 h-3.5" />
                       <span>Get Best Price</span>
@@ -130,7 +130,7 @@ export const FeaturedDeals: React.FC<FeaturedDealsProps> = ({
                     <button
                       onClick={() => onCallSupplier(deal.supplierName)}
                       title="Call Supplier"
-                      className="col-span-1 bg-white hover:bg-[#f7f2f2] border border-[#e8e8e8] text-[#594047] hover:text-[#1c1b1b] rounded-lg transition-colors flex items-center justify-center"
+                      className="col-span-1 bg-white hover:bg-[#F6F1FA] border border-[#E8DEEF] text-[#5B4A6E] hover:text-[#2A0E3F] rounded-lg transition-colors flex items-center justify-center"
                     >
                       <Phone className="w-4 h-4" />
                     </button>

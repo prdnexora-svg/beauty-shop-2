@@ -235,25 +235,25 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
   };
 
   return (
-    <div className="min-h-screen bg-[#fdf8f8] flex flex-col md:flex-row font-sans">
+    <div className="min-h-screen bg-[#FDFBF7] flex flex-col md:flex-row font-sans">
       
       {/* LEFT COLUMN: Premium Context Panel */}
-      <div className="hidden md:flex w-full md:w-5/12 lg:w-4/12 relative overflow-hidden flex-col justify-between p-10 border-r border-[#e8e8e8] bg-[#f0edec]">
+      <div className="hidden md:flex w-full md:w-5/12 lg:w-4/12 relative overflow-hidden flex-col justify-between p-10 border-r border-[#E8DEEF] bg-[#F4F0E9]">
         <div 
           className="absolute inset-0 z-0 bg-cover bg-center opacity-40"
           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=2087&auto=format&fit=crop')" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-[#fdf8f8]/60 to-white/95 z-0" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-[#FDFBF7]/60 to-white/95 z-0" />
 
         <div className="relative z-10">
           <span 
             onClick={onNavigateToExplore}
-            className="text-xl font-black text-[#b90064] tracking-tight hover:underline cursor-pointer"
+            className="text-xl font-black text-[#6B2D8C] tracking-tight hover:underline cursor-pointer"
           >
             Nexora Luxe
           </span>
           <div className="mt-12 space-y-8">
-            <h2 className="text-3xl font-black text-[#1c1b1b] leading-tight">
+            <h2 className="text-3xl font-black text-[#2A0E3F] leading-tight">
               Grow your B2B Beauty Business
             </h2>
             <div className="space-y-6">
@@ -263,12 +263,12 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                 { title: 'Smart Enquiries', desc: 'Receive high-quality commercial leads directly.' }
               ].map((item, i) => (
                 <div key={i} className="flex gap-4">
-                  <div className="w-6 h-6 rounded-full bg-[#fde7f3] text-[#b90064] flex items-center justify-center shrink-0 mt-1">
+                  <div className="w-6 h-6 rounded-full bg-[#F5EEF8] text-[#6B2D8C] flex items-center justify-center shrink-0 mt-1">
                     <Check className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <p className="text-[14px] font-bold text-[#1c1b1b]">{item.title}</p>
-                    <p className="text-[12px] text-[#594047]">{item.desc}</p>
+                    <p className="text-[14px] font-bold text-[#2A0E3F]">{item.title}</p>
+                    <p className="text-[12px] text-[#5B4A6E]">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -276,22 +276,22 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
           </div>
         </div>
 
-        <div className="relative z-10 bg-white/70 backdrop-blur-md border border-[#e8e8e8] rounded-2xl p-6">
+        <div className="relative z-10 bg-white/70 backdrop-blur-md border border-[#E8DEEF] rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-4">
-            <ShieldCheck className="w-5 h-5 text-[#b90064]" />
-            <p className="text-[13px] font-bold text-[#1c1b1b]">Onboarding Progress</p>
+            <ShieldCheck className="w-5 h-5 text-[#6B2D8C]" />
+            <p className="text-[13px] font-bold text-[#2A0E3F]">Onboarding Progress</p>
           </div>
           <div className="space-y-3">
             {[1, 2, 3, 4].map((s) => (
               <div key={s} className="flex items-center gap-3">
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border transition-all ${
                   step > s ? 'bg-emerald-500 border-emerald-500 text-white' : 
-                  step === s ? 'bg-[#b90064] border-[#b90064] text-white shadow-md' : 
-                  'bg-white border-[#e8e8e8] text-[#8c7077]'
+                  step === s ? 'bg-[#6B2D8C] border-[#6B2D8C] text-white shadow-md' : 
+                  'bg-white border-[#E8DEEF] text-[#7E6C96]'
                 }`}>
                   {step > s ? <Check className="w-3.5 h-3.5" /> : s}
                 </div>
-                <span className={`text-[12px] font-bold ${step === s ? 'text-[#b90064]' : 'text-[#8c7077]'}`}>
+                <span className={`text-[12px] font-bold ${step === s ? 'text-[#6B2D8C]' : 'text-[#7E6C96]'}`}>
                   {s === 1 && 'Authentication'}
                   {s === 2 && 'Business Details'}
                   {s === 3 && 'Product Catalog'}
@@ -311,27 +311,27 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
           {step === 1 && (
             <div className="space-y-8">
               <div className="text-center md:text-left space-y-2">
-                <h1 className="text-3xl font-black text-[#1c1b1b]">List Your Business</h1>
-                <p className="text-[14px] text-[#594047]">Join the premier B2B network for beauty manufacturers and suppliers.</p>
+                <h1 className="text-3xl font-black text-[#2A0E3F]">List Your Business</h1>
+                <p className="text-[14px] text-[#5B4A6E]">Join the premier B2B network for beauty manufacturers and suppliers.</p>
               </div>
 
-              <div className="bg-white border border-[#e8e8e8] rounded-2xl p-8 shadow-sm space-y-6">
+              <div className="bg-white border border-[#E8DEEF] rounded-2xl p-8 shadow-sm space-y-6">
                 {!isOtpSent ? (
                   <div className="space-y-4">
-                    <label className="block text-[12px] font-black text-[#1c1b1b] uppercase tracking-wider">Mobile Number</label>
+                    <label className="block text-[12px] font-black text-[#2A0E3F] uppercase tracking-wider">Mobile Number</label>
                     <div className="relative">
-                      <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8c7077]" />
+                      <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7E6C96]" />
                       <input
                         type="tel"
                         value={mobile}
                         onChange={(e) => setMobile(e.target.value)}
                         placeholder="Enter 10-digit mobile number"
-                        className="w-full pl-12 pr-4 py-4 bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] rounded-xl text-base font-bold text-[#1c1b1b] focus:outline-none transition-all"
+                        className="w-full pl-12 pr-4 py-4 bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] rounded-xl text-base font-bold text-[#2A0E3F] focus:outline-none transition-all"
                       />
                     </div>
                     <button
                       onClick={() => setIsOtpSent(true)}
-                      className="w-full py-4 bg-[#b90064] hover:bg-[#8e004b] text-white font-black text-[14px] rounded-xl shadow-md transition-all active:scale-[0.98]"
+                      className="w-full py-4 bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-black text-[14px] rounded-xl shadow-md transition-all active:scale-[0.98]"
                     >
                       Send OTP
                     </button>
@@ -339,8 +339,8 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                 ) : (
                   <div className="space-y-6">
                     <div className="text-center space-y-2">
-                      <p className="text-[13px] text-[#594047]">Enter 4-digit code sent to <span className="font-bold text-[#1c1b1b]">{mobile}</span></p>
-                      <button onClick={() => setIsOtpSent(false)} className="text-[12px] font-bold text-[#b90064] hover:underline">Change Number</button>
+                      <p className="text-[13px] text-[#5B4A6E]">Enter 4-digit code sent to <span className="font-bold text-[#2A0E3F]">{mobile}</span></p>
+                      <button onClick={() => setIsOtpSent(false)} className="text-[12px] font-bold text-[#6B2D8C] hover:underline">Change Number</button>
                     </div>
                     <div className="flex flex-col items-center gap-6">
                       <div className="flex justify-center gap-3">
@@ -350,7 +350,7 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                             type="text"
                             maxLength={1}
                             value={otp[i] || ''}
-                            className="w-12 h-14 bg-[#fcf9f8] border-2 border-[#e8e8e8] focus:border-[#b90064] rounded-xl text-center text-xl font-bold text-[#1c1b1b] focus:outline-none transition-all"
+                            className="w-12 h-14 bg-[#FDFBF7] border-2 border-[#E8DEEF] focus:border-[#C9A961] rounded-xl text-center text-xl font-bold text-[#2A0E3F] focus:outline-none transition-all"
                             onChange={(e) => {
                               const val = e.target.value;
                               if (/^\d*$/.test(val)) {
@@ -377,8 +377,8 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                       </div>
                       
                       {/* Demo Hint */}
-                      <div className="bg-[#fde7f3]/30 border border-[#fde7f3] px-4 py-2 rounded-lg animate-pulse">
-                        <p className="text-[11px] font-bold text-[#b90064] uppercase tracking-wider flex items-center gap-2">
+                      <div className="bg-[#F5EEF8]/30 border border-[#F5EEF8] px-4 py-2 rounded-lg animate-pulse">
+                        <p className="text-[11px] font-bold text-[#6B2D8C] uppercase tracking-wider flex items-center gap-2">
                           <Sparkles className="w-3 h-3" />
                           For Demo, enter OTP: 1234
                         </p>
@@ -387,14 +387,14 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                     <div className="flex gap-4">
                       <button
                         onClick={saveDraft}
-                        className="flex-1 py-4 border border-[#e8e8e8] text-[#594047] font-bold text-[14px] rounded-xl hover:bg-[#fcf9f8] transition-all flex items-center justify-center gap-2"
+                        className="flex-1 py-4 border border-[#E8DEEF] text-[#5B4A6E] font-bold text-[14px] rounded-xl hover:bg-[#FDFBF7] transition-all flex items-center justify-center gap-2"
                       >
                         Save Progress
                       </button>
                       <button
                         onClick={handleVerifyOtp}
                         disabled={isVerifying}
-                        className="flex-[2] py-4 bg-[#b90064] hover:bg-[#8e004b] text-white font-black text-[14px] rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                        className="flex-[2] py-4 bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-black text-[14px] rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
                       >
                         {isVerifying ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Verify & Continue</span>}
                       </button>
@@ -409,33 +409,33 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
           {step === 2 && (
             <div className="space-y-8">
               <div className="text-center md:text-left space-y-2">
-                <h1 className="text-3xl font-black text-[#1c1b1b]">Business Details</h1>
-                <p className="text-[14px] text-[#594047]">Tell us about your company to build your professional profile.</p>
+                <h1 className="text-3xl font-black text-[#2A0E3F]">Business Details</h1>
+                <p className="text-[14px] text-[#5B4A6E]">Tell us about your company to build your professional profile.</p>
               </div>
 
-              <div className="bg-white border border-[#e8e8e8] rounded-2xl p-8 shadow-sm space-y-6">
+              <div className="bg-white border border-[#E8DEEF] rounded-2xl p-8 shadow-sm space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[12px] font-black text-[#1c1b1b] uppercase tracking-wider">Company Name</label>
+                    <label className="text-[12px] font-black text-[#2A0E3F] uppercase tracking-wider">Company Name</label>
                     <div className="relative">
-                      <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8c7077]" />
+                      <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7E6C96]" />
                       <input
                         type="text"
                         value={businessName}
                         onChange={(e) => setBusinessName(e.target.value)}
                         placeholder="e.g. Aura Cosmetics Labs"
-                        className="w-full pl-10 pr-4 py-3 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-[13px] font-bold focus:outline-none focus:border-[#b90064]"
+                        className="w-full pl-10 pr-4 py-3 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-[13px] font-bold focus:outline-none focus:border-[#C9A961]"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[12px] font-black text-[#1c1b1b] uppercase tracking-wider">Business Type</label>
+                    <label className="text-[12px] font-black text-[#2A0E3F] uppercase tracking-wider">Business Type</label>
                     <div className="relative">
-                      <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8c7077]" />
+                      <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7E6C96]" />
                       <select
                         value={supplierType}
                         onChange={(e) => setSupplierType(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-[13px] font-bold focus:outline-none focus:border-[#b90064] appearance-none"
+                        className="w-full pl-10 pr-4 py-3 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-[13px] font-bold focus:outline-none focus:border-[#C9A961] appearance-none"
                       >
                         <option value="">Select Type</option>
                         <option value="Manufacturer">Manufacturer</option>
@@ -446,18 +446,18 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[12px] font-black text-[#1c1b1b] uppercase tracking-wider">GST Number</label>
+                    <label className="text-[12px] font-black text-[#2A0E3F] uppercase tracking-wider">GST Number</label>
                     <div className="flex gap-2">
                       <input
                         type="text"
                         value={gstin}
                         onChange={(e) => setGstin(e.target.value)}
                         placeholder="15-digit GSTIN"
-                        className="flex-1 px-4 py-3 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-[13px] font-bold focus:outline-none focus:border-[#b90064]"
+                        className="flex-1 px-4 py-3 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-[13px] font-bold focus:outline-none focus:border-[#C9A961]"
                       />
                       <button
                         onClick={handleVerifyGst}
-                        className="px-4 py-2 bg-[#fde7f3] text-[#b90064] font-black text-[11px] uppercase rounded-xl hover:bg-[#ffd9e2] transition-all"
+                        className="px-4 py-2 bg-[#F5EEF8] text-[#6B2D8C] font-black text-[11px] uppercase rounded-xl hover:bg-[#E8D5F2] transition-all"
                       >
                         Verify
                       </button>
@@ -467,26 +467,26 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                   {/* Address Section */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-[12px] font-black text-[#1c1b1b] uppercase tracking-wider">Pincode</label>
+                      <label className="text-[12px] font-black text-[#2A0E3F] uppercase tracking-wider">Pincode</label>
                       <input
                         type="text"
                         maxLength={6}
                         value={pincode}
                         onChange={(e) => setPincode(e.target.value)}
                         placeholder="e.g. 400001"
-                        className="w-full px-4 py-3 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-[13px] font-bold focus:outline-none focus:border-[#b90064]"
+                        className="w-full px-4 py-3 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-[13px] font-bold focus:outline-none focus:border-[#C9A961]"
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[12px] font-black text-[#1c1b1b] uppercase tracking-wider">State / UT</label>
+                      <label className="text-[12px] font-black text-[#2A0E3F] uppercase tracking-wider">State / UT</label>
                       <select
                         value={selectedState}
                         onChange={(e) => {
                           setSelectedState(e.target.value);
                           setSelectedDistrict(''); // Reset district when state changes
                         }}
-                        className="w-full px-4 py-3 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-[13px] font-bold focus:outline-none focus:border-[#b90064] appearance-none"
+                        className="w-full px-4 py-3 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-[13px] font-bold focus:outline-none focus:border-[#C9A961] appearance-none"
                         required
                       >
                         <option value="">Select State</option>
@@ -498,12 +498,12 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[12px] font-black text-[#1c1b1b] uppercase tracking-wider">District</label>
+                    <label className="text-[12px] font-black text-[#2A0E3F] uppercase tracking-wider">District</label>
                     <select
                       value={selectedDistrict}
                       onChange={(e) => setSelectedDistrict(e.target.value)}
                       disabled={!selectedState}
-                      className="w-full px-4 py-3 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-[13px] font-bold focus:outline-none focus:border-[#b90064] appearance-none disabled:opacity-50"
+                      className="w-full px-4 py-3 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-[13px] font-bold focus:outline-none focus:border-[#C9A961] appearance-none disabled:opacity-50"
                       required
                     >
                       <option value="">{selectedState ? 'Select District' : 'Select State First'}</option>
@@ -516,14 +516,14 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                 <div className="flex gap-4">
                   <button
                     onClick={saveDraft}
-                    className="flex-1 py-4 border border-[#e8e8e8] text-[#594047] font-bold text-[14px] rounded-xl hover:bg-[#fcf9f8] transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-4 border border-[#E8DEEF] text-[#5B4A6E] font-bold text-[14px] rounded-xl hover:bg-[#FDFBF7] transition-all flex items-center justify-center gap-2"
                   >
                     Save Progress
                   </button>
                   <button
                     onClick={handleNext}
                     disabled={!selectedState || !selectedDistrict || !pincode}
-                    className="flex-[2] py-4 bg-[#b90064] hover:bg-[#8e004b] disabled:opacity-50 text-white font-black text-[14px] rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                    className="flex-[2] py-4 bg-[#6B2D8C] hover:bg-[#4A2560] disabled:opacity-50 text-white font-black text-[14px] rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
                   >
                     <span>Save & Continue</span>
                     <ArrowRight className="w-5 h-5" />
@@ -537,17 +537,17 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
           {step === 3 && (
             <div className="space-y-8">
               <div className="text-center md:text-left space-y-2">
-                <h1 className="text-3xl font-black text-[#1c1b1b]">Product Catalog</h1>
-                <p className="text-[14px] text-[#594047]">Add your primary products to start receiving enquiries.</p>
+                <h1 className="text-3xl font-black text-[#2A0E3F]">Product Catalog</h1>
+                <p className="text-[14px] text-[#5B4A6E]">Add your primary products to start receiving enquiries.</p>
               </div>
 
               <div className="space-y-4">
                 {products.map((product, idx) => (
-                  <div key={product.id} className="bg-white border border-[#e8e8e8] rounded-2xl p-6 shadow-sm space-y-4 relative animate-in slide-in-from-right-4 duration-300">
+                  <div key={product.id} className="bg-white border border-[#E8DEEF] rounded-2xl p-6 shadow-sm space-y-4 relative animate-in slide-in-from-right-4 duration-300">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-[11px] font-black text-[#b90064] uppercase tracking-widest">Product {idx + 1}</span>
+                      <span className="text-[11px] font-black text-[#6B2D8C] uppercase tracking-widest">Product {idx + 1}</span>
                       {products.length > 1 && (
-                        <button onClick={() => handleRemoveProduct(product.id)} className="text-[#8c7077] hover:text-red-500 transition-colors">
+                        <button onClick={() => handleRemoveProduct(product.id)} className="text-[#7E6C96] hover:text-red-500 transition-colors">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       )}
@@ -556,7 +556,7 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                     <div className="flex flex-col md:flex-row gap-6">
                       {/* Interactive Image Upload Section */}
                       <div className="w-full md:w-32 lg:w-40 shrink-0 space-y-2">
-                        <label className="text-[11px] font-bold text-[#594047] uppercase">Product Image</label>
+                        <label className="text-[11px] font-bold text-[#5B4A6E] uppercase">Product Image</label>
                         <div className="relative group">
                           <input
                             type="file"
@@ -569,8 +569,8 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                           />
                           <div className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-all ${
                             product.image 
-                              ? 'border-[#b90064] bg-white' 
-                              : 'border-[#e8e8e8] bg-[#fcf9f8] group-hover:border-[#b90064] group-hover:bg-[#fde7f3]/20'
+                              ? 'border-[#6B2D8C] bg-white' 
+                              : 'border-[#E8DEEF] bg-[#FDFBF7] group-hover:border-[#6B2D8C] group-hover:bg-[#F5EEF8]/20'
                           }`}>
                             {product.image ? (
                               <div className="relative w-full h-full p-1">
@@ -585,8 +585,8 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                               </div>
                             ) : (
                               <>
-                                <Upload className="w-5 h-5 text-[#8c7077] group-hover:text-[#b90064] mb-1" />
-                                <span className="text-[10px] font-bold text-[#8c7077] group-hover:text-[#b90064]">Upload</span>
+                                <Upload className="w-5 h-5 text-[#7E6C96] group-hover:text-[#6B2D8C] mb-1" />
+                                <span className="text-[10px] font-bold text-[#7E6C96] group-hover:text-[#6B2D8C]">Upload</span>
                               </>
                             )}
                           </div>
@@ -595,24 +595,24 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
 
                       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-bold text-[#594047] uppercase">Product Name</label>
+                          <label className="text-[11px] font-bold text-[#5B4A6E] uppercase">Product Name</label>
                           <input
                             type="text"
                             value={product.name}
                             onChange={(e) => handleProductChange(product.id, 'name', e.target.value)}
                             placeholder="e.g. Vitamin C Serum"
-                            className="w-full px-4 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-[12px] font-bold focus:outline-none focus:border-[#b90064]"
+                            className="w-full px-4 py-2.5 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-[12px] font-bold focus:outline-none focus:border-[#C9A961]"
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-bold text-[#594047] uppercase">Category</label>
+                          <label className="text-[11px] font-bold text-[#5B4A6E] uppercase">Category</label>
                           <select
                             value={product.category}
                             onChange={(e) => {
                               handleProductChange(product.id, 'category', e.target.value);
                               handleProductChange(product.id, 'subCategory', ''); // Reset subcategory
                             }}
-                            className="w-full px-4 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-[12px] font-bold focus:outline-none focus:border-[#b90064] appearance-none"
+                            className="w-full px-4 py-2.5 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-[12px] font-bold focus:outline-none focus:border-[#C9A961] appearance-none"
                           >
                             <option value="">Select Category</option>
                             {Object.keys(BEAUTY_CATEGORY_DATA).map(cat => (
@@ -621,12 +621,12 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                           </select>
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-bold text-[#594047] uppercase">Sub-Category</label>
+                          <label className="text-[11px] font-bold text-[#5B4A6E] uppercase">Sub-Category</label>
                           <select
                             value={product.subCategory}
                             onChange={(e) => handleProductChange(product.id, 'subCategory', e.target.value)}
                             disabled={!product.category}
-                            className="w-full px-4 py-2.5 bg-[#fdf2f7]/30 border border-[#e8e8e8] hover:border-[#b90064]/30 focus:border-[#b90064] rounded-xl text-[12px] font-bold focus:outline-none focus:ring-4 focus:ring-[#b90064]/5 transition-all appearance-none disabled:opacity-50"
+                            className="w-full px-4 py-2.5 bg-[#fdf2f7]/30 border border-[#E8DEEF] hover:border-[#6B2D8C]/30 focus:border-[#C9A961] rounded-xl text-[12px] font-bold focus:outline-none focus:ring-4 focus:ring-[#C9A961]/10 transition-all appearance-none disabled:opacity-50"
                           >
                             <option value="">{product.category ? 'Select Sub-Category' : 'Select Category First'}</option>
                             {product.category && BEAUTY_CATEGORY_DATA[product.category].map(sub => (
@@ -635,23 +635,23 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                           </select>
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-bold text-[#594047] uppercase">Price Range (₹)</label>
+                          <label className="text-[11px] font-bold text-[#5B4A6E] uppercase">Price Range (₹)</label>
                           <input
                             type="text"
                             value={product.price}
                             onChange={(e) => handleProductChange(product.id, 'price', e.target.value)}
                             placeholder="e.g. 250 - 450"
-                            className="w-full px-4 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-[12px] font-bold focus:outline-none focus:border-[#b90064]"
+                            className="w-full px-4 py-2.5 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-[12px] font-bold focus:outline-none focus:border-[#C9A961]"
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-bold text-[#594047] uppercase">Min Order (MOQ)</label>
+                          <label className="text-[11px] font-bold text-[#5B4A6E] uppercase">Min Order (MOQ)</label>
                           <input
                             type="text"
                             value={product.moq}
                             onChange={(e) => handleProductChange(product.id, 'moq', e.target.value)}
                             placeholder="e.g. 500 Units"
-                            className="w-full px-4 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-[12px] font-bold focus:outline-none focus:border-[#b90064]"
+                            className="w-full px-4 py-2.5 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-[12px] font-bold focus:outline-none focus:border-[#C9A961]"
                           />
                         </div>
                       </div>
@@ -661,7 +661,7 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
 
                 <button
                   onClick={handleAddProduct}
-                  className="w-full py-4 border-2 border-dashed border-[#e8e8e8] rounded-2xl text-[#8c7077] hover:text-[#b90064] hover:border-[#b90064] hover:bg-[#fde7f3]/10 transition-all flex items-center justify-center gap-2 font-bold text-[13px]"
+                  className="w-full py-4 border-2 border-dashed border-[#E8DEEF] rounded-2xl text-[#7E6C96] hover:text-[#6B2D8C] hover:border-[#6B2D8C] hover:bg-[#F5EEF8]/10 transition-all flex items-center justify-center gap-2 font-bold text-[13px]"
                 >
                   <Plus className="w-5 h-5" />
                   <span>Add Another Product</span>
@@ -670,13 +670,13 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                 <div className="flex gap-4">
                   <button
                     onClick={saveDraft}
-                    className="flex-1 py-4 border border-[#e8e8e8] text-[#594047] font-bold text-[14px] rounded-xl hover:bg-[#fcf9f8] transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-4 border border-[#E8DEEF] text-[#5B4A6E] font-bold text-[14px] rounded-xl hover:bg-[#FDFBF7] transition-all flex items-center justify-center gap-2"
                   >
                     Save Progress
                   </button>
                   <button
                     onClick={handleNext}
-                    className="flex-[2] py-4 bg-[#b90064] hover:bg-[#8e004b] text-white font-black text-[14px] rounded-xl shadow-md transition-all flex items-center justify-center gap-2 mt-0"
+                    className="flex-[2] py-4 bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-black text-[14px] rounded-xl shadow-md transition-all flex items-center justify-center gap-2 mt-0"
                   >
                     <span>Build My Profile</span>
                     <ArrowRight className="w-5 h-5" />
@@ -694,20 +694,20 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                   <CheckCircle2 className="w-10 h-10" />
                 </div>
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-black text-[#1c1b1b]">Profile Ready for Review</h1>
-                  <p className="text-[14px] text-[#594047]">Your business and catalog are ready. Submit them for Nexora review to unlock the verified badge.</p>
+                  <h1 className="text-3xl font-black text-[#2A0E3F]">Profile Ready for Review</h1>
+                  <p className="text-[14px] text-[#5B4A6E]">Your business and catalog are ready. Submit them for Nexora review to unlock the verified badge.</p>
                 </div>
               </div>
 
-              <div className="bg-white border border-[#e8e8e8] rounded-2xl overflow-hidden shadow-sm">
-                <div className="p-6 border-b border-[#e8e8e8] bg-[#fcf9f8] flex items-center justify-between">
+              <div className="bg-white border border-[#E8DEEF] rounded-2xl overflow-hidden shadow-sm">
+                <div className="p-6 border-b border-[#E8DEEF] bg-[#FDFBF7] flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white border border-[#e8e8e8] rounded-xl flex items-center justify-center text-[#b90064]">
+                    <div className="w-12 h-12 bg-white border border-[#E8DEEF] rounded-xl flex items-center justify-center text-[#6B2D8C]">
                       <Building2 className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-[#1c1b1b]">{businessName || 'Your Business Name'}</h3>
-                      <p className="text-[11px] text-[#594047] flex items-center gap-1"><MapPin className="w-3 h-3" /> {location || 'Location Not Set'}</p>
+                      <h3 className="text-base font-bold text-[#2A0E3F]">{businessName || 'Your Business Name'}</h3>
+                      <p className="text-[11px] text-[#5B4A6E] flex items-center gap-1"><MapPin className="w-3 h-3" /> {location || 'Location Not Set'}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-wider border border-emerald-100">
@@ -718,38 +718,38 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
 
                 <div className="p-6 space-y-6">
                   <div className="grid grid-cols-3 gap-4">
-                    <div className="p-3 bg-[#fdf8f8] rounded-xl border border-[#e8e8e8] text-center">
-                      <p className="text-[9px] text-[#8c7077] uppercase font-black mb-1">Catalog</p>
-                      <p className="text-lg font-black text-[#1c1b1b]">{products.length}</p>
+                    <div className="p-3 bg-[#FDFBF7] rounded-xl border border-[#E8DEEF] text-center">
+                      <p className="text-[9px] text-[#7E6C96] uppercase font-black mb-1">Catalog</p>
+                      <p className="text-lg font-black text-[#2A0E3F]">{products.length}</p>
                     </div>
-                    <div className="p-3 bg-[#fdf8f8] rounded-xl border border-[#e8e8e8] text-center">
-                      <p className="text-[9px] text-[#8c7077] uppercase font-black mb-1">Status</p>
+                    <div className="p-3 bg-[#FDFBF7] rounded-xl border border-[#E8DEEF] text-center">
+                      <p className="text-[9px] text-[#7E6C96] uppercase font-black mb-1">Status</p>
                       <p className="text-[12px] font-black text-emerald-600">Active</p>
                     </div>
-                    <div className="p-3 bg-[#fdf8f8] rounded-xl border border-[#e8e8e8] text-center">
-                      <p className="text-[9px] text-[#8c7077] uppercase font-black mb-1">Reach</p>
-                      <p className="text-lg font-black text-[#1c1b1b]">0</p>
+                    <div className="p-3 bg-[#FDFBF7] rounded-xl border border-[#E8DEEF] text-center">
+                      <p className="text-[9px] text-[#7E6C96] uppercase font-black mb-1">Reach</p>
+                      <p className="text-lg font-black text-[#2A0E3F]">0</p>
                     </div>
                   </div>
 
                   <div className="space-y-3">
-                    <p className="text-[11px] font-black text-[#1c1b1b] uppercase tracking-widest border-b border-[#e8e8e8] pb-1">Listed Products</p>
+                    <p className="text-[11px] font-black text-[#2A0E3F] uppercase tracking-widest border-b border-[#E8DEEF] pb-1">Listed Products</p>
                     {products.slice(0, 2).map((p, i) => (
-                      <div key={i} className="flex items-center justify-between text-[12px] text-[#594047]">
+                      <div key={i} className="flex items-center justify-between text-[12px] text-[#5B4A6E]">
                         <div className="flex items-center gap-2">
                           {p.image ? (
-                            <img src={p.image} className="w-8 h-8 rounded object-cover border border-[#e8e8e8]" alt="" />
+                            <img src={p.image} className="w-8 h-8 rounded object-cover border border-[#E8DEEF]" alt="" />
                           ) : (
-                            <div className="w-8 h-8 rounded bg-[#fcf9f8] border border-[#e8e8e8] flex items-center justify-center">
-                              <Tag className="w-3 h-3 text-[#8c7077]" />
+                            <div className="w-8 h-8 rounded bg-[#FDFBF7] border border-[#E8DEEF] flex items-center justify-center">
+                              <Tag className="w-3 h-3 text-[#7E6C96]" />
                             </div>
                           )}
-                          <span className="font-bold text-[#1c1b1b]">{p.name || 'Untitled Product'}</span>
+                          <span className="font-bold text-[#2A0E3F]">{p.name || 'Untitled Product'}</span>
                         </div>
                         <span>MOQ: {p.moq || 'Contact for MOQ'}</span>
                       </div>
                     ))}
-                    {products.length > 2 && <p className="text-[10px] text-[#8c7077] font-bold">+ {products.length - 2} more items</p>}
+                    {products.length > 2 && <p className="text-[10px] text-[#7E6C96] font-bold">+ {products.length - 2} more items</p>}
                   </div>
                 </div>
               </div>
@@ -757,12 +757,12 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
               <div className="space-y-3">
                 <button
                   onClick={handleFinalComplete}
-                  className="w-full py-4 bg-[#b90064] hover:bg-[#8e004b] text-white font-black text-[14px] rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-black text-[14px] rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
                 >
                   <span>Submit for Nexora Review</span>
                   <ArrowRight className="w-5 h-5" />
                 </button>
-                <p className="text-[11px] text-[#8c7077] text-center">
+                <p className="text-[11px] text-[#7E6C96] text-center">
                   By clicking launch, you agree to our B2B Marketplace Terms and Quality Standards.
                 </p>
               </div>
@@ -771,7 +771,7 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
 
           {/* Toast Notification */}
           {showSaveToast && (
-            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-white border border-[#e8e8e8] text-[#1c1b1b] px-6 py-3 rounded-2xl text-[13px] font-bold shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center gap-3 animate-in slide-in-from-bottom-4 duration-300 z-50">
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-white border border-[#E8DEEF] text-[#2A0E3F] px-6 py-3 rounded-2xl text-[13px] font-bold shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center gap-3 animate-in slide-in-from-bottom-4 duration-300 z-50">
               <div className="w-6 h-6 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center">
                 <CheckCircle2 className="w-4 h-4" />
               </div>

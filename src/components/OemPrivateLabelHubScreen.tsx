@@ -87,13 +87,13 @@ export const OemPrivateLabelHubScreen: React.FC<OemPrivateLabelHubScreenProps> =
   };
 
   return (
-    <div className="bg-[#fdf8f8] min-h-screen">
+    <div className="bg-[#FDFBF7] min-h-screen">
       
       {/* Editorial Sourcing Banner */}
-      <div className="bg-gradient-to-r from-[#1c1b1b] to-zinc-800 text-white py-12 px-6 md:px-12 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-[#2A0E3F] to-zinc-800 text-white py-12 px-6 md:px-12 relative overflow-hidden">
         <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-15 hidden lg:block bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800')" }}></div>
         <div className="max-w-7xl mx-auto relative z-10 space-y-4">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#b90064] text-white text-[10px] font-bold uppercase tracking-widest rounded-full">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#6B2D8C] text-white text-[10px] font-bold uppercase tracking-widest rounded-full">
             <Sparkles className="w-3 h-3" />
             OEM, Private Label &amp; Formulation Sourcing Hub
           </span>
@@ -106,7 +106,7 @@ export const OemPrivateLabelHubScreen: React.FC<OemPrivateLabelHubScreenProps> =
           <div className="flex flex-wrap gap-3 pt-2">
             <button
               onClick={onOpenRFQModal}
-              className="bg-[#b90064] hover:bg-[#8e004b] text-white font-extrabold text-xs px-5 py-3 rounded-lg shadow-sm transition-all cursor-pointer"
+              className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold text-xs px-5 py-3 rounded-lg shadow-sm transition-all cursor-pointer"
             >
               Post Custom Formulation Requirement
             </button>
@@ -127,7 +127,7 @@ export const OemPrivateLabelHubScreen: React.FC<OemPrivateLabelHubScreenProps> =
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h2 className="text-lg font-black text-zinc-900">Pre-Formulated Private Label Templates</h2>
-              <p className="text-xs text-[#594047]">Ready-to-order base formulations customizable with your proprietary active compounds.</p>
+              <p className="text-xs text-[#5B4A6E]">Ready-to-order base formulations customizable with your proprietary active compounds.</p>
             </div>
 
             {/* Category Tabs */}
@@ -138,8 +138,8 @@ export const OemPrivateLabelHubScreen: React.FC<OemPrivateLabelHubScreenProps> =
                   onClick={() => setSelectedCategory(cat)}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                     selectedCategory === cat
-                      ? 'bg-[#b90064] text-white'
-                      : 'bg-[#f7f2f2] text-[#594047] hover:bg-[#e8e8e8]'
+                      ? 'bg-[#6B2D8C] text-white'
+                      : 'bg-[#F6F1FA] text-[#5B4A6E] hover:bg-[#E8DEEF]'
                   }`}
                 >
                   {cat}
@@ -150,10 +150,10 @@ export const OemPrivateLabelHubScreen: React.FC<OemPrivateLabelHubScreenProps> =
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredFormulations.map((f) => (
-              <div key={f.id} className="bg-white border border-[#e8e8e8] hover:border-[#b90064] rounded-xl overflow-hidden flex flex-col justify-between transition-all">
+              <div key={f.id} className="bg-white border border-[#E8DEEF] hover:border-[#6B2D8C] rounded-xl overflow-hidden flex flex-col justify-between transition-all">
                 <div className="p-5 space-y-4">
                   <div className="flex justify-between items-start">
-                    <span className="text-[9px] bg-[#fde7f3] text-[#b90064] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">{f.category}</span>
+                    <span className="text-[9px] bg-[#F5EEF8] text-[#6B2D8C] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">{f.category}</span>
                     <span className="text-xs font-mono font-bold text-zinc-400">Est. {f.estimatedPrice}</span>
                   </div>
 
@@ -161,21 +161,21 @@ export const OemPrivateLabelHubScreen: React.FC<OemPrivateLabelHubScreenProps> =
                     <h3 className="font-extrabold text-sm text-zinc-950 leading-snug">{f.title}</h3>
                     <button 
                       onClick={() => onNavigateToSupplierProfile?.(f.supplierId)}
-                      className="text-[11px] text-[#594047] font-semibold mt-0.5 hover:text-[#b90064] hover:underline transition-colors"
+                      className="text-[11px] text-[#5B4A6E] font-semibold mt-0.5 hover:text-[#6B2D8C] hover:underline transition-colors"
                     >
                       By: {f.supplier}
                     </button>
                   </div>
 
-                  <p className="text-xs text-[#594047] leading-relaxed line-clamp-3">
+                  <p className="text-xs text-[#5B4A6E] leading-relaxed line-clamp-3">
                     {f.description}
                   </p>
 
-                  <div className="space-y-1.5 pt-2 border-t border-[#e8e8e8]">
-                    <span className="block text-[9.5px] text-[#8c7077] font-bold uppercase tracking-wide">Key Active Ingredients</span>
+                  <div className="space-y-1.5 pt-2 border-t border-[#E8DEEF]">
+                    <span className="block text-[9.5px] text-[#7E6C96] font-bold uppercase tracking-wide">Key Active Ingredients</span>
                     <div className="flex flex-wrap gap-1">
                       {f.ingredients.map((ing, i) => (
-                        <span key={i} className="text-[10px] bg-[#fcf9f8] border border-[#e8e8e8] text-zinc-800 px-2 py-0.5 rounded font-medium">
+                        <span key={i} className="text-[10px] bg-[#FDFBF7] border border-[#E8DEEF] text-zinc-800 px-2 py-0.5 rounded font-medium">
                           {ing}
                         </span>
                       ))}
@@ -183,9 +183,9 @@ export const OemPrivateLabelHubScreen: React.FC<OemPrivateLabelHubScreenProps> =
                   </div>
                 </div>
 
-                <div className="px-5 py-3 bg-[#fcf9f8] border-t border-[#e8e8e8] flex items-center justify-between text-xs">
+                <div className="px-5 py-3 bg-[#FDFBF7] border-t border-[#E8DEEF] flex items-center justify-between text-xs">
                   <div className="text-left">
-                    <span className="block text-[9px] text-[#8c7077] uppercase font-bold">MOQ Limit</span>
+                    <span className="block text-[9px] text-[#7E6C96] uppercase font-bold">MOQ Limit</span>
                     <span className="font-bold text-zinc-900">{f.moq}</span>
                   </div>
                   <div className="flex gap-2">
@@ -197,7 +197,7 @@ export const OemPrivateLabelHubScreen: React.FC<OemPrivateLabelHubScreenProps> =
                     </button>
                     <button
                       onClick={() => onOpenEnquiryModal(`Formulation Sample: ${f.title}`, f.supplier)}
-                      className="bg-[#b90064] text-white font-extrabold px-3 py-1.5 rounded-md hover:bg-[#8e004b] transition-all cursor-pointer"
+                      className="bg-[#6B2D8C] text-white font-extrabold px-3 py-1.5 rounded-md hover:bg-[#4A2560] transition-all cursor-pointer"
                     >
                       Request Lab Sample
                     </button>
@@ -212,20 +212,20 @@ export const OemPrivateLabelHubScreen: React.FC<OemPrivateLabelHubScreenProps> =
         {/* Right: Custom Formulation RFQ Estimator (col-span-4) */}
         <div className="lg:col-span-4 space-y-6">
           
-          <div className="bg-white border border-[#e8e8e8] rounded-xl p-5 md:p-6 space-y-5">
-            <div className="flex items-center gap-2 pb-3 border-b border-[#e8e8e8]">
-              <Beaker className="w-5 h-5 text-[#b90064]" />
+          <div className="bg-white border border-[#E8DEEF] rounded-xl p-5 md:p-6 space-y-5">
+            <div className="flex items-center gap-2 pb-3 border-b border-[#E8DEEF]">
+              <Beaker className="w-5 h-5 text-[#6B2D8C]" />
               <h3 className="font-extrabold text-sm text-zinc-950">Formulation Batch Estimator</h3>
             </div>
 
             <form onSubmit={handleCustomSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-[#594047] uppercase tracking-wider mb-1.5">Desired formulation category</label>
+                <label className="block font-bold text-[#5B4A6E] uppercase tracking-wider mb-1.5">Desired formulation category</label>
                 <select
                   required
                   value={customFormulationType}
                   onChange={(e) => setCustomFormulationType(e.target.value)}
-                  className="w-full bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none rounded-lg p-2.5 text-xs text-[#1c1b1b]"
+                  className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none rounded-lg p-2.5 text-xs text-[#2A0E3F]"
                 >
                   <option value="">Select Formulation Type</option>
                   <option value="skin">Skincare Emulsions &amp; Serums</option>
@@ -236,19 +236,19 @@ export const OemPrivateLabelHubScreen: React.FC<OemPrivateLabelHubScreenProps> =
               </div>
 
               <div>
-                <label className="block font-bold text-[#594047] uppercase tracking-wider mb-1.5">Target production volume</label>
+                <label className="block font-bold text-[#5B4A6E] uppercase tracking-wider mb-1.5">Target production volume</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. 5,000 Liters, 10,000 Custom Bottles"
                   value={customVolume}
                   onChange={(e) => setCustomVolume(e.target.value)}
-                  className="w-full bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none rounded-lg p-2.5 text-xs text-[#1c1b1b]"
+                  className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none rounded-lg p-2.5 text-xs text-[#2A0E3F]"
                 />
               </div>
 
-              <div className="bg-[#f7f2f2] p-4 rounded-lg space-y-2 text-[#594047]">
-                <span className="block font-bold text-[10px] text-[#8c7077] uppercase tracking-wider">Estimated Lab Lead-time</span>
+              <div className="bg-[#F6F1FA] p-4 rounded-lg space-y-2 text-[#5B4A6E]">
+                <span className="block font-bold text-[10px] text-[#7E6C96] uppercase tracking-wider">Estimated Lab Lead-time</span>
                 <p className="text-zinc-800 leading-tight">
                   Formulation stability profiling and toxicological batch records usually require **12 to 18 business days** depending on the specific botanical actives selected.
                 </p>
@@ -257,7 +257,7 @@ export const OemPrivateLabelHubScreen: React.FC<OemPrivateLabelHubScreenProps> =
               <button
                 type="submit"
                 disabled={submittedForm}
-                className="w-full py-3 bg-[#b90064] hover:bg-[#8e004b] text-white font-extrabold uppercase tracking-wider rounded-lg shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full py-3 bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold uppercase tracking-wider rounded-lg shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 {submittedForm ? (
                   <span>Preparing RFQ draft...</span>
@@ -272,12 +272,12 @@ export const OemPrivateLabelHubScreen: React.FC<OemPrivateLabelHubScreenProps> =
           </div>
 
           {/* OEM Standards Certification Badge card */}
-          <div className="bg-[#fde7f3] border border-[#e0bec6] rounded-xl p-5 space-y-3">
-            <h4 className="font-extrabold text-xs text-[#b90064] uppercase tracking-wider flex items-center gap-1">
+          <div className="bg-[#F5EEF8] border border-[#D9C3E8] rounded-xl p-5 space-y-3">
+            <h4 className="font-extrabold text-xs text-[#6B2D8C] uppercase tracking-wider flex items-center gap-1">
               <ShieldCheck className="w-4 h-4" />
               GMP &amp; ISO Manufacturing Standards
             </h4>
-            <p className="text-[11px] text-[#594047] leading-relaxed">
+            <p className="text-[11px] text-[#5B4A6E] leading-relaxed">
               All partner formulation contract plants listed on Nexora are strictly vetted for **ISO 22716 certification**, cleanroom ventilation limits, GMP standards compliance, and animal cruelty-free licensing standards.
             </p>
           </div>

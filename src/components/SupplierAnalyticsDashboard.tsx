@@ -183,22 +183,22 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
   ];
 
   return (
-    <div className="space-y-6 text-[#1c1b1b]">
+    <div className="space-y-6 text-[#2A0E3F]">
       
       {/* ========================================================================= */}
       {/* 1. HEADER SECTION */}
       {/* ========================================================================= */}
-      <div className="bg-white border border-[#e8e8e8] p-5 md:p-6 rounded-2xl shadow-xs flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+      <div className="bg-white border border-[#E8DEEF] p-5 md:p-6 rounded-2xl shadow-xs flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <h2 className="text-xl md:text-2xl font-black text-zinc-950 tracking-tight">
               Supplier Analytics & Business Insights
             </h2>
-            <span className="bg-[#fde7f3] text-[#b90064] text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border border-[#f7c5e0]">
+            <span className="bg-[#F5EEF8] text-[#6B2D8C] text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border border-[#E8D5F2]">
               Screen 25
             </span>
           </div>
-          <p className="text-xs text-[#594047]">
+          <p className="text-xs text-[#5B4A6E]">
             Track listing performance, lead conversions, buyer engagement, and geographic demand.
           </p>
         </div>
@@ -211,7 +211,7 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value as typeof timeRange)}
-              className="bg-[#fdf8f8] hover:bg-[#fcf9f8] border border-[#e8e8e8] text-xs font-extrabold text-stone-800 py-2 pl-3 pr-8 rounded-xl focus:outline-none focus:border-[#b90064] cursor-pointer shadow-2xs transition-colors"
+              className="bg-[#FDFBF7] hover:bg-[#FDFBF7] border border-[#E8DEEF] text-xs font-extrabold text-stone-800 py-2 pl-3 pr-8 rounded-xl focus:outline-none focus:border-[#C9A961] cursor-pointer shadow-2xs transition-colors"
             >
               <option value="7d">Last 7 Days</option>
               <option value="30d">Last 30 Days (Default)</option>
@@ -225,7 +225,7 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="bg-[#fdf8f8] hover:bg-[#fcf9f8] border border-[#e8e8e8] text-xs font-extrabold text-stone-800 py-2 pl-3 pr-8 rounded-xl focus:outline-none focus:border-[#b90064] cursor-pointer shadow-2xs transition-colors"
+              className="bg-[#FDFBF7] hover:bg-[#FDFBF7] border border-[#E8DEEF] text-xs font-extrabold text-stone-800 py-2 pl-3 pr-8 rounded-xl focus:outline-none focus:border-[#C9A961] cursor-pointer shadow-2xs transition-colors"
             >
               <option value="All Categories">All Categories</option>
               <option value="Skincare">Skincare Formulations</option>
@@ -239,9 +239,9 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
           {/* Export Report CTA */}
           <button
             onClick={() => alert('📊 Exporting CSV Sourcing Analytics Summary for Aura Beauty Labs...')}
-            className="bg-white border border-[#e8e8e8] hover:border-[#b90064] hover:text-[#b90064] text-[#1c1b1b] text-xs font-extrabold px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            className="bg-white border border-[#E8DEEF] hover:border-[#6B2D8C] hover:text-[#6B2D8C] text-[#2A0E3F] text-xs font-extrabold px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
           >
-            <Download className="w-3.5 h-3.5 text-[#b90064]" />
+            <Download className="w-3.5 h-3.5 text-[#6B2D8C]" />
             <span>Export CSV</span>
           </button>
         </div>
@@ -253,9 +253,9 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* KPI 1: Profile Views */}
-        <div className="bg-white border border-[#e8e8e8] p-5 rounded-2xl space-y-3 shadow-xs hover:border-[#b90064]/40 transition-colors">
+        <div className="bg-white border border-[#E8DEEF] p-5 rounded-2xl space-y-3 shadow-xs hover:border-[#6B2D8C]/40 transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold text-[#594047] uppercase tracking-wider">
+            <span className="text-[11px] font-extrabold text-[#5B4A6E] uppercase tracking-wider">
               Profile Views
             </span>
             <div className="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center text-purple-700">
@@ -275,17 +275,17 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
               </div>
             </div>
 
-            <Sparkline data={kpiData.profileSparkline} color="#7e22ce" isPositive={true} />
+            <Sparkline data={kpiData.profileSparkline} color="#6B2D8C" isPositive={true} />
           </div>
         </div>
 
         {/* KPI 2: Product Views */}
-        <div className="bg-white border border-[#e8e8e8] p-5 rounded-2xl space-y-3 shadow-xs hover:border-[#b90064]/40 transition-colors">
+        <div className="bg-white border border-[#E8DEEF] p-5 rounded-2xl space-y-3 shadow-xs hover:border-[#6B2D8C]/40 transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold text-[#594047] uppercase tracking-wider">
+            <span className="text-[11px] font-extrabold text-[#5B4A6E] uppercase tracking-wider">
               Product Views
             </span>
-            <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-700">
+            <div className="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center text-purple-800">
               <Eye className="w-4 h-4" />
             </div>
           </div>
@@ -302,24 +302,24 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
               </div>
             </div>
 
-            <Sparkline data={kpiData.productSparkline} color="#0050d6" isPositive={true} />
+            <Sparkline data={kpiData.productSparkline} color="#6B2D8C" isPositive={true} />
           </div>
         </div>
 
         {/* KPI 3: Total Enquiries Received */}
-        <div className="bg-white border border-[#e8e8e8] p-5 rounded-2xl space-y-3 shadow-xs hover:border-[#b90064]/40 transition-colors">
+        <div className="bg-white border border-[#E8DEEF] p-5 rounded-2xl space-y-3 shadow-xs hover:border-[#6B2D8C]/40 transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold text-[#594047] uppercase tracking-wider">
+            <span className="text-[11px] font-extrabold text-[#5B4A6E] uppercase tracking-wider">
               Total Enquiries Received
             </span>
-            <div className="w-8 h-8 rounded-xl bg-[#fde7f3] flex items-center justify-center text-[#b90064]">
+            <div className="w-8 h-8 rounded-xl bg-[#F5EEF8] flex items-center justify-center text-[#6B2D8C]">
               <MessageSquare className="w-4 h-4" />
             </div>
           </div>
 
           <div className="flex items-baseline justify-between">
             <div>
-              <span className="text-2xl font-black text-[#b90064] tracking-tight block">
+              <span className="text-2xl font-black text-[#6B2D8C] tracking-tight block">
                 {kpiData.enquiriesReceived.toLocaleString()}
               </span>
               <div className="flex items-center gap-1 text-[11px] font-extrabold text-emerald-600 mt-0.5">
@@ -329,14 +329,14 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
               </div>
             </div>
 
-            <Sparkline data={kpiData.enquiriesSparkline} color="#b90064" isPositive={true} />
+            <Sparkline data={kpiData.enquiriesSparkline} color="#6B2D8C" isPositive={true} />
           </div>
         </div>
 
         {/* KPI 4: Total RFQs Received */}
-        <div className="bg-white border border-[#e8e8e8] p-5 rounded-2xl space-y-3 shadow-xs hover:border-[#b90064]/40 transition-colors">
+        <div className="bg-white border border-[#E8DEEF] p-5 rounded-2xl space-y-3 shadow-xs hover:border-[#6B2D8C]/40 transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold text-[#594047] uppercase tracking-wider">
+            <span className="text-[11px] font-extrabold text-[#5B4A6E] uppercase tracking-wider">
               Total RFQs Received
             </span>
             <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center text-amber-700">
@@ -368,10 +368,10 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         
         {/* Card 1: Quote Conversion Rate */}
-        <div className="bg-white border border-[#e8e8e8] p-5 md:p-6 rounded-2xl shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div className="bg-white border border-[#E8DEEF] p-5 md:p-6 rounded-2xl shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-extrabold text-[#594047] uppercase tracking-wider">
+              <span className="text-xs font-extrabold text-[#5B4A6E] uppercase tracking-wider">
                 Quote Conversion Rate
               </span>
               <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-black uppercase px-2 py-0.5 rounded-full">
@@ -381,18 +381,18 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
             <h3 className="text-3xl font-black text-zinc-950 tracking-tight">
               18.6%
             </h3>
-            <p className="text-xs text-[#594047] leading-relaxed">
+            <p className="text-xs text-[#5B4A6E] leading-relaxed">
               Percentage of sent quotations that successfully convert into connected buyer partnerships.
             </p>
 
             <div className="grid grid-cols-2 gap-3 pt-2 text-xs">
-              <div className="bg-[#fcf9f8] p-2.5 rounded-xl border border-stone-200">
+              <div className="bg-[#FDFBF7] p-2.5 rounded-xl border border-stone-200">
                 <span className="text-stone-400 block text-[10px] font-bold">Quotes Sent</span>
                 <span className="font-black text-stone-900 text-sm">{Math.round(64 * multiplier)} Bids</span>
               </div>
-              <div className="bg-pink-50 p-2.5 rounded-xl border border-pink-200">
-                <span className="text-[#b90064] block text-[10px] font-bold">Quotes Converted</span>
-                <span className="font-black text-[#b90064] text-sm">{Math.round(12 * multiplier)} Deals</span>
+              <div className="bg-purple-50 p-2.5 rounded-xl border border-purple-200">
+                <span className="text-[#6B2D8C] block text-[10px] font-bold">Quotes Converted</span>
+                <span className="font-black text-[#6B2D8C] text-sm">{Math.round(12 * multiplier)} Deals</span>
               </div>
             </div>
           </div>
@@ -412,7 +412,7 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
                 cx="50"
                 cy="50"
                 r="40"
-                className="stroke-[#b90064]"
+                className="stroke-[#6B2D8C]"
                 strokeWidth="10"
                 strokeDasharray="251.2"
                 strokeDashoffset={251.2 - (251.2 * 0.186)}
@@ -422,21 +422,21 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
               <span className="text-lg font-black text-zinc-950">18.6%</span>
-              <span className="text-[9px] text-[#594047] font-extrabold uppercase">Win Rate</span>
+              <span className="text-[9px] text-[#5B4A6E] font-extrabold uppercase">Win Rate</span>
             </div>
           </div>
         </div>
 
         {/* Card 2: Supplier Response Rate & Speed */}
-        <div className="bg-white border border-[#e8e8e8] p-5 md:p-6 rounded-2xl shadow-xs flex flex-col justify-between gap-4">
+        <div className="bg-white border border-[#E8DEEF] p-5 md:p-6 rounded-2xl shadow-xs flex flex-col justify-between gap-4">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-extrabold text-[#594047] uppercase tracking-wider">
+                <span className="text-xs font-extrabold text-[#5B4A6E] uppercase tracking-wider">
                   Supplier Response Rate & Speed
                 </span>
               </div>
-              <p className="text-xs text-[#594047]">
+              <p className="text-xs text-[#5B4A6E]">
                 Live measurement of how quickly and reliably you answer buyer leads.
               </p>
             </div>
@@ -449,7 +449,7 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
           </div>
 
           <div className="grid grid-cols-2 gap-4 pt-1">
-            <div className="bg-[#fcf9f8] p-3.5 rounded-xl border border-stone-200 space-y-1">
+            <div className="bg-[#FDFBF7] p-3.5 rounded-xl border border-stone-200 space-y-1">
               <div className="flex items-center justify-between text-stone-500">
                 <span className="text-[10px] font-extrabold uppercase tracking-wider">Response Rate</span>
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
@@ -463,14 +463,14 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
               </span>
             </div>
 
-            <div className="bg-[#fcf9f8] p-3.5 rounded-xl border border-stone-200 space-y-1">
+            <div className="bg-[#FDFBF7] p-3.5 rounded-xl border border-stone-200 space-y-1">
               <div className="flex items-center justify-between text-stone-500">
                 <span className="text-[10px] font-extrabold uppercase tracking-wider">Avg Response Time</span>
-                <Clock className="w-4 h-4 text-[#b90064]" />
+                <Clock className="w-4 h-4 text-[#6B2D8C]" />
               </div>
               <span className="text-2xl font-black text-zinc-950 block">1.8 Hours</span>
               <div className="w-full bg-stone-200 h-1.5 rounded-full overflow-hidden mt-2">
-                <div className="bg-[#b90064] h-full w-[88%]" />
+                <div className="bg-[#6B2D8C] h-full w-[88%]" />
               </div>
               <span className="text-[10px] text-emerald-700 font-bold block pt-1">
                 Top 5% speed in OEM Category
@@ -484,22 +484,22 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
       {/* ========================================================================= */}
       {/* 4. LEAD & VIEW TRENDS (ROW 3 - MAIN CHART SECTION) */}
       {/* ========================================================================= */}
-      <div className="bg-white border border-[#e8e8e8] p-5 md:p-6 rounded-2xl shadow-xs space-y-5">
+      <div className="bg-white border border-[#E8DEEF] p-5 md:p-6 rounded-2xl shadow-xs space-y-5">
         
         {/* Chart Header & Controls */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h3 className="text-base font-black text-zinc-950 flex items-center gap-2">
-              <Activity className="w-4 h-4 text-[#b90064]" />
+              <Activity className="w-4 h-4 text-[#6B2D8C]" />
               <span>Lead & View Trends Over Time</span>
             </h3>
-            <p className="text-xs text-[#594047]">
+            <p className="text-xs text-[#5B4A6E]">
               Interactive visual timeline of profile discovery, catalog engagement, enquiries, and buyer RFQs.
             </p>
           </div>
 
           {/* Metric Toggle Tabs */}
-          <div className="flex flex-wrap items-center gap-1.5 bg-[#fdf8f8] p-1 rounded-xl border border-stone-200 text-xs font-bold">
+          <div className="flex flex-wrap items-center gap-1.5 bg-[#FDFBF7] p-1 rounded-xl border border-stone-200 text-xs font-bold">
             {[
               { id: 'all', label: 'All Combined' },
               { id: 'product_views', label: 'Product Views' },
@@ -512,8 +512,8 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
                 onClick={() => setActiveChartMetric(tab.id as typeof activeChartMetric)}
                 className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                   activeChartMetric === tab.id
-                    ? 'bg-[#b90064] text-white shadow-xs'
-                    : 'text-[#594047] hover:text-stone-900'
+                    ? 'bg-[#6B2D8C] text-white shadow-xs'
+                    : 'text-[#5B4A6E] hover:text-stone-900'
                 }`}
               >
                 {tab.label}
@@ -523,14 +523,14 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
         </div>
 
         {/* Interactive SVG Chart Canvas */}
-        <div className="relative bg-[#fcf9f8] border border-stone-200 rounded-xl p-5 overflow-hidden">
+        <div className="relative bg-[#FDFBF7] border border-stone-200 rounded-xl p-5 overflow-hidden">
           
           {/* Chart Header Legend */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-4 text-xs font-extrabold text-[#594047]">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4 text-xs font-extrabold text-[#5B4A6E]">
             <div className="flex items-center gap-4">
               {(activeChartMetric === 'all' || activeChartMetric === 'product_views') && (
                 <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-blue-600" />
+                  <span className="w-3 h-3 rounded-full bg-purple-700" />
                   <span>Product Views (Scale: 0-700)</span>
                 </div>
               )}
@@ -542,7 +542,7 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
               )}
               {(activeChartMetric === 'all' || activeChartMetric === 'enquiries') && (
                 <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-[#b90064]" />
+                  <span className="w-3 h-3 rounded-full bg-[#6B2D8C]" />
                   <span>Enquiries</span>
                 </div>
               )}
@@ -575,12 +575,12 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
               {/* Defs for area gradients */}
               <defs>
                 <linearGradient id="gradProduct" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#0050d6" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#0050d6" stopOpacity="0.0" />
+                  <stop offset="0%" stopColor="#6B2D8C" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="#6B2D8C" stopOpacity="0.0" />
                 </linearGradient>
                 <linearGradient id="gradEnquiry" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#b90064" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="#b90064" stopOpacity="0.0" />
+                  <stop offset="0%" stopColor="#6B2D8C" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#6B2D8C" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
 
@@ -596,7 +596,7 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
               {(activeChartMetric === 'all' || activeChartMetric === 'product_views') && (
                 <polyline
                   fill="none"
-                  stroke="#0050d6"
+                  stroke="#6B2D8C"
                   strokeWidth="3.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -608,7 +608,7 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
               {(activeChartMetric === 'all' || activeChartMetric === 'profile_views') && (
                 <polyline
                   fill="none"
-                  stroke="#7e22ce"
+                  stroke="#6B2D8C"
                   strokeWidth="3"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -620,7 +620,7 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
               {(activeChartMetric === 'all' || activeChartMetric === 'enquiries') && (
                 <polyline
                   fill="none"
-                  stroke="#b90064"
+                  stroke="#6B2D8C"
                   strokeWidth="3"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -650,7 +650,7 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
                     cx={x}
                     cy={y}
                     r="5"
-                    className="fill-white stroke-blue-600 stroke-[2.5] hover:r-7 transition-all cursor-pointer"
+                    className="fill-white stroke-purple-700 stroke-[2.5] hover:r-7 transition-all cursor-pointer"
                     onMouseEnter={() => setHoveredDataPoint(i)}
                     onMouseLeave={() => setHoveredDataPoint(null)}
                   />
@@ -671,10 +671,10 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
                   {timelineData[hoveredDataPoint].date} Summary
                 </p>
                 <div className="text-[11px] space-y-0.5 pt-0.5">
-                  <p className="text-blue-400">📦 Product Views: <b>{timelineData[hoveredDataPoint].pViews}</b></p>
+                  <p className="text-purple-400">📦 Product Views: <b>{timelineData[hoveredDataPoint].pViews}</b></p>
                   <p className="text-purple-400">🏢 Profile Views: <b>{timelineData[hoveredDataPoint].profViews}</b></p>
-                  <p className="text-pink-400">💬 Enquiries: <b>{timelineData[hoveredDataPoint].enq}</b></p>
-                  <p className="text-amber-400">📝 RFQs Received: <b>{timelineData[hoveredDataPoint].rfq}</b></p>
+                  <p className="text-purple-400">💬 Enquiries: <b>{timelineData[hoveredDataPoint].enq}</b></p>
+                  <p className="text-gold-400">📝 RFQs Received: <b>{timelineData[hoveredDataPoint].rfq}</b></p>
                 </div>
               </div>
             )}
@@ -682,7 +682,7 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
           </div>
 
           {/* X Axis Labels */}
-          <div className="flex justify-between items-center text-[10px] font-extrabold text-[#594047] pt-3">
+          <div className="flex justify-between items-center text-[10px] font-extrabold text-[#5B4A6E] pt-3">
             {timelineData.map((d, i) => (
               <span key={i}>{d.date}</span>
             ))}
@@ -695,13 +695,13 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
       {/* ========================================================================= */}
       {/* 5. TOP PERFORMING PRODUCTS TABLE (ROW 4) */}
       {/* ========================================================================= */}
-      <div className="bg-white border border-[#e8e8e8] p-5 md:p-6 rounded-2xl shadow-xs space-y-4">
+      <div className="bg-white border border-[#E8DEEF] p-5 md:p-6 rounded-2xl shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
             <h3 className="text-base font-black text-zinc-950">
               Top Performing Formulations & Catalog Listings
             </h3>
-            <p className="text-xs text-[#594047]">
+            <p className="text-xs text-[#5B4A6E]">
               Ranked by aggregate buyer engagement, inquiries generated, and quotation conversion rates.
             </p>
           </div>
@@ -711,11 +711,11 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
         </div>
 
         {/* Structured Table */}
-        <div className="border border-[#e8e8e8] rounded-xl overflow-hidden shadow-2xs">
+        <div className="border border-[#E8DEEF] rounded-xl overflow-hidden shadow-2xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-stone-50 border-b border-[#e8e8e8] text-[11px] font-extrabold uppercase tracking-wider text-[#594047]">
+                <tr className="bg-stone-50 border-b border-[#E8DEEF] text-[11px] font-extrabold uppercase tracking-wider text-[#5B4A6E]">
                   <th className="p-3.5">Product Name & Thumbnail</th>
                   <th className="p-3.5">Category</th>
                   <th className="p-3.5 text-right">Views</th>
@@ -760,7 +760,7 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
                     </td>
 
                     {/* Enquiries */}
-                    <td className="p-3.5 text-right font-bold text-[#b90064]">
+                    <td className="p-3.5 text-right font-bold text-[#6B2D8C]">
                       {p.enquiries.toLocaleString()}
                     </td>
 
@@ -788,7 +788,7 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
                         </button>
                         <button
                           onClick={() => onBoostProduct ? onBoostProduct(p.id) : alert(`Launching Sponsored Ad configuration for ${p.name}...`)}
-                          className="bg-[#fde7f3] hover:bg-[#fbd0e8] text-[#b90064] font-extrabold text-xs px-3 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1 border border-[#f7c5e0]"
+                          className="bg-[#F5EEF8] hover:bg-[#fbd0e8] text-[#6B2D8C] font-extrabold text-xs px-3 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1 border border-[#E8D5F2]"
                         >
                           <Sparkles className="w-3 h-3" />
                           <span>Boost Listing</span>
@@ -810,14 +810,14 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         
         {/* Column 1: Geographic Breakdown */}
-        <div className="bg-white border border-[#e8e8e8] p-5 md:p-6 rounded-2xl shadow-xs space-y-4">
+        <div className="bg-white border border-[#E8DEEF] p-5 md:p-6 rounded-2xl shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-black text-zinc-950 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#b90064]" />
+                <MapPin className="w-4 h-4 text-[#6B2D8C]" />
                 <span>Top Buyer Sourcing Hubs</span>
               </h3>
-              <p className="text-xs text-[#594047]">
+              <p className="text-xs text-[#5B4A6E]">
                 Geographic regional concentration of beauty brand inquiries.
               </p>
             </div>
@@ -830,13 +830,13 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-bold text-zinc-900">{region.city}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[#594047]">{region.enquiries} Enquiries</span>
+                    <span className="text-[#5B4A6E]">{region.enquiries} Enquiries</span>
                     <span className="font-black text-zinc-900">{region.percentage}%</span>
                   </div>
                 </div>
                 <div className="w-full bg-stone-100 h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-[#b90064] to-[#e6007e] h-full rounded-full transition-all duration-500"
+                    className="bg-gradient-to-r from-[#6B2D8C] to-[#8236A0] h-full rounded-full transition-all duration-500"
                     style={{ width: `${region.percentage}%` }}
                   />
                 </div>
@@ -844,9 +844,9 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
             ))}
           </div>
 
-          <div className="bg-[#fdf8f8] p-3 rounded-xl border border-stone-200 text-xs flex items-center justify-between">
-            <span className="text-[#594047]">Fastest Growing Hub:</span>
-            <span className="font-extrabold text-[#b90064] flex items-center gap-1">
+          <div className="bg-[#FDFBF7] p-3 rounded-xl border border-stone-200 text-xs flex items-center justify-between">
+            <span className="text-[#5B4A6E]">Fastest Growing Hub:</span>
+            <span className="font-extrabold text-[#6B2D8C] flex items-center gap-1">
               <span>Mumbai Metropolitan Region (+22% QoQ)</span>
               <TrendingUp className="w-3.5 h-3.5" />
             </span>
@@ -854,14 +854,14 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
         </div>
 
         {/* Column 2: Lead Funnel Visual (Pipeline Summary) */}
-        <div className="bg-white border border-[#e8e8e8] p-5 md:p-6 rounded-2xl shadow-xs space-y-4">
+        <div className="bg-white border border-[#E8DEEF] p-5 md:p-6 rounded-2xl shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-black text-zinc-950 flex items-center gap-2">
                 <Layers className="w-4 h-4 text-purple-600" />
                 <span>B2B Sourcing Lead Conversion Funnel</span>
               </h3>
-              <p className="text-xs text-[#594047]">
+              <p className="text-xs text-[#5B4A6E]">
                 Progression from first buyer touchpoint to recurring business contracts.
               </p>
             </div>
@@ -871,7 +871,7 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
             {funnelSteps.map((step, idx) => {
               const widthPct = 100 - idx * 11;
               return (
-                <div key={idx} className="bg-[#fcf9f8] p-2.5 rounded-xl border border-stone-200 space-y-1">
+                <div key={idx} className="bg-[#FDFBF7] p-2.5 rounded-xl border border-stone-200 space-y-1">
                   <div className="flex justify-between items-center text-xs">
                     <span className="font-bold text-zinc-900">{step.stage}</span>
                     <div className="flex items-center gap-2">
@@ -885,7 +885,7 @@ export const SupplierAnalyticsDashboard: React.FC<SupplierAnalyticsDashboardProp
                     <div
                       className={`h-full rounded-full ${
                         idx === 5 ? 'bg-emerald-600' :
-                        idx >= 3 ? 'bg-[#b90064]' : 'bg-stone-700'
+                        idx >= 3 ? 'bg-[#6B2D8C]' : 'bg-stone-700'
                       }`}
                       style={{ width: `${widthPct}%` }}
                     />

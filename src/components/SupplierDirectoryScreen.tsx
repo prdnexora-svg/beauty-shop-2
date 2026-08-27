@@ -394,60 +394,60 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
   }, [selectedComparisonIds]);
 
   return (
-    <div className="min-h-screen bg-[#fdf8f8] text-[#1c1b1b] font-sans">
+    <div className="min-h-screen bg-[#FDFBF7] text-[#2A0E3F] font-sans">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-20 right-6 z-50 bg-[#1c1b1b] text-white text-[13px] font-semibold px-4 py-3 rounded-xl shadow-2xl border border-[#313030] flex items-center gap-2.5 animate-in slide-in-from-bottom-5">
-          <CheckCircle2 className="w-4 h-4 text-[#e6007e]" />
+        <div className="fixed bottom-20 right-6 z-50 bg-[#2A0E3F] text-white text-[13px] font-semibold px-4 py-3 rounded-xl shadow-2xl border border-[#352B44] flex items-center gap-2.5 animate-in slide-in-from-bottom-5">
+          <CheckCircle2 className="w-4 h-4 text-[#8236A0]" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Top Search & Location Header Bar */}
-      <section className="bg-white border-b border-[#e8e8e8] sticky top-20 z-30 shadow-2xs">
+      <section className="bg-white border-b border-[#E8DEEF] sticky top-20 z-30 shadow-2xs">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10 py-3.5">
-          <div className="flex flex-col lg:flex-row items-stretch lg:items-center bg-[#f0edec] rounded-xl border border-[#e8e8e8] focus-within:ring-2 focus-within:ring-[#b90064] transition-all p-1.5 gap-2">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center bg-[#F4F0E9] rounded-xl border border-[#E8DEEF] focus-within:ring-2 focus-within:ring-[#6B2D8C] transition-all p-1.5 gap-2">
             
             {/* Search Input */}
             <div className="flex-1 flex items-center px-3 gap-2.5 bg-transparent">
-              <Search className="w-4 h-4 text-[#594047] shrink-0" />
+              <Search className="w-4 h-4 text-[#5B4A6E] shrink-0" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search suppliers, manufacturers, distributors or business categories"
-                className="bg-transparent border-none text-[13.5px] text-[#1c1b1b] placeholder:text-[#8c7077] focus:outline-none w-full py-2 font-medium"
+                className="bg-transparent border-none text-[13.5px] text-[#2A0E3F] placeholder:text-[#B9A8C6] focus:outline-none w-full py-2 font-medium"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="text-[#8c7077] hover:text-[#1c1b1b]">
+                <button onClick={() => setSearchQuery('')} className="text-[#7E6C96] hover:text-[#2A0E3F]">
                   <X className="w-4 h-4" />
                 </button>
               )}
             </div>
 
-            <div className="hidden lg:block w-px h-8 bg-[#e8e8e8]" />
+            <div className="hidden lg:block w-px h-8 bg-[#E8DEEF]" />
 
             {/* Location Input */}
             <div className="flex items-center px-3 gap-2 w-full lg:w-64 bg-transparent">
-              <MapPin className="w-4 h-4 text-[#b90064] shrink-0" />
+              <MapPin className="w-4 h-4 text-[#6B2D8C] shrink-0" />
               <input
                 type="text"
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
-                className="bg-transparent border-none text-[13px] text-[#1c1b1b] font-medium focus:outline-none w-full py-2"
+                className="bg-transparent border-none text-[13px] text-[#2A0E3F] font-medium focus:outline-none w-full py-2"
                 placeholder="City, State"
               />
             </div>
 
-            <div className="hidden lg:block w-px h-8 bg-[#e8e8e8]" />
+            <div className="hidden lg:block w-px h-8 bg-[#E8DEEF]" />
 
             {/* Distance Radius Selector */}
             <div className="flex items-center px-3 gap-2 w-full lg:w-36 bg-transparent">
-              <span className="text-[11px] font-bold text-[#8c7077] uppercase tracking-wider shrink-0">Radius</span>
+              <span className="text-[11px] font-bold text-[#7E6C96] uppercase tracking-wider shrink-0">Radius</span>
               <select
                 value={distanceRadius}
                 onChange={(e) => setDistanceRadius(e.target.value)}
-                className="bg-transparent border-none text-[13px] font-semibold text-[#1c1b1b] focus:outline-none w-full py-2 cursor-pointer"
+                className="bg-transparent border-none text-[13px] font-semibold text-[#2A0E3F] focus:outline-none w-full py-2 cursor-pointer"
               >
                 <option value="+250 km">+250 km</option>
                 <option value="+500 km">+500 km</option>
@@ -458,7 +458,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
             {/* Primary Action Button */}
             <button
               onClick={() => showToast(`Searching suppliers around ${selectedCity}`)}
-              className="bg-[#b90064] hover:bg-[#8e004b] text-white text-[13px] font-bold px-7 py-3 rounded-lg shadow-sm hover:shadow transition-all whitespace-nowrap cursor-pointer flex items-center justify-center gap-2"
+              className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white text-[13px] font-bold px-7 py-3 rounded-lg shadow-sm hover:shadow transition-all whitespace-nowrap cursor-pointer flex items-center justify-center gap-2"
             >
               <Search className="w-4 h-4" />
               <span>Search Suppliers</span>
@@ -471,15 +471,15 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
       <div className="max-w-[1440px] mx-auto w-full flex flex-col md:flex-row">
         
         {/* Left Sticky Sidebar Filters (Desktop) */}
-        <aside className="hidden md:flex flex-col p-6 bg-white sticky top-[152px] h-[calc(100vh-152px)] w-72 border-r border-[#e8e8e8] shrink-0 overflow-y-auto">
-          <div className="mb-5 flex justify-between items-center pb-3 border-b border-[#f0edec]">
+        <aside className="hidden md:flex flex-col p-6 bg-white sticky top-[152px] h-[calc(100vh-152px)] w-72 border-r border-[#E8DEEF] shrink-0 overflow-y-auto">
+          <div className="mb-5 flex justify-between items-center pb-3 border-b border-[#F4F0E9]">
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-[#b90064]" />
-              <h2 className="text-[15px] font-bold text-[#1c1b1b] tracking-tight">Supplier Filters</h2>
+              <Filter className="w-4 h-4 text-[#6B2D8C]" />
+              <h2 className="text-[15px] font-bold text-[#2A0E3F] tracking-tight">Supplier Filters</h2>
             </div>
             <button
               onClick={handleResetFilters}
-              className="text-[12px] text-[#b90064] font-bold hover:underline cursor-pointer"
+              className="text-[12px] text-[#6B2D8C] font-bold hover:underline cursor-pointer"
             >
               Reset
             </button>
@@ -487,17 +487,17 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
           {/* Business Type Filter */}
           <div className="mb-6">
-            <h3 className="text-[11px] font-bold text-[#1c1b1b] mb-3 uppercase tracking-widest text-[#8c7077]">
+            <h3 className="text-[11px] font-bold text-[#2A0E3F] mb-3 uppercase tracking-widest text-[#7E6C96]">
               Business Type
             </h3>
             <div className="flex flex-col gap-2.5">
               {['Manufacturer', 'Wholesaler', 'Distributor', 'Exporter', 'OEM/ODM'].map((type) => (
-                <label key={type} className="flex items-center gap-2.5 text-[13px] text-[#1c1b1b] cursor-pointer hover:text-[#b90064] font-medium">
+                <label key={type} className="flex items-center gap-2.5 text-[13px] text-[#2A0E3F] cursor-pointer hover:text-[#6B2D8C] font-medium">
                   <input
                     type="checkbox"
                     checked={businessTypeFilters.includes(type)}
                     onChange={() => toggleBusinessTypeFilter(type)}
-                    className="rounded border-[#e8e8e8] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer"
+                    className="rounded border-[#E8DEEF] text-[#6B2D8C] focus:ring-[#C9A961]/30 w-4 h-4 cursor-pointer"
                   />
                   <span>{type}</span>
                 </label>
@@ -506,9 +506,9 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
           </div>
 
           {/* City & Industrial Hubs Filter */}
-          <div className="mb-6 pb-6 border-b border-[#f0edec]">
-            <h3 className="text-[11px] font-bold text-[#1c1b1b] mb-3 uppercase tracking-widest text-[#8c7077] flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-[#b90064]" />
+          <div className="mb-6 pb-6 border-b border-[#F4F0E9]">
+            <h3 className="text-[11px] font-bold text-[#2A0E3F] mb-3 uppercase tracking-widest text-[#7E6C96] flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-[#6B2D8C]" />
               <span>City &amp; Industrial Hubs</span>
             </h3>
             <div className="flex flex-col gap-2">
@@ -529,20 +529,20 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                   }}
                   className={`text-left px-2.5 py-1.5 rounded-lg text-[12px] transition-all font-bold flex justify-between items-center cursor-pointer ${
                     selectedCity === hub.value
-                      ? 'bg-[#fde7f3] text-[#b90064] border border-[#e0bec6]'
-                      : 'bg-transparent text-[#594047] hover:bg-[#f0edec] hover:text-[#1c1b1b]'
+                      ? 'bg-[#F5EEF8] text-[#6B2D8C] border border-[#D9C3E8]'
+                      : 'bg-transparent text-[#5B4A6E] hover:bg-[#F4F0E9] hover:text-[#2A0E3F]'
                   }`}
                 >
                   <span>{hub.name}</span>
-                  {selectedCity === hub.value && <Check className="w-3.5 h-3.5 text-[#b90064]" />}
+                  {selectedCity === hub.value && <Check className="w-3.5 h-3.5 text-[#6B2D8C]" />}
                 </button>
               ))}
             </div>
           </div>
 
           {/* Category Filter */}
-          <div className="mb-6 pb-6 border-b border-[#f0edec]">
-            <h3 className="text-[11px] font-bold text-[#1c1b1b] mb-3 uppercase tracking-widest text-[#8c7077]">
+          <div className="mb-6 pb-6 border-b border-[#F4F0E9]">
+            <h3 className="text-[11px] font-bold text-[#2A0E3F] mb-3 uppercase tracking-widest text-[#7E6C96]">
               Categories
             </h3>
             <div className="flex flex-col gap-2.5 max-h-80 overflow-y-auto pr-1">
@@ -550,7 +550,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                 const isSelected = selectedCategory === catName;
                 return (
                   <div key={catName} className="space-y-1.5">
-                    <label className="flex items-center justify-between text-[13px] text-[#1c1b1b] cursor-pointer group">
+                    <label className="flex items-center justify-between text-[13px] text-[#2A0E3F] cursor-pointer group">
                       <div className="flex items-center gap-2">
                         <input
                           type="checkbox"
@@ -564,9 +564,9 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                               setSelectedSubcategory('');
                             }
                           }}
-                          className="rounded border-[#e8e8e8] text-[#b90064] focus:ring-[#b90064] w-4 h-4"
+                          className="rounded border-[#E8DEEF] text-[#6B2D8C] focus:ring-[#C9A961]/30 w-4 h-4"
                         />
-                        <span className={`font-medium transition-colors ${isSelected ? 'font-bold text-[#b90064]' : 'group-hover:text-[#b90064]'}`}>
+                        <span className={`font-medium transition-colors ${isSelected ? 'font-bold text-[#6B2D8C]' : 'group-hover:text-[#6B2D8C]'}`}>
                           {catName}
                         </span>
                       </div>
@@ -574,17 +574,17 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
                     {/* Subcategories Tree */}
                     {isSelected && (
-                      <div className="pl-6 flex flex-col gap-1.5 border-l-2 border-[#b90064]/30 ml-2 mt-1 py-1">
+                      <div className="pl-6 flex flex-col gap-1.5 border-l-2 border-[#6B2D8C]/30 ml-2 mt-1 py-1">
                         {subcategories.map((subName) => (
-                          <label key={subName} className="flex items-center justify-between text-[12px] text-[#1c1b1b] cursor-pointer">
+                          <label key={subName} className="flex items-center justify-between text-[12px] text-[#2A0E3F] cursor-pointer">
                             <div className="flex items-center gap-2">
                               <input
                                 type="checkbox"
                                 checked={selectedSubcategory === subName}
                                 onChange={() => setSelectedSubcategory(selectedSubcategory === subName ? '' : subName)}
-                                className="rounded border-[#e8e8e8] text-[#b90064] focus:ring-[#b90064] w-3.5 h-3.5"
+                                className="rounded border-[#E8DEEF] text-[#6B2D8C] focus:ring-[#C9A961]/30 w-3.5 h-3.5"
                               />
-                              <span className={selectedSubcategory === subName ? 'font-semibold text-[#b90064]' : 'text-[#594047]'}>
+                              <span className={selectedSubcategory === subName ? 'font-semibold text-[#6B2D8C]' : 'text-[#5B4A6E]'}>
                                 {subName}
                               </span>
                             </div>
@@ -599,16 +599,16 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
           </div>
 
           {/* Production Scale Filters */}
-          <div className="mb-6 pb-6 border-b border-[#f0edec]">
-            <h3 className="text-[11px] font-bold text-[#1c1b1b] mb-3 uppercase tracking-widest text-[#8c7077]">
+          <div className="mb-6 pb-6 border-b border-[#F4F0E9]">
+            <h3 className="text-[11px] font-bold text-[#2A0E3F] mb-3 uppercase tracking-widest text-[#7E6C96]">
               Production Scale
             </h3>
 
             {/* Range slider for MOQ */}
             <div className="mb-4">
-              <div className="flex justify-between items-center text-[12px] text-[#594047] mb-1.5 font-medium">
+              <div className="flex justify-between items-center text-[12px] text-[#5B4A6E] mb-1.5 font-medium">
                 <span>Max Order Quantity</span>
-                <span className="font-bold text-[#b90064]">{moqValue.toLocaleString()} units</span>
+                <span className="font-bold text-[#6B2D8C]">{moqValue.toLocaleString()} units</span>
               </div>
               <input
                 type="range"
@@ -617,9 +617,9 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                 step="100"
                 value={moqValue}
                 onChange={(e) => setMoqValue(Number(e.target.value))}
-                className="w-full accent-[#b90064] h-1.5 bg-[#f0edec] rounded-lg appearance-none cursor-pointer"
+                className="w-full accent-[#6B2D8C] h-1.5 bg-[#F4F0E9] rounded-lg appearance-none cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] text-[#8c7077] mt-1 font-semibold">
+              <div className="flex justify-between text-[10px] text-[#7E6C96] mt-1 font-semibold">
                 <span>100 Units</span>
                 <span>10k+ Units</span>
               </div>
@@ -627,11 +627,11 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
             {/* Monthly Capacity Dropdown */}
             <div className="mb-3.5">
-              <label className="block text-[11.5px] font-semibold text-[#594047] mb-1">Monthly Capacity</label>
+              <label className="block text-[11.5px] font-semibold text-[#5B4A6E] mb-1">Monthly Capacity</label>
               <select
                 value={capacityFilter}
                 onChange={(e) => setCapacityFilter(e.target.value)}
-                className="w-full bg-white border border-[#e8e8e8] text-[12.5px] text-[#1c1b1b] rounded-lg p-2 focus:ring-1 focus:ring-[#b90064] font-medium cursor-pointer"
+                className="w-full bg-white border border-[#E8DEEF] text-[12.5px] text-[#2A0E3F] rounded-lg p-2 focus:ring-1 focus:ring-[#C9A961]/30 font-medium cursor-pointer"
               >
                 <option value="Any Capacity">Any Capacity</option>
                 <option value="> 10,000 units">&gt; 10,000 units / mo</option>
@@ -642,11 +642,11 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
             {/* Lead Time Dropdown */}
             <div>
-              <label className="block text-[11.5px] font-semibold text-[#594047] mb-1">Lead Time</label>
+              <label className="block text-[11.5px] font-semibold text-[#5B4A6E] mb-1">Lead Time</label>
               <select
                 value={leadTimeFilter}
                 onChange={(e) => setLeadTimeFilter(e.target.value)}
-                className="w-full bg-white border border-[#e8e8e8] text-[12.5px] text-[#1c1b1b] rounded-lg p-2 focus:ring-1 focus:ring-[#b90064] font-medium cursor-pointer"
+                className="w-full bg-white border border-[#E8DEEF] text-[12.5px] text-[#2A0E3F] rounded-lg p-2 focus:ring-1 focus:ring-[#C9A961]/30 font-medium cursor-pointer"
               >
                 <option value="Any Lead Time">Any Lead Time</option>
                 <option value="< 15 Days">&lt; 15 Days</option>
@@ -658,9 +658,9 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
           {/* Compliance & Certifications */}
           <div className="mb-6">
-            <h3 className="text-[11px] font-bold text-[#1c1b1b] mb-3 uppercase tracking-widest text-[#8c7077] flex justify-between items-center">
+            <h3 className="text-[11px] font-bold text-[#2A0E3F] mb-3 uppercase tracking-widest text-[#7E6C96] flex justify-between items-center">
               <span>Compliance &amp; Certs</span>
-              <Info className="w-3.5 h-3.5 text-[#8c7077] cursor-help" title="3rd-party audited compliance status" />
+              <Info className="w-3.5 h-3.5 text-[#7E6C96] cursor-help" title="3rd-party audited compliance status" />
             </h3>
             <div className="flex flex-col gap-2.5">
               {[
@@ -671,12 +671,12 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                 { key: 'organic', label: 'Organic (COSMOS)' },
                 { key: 'crueltyFree', label: 'Cruelty-Free / Leaping Bunny' }
               ].map((cert) => (
-                <label key={cert.key} className="flex items-center gap-2.5 text-[13px] text-[#1c1b1b] cursor-pointer hover:text-[#b90064] font-medium">
+                <label key={cert.key} className="flex items-center gap-2.5 text-[13px] text-[#2A0E3F] cursor-pointer hover:text-[#6B2D8C] font-medium">
                   <input
                     type="checkbox"
                     checked={complianceFilters[cert.key]}
                     onChange={() => toggleComplianceFilter(cert.key)}
-                    className="rounded border-[#e8e8e8] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer"
+                    className="rounded border-[#E8DEEF] text-[#6B2D8C] focus:ring-[#C9A961]/30 w-4 h-4 cursor-pointer"
                   />
                   <span>{cert.label}</span>
                 </label>
@@ -686,10 +686,10 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
         </aside>
 
         {/* Main Directory Canvas */}
-        <main className="flex-1 p-4 md:p-8 bg-[#fdf8f8] min-h-[calc(100vh-152px)]">
+        <main className="flex-1 p-4 md:p-8 bg-[#FDFBF7] min-h-[calc(100vh-152px)]">
           
           {/* Top Sticky Business Type Pills & Quick Filters Bar */}
-          <div className="sticky top-[152px] z-20 bg-[#fdf8f8]/95 backdrop-blur-md py-3 mb-6 border-b border-[#e8e8e8]">
+          <div className="sticky top-[152px] z-20 bg-[#FDFBF7]/95 backdrop-blur-md py-3 mb-6 border-b border-[#E8DEEF]">
             {/* Primary Business Type Tabs */}
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
               {[
@@ -722,14 +722,14 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                     onClick={() => setActiveBusinessType(typeTab.key)}
                     className={`px-4 py-1.5 rounded-full text-[13px] font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-2 ${
                       isActive
-                        ? 'bg-[#b90064] text-white shadow-xs'
-                        : 'bg-white border border-[#e8e8e8] text-[#1c1b1b] hover:border-[#b90064] hover:text-[#b90064]'
+                        ? 'bg-[#6B2D8C] text-white shadow-xs'
+                        : 'bg-white border border-[#E8DEEF] text-[#2A0E3F] hover:border-[#6B2D8C] hover:text-[#6B2D8C]'
                     }`}
                   >
                     <span>{typeTab.label}</span>
                     <span
                       className={`text-[11px] px-2 py-0.2 rounded-full font-extrabold ${
-                        isActive ? 'bg-white/20 text-white' : 'bg-[#f0edec] text-[#8c7077]'
+                        isActive ? 'bg-white/20 text-white' : 'bg-[#F4F0E9] text-[#7E6C96]'
                       }`}
                     >
                       {typeTab.count}
@@ -741,7 +741,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
             {/* Quick Filter Chips */}
             <div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1 no-scrollbar text-[12px]">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8c7077] shrink-0">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#7E6C96] shrink-0">
                 Quick Filters:
               </span>
               {[
@@ -760,8 +760,8 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                     onClick={() => toggleQuickFilter(qf.key)}
                     className={`px-3 py-1 rounded-full text-[12px] font-medium border transition-colors whitespace-nowrap cursor-pointer ${
                       isChecked
-                        ? 'bg-[#fde7f3] border-[#b90064] text-[#b90064] font-bold'
-                        : 'bg-[#f0edec] border-[#e8e8e8] text-[#594047] hover:border-[#b90064]'
+                        ? 'bg-[#F5EEF8] border-[#6B2D8C] text-[#6B2D8C] font-bold'
+                        : 'bg-[#F4F0E9] border-[#E8DEEF] text-[#5B4A6E] hover:border-[#6B2D8C]'
                     }`}
                   >
                     {qf.label}
@@ -772,8 +772,8 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
             {/* Mobile Geographic Hub Filter */}
             <div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1 no-scrollbar text-[12px] md:hidden">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#8c7077] shrink-0 flex items-center gap-1">
-                <MapPin className="w-3 h-3 text-[#b90064]" />
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#7E6C96] shrink-0 flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-[#6B2D8C]" />
                 <span>Hubs:</span>
               </span>
               {[
@@ -794,8 +794,8 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                     }}
                     className={`px-3 py-1 rounded-full text-[12px] font-bold border transition-all whitespace-nowrap cursor-pointer ${
                       isSelected
-                        ? 'bg-[#b90064] border-[#b90064] text-white font-extrabold shadow-sm'
-                        : 'bg-white border-[#e8e8e8] text-[#594047] hover:border-[#b90064]'
+                        ? 'bg-[#6B2D8C] border-[#6B2D8C] text-white font-extrabold shadow-sm'
+                        : 'bg-white border-[#E8DEEF] text-[#5B4A6E] hover:border-[#6B2D8C]'
                     }`}
                   >
                     {hub.name}
@@ -809,17 +809,17 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
           <div className="mb-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-4">
               <div>
-                <h1 className="text-xl font-bold tracking-tight text-[#1c1b1b] flex items-center gap-2.5 flex-wrap">
+                <h1 className="text-xl font-bold tracking-tight text-[#2A0E3F] flex items-center gap-2.5 flex-wrap">
                   <span>
                     {filteredSuppliers.length} Verified Suppliers
                     {selectedCategory ? ` for '${selectedCategory}'` : ''}
                     {activeBusinessType !== 'All' ? ` (${activeBusinessType})` : ''}
                   </span>
-                  <span className="bg-[#fde7f3] text-[#b90064] text-[11px] px-2.5 py-0.5 rounded-full font-bold">
+                  <span className="bg-[#F5EEF8] text-[#6B2D8C] text-[11px] px-2.5 py-0.5 rounded-full font-bold">
                     {activeBusinessType !== 'All' ? activeBusinessType : 'Verified Hub'}
                   </span>
                 </h1>
-                <p className="text-[13px] text-[#594047] mt-1 font-medium">
+                <p className="text-[13px] text-[#5B4A6E] mt-1 font-medium">
                   Verified beauty &amp; cosmetic manufacturers, wholesalers &amp; distributors across India
                 </p>
               </div>
@@ -828,18 +828,18 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                 {/* Mobile Filter Toggle Trigger */}
                 <button
                   onClick={() => setIsMobileFilterOpen(true)}
-                  className="md:hidden flex items-center gap-2 px-3.5 py-2 bg-white border border-[#e8e8e8] rounded-xl text-[13px] font-bold text-[#1c1b1b]"
+                  className="md:hidden flex items-center gap-2 px-3.5 py-2 bg-white border border-[#E8DEEF] rounded-xl text-[13px] font-bold text-[#2A0E3F]"
                 >
-                  <Filter className="w-4 h-4 text-[#b90064]" />
+                  <Filter className="w-4 h-4 text-[#6B2D8C]" />
                   <span>Filters</span>
                 </button>
 
                 {/* View Toggles */}
-                <div className="flex items-center gap-1 border border-[#e8e8e8] rounded-xl bg-white p-1 shadow-2xs">
+                <div className="flex items-center gap-1 border border-[#E8DEEF] rounded-xl bg-white p-1 shadow-2xs">
                   <button
                     onClick={() => setViewMode('grid')}
                     className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                      viewMode === 'grid' ? 'bg-[#f0edec] text-[#b90064]' : 'text-[#8c7077] hover:text-[#1c1b1b]'
+                      viewMode === 'grid' ? 'bg-[#F4F0E9] text-[#6B2D8C]' : 'text-[#7E6C96] hover:text-[#2A0E3F]'
                     }`}
                     title="Grid View"
                   >
@@ -848,7 +848,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                   <button
                     onClick={() => setViewMode('list')}
                     className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                      viewMode === 'list' ? 'bg-[#f0edec] text-[#b90064]' : 'text-[#8c7077] hover:text-[#1c1b1b]'
+                      viewMode === 'list' ? 'bg-[#F4F0E9] text-[#6B2D8C]' : 'text-[#7E6C96] hover:text-[#2A0E3F]'
                     }`}
                     title="List View"
                   >
@@ -862,7 +862,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                       }
                     }}
                     className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                      viewMode === 'map' ? 'bg-[#f0edec] text-[#b90064]' : 'text-[#8c7077] hover:text-[#1c1b1b]'
+                      viewMode === 'map' ? 'bg-[#F4F0E9] text-[#6B2D8C]' : 'text-[#7E6C96] hover:text-[#2A0E3F]'
                     }`}
                     title="Map View"
                   >
@@ -879,38 +879,38 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                     id="supplier-directory-sort-select"
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="appearance-none bg-white border border-[#e8e8e8] hover:border-[#b90064] text-[13px] font-semibold text-[#1c1b1b] rounded-xl py-2 pl-3.5 pr-8 focus:outline-none focus:ring-1 focus:ring-[#b90064] cursor-pointer shadow-2xs transition-colors"
+                    className="appearance-none bg-white border border-[#E8DEEF] hover:border-[#6B2D8C] text-[13px] font-semibold text-[#2A0E3F] rounded-xl py-2 pl-3.5 pr-8 focus:outline-none focus:ring-1 focus:ring-[#C9A961]/30 cursor-pointer shadow-2xs transition-colors"
                   >
                     <option value="Relevance">Sort: Relevance</option>
                     <option value="Rating">Sort: Rating</option>
                     <option value="Year Established">Sort: Year Established</option>
                     <option value="Employee Count">Sort: Employee Count</option>
                   </select>
-                  <ChevronDown className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8c7077] pointer-events-none" />
+                  <ChevronDown className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7E6C96] pointer-events-none" />
                 </div>
               </div>
             </div>
 
             {/* Active Filters Pill Strip */}
             <div className="flex flex-wrap gap-2 items-center text-[12px]">
-              <span className="text-[#8c7077] font-semibold">Active:</span>
-              <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#e8e8e8] rounded-full text-[#1c1b1b] font-medium shadow-2xs">
+              <span className="text-[#7E6C96] font-semibold">Active:</span>
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E8DEEF] rounded-full text-[#2A0E3F] font-medium shadow-2xs">
                 <span>Category: {selectedCategory}</span>
-                <button onClick={() => setSelectedCategory('')} className="hover:text-[#b90064] text-[#8c7077]">
+                <button onClick={() => setSelectedCategory('')} className="hover:text-[#6B2D8C] text-[#7E6C96]">
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
               {activeBusinessType !== 'All' && (
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#e8e8e8] rounded-full text-[#1c1b1b] font-medium shadow-2xs">
+                <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E8DEEF] rounded-full text-[#2A0E3F] font-medium shadow-2xs">
                   <span>Type: {activeBusinessType}</span>
-                  <button onClick={() => setActiveBusinessType('All')} className="hover:text-[#b90064] text-[#8c7077]">
+                  <button onClick={() => setActiveBusinessType('All')} className="hover:text-[#6B2D8C] text-[#7E6C96]">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
               )}
               <button
                 onClick={handleResetFilters}
-                className="text-[#b90064] font-bold hover:underline ml-2 cursor-pointer text-[12px]"
+                className="text-[#6B2D8C] font-bold hover:underline ml-2 cursor-pointer text-[12px]"
               >
                 Clear All
               </button>
@@ -918,29 +918,29 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
           </div>
 
           {/* Sourcing Credit Wallet Banner */}
-          <div className="mb-8 flex flex-col md:flex-row items-center justify-between p-5 bg-white border border-[#e0bec6] rounded-2xl gap-5 shadow-3xs relative overflow-hidden">
+          <div className="mb-8 flex flex-col md:flex-row items-center justify-between p-5 bg-white border border-[#D9C3E8] rounded-2xl gap-5 shadow-3xs relative overflow-hidden">
             {/* Background subtle visual accent */}
-            <div className="absolute right-0 top-0 bottom-0 w-24 bg-[#fde7f3] opacity-20 rounded-r-2xl transform skew-x-12 pointer-events-none"></div>
+            <div className="absolute right-0 top-0 bottom-0 w-24 bg-[#F5EEF8] opacity-20 rounded-r-2xl transform skew-x-12 pointer-events-none"></div>
             
             <div className="flex items-center gap-4 relative z-10 text-left">
-              <div className="w-12 h-12 bg-[#fde7f3] rounded-full flex items-center justify-center shrink-0 border border-[#b90064]/20">
-                <Unlock className="w-6 h-6 text-[#b90064] animate-pulse" />
+              <div className="w-12 h-12 bg-[#F5EEF8] rounded-full flex items-center justify-center shrink-0 border border-[#6B2D8C]/20">
+                <Unlock className="w-6 h-6 text-[#6B2D8C] animate-pulse" />
               </div>
               <div>
-                <p className="text-[10px] font-extrabold text-[#b90064] uppercase tracking-widest bg-[#fde7f3] px-2.5 py-0.5 rounded-full inline-block">
+                <p className="text-[10px] font-extrabold text-[#6B2D8C] uppercase tracking-widest bg-[#F5EEF8] px-2.5 py-0.5 rounded-full inline-block">
                   Verified Buyer Wallet
                 </p>
-                <h4 className="text-[15px] font-extrabold text-[#1c1b1b] mt-1 flex items-center gap-2">
+                <h4 className="text-[15px] font-extrabold text-[#2A0E3F] mt-1 flex items-center gap-2">
                   <span>Direct Contact Balance:</span>
-                  <span className="text-[#b90064] text-lg font-black">{userCredits} Sourcing Credits</span>
+                  <span className="text-[#6B2D8C] text-lg font-black">{userCredits} Sourcing Credits</span>
                 </h4>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto relative z-10">
               <div className="text-right sm:pr-2 hidden sm:block">
-                <p className="text-[11.5px] font-bold text-[#1c1b1b]">Unlock verified suppliers instantly</p>
-                <p className="text-[10px] font-bold text-[#8c7077]">10 credits per verified contact unlock</p>
+                <p className="text-[11.5px] font-bold text-[#2A0E3F]">Unlock verified suppliers instantly</p>
+                <p className="text-[10px] font-bold text-[#7E6C96]">10 credits per verified contact unlock</p>
               </div>
               <button 
                 type="button"
@@ -948,7 +948,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                   setUserCredits(prev => prev + 50);
                   showToast("⚡ Wallet Refilled! Added 50 Premium Sourcing Credits.");
                 }}
-                className="bg-[#b90064] hover:bg-[#8e004b] text-white font-extrabold text-[12px] px-5 py-3 rounded-xl transition-all shadow-sm hover:shadow-md cursor-pointer text-center whitespace-nowrap"
+                className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold text-[12px] px-5 py-3 rounded-xl transition-all shadow-sm hover:shadow-md cursor-pointer text-center whitespace-nowrap"
               >
                 + Top-Up 50 Credits (Demo)
               </button>
@@ -956,32 +956,32 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
           </div>
 
           {/* Concierge Sourcing Header Banner */}
-          <section className="mb-8 bg-white border border-[#e8e8e8] rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs">
+          <section className="mb-8 bg-white border border-[#E8DEEF] rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs">
             <div className="flex-1">
-              <span className="bg-[#b90064] text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-widest mb-3 inline-block">
+              <span className="bg-[#6B2D8C] text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-widest mb-3 inline-block">
                 Concierge Sourcing
               </span>
-              <h2 className="text-xl md:text-2xl font-bold text-[#1c1b1b] mb-2 tracking-tight">
+              <h2 className="text-xl md:text-2xl font-bold text-[#2A0E3F] mb-2 tracking-tight">
                 Need a Manufacturing Partner?
               </h2>
-              <p className="text-[13.5px] text-[#594047] mb-5 max-w-2xl leading-relaxed font-normal">
+              <p className="text-[13.5px] text-[#5B4A6E] mb-5 max-w-2xl leading-relaxed font-normal">
                 Leverage our network of elite OEM partners for end-to-end support, from custom formulation R&amp;D to sustainable packaging design.
               </p>
               <div className="flex flex-wrap gap-3">
-                <div className="flex items-center gap-2 bg-[#fdf8f8] px-3.5 py-2 rounded-xl border border-[#e8e8e8]">
-                  <Sparkles className="w-4 h-4 text-[#b90064]" />
-                  <span className="text-[13px] font-semibold text-[#1c1b1b]">R&amp;D Support</span>
+                <div className="flex items-center gap-2 bg-[#FDFBF7] px-3.5 py-2 rounded-xl border border-[#E8DEEF]">
+                  <Sparkles className="w-4 h-4 text-[#6B2D8C]" />
+                  <span className="text-[13px] font-semibold text-[#2A0E3F]">R&amp;D Support</span>
                 </div>
-                <div className="flex items-center gap-2 bg-[#fdf8f8] px-3.5 py-2 rounded-xl border border-[#e8e8e8]">
-                  <Package className="w-4 h-4 text-[#b90064]" />
-                  <span className="text-[13px] font-semibold text-[#1c1b1b]">Packaging Design</span>
+                <div className="flex items-center gap-2 bg-[#FDFBF7] px-3.5 py-2 rounded-xl border border-[#E8DEEF]">
+                  <Package className="w-4 h-4 text-[#6B2D8C]" />
+                  <span className="text-[13px] font-semibold text-[#2A0E3F]">Packaging Design</span>
                 </div>
               </div>
             </div>
             <div className="shrink-0 w-full md:w-auto">
               <button
                 onClick={onOpenRFQModal}
-                className="w-full md:w-auto bg-[#b90064] hover:bg-[#8e004b] text-white font-bold px-7 py-3.5 rounded-xl hover:shadow transition-all flex items-center justify-center gap-2 cursor-pointer text-[14px]"
+                className="w-full md:w-auto bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-bold px-7 py-3.5 rounded-xl hover:shadow transition-all flex items-center justify-center gap-2 cursor-pointer text-[14px]"
               >
                 <span>Request Custom Quote</span>
                 <ArrowRight className="w-4 h-4" />
@@ -1000,7 +1000,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
               return (
                 <React.Fragment key={sup.id}>
                   {/* Supplier Card */}
-                  <article className="bg-white rounded-2xl p-6 hover:shadow-md transition-all duration-300 border border-[#e8e8e8] relative group flex flex-col lg:flex-row gap-6">
+                  <article className="bg-white rounded-2xl p-6 hover:shadow-md transition-all duration-300 border border-[#E8DEEF] relative group flex flex-col lg:flex-row gap-6">
                     
                     {/* Floating Save & Compare Quick Tools */}
                     <div className="absolute top-6 right-6 z-10 flex flex-col gap-2">
@@ -1010,17 +1010,17 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                         }}
                         className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
                           saved
-                            ? 'bg-[#fde7f3] text-[#b90064] border border-[#e0bec6]'
-                            : 'bg-[#f0edec] text-[#8c7077] hover:text-[#b90064] hover:bg-[#fde7f3]'
+                            ? 'bg-[#F5EEF8] text-[#6B2D8C] border border-[#D9C3E8]'
+                            : 'bg-[#F4F0E9] text-[#7E6C96] hover:text-[#6B2D8C] hover:bg-[#F5EEF8]'
                         }`}
                         title={saved ? 'Saved in My List' : 'Save Supplier'}
                       >
-                        {saved ? <BookmarkCheck className="w-4 h-4 fill-[#b90064]" /> : <Bookmark className="w-4 h-4" />}
+                        {saved ? <BookmarkCheck className="w-4 h-4 fill-[#6B2D8C]" /> : <Bookmark className="w-4 h-4" />}
                       </button>
 
                       <label
                         className={`flex items-center justify-center w-9 h-9 rounded-full cursor-pointer transition-colors ${
-                          isSelectedForCompare ? 'bg-[#dbe1ff]' : 'bg-[#f0edec] hover:bg-[#e6e1e1]'
+                          isSelectedForCompare ? 'bg-[#EDE0F5]' : 'bg-[#F4F0E9] hover:bg-[#e6e1e1]'
                         }`}
                         title="Select for Comparison"
                       >
@@ -1028,7 +1028,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                           type="checkbox"
                           checked={isSelectedForCompare}
                           onChange={() => toggleComparisonSelection(sup.id)}
-                          className="rounded border-[#e8e8e8] text-[#0050d6] focus:ring-[#0050d6] w-4 h-4 cursor-pointer"
+                          className="rounded border-[#E8DEEF] text-[#6B2D8C] focus:ring-[#6B2D8C] w-4 h-4 cursor-pointer"
                         />
                       </label>
                     </div>
@@ -1038,15 +1038,15 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                       <div>
                         {/* Header Row: Logo, Name, Badges */}
                         <div className="flex items-start gap-4 mb-4">
-                          <div className="w-20 h-20 rounded-xl bg-[#fdf8f8] flex items-center justify-center border border-[#e8e8e8] shrink-0 overflow-hidden relative shadow-2xs">
-                            <span className="font-extrabold text-xl text-[#b90064]">{sup.shortCode}</span>
+                          <div className="w-20 h-20 rounded-xl bg-[#FDFBF7] flex items-center justify-center border border-[#E8DEEF] shrink-0 overflow-hidden relative shadow-2xs">
+                            <span className="font-extrabold text-xl text-[#6B2D8C]">{sup.shortCode}</span>
                           </div>
 
                           <div>
                             <div className="flex items-center gap-2 mb-1 flex-wrap pr-16">
                               <h3
                                 onClick={() => onNavigateToSupplierProfile?.(sup.id)}
-                                className="text-xl font-bold tracking-tight text-[#1c1b1b] hover:text-[#b90064] cursor-pointer transition-colors"
+                                className="text-xl font-bold tracking-tight text-[#2A0E3F] hover:text-[#6B2D8C] cursor-pointer transition-colors"
                               >
                                 {sup.name}
                               </h3>
@@ -1063,8 +1063,8 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                                 size="sm"
                               />
                               {sup.isVerified && (
-                                <span className="flex items-center gap-1 text-[#b90064] text-[12px] font-bold" title="Nexora Verified Partner">
-                                  <ShieldCheck className="w-4 h-4 fill-[#b90064] text-white" />
+                                <span className="flex items-center gap-1 text-[#6B2D8C] text-[12px] font-bold" title="Nexora Verified Partner">
+                                  <ShieldCheck className="w-4 h-4 fill-[#6B2D8C] text-white" />
                                   <span className="hidden sm:inline">Verified</span>
                                 </span>
                               )}
@@ -1078,8 +1078,8 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                                 
                                 if (t.includes('manufacturer') || t.includes('formulator')) {
                                   tags.push(
-                                    <span key="mfg" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10.5px] font-black bg-indigo-50 text-indigo-800 border border-indigo-200 shadow-3xs uppercase tracking-wider">
-                                      <Factory className="w-3.5 h-3.5 text-indigo-700" />
+                                    <span key="mfg" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10.5px] font-black bg-purple-50 text-purple-900 border border-purple-200 shadow-3xs uppercase tracking-wider">
+                                      <Factory className="w-3.5 h-3.5 text-purple-800" />
                                       Contract Manufacturer
                                     </span>
                                   );
@@ -1110,8 +1110,8 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                                 }
                                 if (t.includes('distributor')) {
                                   tags.push(
-                                    <span key="dist" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10.5px] font-black bg-blue-50 text-[#0050d6] border border-blue-200 shadow-3xs uppercase tracking-wider">
-                                      <Building2 className="w-3.5 h-3.5 text-[#0050d6]" />
+                                    <span key="dist" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10.5px] font-black bg-purple-50 text-[#6B2D8C] border border-purple-200 shadow-3xs uppercase tracking-wider">
+                                      <Building2 className="w-3.5 h-3.5 text-[#6B2D8C]" />
                                       Distributor
                                     </span>
                                   );
@@ -1119,8 +1119,8 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                                 
                                 if (tags.length === 0) {
                                   tags.push(
-                                    <span key="generic" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10.5px] font-black bg-rose-50 text-[#b90064] border border-rose-200 shadow-3xs uppercase tracking-wider">
-                                      <Factory className="w-3.5 h-3.5 text-[#b90064]" />
+                                    <span key="generic" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10.5px] font-black bg-rose-50 text-[#6B2D8C] border border-rose-200 shadow-3xs uppercase tracking-wider">
+                                      <Factory className="w-3.5 h-3.5 text-[#6B2D8C]" />
                                       {sup.type}
                                     </span>
                                   );
@@ -1128,11 +1128,11 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                                 return tags;
                               })()}
 
-                              <span className="text-[#8c7077] hidden sm:inline">•</span>
+                              <span className="text-[#7E6C96] hidden sm:inline">•</span>
                               
-                              <span className="flex items-center gap-1 text-[11.5px] text-[#594047] font-bold bg-[#fcf9f8] border border-[#e8e8e8] px-2.5 py-1 rounded-md">
-                                <MapPin className="w-3.5 h-3.5 text-[#b90064]" />
-                                <span className="text-[#1c1b1b] font-extrabold">{sup.city}</span>, {sup.state}
+                              <span className="flex items-center gap-1 text-[11.5px] text-[#5B4A6E] font-bold bg-[#FDFBF7] border border-[#E8DEEF] px-2.5 py-1 rounded-md">
+                                <MapPin className="w-3.5 h-3.5 text-[#6B2D8C]" />
+                                <span className="text-[#2A0E3F] font-extrabold">{sup.city}</span>, {sup.state}
                               </span>
                             </div>
                           </div>
@@ -1141,25 +1141,25 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                             {/* Compliance Badges */}
                             <div className="flex flex-wrap gap-1.5 mb-2">
                               {sup.isGstVerified && (
-                                <span className="px-2.5 py-0.5 bg-green-50 text-green-700 text-[10.5px] font-bold rounded-md border border-green-200 flex items-center gap-1">
+                                <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-[10.5px] font-bold rounded-md border border-emerald-200 flex items-center gap-1">
                                   <FileCheck2 className="w-3 h-3" />
                                   GST Verified
                                 </span>
                               )}
                               {sup.isIsoCertified && (
-                                <span className="px-2.5 py-0.5 bg-[#fde7f3] text-[#b90064] text-[10.5px] font-bold rounded-md border border-[#e0bec6] flex items-center gap-1">
+                                <span className="px-2.5 py-0.5 bg-[#F5EEF8] text-[#6B2D8C] text-[10.5px] font-bold rounded-md border border-[#D9C3E8] flex items-center gap-1">
                                   <Award className="w-3 h-3" />
                                   ISO 9001
                                 </span>
                               )}
                               {sup.isGmpCertified && (
-                                <span className="px-2.5 py-0.5 bg-[#e8f5e9] text-[#00875a] text-[10.5px] font-bold rounded-md border border-[#a5d6a7] flex items-center gap-1">
+                                <span className="px-2.5 py-0.5 bg-[#e8f5e9] text-[#059669] text-[10.5px] font-bold rounded-md border border-[#a5d6a7] flex items-center gap-1">
                                   <BadgeCheck className="w-3 h-3" />
                                   GMP Certified
                                 </span>
                               )}
                               {sup.isFdaRegistered && (
-                                <span className="px-2.5 py-0.5 bg-[#dbe1ff] text-[#0050d6] text-[10.5px] font-bold rounded-md border border-[#a5c0ff] flex items-center gap-1">
+                                <span className="px-2.5 py-0.5 bg-[#EDE0F5] text-[#6B2D8C] text-[10.5px] font-bold rounded-md border border-[#a5c0ff] flex items-center gap-1">
                                   <ShieldCheck className="w-3 h-3" />
                                   US-FDA
                                 </span>
@@ -1167,43 +1167,43 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                             </div>
 
                         {/* Performance Metrics Bar */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-3.5 px-4 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl mb-4 text-[12px]">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-3.5 px-4 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl mb-4 text-[12px]">
                           <div>
-                            <p className="text-[10px] text-[#8c7077] uppercase tracking-widest font-bold mb-0.5">Business</p>
-                            <p className="font-bold text-[#1c1b1b]">12+ Years</p>
+                            <p className="text-[10px] text-[#7E6C96] uppercase tracking-widest font-bold mb-0.5">Business</p>
+                            <p className="font-bold text-[#2A0E3F]">12+ Years</p>
                           </div>
                           <div>
-                            <p className="text-[10px] text-[#8c7077] uppercase tracking-widest font-bold mb-0.5">Response</p>
-                            <p className="font-bold text-[#00875a]">{sup.responseRate || '98% (<2h)'}</p>
+                            <p className="text-[10px] text-[#7E6C96] uppercase tracking-widest font-bold mb-0.5">Response</p>
+                            <p className="font-bold text-[#059669]">{sup.responseRate || '98% (<2h)'}</p>
                           </div>
                           <div>
-                            <p className="text-[10px] text-[#8c7077] uppercase tracking-widest font-bold mb-0.5">Capacity</p>
-                            <p className="font-bold text-[#1c1b1b]">{sup.monthlyCapacity || '100k units/mo'}</p>
+                            <p className="text-[10px] text-[#7E6C96] uppercase tracking-widest font-bold mb-0.5">Capacity</p>
+                            <p className="font-bold text-[#2A0E3F]">{sup.monthlyCapacity || '100k units/mo'}</p>
                           </div>
                           <div>
-                            <p className="text-[10px] text-[#8c7077] uppercase tracking-widest font-bold mb-0.5">Lead Time</p>
-                            <p className="font-bold text-[#1c1b1b]">15-30 Days</p>
+                            <p className="text-[10px] text-[#7E6C96] uppercase tracking-widest font-bold mb-0.5">Lead Time</p>
+                            <p className="font-bold text-[#2A0E3F]">15-30 Days</p>
                           </div>
                         </div>
 
                         {/* Paywall Differentiated Contact UI Block */}
-                        <div className="mt-3.5 mb-4 p-4 rounded-xl border border-dashed transition-all bg-[#fdfaf9] border-[#e8d4d8] flex flex-col md:flex-row flex-wrap md:items-center justify-between gap-4">
-                          <div className="flex flex-wrap items-center gap-4 text-[12.5px] text-[#594047]">
+                        <div className="mt-3.5 mb-4 p-4 rounded-xl border border-dashed transition-all bg-[#FDFBF7] border-[#E5D4ED] flex flex-col md:flex-row flex-wrap md:items-center justify-between gap-4">
+                          <div className="flex flex-wrap items-center gap-4 text-[12.5px] text-[#5B4A6E]">
                             <div className="flex items-center gap-2">
-                              <Phone className="w-3.5 h-3.5 text-[#b90064] shrink-0" />
+                              <Phone className="w-3.5 h-3.5 text-[#6B2D8C] shrink-0" />
                               <span className="font-bold">Phone:</span>
                               {isPhoneRevealed ? (
-                                <span className="font-semibold text-[#1c1b1b] font-mono select-all bg-white px-1.5 py-0.5 rounded border border-[#e8e8e8]">{sup.phone}</span>
+                                <span className="font-semibold text-[#2A0E3F] font-mono select-all bg-white px-1.5 py-0.5 rounded border border-[#E8DEEF]">{sup.phone}</span>
                               ) : (
                                 <span className="font-medium text-stone-400 select-none tracking-widest">+91 98201 •••••</span>
                               )}
                             </div>
 
                             <div className="flex items-center gap-2">
-                              <Mail className="w-3.5 h-3.5 text-[#b90064] shrink-0" />
+                              <Mail className="w-3.5 h-3.5 text-[#6B2D8C] shrink-0" />
                               <span className="font-bold">Email:</span>
                               {isPhoneRevealed ? (
-                                <span className="font-semibold text-[#1c1b1b] font-mono select-all bg-white px-1.5 py-0.5 rounded border border-[#e8e8e8]">
+                                <span className="font-semibold text-[#2A0E3F] font-mono select-all bg-white px-1.5 py-0.5 rounded border border-[#E8DEEF]">
                                   {sup.name.toLowerCase().replace(/[^a-z0-9]/g, '')}@sourcing.nexoraluxe.com
                                 </span>
                               ) : (
@@ -1212,10 +1212,10 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                             </div>
 
                             <div className="flex items-center gap-2 w-full md:w-auto">
-                              <MapPin className="w-3.5 h-3.5 text-[#b90064] shrink-0" />
+                              <MapPin className="w-3.5 h-3.5 text-[#6B2D8C] shrink-0" />
                               <span className="font-bold">Plant Address:</span>
                               {isPhoneRevealed ? (
-                                <span className="font-semibold text-[#1c1b1b]">{sup.locationDetails?.fullAddress || `${sup.city}, India`}</span>
+                                <span className="font-semibold text-[#2A0E3F]">{sup.locationDetails?.fullAddress || `${sup.city}, India`}</span>
                               ) : (
                                 <span className="font-medium text-stone-400 select-none">MIDC Industrial Zone, Plot C-•••</span>
                               )}
@@ -1230,9 +1230,9 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                           ) : (
                             <button
                               onClick={() => handlePhoneRevealClick(sup)}
-                              className="text-[11.5px] font-black text-[#b90064] hover:text-[#8e004b] bg-white border border-[#b90064] hover:bg-[#fde7f3] px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer shadow-3xs"
+                              className="text-[11.5px] font-black text-[#6B2D8C] hover:text-[#4A2560] bg-white border border-[#6B2D8C] hover:bg-[#F5EEF8] px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer shadow-3xs"
                             >
-                              <Lock className="w-3 h-3 text-[#b90064]" />
+                              <Lock className="w-3 h-3 text-[#6B2D8C]" />
                               <span>Unlock Supplier Details (10 Credits)</span>
                             </button>
                           )}
@@ -1252,7 +1252,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                               state: sup.state
                             })
                           }
-                          className="bg-[#b90064] hover:bg-[#8e004b] text-white font-bold px-4 py-2 rounded-xl text-[13px] flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+                          className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-bold px-4 py-2 rounded-xl text-[13px] flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
                         >
                           <Send className="w-3.5 h-3.5" />
                           <span>Direct Enquiry</span>
@@ -1260,9 +1260,9 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
                         <button
                           onClick={() => onNavigateToSupplierProfile?.(sup.id)}
-                          className="bg-stone-100 hover:bg-stone-200 text-[#1c1b1b] font-bold px-3.5 py-2 rounded-xl text-[13px] flex items-center gap-1.5 transition-colors cursor-pointer border border-stone-200"
+                          className="bg-stone-100 hover:bg-stone-200 text-[#2A0E3F] font-bold px-3.5 py-2 rounded-xl text-[13px] flex items-center gap-1.5 transition-colors cursor-pointer border border-stone-200"
                         >
-                          <Building2 className="w-3.5 h-3.5 text-[#b90064]" />
+                          <Building2 className="w-3.5 h-3.5 text-[#6B2D8C]" />
                           <span>View Profile</span>
                         </button>
 
@@ -1271,7 +1271,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                           className={`border font-bold px-3.5 py-2 rounded-xl text-[13px] flex items-center gap-1.5 transition-colors cursor-pointer ${
                             isPhoneRevealed 
                               ? 'bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100' 
-                              : 'bg-white border-[#b90064] text-[#b90064] hover:bg-[#fde7f3]'
+                              : 'bg-white border-[#6B2D8C] text-[#6B2D8C] hover:bg-[#F5EEF8]'
                           }`}
                         >
                           {isPhoneRevealed ? <Unlock className="w-3.5 h-3.5" /> : <Phone className="w-3.5 h-3.5" />}
@@ -1281,7 +1281,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                         {onOpenFacilityTour && (
                           <button
                             onClick={() => onOpenFacilityTour(sup)}
-                            className="bg-[#fde7f3] border border-[#e0bec6] text-[#b90064] hover:bg-[#b90064] hover:text-white font-bold px-3.5 py-2 rounded-xl text-[13px] flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+                            className="bg-[#F5EEF8] border border-[#D9C3E8] text-[#6B2D8C] hover:bg-[#6B2D8C] hover:text-white font-bold px-3.5 py-2 rounded-xl text-[13px] flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
                             title="Play 15-second virtual tour video of manufacturing plant"
                           >
                             <Video className="w-3.5 h-3.5" />
@@ -1301,23 +1301,23 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                         <div className="relative">
                           <button
                             onClick={() => setOpenAssetsId(isAssetsOpen ? null : sup.id)}
-                            className="bg-white border border-[#e8e8e8] text-[#594047] font-bold px-3.5 py-2 rounded-xl hover:bg-[#f0edec] transition-colors text-[13px] flex items-center gap-1.5 cursor-pointer"
+                            className="bg-white border border-[#E8DEEF] text-[#5B4A6E] font-bold px-3.5 py-2 rounded-xl hover:bg-[#F4F0E9] transition-colors text-[13px] flex items-center gap-1.5 cursor-pointer"
                           >
-                            <FolderDown className="w-3.5 h-3.5 text-[#b90064]" />
+                            <FolderDown className="w-3.5 h-3.5 text-[#6B2D8C]" />
                             <span>Assets</span>
                             <ChevronDown className="w-3.5 h-3.5" />
                           </button>
 
                           {isAssetsOpen && (
-                            <div className="absolute bottom-full left-0 mb-2 w-48 bg-white border border-[#e8e8e8] rounded-xl shadow-lg z-30 py-1.5 animate-in fade-in-50 duration-150">
+                            <div className="absolute bottom-full left-0 mb-2 w-48 bg-white border border-[#E8DEEF] rounded-xl shadow-lg z-30 py-1.5 animate-in fade-in-50 duration-150">
                               <button
                                 onClick={() => {
                                   setOpenAssetsId(null);
                                   showToast(`Downloaded brochure for ${sup.name}`);
                                 }}
-                                className="w-full text-left px-3.5 py-2 text-[12px] font-semibold text-[#1c1b1b] hover:bg-[#fde7f3] hover:text-[#b90064] transition-colors flex items-center gap-2"
+                                className="w-full text-left px-3.5 py-2 text-[12px] font-semibold text-[#2A0E3F] hover:bg-[#F5EEF8] hover:text-[#6B2D8C] transition-colors flex items-center gap-2"
                               >
-                                <Download className="w-3.5 h-3.5 text-[#b90064]" />
+                                <Download className="w-3.5 h-3.5 text-[#6B2D8C]" />
                                 <span>Download Brochure</span>
                               </button>
                               <button
@@ -1325,9 +1325,9 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                                   setOpenAssetsId(null);
                                   showToast(`Opened Product Catalog for ${sup.name}`);
                                 }}
-                                className="w-full text-left px-3.5 py-2 text-[12px] font-semibold text-[#1c1b1b] hover:bg-[#fde7f3] hover:text-[#b90064] transition-colors flex items-center gap-2 border-t border-[#f0edec]"
+                                className="w-full text-left px-3.5 py-2 text-[12px] font-semibold text-[#2A0E3F] hover:bg-[#F5EEF8] hover:text-[#6B2D8C] transition-colors flex items-center gap-2 border-t border-[#F4F0E9]"
                               >
-                                <Package className="w-3.5 h-3.5 text-[#0050d6]" />
+                                <Package className="w-3.5 h-3.5 text-[#6B2D8C]" />
                                 <span>Product Catalog PDF</span>
                               </button>
                               <button
@@ -1335,9 +1335,9 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                                   setOpenAssetsId(null);
                                   showToast(`Verified GST/ISO Documents for ${sup.name}`);
                                 }}
-                                className="w-full text-left px-3.5 py-2 text-[12px] font-semibold text-[#1c1b1b] hover:bg-[#fde7f3] hover:text-[#b90064] transition-colors flex items-center gap-2 border-t border-[#f0edec]"
+                                className="w-full text-left px-3.5 py-2 text-[12px] font-semibold text-[#2A0E3F] hover:bg-[#F5EEF8] hover:text-[#6B2D8C] transition-colors flex items-center gap-2 border-t border-[#F4F0E9]"
                               >
-                                <Award className="w-3.5 h-3.5 text-[#00875a]" />
+                                <Award className="w-3.5 h-3.5 text-[#059669]" />
                                 <span>ISO/GST Status</span>
                               </button>
                             </div>
@@ -1355,7 +1355,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                               });
                             }
                           }}
-                          className="text-[#0050d6] hover:underline font-bold text-[12.5px] ml-auto flex items-center gap-1 cursor-pointer"
+                          className="text-[#6B2D8C] hover:underline font-bold text-[12.5px] ml-auto flex items-center gap-1 cursor-pointer"
                         >
                           <span>View Profile</span>
                           <ExternalLink className="w-3 h-3" />
@@ -1364,10 +1364,10 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                     </div>
 
                     {/* Right Showcase: Product Catalog Thumbnails */}
-                    <div className="w-full lg:w-80 shrink-0 flex flex-col border-t lg:border-t-0 lg:border-l border-[#e8e8e8] pt-4 lg:pt-0 lg:pl-6 bg-[#fcf9f8] rounded-r-2xl">
+                    <div className="w-full lg:w-80 shrink-0 flex flex-col border-t lg:border-t-0 lg:border-l border-[#E8DEEF] pt-4 lg:pt-0 lg:pl-6 bg-[#FDFBF7] rounded-r-2xl">
                       <div className="flex justify-between items-center mb-2.5">
-                        <h4 className="text-[13px] font-bold text-[#1c1b1b]">Product Catalog</h4>
-                        <span className="text-[10px] text-[#8c7077] bg-white px-2 py-0.5 rounded-full border border-[#e8e8e8] font-bold uppercase tracking-wider">
+                        <h4 className="text-[13px] font-bold text-[#2A0E3F]">Product Catalog</h4>
+                        <span className="text-[10px] text-[#7E6C96] bg-white px-2 py-0.5 rounded-full border border-[#E8DEEF] font-bold uppercase tracking-wider">
                           MOQ: 500+
                         </span>
                       </div>
@@ -1414,7 +1414,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                                 });
                               }
                             }}
-                            className="bg-white rounded-xl border border-[#e8e8e8] hover:border-[#b90064] aspect-square relative group/thumb overflow-hidden cursor-pointer p-1 transition-all"
+                            className="bg-white rounded-xl border border-[#E8DEEF] hover:border-[#6B2D8C] aspect-square relative group/thumb overflow-hidden cursor-pointer p-1 transition-all"
                             title={`Enquire about ${prod.name}`}
                           >
                             <img
@@ -1428,7 +1428,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-2 opacity-90 group-hover/thumb:opacity-100 transition-opacity">
                               <p className="text-[11px] text-white font-bold truncate leading-tight">{prod.name}</p>
-                              <p className="text-[9px] text-[#ffcbd9] font-semibold">{prod.price}</p>
+                              <p className="text-[9px] text-[#E8D5F2] font-semibold">{prod.price}</p>
                             </div>
                           </div>
                         ))}
@@ -1440,10 +1440,10 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                               supplierName: sup.name
                             })
                           }
-                          className="bg-white rounded-xl border border-[#e8e8e8] hover:border-[#b90064] aspect-square flex flex-col items-center justify-center transition-colors cursor-pointer group/more p-2"
+                          className="bg-white rounded-xl border border-[#E8DEEF] hover:border-[#6B2D8C] aspect-square flex flex-col items-center justify-center transition-colors cursor-pointer group/more p-2"
                         >
-                          <Package className="w-5 h-5 text-[#b90064] mb-1 group-hover/more:scale-110 transition-transform" />
-                          <p className="text-[11px] text-[#b90064] font-bold text-center leading-tight">
+                          <Package className="w-5 h-5 text-[#6B2D8C] mb-1 group-hover/more:scale-110 transition-transform" />
+                          <p className="text-[11px] text-[#6B2D8C] font-bold text-center leading-tight">
                             View All 24+
                           </p>
                         </div>
@@ -1453,13 +1453,13 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
                   {/* Interspersed In-Feed Formulation Banner (after second supplier) */}
                   {index === 1 && (
-                    <div className="bg-[#b90064] rounded-2xl p-6 text-white flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-sm my-2">
+                    <div className="bg-[#6B2D8C] rounded-2xl p-6 text-white flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-sm my-2">
                       <div className="flex-1 z-10">
                         <h3 className="text-xl font-bold tracking-tight mb-1.5 flex items-center gap-2">
-                          <Sparkles className="w-5 h-5 text-[#ffcbd9]" />
+                          <Sparkles className="w-5 h-5 text-[#E8D5F2]" />
                           <span>Need a Custom Formulation?</span>
                         </h3>
-                        <p className="text-[#ffd9e2] text-[13px] mb-3 leading-relaxed font-medium">
+                        <p className="text-[#E8D5F2] text-[13px] mb-3 leading-relaxed font-medium">
                           Work with our expert chemists to develop, test, and package your unique cosmetic line from scratch.
                         </p>
                         <div className="flex flex-wrap gap-2 text-[11px] font-semibold">
@@ -1471,7 +1471,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                       <div className="z-10 shrink-0 w-full md:w-auto">
                         <button
                           onClick={onOpenRFQModal}
-                          className="w-full md:w-auto bg-white text-[#b90064] font-bold px-6 py-3 rounded-xl hover:bg-[#fde7f3] transition-colors flex items-center justify-center gap-2 cursor-pointer text-[13px]"
+                          className="w-full md:w-auto bg-white text-[#6B2D8C] font-bold px-6 py-3 rounded-xl hover:bg-[#F5EEF8] transition-colors flex items-center justify-center gap-2 cursor-pointer text-[13px]"
                         >
                           <span>Request Custom Quote</span>
                           <ArrowRight className="w-4 h-4" />
@@ -1486,9 +1486,9 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
           {/* Floating Bottom Comparison & Action Bar Tray */}
           {selectedComparisonIds.length > 0 && (
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-[#e8e8e8] rounded-full px-6 py-3 flex gap-4 items-center z-50 shadow-2xl transition-all animate-in slide-in-from-bottom-6">
-              <div className="flex items-center gap-3 pr-4 border-r border-[#e8e8e8]">
-                <span className="text-[13px] font-bold text-[#1c1b1b]">
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-[#E8DEEF] rounded-full px-6 py-3 flex gap-4 items-center z-50 shadow-2xl transition-all animate-in slide-in-from-bottom-6">
+              <div className="flex items-center gap-3 pr-4 border-r border-[#E8DEEF]">
+                <span className="text-[13px] font-bold text-[#2A0E3F]">
                   {selectedComparisonIds.length} Suppliers Selected
                 </span>
               </div>
@@ -1501,13 +1501,13 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                     showToast(`Comparing ${selectedComparisonIds.length} suppliers`);
                   }
                 }}
-                className="flex items-center gap-1.5 text-[#1c1b1b] hover:text-[#b90064] transition-colors font-bold text-[13px] cursor-pointer"
+                className="flex items-center gap-1.5 text-[#2A0E3F] hover:text-[#6B2D8C] transition-colors font-bold text-[13px] cursor-pointer"
               >
-                <SlidersHorizontal className="w-4 h-4 text-[#b90064]" />
+                <SlidersHorizontal className="w-4 h-4 text-[#6B2D8C]" />
                 <span>Compare Specs</span>
               </button>
 
-              <div className="w-px h-5 bg-[#e8e8e8]" />
+              <div className="w-px h-5 bg-[#E8DEEF]" />
 
               <button
                 onClick={() => {
@@ -1520,13 +1520,13 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                   a.click();
                   showToast('Exported selected suppliers to CSV');
                 }}
-                className="flex items-center gap-1.5 text-[#1c1b1b] hover:text-[#b90064] transition-colors font-bold text-[13px] cursor-pointer"
+                className="flex items-center gap-1.5 text-[#2A0E3F] hover:text-[#6B2D8C] transition-colors font-bold text-[13px] cursor-pointer"
               >
-                <Download className="w-4 h-4 text-[#0050d6]" />
+                <Download className="w-4 h-4 text-[#6B2D8C]" />
                 <span>Export CSV</span>
               </button>
 
-              <div className="w-px h-5 bg-[#e8e8e8]" />
+              <div className="w-px h-5 bg-[#E8DEEF]" />
 
               <button
                 onClick={() =>
@@ -1535,7 +1535,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                     supplierName: `${selectedComparisonIds.length} Selected Manufacturers`
                   })
                 }
-                className="bg-[#b90064] text-white font-bold px-5 py-2 rounded-full hover:bg-[#8e004b] transition-colors text-[13px] flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="bg-[#6B2D8C] text-white font-bold px-5 py-2 rounded-full hover:bg-[#4A2560] transition-colors text-[13px] flex items-center gap-1.5 cursor-pointer shadow-2xs"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>Send Bulk Enquiry</span>
@@ -1550,46 +1550,46 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end md:hidden">
           <div className="bg-white w-5/6 max-w-md h-full p-6 overflow-y-auto flex flex-col justify-between">
             <div>
-              <div className="flex justify-between items-center pb-4 border-b border-[#e8e8e8] mb-5">
-                <h2 className="text-lg font-bold text-[#1c1b1b]">Filter Suppliers</h2>
-                <button onClick={() => setIsMobileFilterOpen(false)} className="text-[#8c7077]">
+              <div className="flex justify-between items-center pb-4 border-b border-[#E8DEEF] mb-5">
+                <h2 className="text-lg font-bold text-[#2A0E3F]">Filter Suppliers</h2>
+                <button onClick={() => setIsMobileFilterOpen(false)} className="text-[#7E6C96]">
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Mobile Sort By */}
               <div className="mb-5">
-                <h3 className="text-[11px] font-bold text-[#8c7077] uppercase tracking-wider mb-2.5">
+                <h3 className="text-[11px] font-bold text-[#7E6C96] uppercase tracking-wider mb-2.5">
                   Sort Manufacturers
                 </h3>
                 <div className="relative">
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="w-full appearance-none bg-[#fcf9f8] border border-[#e8e8e8] text-[13px] font-semibold text-[#1c1b1b] rounded-xl py-2.5 pl-3.5 pr-8 focus:ring-1 focus:ring-[#b90064] cursor-pointer"
+                    className="w-full appearance-none bg-[#FDFBF7] border border-[#E8DEEF] text-[13px] font-semibold text-[#2A0E3F] rounded-xl py-2.5 pl-3.5 pr-8 focus:ring-1 focus:ring-[#C9A961]/30 cursor-pointer"
                   >
                     <option value="Relevance">Sort: Relevance</option>
                     <option value="Rating">Sort: Rating</option>
                     <option value="Year Established">Sort: Year Established</option>
                     <option value="Employee Count">Sort: Employee Count</option>
                   </select>
-                  <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-[#8c7077] pointer-events-none" />
+                  <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-[#7E6C96] pointer-events-none" />
                 </div>
               </div>
 
               {/* Mobile Business Type */}
               <div className="mb-5">
-                <h3 className="text-[11px] font-bold text-[#8c7077] uppercase tracking-wider mb-2.5">
+                <h3 className="text-[11px] font-bold text-[#7E6C96] uppercase tracking-wider mb-2.5">
                   Business Type
                 </h3>
                 <div className="flex flex-col gap-2">
                   {['Manufacturer', 'Wholesaler', 'Distributor', 'Exporter', 'OEM/ODM'].map((type) => (
-                    <label key={type} className="flex items-center gap-2 text-[13px] text-[#1c1b1b]">
+                    <label key={type} className="flex items-center gap-2 text-[13px] text-[#2A0E3F]">
                       <input
                         type="checkbox"
                         checked={businessTypeFilters.includes(type)}
                         onChange={() => toggleBusinessTypeFilter(type)}
-                        className="rounded border-[#e8e8e8] text-[#b90064]"
+                        className="rounded border-[#E8DEEF] text-[#6B2D8C]"
                       />
                       <span>{type}</span>
                     </label>
@@ -1598,16 +1598,16 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
               </div>
             </div>
 
-            <div className="pt-4 border-t border-[#e8e8e8] flex gap-3">
+            <div className="pt-4 border-t border-[#E8DEEF] flex gap-3">
               <button
                 onClick={handleResetFilters}
-                className="flex-1 py-3 border border-[#e8e8e8] rounded-xl text-[13px] font-bold text-[#594047]"
+                className="flex-1 py-3 border border-[#E8DEEF] rounded-xl text-[13px] font-bold text-[#5B4A6E]"
               >
                 Reset
               </button>
               <button
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="flex-1 py-3 bg-[#b90064] text-white rounded-xl text-[13px] font-bold"
+                className="flex-1 py-3 bg-[#6B2D8C] text-white rounded-xl text-[13px] font-bold"
               >
                 Apply Filters
               </button>
@@ -1619,7 +1619,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
       {/* Premium Contact Reveal Paywall Modal */}
       {paywallModalSupplier && (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full border border-[#e8e8e8] shadow-2xl p-6 md:p-8 animate-in zoom-in-95 duration-200 relative text-center">
+          <div className="bg-white rounded-3xl max-w-md w-full border border-[#E8DEEF] shadow-2xl p-6 md:p-8 animate-in zoom-in-95 duration-200 relative text-center">
             <button 
               type="button"
               onClick={() => setPaywallModalSupplier(null)}
@@ -1628,50 +1628,50 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
               <X className="w-5 h-5" />
             </button>
 
-            <div className="w-14 h-14 bg-[#fde7f3] text-[#b90064] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#e0bec6]/30">
-              <Lock className="w-6 h-6 text-[#b90064]" />
+            <div className="w-14 h-14 bg-[#F5EEF8] text-[#6B2D8C] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#D9C3E8]/30">
+              <Lock className="w-6 h-6 text-[#6B2D8C]" />
             </div>
 
-            <span className="text-[10px] font-black uppercase tracking-widest text-[#b90064] bg-[#fde7f3] px-3 py-1 rounded-full">
+            <span className="text-[10px] font-black uppercase tracking-widest text-[#6B2D8C] bg-[#F5EEF8] px-3 py-1 rounded-full">
               Premium B2B Directory Unlock
             </span>
 
-            <h3 className="text-lg font-black text-[#1c1b1b] mt-3 mb-2">
+            <h3 className="text-lg font-black text-[#2A0E3F] mt-3 mb-2">
               Unlock Contact Details
             </h3>
-            <p className="text-[12.5px] text-[#594047] leading-relaxed mb-5">
-              Confirm spending credits to unlock the direct mobile sourcing lines, executive emails, and registered factory plant address for <strong className="text-[#1c1b1b] font-extrabold">{paywallModalSupplier.name}</strong>.
+            <p className="text-[12.5px] text-[#5B4A6E] leading-relaxed mb-5">
+              Confirm spending credits to unlock the direct mobile sourcing lines, executive emails, and registered factory plant address for <strong className="text-[#2A0E3F] font-extrabold">{paywallModalSupplier.name}</strong>.
             </p>
 
             {/* Credit Ledger Breakdown */}
-            <div className="bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl p-4 text-left mb-6 text-[12.5px] space-y-2.5">
+            <div className="bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl p-4 text-left mb-6 text-[12.5px] space-y-2.5">
               <div className="flex justify-between font-medium">
-                <span className="text-[#594047]">Your Sourcing Wallet:</span>
-                <span className="font-bold text-[#1c1b1b]">{userCredits} Credits</span>
+                <span className="text-[#5B4A6E]">Your Sourcing Wallet:</span>
+                <span className="font-bold text-[#2A0E3F]">{userCredits} Credits</span>
               </div>
               <div className="flex justify-between font-medium text-amber-700">
                 <span>Unlock Sourcing Fee:</span>
                 <span className="font-extrabold">-10 Credits</span>
               </div>
-              <div className="w-full h-px bg-[#e8e8e8]"></div>
-              <div className="flex justify-between font-bold text-[#b90064]">
+              <div className="w-full h-px bg-[#E8DEEF]"></div>
+              <div className="flex justify-between font-bold text-[#6B2D8C]">
                 <span>Remaining Balance:</span>
                 <span>{userCredits - 10} Credits</span>
               </div>
             </div>
 
             {/* Benefits locked badges */}
-            <div className="grid grid-cols-3 gap-2.5 mb-6 text-[10.5px] font-bold text-[#594047]">
-              <div className="p-2 bg-[#fdfaf9] rounded-lg border border-[#e8d4d8] flex flex-col items-center">
-                <Phone className="w-4 h-4 text-[#b90064] mb-1" />
+            <div className="grid grid-cols-3 gap-2.5 mb-6 text-[10.5px] font-bold text-[#5B4A6E]">
+              <div className="p-2 bg-[#FDFBF7] rounded-lg border border-[#E5D4ED] flex flex-col items-center">
+                <Phone className="w-4 h-4 text-[#6B2D8C] mb-1" />
                 <span>Direct Mobile</span>
               </div>
-              <div className="p-2 bg-[#fdfaf9] rounded-lg border border-[#e8d4d8] flex flex-col items-center">
-                <Mail className="w-4 h-4 text-[#b90064] mb-1" />
+              <div className="p-2 bg-[#FDFBF7] rounded-lg border border-[#E5D4ED] flex flex-col items-center">
+                <Mail className="w-4 h-4 text-[#6B2D8C] mb-1" />
                 <span>Corp Email</span>
               </div>
-              <div className="p-2 bg-[#fdfaf9] rounded-lg border border-[#e8d4d8] flex flex-col items-center">
-                <MapPin className="w-4 h-4 text-[#b90064] mb-1" />
+              <div className="p-2 bg-[#FDFBF7] rounded-lg border border-[#E5D4ED] flex flex-col items-center">
+                <MapPin className="w-4 h-4 text-[#6B2D8C] mb-1" />
                 <span>Full Address</span>
               </div>
             </div>
@@ -1680,7 +1680,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
               <button
                 type="button"
                 onClick={() => confirmUnlockSupplier(paywallModalSupplier.id, paywallModalSupplier.name)}
-                className="w-full bg-[#b90064] hover:bg-[#8e004b] text-white font-extrabold text-[13.5px] py-3 rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="w-full bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold text-[13.5px] py-3 rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <Unlock className="w-4 h-4" />
                 <span>Unlock with 10 Credits</span>
@@ -1688,7 +1688,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
               <button
                 type="button"
                 onClick={() => setPaywallModalSupplier(null)}
-                className="w-full bg-white hover:bg-[#f0edec] text-[#594047] font-bold text-[13px] py-2.5 rounded-xl transition-colors cursor-pointer"
+                className="w-full bg-white hover:bg-[#F4F0E9] text-[#5B4A6E] font-bold text-[13px] py-2.5 rounded-xl transition-colors cursor-pointer"
               >
                 Cancel
               </button>

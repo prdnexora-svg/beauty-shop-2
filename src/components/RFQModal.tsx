@@ -74,22 +74,22 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
-        className="bg-white rounded-2xl border border-[#e8e8e8] w-full max-w-xl shadow-2xl overflow-hidden relative"
+        className="bg-white rounded-2xl border border-[#E8DEEF] w-full max-w-xl shadow-2xl overflow-hidden relative"
       >
         {/* Modal Header */}
-        <div className="p-6 border-b border-[#e8e8e8] flex items-center justify-between bg-[#fcf9f8]">
+        <div className="p-6 border-b border-[#E8DEEF] flex items-center justify-between bg-[#FDFBF7]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#b90064] text-white flex items-center justify-center shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-[#6B2D8C] text-white flex items-center justify-center shadow-xs">
               <FileText className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-[#1c1b1b]">Post Sourcing Requirement (RFQ)</h3>
-              <p className="text-[12px] text-[#594047]">Receive direct quotes from verified manufacturers across India</p>
+              <h3 className="text-lg font-bold text-[#2A0E3F]">Post Sourcing Requirement (RFQ)</h3>
+              <p className="text-[12px] text-[#5B4A6E]">Receive direct quotes from verified manufacturers across India</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg text-[#8c7077] hover:text-[#1c1b1b] hover:bg-[#f0edec] flex items-center justify-center transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-lg text-[#7E6C96] hover:text-[#2A0E3F] hover:bg-[#F4F0E9] flex items-center justify-center transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -113,13 +113,13 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                     initial={{ scale: 0 }}
                     animate={{ scale: [1, 1.25, 1] }}
                     transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-                    className="absolute inset-0 bg-[#fde7f3] rounded-full opacity-60"
+                    className="absolute inset-0 bg-[#F5EEF8] rounded-full opacity-60"
                   />
                   <motion.div
                     initial={{ scale: 0, rotate: -45 }}
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-                    className="w-16 h-16 bg-[#b90064] text-white rounded-full flex items-center justify-center shadow-lg relative z-10"
+                    className="w-16 h-16 bg-[#6B2D8C] text-white rounded-full flex items-center justify-center shadow-lg relative z-10"
                   >
                     <CheckCircle2 className="w-9 h-9" />
                   </motion.div>
@@ -127,7 +127,7 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                     initial={{ opacity: 0, scale: 0 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.2 }}
-                    className="absolute -top-1 -right-1 bg-amber-400 text-white p-1 rounded-full shadow-xs z-20"
+                    className="absolute -top-1 -right-1 bg-gold-400 text-[#2A0E3F] p-1 rounded-full shadow-xs z-20"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
                   </motion.div>
@@ -135,12 +135,12 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
 
                 {/* Main Headline */}
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#fde7f3] text-[#b90064] rounded-full text-[11px] font-bold tracking-wide uppercase mb-1.5 border border-[#e0bec6]">
-                    <Radio className="w-3.5 h-3.5 text-[#b90064] animate-pulse" />
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F5EEF8] text-[#6B2D8C] rounded-full text-[11px] font-bold tracking-wide uppercase mb-1.5 border border-[#D9C3E8]">
+                    <Radio className="w-3.5 h-3.5 text-[#6B2D8C] animate-pulse" />
                     <span>Broadcast Active to 40+ Labs</span>
                   </div>
-                  <h4 className="text-xl font-bold text-[#1c1b1b]">Requirement Posted Successfully!</h4>
-                  <p className="text-[13px] text-[#594047] max-w-md mx-auto mt-1">
+                  <h4 className="text-xl font-bold text-[#2A0E3F]">Requirement Posted Successfully!</h4>
+                  <p className="text-[13px] text-[#5B4A6E] max-w-md mx-auto mt-1">
                     Your RFQ has been broadcasted to verified beauty suppliers matching your requirement. Expect direct structured quotes in your inbox within 24 hours.
                   </p>
                 </div>
@@ -150,35 +150,35 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
-                  className="bg-[#f7f2f2] p-4 rounded-xl text-left text-[12px] space-y-2 border border-[#e8e8e8] max-w-md mx-auto"
+                  className="bg-[#F6F1FA] p-4 rounded-xl text-left text-[12px] space-y-2 border border-[#E8DEEF] max-w-md mx-auto"
                 >
-                  <div className="flex justify-between items-center pb-2 border-b border-[#e8e8e8]">
-                    <span className="text-[#8c7077]">Requirement:</span>
-                    <span className="font-bold text-[#1c1b1b] truncate max-w-[200px]">{productName}</span>
+                  <div className="flex justify-between items-center pb-2 border-b border-[#E8DEEF]">
+                    <span className="text-[#7E6C96]">Requirement:</span>
+                    <span className="font-bold text-[#2A0E3F] truncate max-w-[200px]">{productName}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[#8c7077]">Quantity:</span>
-                    <span className="font-bold text-[#1c1b1b]">{quantity} {unit}</span>
+                    <span className="text-[#7E6C96]">Quantity:</span>
+                    <span className="font-bold text-[#2A0E3F]">{quantity} {unit}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[#8c7077]">Target Supplier Type:</span>
-                    <span className="font-semibold text-[#b90064]">{supplierType}</span>
+                    <span className="text-[#7E6C96]">Target Supplier Type:</span>
+                    <span className="font-semibold text-[#6B2D8C]">{supplierType}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[#8c7077]">Destination Hub:</span>
-                    <span className="font-semibold text-[#1c1b1b]">{city || 'All India'}</span>
+                    <span className="text-[#7E6C96]">Destination Hub:</span>
+                    <span className="font-semibold text-[#2A0E3F]">{city || 'All India'}</span>
                   </div>
-                  <div className="flex justify-between items-center pt-2 border-t border-[#e8e8e8] text-[11px]">
-                    <span className="text-[#8c7077]">RFQ Reference ID:</span>
+                  <div className="flex justify-between items-center pt-2 border-t border-[#E8DEEF] text-[11px]">
+                    <span className="text-[#7E6C96]">RFQ Reference ID:</span>
                     <button
                       onClick={handleCopyRef}
-                      className="font-mono text-[#b90064] font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                      className="font-mono text-[#6B2D8C] font-bold hover:underline flex items-center gap-1 cursor-pointer"
                     >
                       <span>{rfqReference}</span>
                       {copiedRef ? (
                         <Check className="w-3 h-3 text-emerald-600" />
                       ) : (
-                        <Copy className="w-3 h-3 text-[#8c7077]" />
+                        <Copy className="w-3 h-3 text-[#7E6C96]" />
                       )}
                     </button>
                   </div>
@@ -189,13 +189,13 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.25 }}
-                  className="bg-[#fcf9f8] p-3 rounded-xl border border-[#e8e8e8] text-[11.5px] text-left max-w-md mx-auto"
+                  className="bg-[#FDFBF7] p-3 rounded-xl border border-[#E8DEEF] text-[11.5px] text-left max-w-md mx-auto"
                 >
-                  <div className="flex items-center gap-2 text-[#1c1b1b] font-semibold mb-1">
-                    <Clock className="w-3.5 h-3.5 text-[#b90064]" />
+                  <div className="flex items-center gap-2 text-[#2A0E3F] font-semibold mb-1">
+                    <Clock className="w-3.5 h-3.5 text-[#6B2D8C]" />
                     <span>Next step in your workspace</span>
                   </div>
-                  <p className="text-[#594047]">
+                  <p className="text-[#5B4A6E]">
                     Suppliers will submit formal quotes. You can compare formulation lead times, batch pricing, and sample availability in your <strong>Buyer RFQ Hub</strong>.
                   </p>
                 </motion.div>
@@ -206,7 +206,7 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleReset}
-                    className="w-full max-w-md bg-[#b90064] hover:bg-[#8e004b] text-white font-bold text-[13px] py-2.5 rounded-lg shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full max-w-md bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-bold text-[13px] py-2.5 rounded-lg shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
                     <span>Close &amp; Continue Browsing</span>
                     <ArrowRight className="w-4 h-4" />
@@ -231,8 +231,8 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                 {/* Category & Subcategory Row */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[12px] font-bold text-[#1c1b1b] mb-1">
-                      Category <span className="text-[#b90064]">*</span>
+                    <label className="block text-[12px] font-bold text-[#2A0E3F] mb-1">
+                      Category <span className="text-[#6B2D8C]">*</span>
                     </label>
                     <select
                       value={category}
@@ -242,7 +242,7 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                         const subs = getSubcategoriesForCategoryName(newCat);
                         if (subs.length > 0) setSubcategory(subs[0]);
                       }}
-                      className="w-full bg-[#f7f2f2] border border-[#e8e8e8] focus:border-[#b90064] rounded-lg px-3 py-2 text-[12.5px] text-[#1c1b1b] focus:outline-none cursor-pointer"
+                      className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-lg px-3 py-2 text-[12.5px] text-[#2A0E3F] focus:outline-none cursor-pointer"
                     >
                       {Object.keys(CATEGORY_TAXONOMY).map((catName) => (
                         <option key={catName} value={catName}>
@@ -252,13 +252,13 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[12px] font-bold text-[#1c1b1b] mb-1">
-                      Subcategory <span className="text-[#b90064]">*</span>
+                    <label className="block text-[12px] font-bold text-[#2A0E3F] mb-1">
+                      Subcategory <span className="text-[#6B2D8C]">*</span>
                     </label>
                     <select
                       value={subcategory}
                       onChange={(e) => setSubcategory(e.target.value)}
-                      className="w-full bg-[#f7f2f2] border border-[#e8e8e8] focus:border-[#b90064] rounded-lg px-3 py-2 text-[12.5px] text-[#1c1b1b] focus:outline-none cursor-pointer"
+                      className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-lg px-3 py-2 text-[12.5px] text-[#2A0E3F] focus:outline-none cursor-pointer"
                     >
                       {getSubcategoriesForCategoryName(category).map((subItem) => (
                         <option key={subItem} value={subItem}>
@@ -271,15 +271,15 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
 
                 {/* Product / Formulation Title */}
                 <div>
-                  <label className="block text-[12px] font-bold text-[#1c1b1b] mb-1">
-                    Product / Formulation Needed <span className="text-[#b90064]">*</span>
+                  <label className="block text-[12px] font-bold text-[#2A0E3F] mb-1">
+                    Product / Formulation Needed <span className="text-[#6B2D8C]">*</span>
                   </label>
                   <input
                     type="text"
                     value={productName}
                     onChange={(e) => setProductName(e.target.value)}
                     placeholder="e.g. 200L Botanical Hair Smoothing Treatment or 30ml Dropper Bottles"
-                    className="w-full bg-[#f7f2f2] border border-[#e8e8e8] focus:border-[#b90064] rounded-lg px-3.5 py-2.5 text-[13px] text-[#1c1b1b] focus:outline-none"
+                    className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-lg px-3.5 py-2.5 text-[13px] text-[#2A0E3F] focus:outline-none"
                     required
                   />
                 </div>
@@ -287,26 +287,26 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                 {/* Quantity & Unit Row */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[12px] font-bold text-[#1c1b1b] mb-1">
-                      Required Quantity <span className="text-[#b90064]">*</span>
+                    <label className="block text-[12px] font-bold text-[#2A0E3F] mb-1">
+                      Required Quantity <span className="text-[#6B2D8C]">*</span>
                     </label>
                     <input
                       type="text"
                       value={quantity}
                       onChange={(e) => setQuantity(e.target.value)}
                       placeholder="e.g. 500"
-                      className="w-full bg-[#f7f2f2] border border-[#e8e8e8] focus:border-[#b90064] rounded-lg px-3.5 py-2.5 text-[13px] text-[#1c1b1b] focus:outline-none"
+                      className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-lg px-3.5 py-2.5 text-[13px] text-[#2A0E3F] focus:outline-none"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-[12px] font-bold text-[#1c1b1b] mb-1">
+                    <label className="block text-[12px] font-bold text-[#2A0E3F] mb-1">
                       Measurement Unit
                     </label>
                     <select
                       value={unit}
                       onChange={(e) => setUnit(e.target.value)}
-                      className="w-full bg-[#f7f2f2] border border-[#e8e8e8] focus:border-[#b90064] rounded-lg px-3.5 py-2.5 text-[13px] text-[#1c1b1b] focus:outline-none cursor-pointer"
+                      className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-lg px-3.5 py-2.5 text-[13px] text-[#2A0E3F] focus:outline-none cursor-pointer"
                     >
                       <option value="Units">Units / Pieces</option>
                       <option value="Liters">Liters</option>
@@ -320,7 +320,7 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                 {/* City & Supplier Type */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[12px] font-bold text-[#1c1b1b] mb-1">
+                    <label className="block text-[12px] font-bold text-[#2A0E3F] mb-1">
                       Delivery City
                     </label>
                     <input
@@ -328,17 +328,17 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       placeholder="e.g. Mumbai, Bengaluru, Delhi"
-                      className="w-full bg-[#f7f2f2] border border-[#e8e8e8] focus:border-[#b90064] rounded-lg px-3.5 py-2.5 text-[13px] text-[#1c1b1b] focus:outline-none"
+                      className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-lg px-3.5 py-2.5 text-[13px] text-[#2A0E3F] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-[12px] font-bold text-[#1c1b1b] mb-1">
+                    <label className="block text-[12px] font-bold text-[#2A0E3F] mb-1">
                       Preferred Supplier
                     </label>
                     <select
                       value={supplierType}
                       onChange={(e) => setSupplierType(e.target.value)}
-                      className="w-full bg-[#f7f2f2] border border-[#e8e8e8] focus:border-[#b90064] rounded-lg px-3.5 py-2.5 text-[13px] text-[#1c1b1b] focus:outline-none cursor-pointer"
+                      className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-lg px-3.5 py-2.5 text-[13px] text-[#2A0E3F] focus:outline-none cursor-pointer"
                     >
                       <option value="Manufacturer / OEM">Manufacturer / OEM</option>
                       <option value="Wholesaler / Stockist">Wholesaler / Stockist</option>
@@ -350,7 +350,7 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
 
                 {/* Requirement Notes */}
                 <div>
-                  <label className="block text-[12px] font-bold text-[#1c1b1b] mb-1">
+                  <label className="block text-[12px] font-bold text-[#2A0E3F] mb-1">
                     Specifications / Lab Requirements
                   </label>
                   <textarea
@@ -358,14 +358,14 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Mention formulation grade, active percentages, packaging requirements, sample need, or delivery deadlines..."
-                    className="w-full bg-[#f7f2f2] border border-[#e8e8e8] focus:border-[#b90064] rounded-lg p-3 text-[13px] text-[#1c1b1b] focus:outline-none resize-none"
+                    className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-lg p-3 text-[13px] text-[#2A0E3F] focus:outline-none resize-none"
                   />
                 </div>
 
                 {/* Buyer Contact Row */}
-                <div className="pt-2 border-t border-[#f0edec] grid grid-cols-2 gap-3">
+                <div className="pt-2 border-t border-[#F4F0E9] grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[12px] font-bold text-[#1c1b1b] mb-1">
+                    <label className="block text-[12px] font-bold text-[#2A0E3F] mb-1">
                       Your Name / Business
                     </label>
                     <input
@@ -373,19 +373,19 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                       value={buyerName}
                       onChange={(e) => setBuyerName(e.target.value)}
                       placeholder="e.g. Priya Sharma (Luxe Glow Salon)"
-                      className="w-full bg-[#f7f2f2] border border-[#e8e8e8] focus:border-[#b90064] rounded-lg px-3.5 py-2 text-[13px] text-[#1c1b1b] focus:outline-none"
+                      className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-lg px-3.5 py-2 text-[13px] text-[#2A0E3F] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-[12px] font-bold text-[#1c1b1b] mb-1">
-                      Mobile Number <span className="text-[#b90064]">*</span>
+                    <label className="block text-[12px] font-bold text-[#2A0E3F] mb-1">
+                      Mobile Number <span className="text-[#6B2D8C]">*</span>
                     </label>
                     <input
                       type="tel"
                       value={buyerPhone}
                       onChange={(e) => setBuyerPhone(e.target.value)}
                       placeholder="+91 98765 43210"
-                      className="w-full bg-[#f7f2f2] border border-[#e8e8e8] focus:border-[#b90064] rounded-lg px-3.5 py-2 text-[13px] text-[#1c1b1b] focus:outline-none"
+                      className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-lg px-3.5 py-2 text-[13px] text-[#2A0E3F] focus:outline-none"
                       required
                     />
                   </div>
@@ -396,7 +396,7 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                   <button
                     type="button"
                     onClick={onClose}
-                    className="px-4 py-2.5 text-[13px] font-semibold text-[#594047] hover:bg-[#f7f2f2] rounded-lg transition-colors cursor-pointer"
+                    className="px-4 py-2.5 text-[13px] font-semibold text-[#5B4A6E] hover:bg-[#F6F1FA] rounded-lg transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -404,7 +404,7 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     type="submit"
-                    className="bg-[#b90064] hover:bg-[#8e004b] text-white font-bold text-[13px] px-6 py-2.5 rounded-lg shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+                    className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-bold text-[13px] px-6 py-2.5 rounded-lg shadow-sm transition-all flex items-center gap-2 cursor-pointer"
                   >
                     <span>Post Requirement</span>
                     <ArrowRight className="w-4 h-4" />

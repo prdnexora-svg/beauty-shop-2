@@ -246,27 +246,27 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
   }, [searchQuery, selectedCategory, sortBy]);
 
   return (
-    <div className="bg-[#fdf8f8] min-h-screen">
+    <div className="bg-[#FDFBF7] min-h-screen">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-8 right-8 z-50 bg-[#1c1b1b] text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl border border-[#313030] flex items-center gap-2.5 animate-in slide-in-from-bottom-5">
-          <CheckCircle2 className="w-4 h-4 text-[#e6007e] shrink-0" />
+        <div className="fixed bottom-8 right-8 z-50 bg-[#2A0E3F] text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl border border-[#352B44] flex items-center gap-2.5 animate-in slide-in-from-bottom-5">
+          <CheckCircle2 className="w-4 h-4 text-[#8236A0] shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
       
       {/* Banner / Navigation Header */}
-      <div className="bg-white border-b border-[#e8e8e8] py-8 px-6 md:px-12">
+      <div className="bg-white border-b border-[#E8DEEF] py-8 px-6 md:px-12">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-[#b90064] uppercase tracking-wider mb-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#6B2D8C] uppercase tracking-wider mb-2">
               <Sparkles className="w-4 h-4" />
               <span>Nexora Partner Brands &amp; Contract Formulators</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-black text-[#1c1b1b] tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-black text-[#2A0E3F] tracking-tight">
               {selectedBrand ? selectedBrand.name : 'Brand Directory & OEM Manufacturers'}
             </h1>
-            <p className="text-xs text-[#594047] mt-1">
+            <p className="text-xs text-[#5B4A6E] mt-1">
               {selectedBrand 
                 ? `${selectedBrand.type} • GST Registered Manufacturer`
                 : 'Directly connect with audited beauty brands, contract formulators, and GMP certified manufacturing plants.'
@@ -278,7 +278,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
             {selectedBrand ? (
               <button 
                 onClick={() => setSelectedBrand(null)}
-                className="flex items-center gap-1.5 px-4 py-2 border border-[#e8e8e8] hover:bg-neutral-50 rounded-lg text-xs font-bold text-zinc-800 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-4 py-2 border border-[#E8DEEF] hover:bg-neutral-50 rounded-lg text-xs font-bold text-zinc-800 transition-all cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back to Directory</span>
@@ -286,7 +286,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
             ) : (
               <button
                 onClick={onOpenRFQModal}
-                className="bg-[#b90064] hover:bg-[#8e004b] text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+                className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
               >
                 <FileText className="w-3.5 h-3.5" />
                 <span>Post Custom Brand RFQ</span>
@@ -302,7 +302,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
           <div className="space-y-8 pb-12">
             
             {/* Filters & Sorting Bar */}
-            <div className="bg-white p-4 border border-[#e8e8e8] rounded-xl flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 shadow-2xs">
+            <div className="bg-white p-4 border border-[#E8DEEF] rounded-xl flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 shadow-2xs">
               
               {/* Search Bar */}
               <div className="relative w-full lg:w-72 shrink-0">
@@ -312,7 +312,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                   placeholder="Search brands, formulators, active ingredients..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] focus:outline-none rounded-lg pl-10 pr-4 py-2 text-xs text-[#1c1b1b] font-medium"
+                  className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none rounded-lg pl-10 pr-4 py-2 text-xs text-[#2A0E3F] font-medium"
                 />
               </div>
 
@@ -331,7 +331,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                   <button
                     onClick={() => handleScroll('left')}
                     aria-label="Scroll Left"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-6 h-6 rounded-full bg-white shadow-md border border-[#e8e8e8] flex items-center justify-center text-[#594047] hover:text-[#b90064] hover:border-[#b90064] cursor-pointer transition-all"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-6 h-6 rounded-full bg-white shadow-md border border-[#E8DEEF] flex items-center justify-center text-[#5B4A6E] hover:text-[#6B2D8C] hover:border-[#6B2D8C] cursor-pointer transition-all"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                   </button>
@@ -349,8 +349,8 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                       onClick={() => setSelectedCategory(cat)}
                       className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
                         selectedCategory === cat
-                          ? 'bg-[#b90064] text-white shadow-3xs'
-                          : 'bg-[#f7f2f2] text-[#594047] hover:bg-[#e8e8e8]'
+                          ? 'bg-[#6B2D8C] text-white shadow-3xs'
+                          : 'bg-[#F6F1FA] text-[#5B4A6E] hover:bg-[#E8DEEF]'
                       }`}
                     >
                       {cat}
@@ -358,7 +358,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                   ))}
                   
                   {/* Category Count Indicator */}
-                  <span className="text-[10px] text-[#8c7077] font-bold bg-[#fcf9f8] border border-[#e8e8e8] px-2 py-1 rounded-full shrink-0 whitespace-nowrap ml-1">
+                  <span className="text-[10px] text-[#7E6C96] font-bold bg-[#FDFBF7] border border-[#E8DEEF] px-2 py-1 rounded-full shrink-0 whitespace-nowrap ml-1">
                     +{categories.length - 4} more
                   </span>
                 </div>
@@ -375,7 +375,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                   <button
                     onClick={() => handleScroll('right')}
                     aria-label="Scroll Right"
-                    className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-6 h-6 rounded-full bg-white shadow-md border border-[#e8e8e8] flex items-center justify-center text-[#594047] hover:text-[#b90064] hover:border-[#b90064] cursor-pointer transition-all"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-6 h-6 rounded-full bg-white shadow-md border border-[#E8DEEF] flex items-center justify-center text-[#5B4A6E] hover:text-[#6B2D8C] hover:border-[#6B2D8C] cursor-pointer transition-all"
                   >
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
@@ -384,15 +384,15 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
               </div>
 
               {/* Sorting Dropdown */}
-              <div className="flex items-center gap-2 shrink-0 border-t lg:border-t-0 pt-3 lg:pt-0 border-[#f0edec]">
-                <div className="flex items-center gap-1.5 text-xs text-[#594047] font-bold">
-                  <ArrowUpDown className="w-3.5 h-3.5 text-[#b90064]" />
+              <div className="flex items-center gap-2 shrink-0 border-t lg:border-t-0 pt-3 lg:pt-0 border-[#F4F0E9]">
+                <div className="flex items-center gap-1.5 text-xs text-[#5B4A6E] font-bold">
+                  <ArrowUpDown className="w-3.5 h-3.5 text-[#6B2D8C]" />
                   <span>Sort by:</span>
                 </div>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="bg-[#fcf9f8] border border-[#e8e8e8] text-xs font-semibold text-[#1c1b1b] rounded-lg px-3 py-2 focus:outline-none focus:border-[#b90064] cursor-pointer"
+                  className="bg-[#FDFBF7] border border-[#E8DEEF] text-xs font-semibold text-[#2A0E3F] rounded-lg px-3 py-2 focus:outline-none focus:border-[#C9A961] cursor-pointer"
                 >
                   <option value="Relevance">Relevance</option>
                   <option value="Rating">Rating (Highest First)</option>
@@ -404,16 +404,16 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
             </div>
 
             {/* Inline Sourcing RFQ CTA Banner */}
-            <div className="bg-gradient-to-r from-[#fff5f8] via-[#fdf8f8] to-[#fbf0f4] border border-[#f5d0de] rounded-2xl p-4 md:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-3xs">
+            <div className="bg-gradient-to-r from-[#fff5f8] via-[#FDFBF7] to-[#fbf0f4] border border-[#f5d0de] rounded-2xl p-4 md:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-3xs">
               <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-[#fde7f3] text-[#b90064] flex items-center justify-center shrink-0 border border-[#f5d0de]">
+                <div className="w-10 h-10 rounded-xl bg-[#F5EEF8] text-[#6B2D8C] flex items-center justify-center shrink-0 border border-[#f5d0de]">
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
                   <h4 className="font-extrabold text-xs md:text-sm text-zinc-900 leading-tight">
                     Looking for custom beauty formulations, private label batches, or bespoke packaging?
                   </h4>
-                  <p className="text-[11px] md:text-xs text-[#594047] mt-0.5">
+                  <p className="text-[11px] md:text-xs text-[#5B4A6E] mt-0.5">
                     Post your requirement once to receive custom quotes, lab trial terms, and verified MOQ offers from audited GMP factories within 24 hours.
                   </p>
                 </div>
@@ -421,7 +421,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
 
               <button
                 onClick={onOpenRFQModal}
-                className="bg-[#b90064] hover:bg-[#8e004b] text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-sm transition-all cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap self-stretch md:self-auto justify-center"
+                className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-sm transition-all cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap self-stretch md:self-auto justify-center"
               >
                 <FileText className="w-3.5 h-3.5" />
                 <span>Post Custom Brand RFQ</span>
@@ -437,7 +437,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                   <div 
                     key={brand.id}
                     onClick={() => setSelectedBrand(brand)}
-                    className="bg-white border border-[#e8e8e8] hover:border-[#b90064] hover:shadow-md rounded-2xl p-5 md:p-6 transition-all flex flex-col justify-between cursor-pointer group relative"
+                    className="bg-white border border-[#E8DEEF] hover:border-[#6B2D8C] hover:shadow-md rounded-2xl p-5 md:p-6 transition-all flex flex-col justify-between cursor-pointer group relative"
                   >
                     <div className="space-y-4">
                       
@@ -447,14 +447,14 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                           <img 
                             src={brand.logo} 
                             alt={brand.name} 
-                            className="w-13 h-13 rounded-xl object-cover border border-[#e8e8e8] shrink-0"
+                            className="w-13 h-13 rounded-xl object-cover border border-[#E8DEEF] shrink-0"
                           />
                           <div className="min-w-0">
-                            <h3 className="font-extrabold text-sm text-zinc-900 group-hover:text-[#b90064] transition-colors flex items-center gap-1 truncate">
+                            <h3 className="font-extrabold text-sm text-zinc-900 group-hover:text-[#6B2D8C] transition-colors flex items-center gap-1 truncate">
                               <span className="truncate">{brand.name}</span>
-                              <ShieldCheck className="w-4 h-4 text-[#b90064] fill-[#fde7f3] shrink-0" />
+                              <ShieldCheck className="w-4 h-4 text-[#6B2D8C] fill-[#F5EEF8] shrink-0" />
                             </h3>
-                            <span className="text-[11px] text-[#594047] font-semibold truncate block">{brand.type}</span>
+                            <span className="text-[11px] text-[#5B4A6E] font-semibold truncate block">{brand.type}</span>
                           </div>
                         </div>
 
@@ -463,28 +463,28 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                             onClick={(e) => toggleSaveBrand(brand.id, brand.name, e)}
                             className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
                               isSaved 
-                                ? 'bg-[#fde7f3] text-[#b90064] border border-[#e0bec6]' 
-                                : 'bg-[#f7f2f2] text-zinc-400 hover:text-[#b90064] hover:bg-[#fde7f3]'
+                                ? 'bg-[#F5EEF8] text-[#6B2D8C] border border-[#D9C3E8]' 
+                                : 'bg-[#F6F1FA] text-zinc-400 hover:text-[#6B2D8C] hover:bg-[#F5EEF8]'
                             }`}
                             title={isSaved ? "Saved in Shortlist" : "Bookmark / Save"}
                           >
-                            {isSaved ? <BookmarkCheck className="w-4 h-4 fill-[#b90064]" /> : <Bookmark className="w-4 h-4" />}
+                            {isSaved ? <BookmarkCheck className="w-4 h-4 fill-[#6B2D8C]" /> : <Bookmark className="w-4 h-4" />}
                           </button>
-                          <span className="text-[10px] bg-[#fde7f3] text-[#b90064] px-2 py-1 rounded-md font-bold uppercase tracking-wider">
+                          <span className="text-[10px] bg-[#F5EEF8] text-[#6B2D8C] px-2 py-1 rounded-md font-bold uppercase tracking-wider">
                             GST Verified
                           </span>
                         </div>
                       </div>
 
-                      <p className="text-xs text-[#594047] leading-relaxed line-clamp-3">
+                      <p className="text-xs text-[#5B4A6E] leading-relaxed line-clamp-3">
                         {brand.about}
                       </p>
 
                       {/* Key Verified Sourcing Metrics Grid (Unclipped, clean responsive layout) */}
-                      <div className="bg-[#fcf9f8] p-3.5 rounded-xl border border-[#e8e8e8] space-y-2.5 my-2">
-                        <div className="grid grid-cols-2 gap-2.5 text-[11px] text-[#594047]">
+                      <div className="bg-[#FDFBF7] p-3.5 rounded-xl border border-[#E8DEEF] space-y-2.5 my-2">
+                        <div className="grid grid-cols-2 gap-2.5 text-[11px] text-[#5B4A6E]">
                           <div className="flex items-center gap-1.5 min-w-0" title={`Location: ${brand.location}`}>
-                            <MapPin className="w-3.5 h-3.5 text-[#b90064] shrink-0" />
+                            <MapPin className="w-3.5 h-3.5 text-[#6B2D8C] shrink-0" />
                             <span className="truncate font-semibold">{brand.location}</span>
                           </div>
                           
@@ -503,11 +503,11 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                               <Star className="w-3 h-3 text-amber-500 fill-amber-500 shrink-0" />
                               <span>{brand.rating}</span>
                             </div>
-                            <span className="text-[10.5px] text-[#8c7077] font-semibold">({brand.reviewsCount})</span>
+                            <span className="text-[10.5px] text-[#7E6C96] font-semibold">({brand.reviewsCount})</span>
                           </div>
                         </div>
 
-                        <div className="pt-2 border-t border-[#e8e8e8] flex items-center justify-between text-[10px] text-[#8c7077]">
+                        <div className="pt-2 border-t border-[#E8DEEF] flex items-center justify-between text-[10px] text-[#7E6C96]">
                           <span className="font-semibold">Capacity: <span className="text-zinc-900 font-bold">{brand.capacity}</span></span>
                           <span className="text-emerald-700 font-extrabold bg-emerald-50 px-1.5 py-0.5 rounded">Response: {brand.responseRate}</span>
                         </div>
@@ -516,7 +516,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                       {/* Certification chips */}
                       <div className="flex flex-wrap gap-1.5 pt-1">
                         {brand.certifications.map((cert) => (
-                          <span key={cert} className="text-[9.5px] bg-[#f7f2f2] text-zinc-700 px-2 py-0.5 rounded-md font-bold uppercase tracking-wide border border-[#e8e8e8]/50">
+                          <span key={cert} className="text-[9.5px] bg-[#F6F1FA] text-zinc-700 px-2 py-0.5 rounded-md font-bold uppercase tracking-wide border border-[#E8DEEF]/50">
                             {cert}
                           </span>
                         ))}
@@ -524,14 +524,14 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                     </div>
 
                     {/* Direct Contact & Quick Action CTAs Row */}
-                    <div className="mt-5 pt-4 border-t border-[#e8e8e8] space-y-2.5">
+                    <div className="mt-5 pt-4 border-t border-[#E8DEEF] space-y-2.5">
                       <div className="grid grid-cols-2 gap-2">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             onOpenEnquiryModal(`Direct Manufacturing Enquiry`, brand.name);
                           }}
-                          className="bg-white border border-[#b90064] text-[#b90064] hover:bg-[#fde7f3] font-bold text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-3xs"
+                          className="bg-white border border-[#6B2D8C] text-[#6B2D8C] hover:bg-[#F5EEF8] font-bold text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-3xs"
                         >
                           <MessageSquare className="w-3.5 h-3.5" />
                           <span>Direct Message</span>
@@ -542,7 +542,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                             e.stopPropagation();
                             onOpenRFQModal();
                           }}
-                          className="bg-[#b90064] hover:bg-[#8e004b] text-white font-extrabold text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-3xs"
+                          className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-3xs"
                         >
                           <FileText className="w-3.5 h-3.5" />
                           <span>Request Quote</span>
@@ -550,7 +550,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                       </div>
 
                       {/* Primary Navigation Action */}
-                      <div className="flex items-center justify-between text-xs font-bold text-[#b90064] group-hover:text-[#8e004b] pt-1">
+                      <div className="flex items-center justify-between text-xs font-bold text-[#6B2D8C] group-hover:text-[#4A2560] pt-1">
                         <span>View Formulations &amp; Facility</span>
                         <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                       </div>
@@ -562,8 +562,8 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
             </div>
 
             {filteredBrands.length === 0 && (
-              <div className="bg-white border border-[#e8e8e8] rounded-2xl p-8 md:p-12 text-center max-w-lg mx-auto shadow-2xs space-y-5">
-                <div className="w-14 h-14 rounded-2xl bg-[#fde7f3] text-[#b90064] flex items-center justify-center mx-auto border border-[#f5d0de]">
+              <div className="bg-white border border-[#E8DEEF] rounded-2xl p-8 md:p-12 text-center max-w-lg mx-auto shadow-2xs space-y-5">
+                <div className="w-14 h-14 rounded-2xl bg-[#F5EEF8] text-[#6B2D8C] flex items-center justify-center mx-auto border border-[#f5d0de]">
                   <Building2 className="w-7 h-7" />
                 </div>
                 
@@ -571,7 +571,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                   <h3 className="font-extrabold text-base md:text-lg text-zinc-950">
                     No formulation brands found
                   </h3>
-                  <p className="text-xs text-[#594047] leading-relaxed max-w-md mx-auto">
+                  <p className="text-xs text-[#5B4A6E] leading-relaxed max-w-md mx-auto">
                     {searchQuery 
                       ? `We couldn't find an existing listed manufacturer matching "${searchQuery}". Submit a custom RFQ to have our verified supplier network quote your exact specifications.`
                       : `No manufacturers found in the "${selectedCategory}" category. Post a custom RFQ to connect with unlisted certified formulators.`
@@ -583,7 +583,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
                   <button 
                     onClick={onOpenRFQModal}
-                    className="w-full sm:w-auto bg-[#b90064] hover:bg-[#8e004b] text-white font-extrabold text-xs px-6 py-3 rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold text-xs px-6 py-3 rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
                     <FileText className="w-4 h-4" />
                     <span>Post Custom Brand RFQ</span>
@@ -591,7 +591,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
 
                   <button 
                     onClick={() => { setSearchQuery(''); setSelectedCategory('All'); setSortBy('Relevance'); }}
-                    className="w-full sm:w-auto bg-[#f7f2f2] hover:bg-[#e8e8e8] text-zinc-700 font-bold text-xs px-4 py-3 rounded-xl transition-all cursor-pointer"
+                    className="w-full sm:w-auto bg-[#F6F1FA] hover:bg-[#E8DEEF] text-zinc-700 font-bold text-xs px-4 py-3 rounded-xl transition-all cursor-pointer"
                   >
                     Clear all search filters
                   </button>
@@ -608,22 +608,22 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
             <div className="lg:col-span-8 space-y-8">
               
               {/* Cover Card */}
-              <div className="bg-white border border-[#e8e8e8] rounded-2xl p-6 md:p-8 space-y-6 shadow-2xs">
+              <div className="bg-white border border-[#E8DEEF] rounded-2xl p-6 md:p-8 space-y-6 shadow-2xs">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div className="flex items-center gap-4">
                     <img 
                       src={selectedBrand.logo} 
                       alt={selectedBrand.name} 
-                      className="w-16 h-16 rounded-xl object-cover border border-[#e8e8e8]"
+                      className="w-16 h-16 rounded-xl object-cover border border-[#E8DEEF]"
                     />
                     <div>
                       <div className="flex items-center gap-1.5">
                         <h2 className="text-xl font-extrabold text-zinc-900">{selectedBrand.name}</h2>
-                        <ShieldCheck className="w-5 h-5 text-[#b90064] fill-[#fde7f3]" />
+                        <ShieldCheck className="w-5 h-5 text-[#6B2D8C] fill-[#F5EEF8]" />
                       </div>
-                      <p className="text-xs text-[#594047] font-semibold">{selectedBrand.type}</p>
+                      <p className="text-xs text-[#5B4A6E] font-semibold">{selectedBrand.type}</p>
                       <p className="text-[11px] text-zinc-400 mt-0.5 flex items-center gap-1">
-                        <MapPin className="w-3 h-3 text-[#b90064]" /> {selectedBrand.location}
+                        <MapPin className="w-3 h-3 text-[#6B2D8C]" /> {selectedBrand.location}
                       </p>
                     </div>
                   </div>
@@ -631,21 +631,21 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => onNavigateToSupplierProfile?.(selectedBrand.id)}
-                      className="bg-white border border-[#b90064] text-[#b90064] hover:bg-[#fde7f3] text-xs font-bold px-4 py-2 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                      className="bg-white border border-[#6B2D8C] text-[#6B2D8C] hover:bg-[#F5EEF8] text-xs font-bold px-4 py-2 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
                     >
                       <Building2 className="w-3.5 h-3.5" />
                       <span>Visit Mini-Website</span>
                     </button>
                     <button
                       onClick={() => onOpenFacilityTour(selectedBrand.name)}
-                      className="border border-[#e8e8e8] text-[#594047] hover:border-[#b90064] hover:text-[#b90064] text-xs font-bold px-4 py-2 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                      className="border border-[#E8DEEF] text-[#5B4A6E] hover:border-[#6B2D8C] hover:text-[#6B2D8C] text-xs font-bold px-4 py-2 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
                       <span>Audit Facility</span>
                     </button>
                     <button
                       onClick={() => onOpenEnquiryModal('Custom Product Development', selectedBrand.name)}
-                      className="bg-[#b90064] hover:bg-[#8e004b] text-white text-xs font-extrabold px-4 py-2 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                      className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white text-xs font-extrabold px-4 py-2 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
                     >
                       <MessageSquare className="w-3.5 h-3.5" />
                       <span>Enquire Custom Batch</span>
@@ -655,60 +655,60 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
 
                 <div className="space-y-3">
                   <h3 className="font-extrabold text-sm text-zinc-900">About Manufacturer / Brand Owner</h3>
-                  <p className="text-xs text-[#594047] leading-relaxed">
+                  <p className="text-xs text-[#5B4A6E] leading-relaxed">
                     {selectedBrand.about}
                   </p>
                 </div>
 
                 {/* Key specs grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-center">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-center">
                   <div>
-                    <span className="block text-[10px] text-[#8c7077] uppercase font-bold tracking-wider">Established</span>
+                    <span className="block text-[10px] text-[#7E6C96] uppercase font-bold tracking-wider">Established</span>
                     <span className="text-sm font-extrabold text-zinc-900 mt-1 block">{selectedBrand.established}</span>
                   </div>
                   <div>
-                    <span className="block text-[10px] text-[#8c7077] uppercase font-bold tracking-wider">Daily Capacity</span>
+                    <span className="block text-[10px] text-[#7E6C96] uppercase font-bold tracking-wider">Daily Capacity</span>
                     <span className="text-sm font-extrabold text-zinc-900 mt-1 block">{selectedBrand.capacity}</span>
                   </div>
                   <div>
-                    <span className="block text-[10px] text-[#8c7077] uppercase font-bold tracking-wider">Response Rate</span>
+                    <span className="block text-[10px] text-[#7E6C96] uppercase font-bold tracking-wider">Response Rate</span>
                     <span className="text-sm font-extrabold text-zinc-900 mt-1 block text-emerald-600">{selectedBrand.responseRate}</span>
                   </div>
                   <div>
-                    <span className="block text-[10px] text-[#8c7077] uppercase font-bold tracking-wider">GST Verified</span>
-                    <span className="text-sm font-extrabold text-zinc-900 mt-1 block text-[#b90064]">Yes</span>
+                    <span className="block text-[10px] text-[#7E6C96] uppercase font-bold tracking-wider">GST Verified</span>
+                    <span className="text-sm font-extrabold text-zinc-900 mt-1 block text-[#6B2D8C]">Yes</span>
                   </div>
                 </div>
               </div>
 
               {/* Private Label Showcase */}
               <div className="space-y-4">
-                <h3 className="text-lg font-black text-[#1c1b1b] flex items-center gap-1.5">
-                  <Briefcase className="w-5 h-5 text-[#b90064]" />
+                <h3 className="text-lg font-black text-[#2A0E3F] flex items-center gap-1.5">
+                  <Briefcase className="w-5 h-5 text-[#6B2D8C]" />
                   <span>Available Private Label Formulations</span>
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {selectedBrand.products.map((prod) => (
-                    <div key={prod.id} className="bg-white border border-[#e8e8e8] rounded-xl overflow-hidden flex flex-col justify-between shadow-3xs">
+                    <div key={prod.id} className="bg-white border border-[#E8DEEF] rounded-xl overflow-hidden flex flex-col justify-between shadow-3xs">
                       <div className="flex gap-4 p-4">
                         <img 
                           src={prod.image} 
                           alt={prod.name} 
-                          className="w-20 h-20 rounded-lg object-cover border border-[#e8e8e8] shrink-0"
+                          className="w-20 h-20 rounded-lg object-cover border border-[#E8DEEF] shrink-0"
                         />
                         <div className="space-y-1">
                           <h4 className="font-extrabold text-xs text-zinc-900 leading-tight">{prod.name}</h4>
-                          <p className="text-[11px] text-[#b90064] font-bold">Estimated Cost: {prod.price} <span className="text-zinc-400 font-normal">/ unit</span></p>
-                          <p className="text-[10px] text-[#594047] font-semibold">Min Order Qty: {prod.moq}</p>
+                          <p className="text-[11px] text-[#6B2D8C] font-bold">Estimated Cost: {prod.price} <span className="text-zinc-400 font-normal">/ unit</span></p>
+                          <p className="text-[10px] text-[#5B4A6E] font-semibold">Min Order Qty: {prod.moq}</p>
                         </div>
                       </div>
 
-                      <div className="px-4 py-2.5 bg-[#fcf9f8] border-t border-[#e8e8e8] flex items-center justify-between">
-                        <span className="text-[9.5px] bg-[#fde7f3] text-[#b90064] px-1.5 py-0.5 rounded font-bold uppercase">Formulation Ready</span>
+                      <div className="px-4 py-2.5 bg-[#FDFBF7] border-t border-[#E8DEEF] flex items-center justify-between">
+                        <span className="text-[9.5px] bg-[#F5EEF8] text-[#6B2D8C] px-1.5 py-0.5 rounded font-bold uppercase">Formulation Ready</span>
                         <button
                           onClick={() => onOpenEnquiryModal(prod.name, selectedBrand.name)}
-                          className="text-xs font-bold text-[#b90064] hover:underline cursor-pointer"
+                          className="text-xs font-bold text-[#6B2D8C] hover:underline cursor-pointer"
                         >
                           Get Best Price Quote
                         </button>
@@ -719,20 +719,20 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
               </div>
 
               {/* Facility & GMP Compliance details */}
-              <div className="bg-white border border-[#e8e8e8] rounded-xl p-6 space-y-4 shadow-3xs">
+              <div className="bg-white border border-[#E8DEEF] rounded-xl p-6 space-y-4 shadow-3xs">
                 <h3 className="font-extrabold text-sm text-zinc-900 flex items-center gap-1.5">
-                  <Award className="w-5 h-5 text-[#b90064]" />
+                  <Award className="w-5 h-5 text-[#6B2D8C]" />
                   <span>State of the Art Facilities &amp; Standards</span>
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {selectedBrand.facilities.map((fac, i) => (
-                    <div key={i} className="p-4 bg-[#fcf9f8] border border-[#e8e8e8] rounded-lg">
+                    <div key={i} className="p-4 bg-[#FDFBF7] border border-[#E8DEEF] rounded-lg">
                       <h4 className="font-bold text-xs text-zinc-900 flex items-center gap-1.5 mb-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#b90064]" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#6B2D8C]" />
                         {fac.title}
                       </h4>
-                      <p className="text-[11px] text-[#594047] leading-relaxed">{fac.desc}</p>
+                      <p className="text-[11px] text-[#5B4A6E] leading-relaxed">{fac.desc}</p>
                     </div>
                   ))}
                 </div>
@@ -744,8 +744,8 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
             <div className="lg:col-span-4 space-y-6">
               
               {/* Sourcing credentials check */}
-              <div className="bg-white border border-[#e8e8e8] rounded-xl p-5 space-y-4 shadow-3xs">
-                <h3 className="font-extrabold text-xs text-zinc-900 uppercase tracking-wider text-[#8c7077]">Trust &amp; Verification Signals</h3>
+              <div className="bg-white border border-[#E8DEEF] rounded-xl p-5 space-y-4 shadow-3xs">
+                <h3 className="font-extrabold text-xs text-zinc-900 uppercase tracking-wider text-[#7E6C96]">Trust &amp; Verification Signals</h3>
                 
                 <div className="space-y-3.5 text-xs">
                   <div className="flex items-start gap-3">
@@ -754,7 +754,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                     </div>
                     <div>
                       <span className="block font-bold text-zinc-900">GST Registration Confirmed</span>
-                      <span className="block text-[10.5px] text-[#594047]">Corporate tax filings fully checked &amp; active.</span>
+                      <span className="block text-[10.5px] text-[#5B4A6E]">Corporate tax filings fully checked &amp; active.</span>
                     </div>
                   </div>
 
@@ -764,7 +764,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                     </div>
                     <div>
                       <span className="block font-bold text-zinc-900">GMP &amp; ISO 22716 Audited</span>
-                      <span className="block text-[10.5px] text-[#594047]">Maintains pristine hygienic and quality compliance standards.</span>
+                      <span className="block text-[10.5px] text-[#5B4A6E]">Maintains pristine hygienic and quality compliance standards.</span>
                     </div>
                   </div>
 
@@ -774,14 +774,14 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                     </div>
                     <div>
                       <span className="block font-bold text-zinc-900">Stable Response rate (98%)</span>
-                      <span className="block text-[10.5px] text-[#594047]">Usually responds within 2-4 business hours.</span>
+                      <span className="block text-[10.5px] text-[#5B4A6E]">Usually responds within 2-4 business hours.</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Quick Consultation contact widget */}
-              <div className="bg-gradient-to-br from-[#b90064] to-[#8e004b] text-white rounded-xl p-6 space-y-4 shadow-sm text-center md:text-left">
+              <div className="bg-gradient-to-br from-[#6B2D8C] to-[#4A2560] text-white rounded-xl p-6 space-y-4 shadow-sm text-center md:text-left">
                 <h3 className="text-sm font-black uppercase tracking-widest text-[#f5ced8]">Turn-Key Service</h3>
                 <h4 className="font-black text-lg leading-tight">Need custom beauty formulation?</h4>
                 <p className="text-xs text-[#f5ced8] leading-relaxed">
@@ -789,7 +789,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                 </p>
                 <button
                   onClick={() => onOpenEnquiryModal('Beauty private label consulting', selectedBrand.name)}
-                  className="w-full py-3 bg-white hover:bg-neutral-50 text-[#b90064] font-extrabold text-xs rounded-lg shadow-sm transition-all cursor-pointer"
+                  className="w-full py-3 bg-white hover:bg-neutral-50 text-[#6B2D8C] font-extrabold text-xs rounded-lg shadow-sm transition-all cursor-pointer"
                 >
                   Request Consultation Call
                 </button>

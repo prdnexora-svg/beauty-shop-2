@@ -38,7 +38,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSearch, onTabChange 
   };
 
   return (
-    <section className="relative min-h-[640px] md:min-h-[720px] flex items-center justify-center px-4 md:px-8 mb-12 overflow-hidden bg-gradient-to-b from-[#FFFDF9] via-[#FAF3F5] to-[#FDF8F8]">
+    <section className="relative min-h-[640px] md:min-h-[720px] flex items-center justify-center px-4 md:px-8 mb-12 overflow-hidden bg-gradient-to-b from-[#FFFDF9] via-[#FAF3F5] to-[#FDFBF7]">
       {/* Editorial Background Base & Lighting */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         {/* Photorealistic High-End Backdrop */}
@@ -50,16 +50,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSearch, onTabChange 
         />
 
         {/* Linear Warm-Ivory to Blush-Pink Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-[#FFFDF8]/80 via-[#FAF1F5]/50 to-[#FCEEF3]/75 mix-blend-normal"></div>
+        <div className="absolute inset-0 bg-gradient-to-tr from-[#FFFDF8]/80 via-[#F5EEF8]/50 to-[#FCEEF3]/75 mix-blend-normal"></div>
 
         {/* Left Edge Editorial Beauty Asset Highlight */}
-        <div className="absolute -left-12 bottom-8 hidden lg:block w-72 h-72 rounded-full bg-[#B90064]/5 blur-3xl pointer-events-none"></div>
+        <div className="absolute -left-12 bottom-8 hidden lg:block w-72 h-72 rounded-full bg-[#6B2D8C]/5 blur-3xl pointer-events-none"></div>
 
         {/* Right Edge Editorial Beauty Asset Highlight */}
-        <div className="absolute -right-12 top-12 hidden lg:block w-80 h-80 rounded-full bg-[#E6007E]/5 blur-3xl pointer-events-none"></div>
+        <div className="absolute -right-12 top-12 hidden lg:block w-80 h-80 rounded-full bg-[#8236A0]/5 blur-3xl pointer-events-none"></div>
 
         {/* Seamless Soft Edge Fades */}
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#FDF8F8] to-transparent"></div>
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#FDFBF7] to-transparent"></div>
         <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#FFFDF9]/60 to-transparent"></div>
       </div>
 
@@ -67,7 +67,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSearch, onTabChange 
       <div className="hidden xl:flex absolute left-4 2xl:left-12 top-1/2 -translate-y-1/2 z-10 flex-col items-center pointer-events-none select-none transition-all duration-500">
         <div className="relative group transition-transform duration-700 hover:scale-105">
           {/* Ambient Glow */}
-          <div className="absolute -inset-2 rounded-3xl bg-gradient-to-br from-[#B90064]/10 to-transparent blur-xl"></div>
+          <div className="absolute -inset-2 rounded-3xl bg-gradient-to-br from-[#6B2D8C]/10 to-transparent blur-xl"></div>
           
           <div className="relative w-36 2xl:w-48 h-52 2xl:h-64 rounded-2xl overflow-hidden border border-white/80 shadow-lg bg-white/40 backdrop-blur-xs">
             <img
@@ -77,14 +77,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSearch, onTabChange 
               referrerPolicy="no-referrer"
             />
             {/* Subtle Gradient Mask */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#500037]/40 via-transparent to-white/10"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#2A0E3F]/40 via-transparent to-white/10"></div>
             
             {/* Micro Badge */}
             <div className="absolute bottom-2.5 inset-x-2.5 bg-white/90 backdrop-blur-md rounded-lg py-1 px-2 border border-white/60 shadow-2xs text-center">
-              <span className="block text-[9px] 2xl:text-[10px] font-extrabold uppercase tracking-widest text-[#B90064]">
+              <span className="block text-[9px] 2xl:text-[10px] font-extrabold uppercase tracking-widest text-[#6B2D8C]">
                 OEM Formulation
               </span>
-              <span className="block text-[10.5px] 2xl:text-[11px] font-semibold text-[#1C1B1B] truncate">
+              <span className="block text-[10.5px] 2xl:text-[11px] font-semibold text-[#2A0E3F] truncate">
                 Bio-Peptide Serums
               </span>
             </div>
@@ -99,35 +99,35 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSearch, onTabChange 
 
         {/* Hero Glass Panel */}
         <div className="glass-panel rounded-2xl p-5 sm:p-7 md:p-10 2xl:p-12 editorial-shadow text-center border border-white/80 bg-white/80 backdrop-blur-md transition-all duration-300">
-          <h1 className="font-serif text-[26px] sm:text-[32px] md:text-[40px] lg:text-[44px] font-bold text-[#500037] mb-3 md:mb-5 mx-auto max-w-2xl leading-[1.2] tracking-tight">
+          <h1 className="font-serif text-[26px] sm:text-[32px] md:text-[40px] lg:text-[44px] font-bold text-[#2A0E3F] mb-3 md:mb-5 mx-auto max-w-2xl leading-[1.2] tracking-tight">
             Source Premium Beauty & Personal Care Manufacturers
           </h1>
-          <p className="text-[13.5px] sm:text-[15px] md:text-[16px] text-[#534249] mb-6 sm:mb-8 max-w-xl mx-auto leading-relaxed">
+          <p className="text-[13.5px] sm:text-[15px] md:text-[16px] text-[#4E3D63] mb-6 sm:mb-8 max-w-xl mx-auto leading-relaxed">
             Connect with verified global suppliers for OEM, private label, and ready-to-ship luxury cosmetics.
           </p>
 
           {/* Search Container with Focused Glow */}
           <div className="relative w-full">
-            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-[#B90064]/15 via-[#E6007E]/10 to-[#B90064]/15 blur-sm -z-10 opacity-70"></div>
+            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-[#6B2D8C]/15 via-[#8236A0]/10 to-[#6B2D8C]/15 blur-sm -z-10 opacity-70"></div>
             <form
               onSubmit={handleSubmit}
-              className="flex flex-col md:flex-row gap-2 bg-white p-2 rounded-xl border border-[#E8DFE3] shadow-md relative w-full"
+              className="flex flex-col md:flex-row gap-2 bg-white p-2 rounded-xl border border-[#E5D8EE] shadow-md relative w-full"
             >
-              <div className="flex-1 flex items-center px-3 py-2.5 min-h-[44px] border-b md:border-b-0 md:border-r border-[#E8DFE3] relative">
-                <Search className="text-[#8D8087] mr-2.5 w-4.5 h-4.5 shrink-0" />
+              <div className="flex-1 flex items-center px-3 py-2.5 min-h-[44px] border-b md:border-b-0 md:border-r border-[#E5D8EE] relative">
+                <Search className="text-[#8B7FA3] mr-2.5 w-4.5 h-4.5 shrink-0" />
                 <input
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search products, suppliers, or ingredients..."
-                  className="w-full bg-transparent border-none focus:ring-0 text-[13.5px] sm:text-[14.5px] text-[#1e1a1d] placeholder-[#8D8087] p-0 outline-none pr-6"
+                  className="w-full bg-transparent border-none focus:ring-0 text-[13.5px] sm:text-[14.5px] text-[#241531] placeholder-[#8B7FA3] p-0 outline-none pr-6"
                 />
                 {query && (
                   <button
                     type="button"
                     onClick={handleClear}
                     title="Clear search"
-                    className="p-1 text-[#8D8087] hover:text-[#B90064] transition-colors rounded-full hover:bg-[#FAF1F5] cursor-pointer"
+                    className="p-1 text-[#8B7FA3] hover:text-[#6B2D8C] transition-colors rounded-full hover:bg-[#F5EEF8] cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -135,11 +135,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSearch, onTabChange 
               </div>
 
               <div className="flex items-center px-3 py-2.5 min-h-[44px]">
-                <SlidersHorizontal className="text-[#8D8087] mr-2 w-4 h-4 shrink-0" />
+                <SlidersHorizontal className="text-[#8B7FA3] mr-2 w-4 h-4 shrink-0" />
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="bg-transparent border-none focus:ring-0 text-[13.5px] sm:text-[14px] text-[#534249] cursor-pointer outline-none font-medium pr-6 w-full md:w-auto"
+                  className="bg-transparent border-none focus:ring-0 text-[13.5px] sm:text-[14px] text-[#4E3D63] cursor-pointer outline-none font-medium pr-6 w-full md:w-auto"
                 >
                   <option value="All Categories">All Categories</option>
                   <option value="Skincare">Skincare</option>
@@ -152,7 +152,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSearch, onTabChange 
 
               <button
                 type="submit"
-                className="bg-[#500037] hover:bg-[#53103B] active:scale-[0.99] text-white font-semibold text-[14px] px-6 sm:px-8 py-3 rounded-lg transition-all md:w-auto w-full shadow-sm cursor-pointer min-h-[44px] flex items-center justify-center shrink-0"
+                className="bg-[#2A0E3F] hover:bg-[#53103B] active:scale-[0.99] text-white font-semibold text-[14px] px-6 sm:px-8 py-3 rounded-lg transition-all md:w-auto w-full shadow-sm cursor-pointer min-h-[44px] flex items-center justify-center shrink-0"
               >
                 Search
               </button>
@@ -161,7 +161,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSearch, onTabChange 
 
           {/* Trending Tags */}
           <div className="mt-5 sm:mt-6 flex items-center justify-center gap-1.5 sm:gap-2.5 flex-wrap">
-            <span className="text-[11px] sm:text-[12px] font-semibold text-[#8D8087] uppercase tracking-wider">
+            <span className="text-[11px] sm:text-[12px] font-semibold text-[#8B7FA3] uppercase tracking-wider">
               Trending:
             </span>
             {trendingTags.map((tag) => (
@@ -169,7 +169,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSearch, onTabChange 
                 key={tag}
                 type="button"
                 onClick={() => handleTagClick(tag)}
-                className="text-[11.5px] sm:text-[12px] font-medium text-[#500037] hover:underline decoration-1 underline-offset-2 px-1.5 py-0.5 rounded cursor-pointer transition-colors"
+                className="text-[11.5px] sm:text-[12px] font-medium text-[#2A0E3F] hover:underline decoration-1 underline-offset-2 px-1.5 py-0.5 rounded cursor-pointer transition-colors"
               >
                 {tag}
               </button>
@@ -182,7 +182,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSearch, onTabChange 
       <div className="hidden xl:flex absolute right-4 2xl:right-12 top-1/2 -translate-y-1/2 z-10 flex-col items-center pointer-events-none select-none transition-all duration-500">
         <div className="relative group transition-transform duration-700 hover:scale-105">
           {/* Ambient Glow */}
-          <div className="absolute -inset-2 rounded-3xl bg-gradient-to-bl from-[#E6007E]/10 to-transparent blur-xl"></div>
+          <div className="absolute -inset-2 rounded-3xl bg-gradient-to-bl from-[#8236A0]/10 to-transparent blur-xl"></div>
           
           <div className="relative w-36 2xl:w-48 h-52 2xl:h-64 rounded-2xl overflow-hidden border border-white/80 shadow-lg bg-white/40 backdrop-blur-xs">
             <img
@@ -192,14 +192,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSearch, onTabChange 
               referrerPolicy="no-referrer"
             />
             {/* Subtle Gradient Mask */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#500037]/40 via-transparent to-white/10"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#2A0E3F]/40 via-transparent to-white/10"></div>
             
             {/* Micro Badge */}
             <div className="absolute bottom-2.5 inset-x-2.5 bg-white/90 backdrop-blur-md rounded-lg py-1 px-2 border border-white/60 shadow-2xs text-center">
-              <span className="block text-[9px] 2xl:text-[10px] font-extrabold uppercase tracking-widest text-[#B90064]">
+              <span className="block text-[9px] 2xl:text-[10px] font-extrabold uppercase tracking-widest text-[#6B2D8C]">
                 Private Label
               </span>
-              <span className="block text-[10.5px] 2xl:text-[11px] font-semibold text-[#1C1B1B] truncate">
+              <span className="block text-[10.5px] 2xl:text-[11px] font-semibold text-[#2A0E3F] truncate">
                 Barrier Cream Jars
               </span>
             </div>

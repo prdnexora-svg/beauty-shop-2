@@ -458,7 +458,7 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
       case 'Responded':
         return 'bg-[#e0f2fe] text-[#0369a1] border-[#bae6fd]';
       case 'Quoted':
-        return 'bg-[#fde7f3] text-[#b90064] border-[#fbcfe8]';
+        return 'bg-[#F5EEF8] text-[#6B2D8C] border-[#E8D5F2]';
       case 'Closed':
         return 'bg-gray-100 text-gray-700 border-gray-200';
       default:
@@ -467,11 +467,11 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
   };
 
   return (
-    <div className="bg-[#fdf8f8] min-h-[calc(100vh-80px)] py-8 px-4 md:px-8 max-w-7xl mx-auto w-full">
+    <div className="bg-[#FDFBF7] min-h-[calc(100vh-80px)] py-8 px-4 md:px-8 max-w-7xl mx-auto w-full">
       {/* Toast Alert Banner */}
       {toastMessage && (
-        <div className="fixed bottom-22 right-6 z-50 bg-[#1c1b1b] text-white px-4 py-3 rounded-xl shadow-xl border border-[#313030] flex items-center gap-2.5 animate-in slide-in-from-bottom-5 duration-200">
-          <CheckCircle2 className="w-4 h-4 text-[#e6007e]" />
+        <div className="fixed bottom-22 right-6 z-50 bg-[#2A0E3F] text-white px-4 py-3 rounded-xl shadow-xl border border-[#352B44] flex items-center gap-2.5 animate-in slide-in-from-bottom-5 duration-200">
+          <CheckCircle2 className="w-4 h-4 text-[#8236A0]" />
           <span className="text-[13px] font-bold">{toastMessage}</span>
         </div>
       )}
@@ -481,15 +481,15 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
         <div>
           <button 
             onClick={onBack}
-            className="flex items-center gap-1.5 text-xs font-bold text-[#594047] hover:text-[#b90064] transition-colors mb-3 group cursor-pointer"
+            className="flex items-center gap-1.5 text-xs font-bold text-[#5B4A6E] hover:text-[#6B2D8C] transition-colors mb-3 group cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             <span>Return to Workspace</span>
           </button>
-          <h1 className="text-2xl md:text-3xl font-black text-[#1c1b1b] tracking-tight">
-            Buyer <span className="text-[#b90064]">Enquiry Log</span>
+          <h1 className="text-2xl md:text-3xl font-black text-[#2A0E3F] tracking-tight">
+            Buyer <span className="text-[#6B2D8C]">Enquiry Log</span>
           </h1>
-          <p className="text-xs text-[#594047] font-medium mt-1">
+          <p className="text-xs text-[#5B4A6E] font-medium mt-1">
             Monitor communication cycles, review official supplier responses, and initiate B2B discussion.
           </p>
         </div>
@@ -497,7 +497,7 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={handleDownloadReport}
-            className="px-4 py-2.5 bg-white border border-[#e8e8e8] text-xs font-black text-[#594047] hover:text-[#b90064] hover:bg-[#fde7f3]/10 rounded-xl transition-all flex items-center gap-2 shadow-xs cursor-pointer"
+            className="px-4 py-2.5 bg-white border border-[#E8DEEF] text-xs font-black text-[#5B4A6E] hover:text-[#6B2D8C] hover:bg-[#F5EEF8]/10 rounded-xl transition-all flex items-center gap-2 shadow-xs cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export Report</span>
@@ -505,7 +505,7 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
 
           <button
             onClick={() => setIsNewEnquiryOpen(true)}
-            className="px-4 py-2.5 bg-[#b90064] text-white text-xs font-black rounded-xl hover:bg-[#8e004b] transition-all flex items-center gap-2 shadow-md hover:shadow-lg cursor-pointer"
+            className="px-4 py-2.5 bg-[#6B2D8C] text-white text-xs font-black rounded-xl hover:bg-[#4A2560] transition-all flex items-center gap-2 shadow-md hover:shadow-lg cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>New Sourcing Enquiry</span>
@@ -515,32 +515,32 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
 
       {/* Sourcing Overview KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white border border-[#e8e8e8] rounded-2xl p-4 text-left shadow-xs">
-          <span className="text-[10px] font-bold text-[#8c7077] uppercase tracking-wider block mb-1">Total Enquiries</span>
+        <div className="bg-white border border-[#E8DEEF] rounded-2xl p-4 text-left shadow-xs">
+          <span className="text-[10px] font-bold text-[#7E6C96] uppercase tracking-wider block mb-1">Total Enquiries</span>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-[#1c1b1b]">{enquiries.length}</span>
-            <span className="text-[10px] text-green-600 font-bold">Active Sourcing</span>
+            <span className="text-2xl font-black text-[#2A0E3F]">{enquiries.length}</span>
+            <span className="text-[10px] text-emerald-600 font-bold">Active Sourcing</span>
           </div>
         </div>
-        <div className="bg-white border border-[#e8e8e8] rounded-2xl p-4 text-left shadow-xs">
-          <span className="text-[10px] font-bold text-[#8c7077] uppercase tracking-wider block mb-1">Pending Responses</span>
+        <div className="bg-white border border-[#E8DEEF] rounded-2xl p-4 text-left shadow-xs">
+          <span className="text-[10px] font-bold text-[#7E6C96] uppercase tracking-wider block mb-1">Pending Responses</span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-[#d97706]">{enquiries.filter(e => e.status === 'Pending').length}</span>
-            <span className="text-[10px] text-[#8c7077] font-medium">Awaiting Supplier</span>
+            <span className="text-[10px] text-[#7E6C96] font-medium">Awaiting Supplier</span>
           </div>
         </div>
-        <div className="bg-white border border-[#e8e8e8] rounded-2xl p-4 text-left shadow-xs">
-          <span className="text-[10px] font-bold text-[#8c7077] uppercase tracking-wider block mb-1">Commercial Quotes</span>
+        <div className="bg-white border border-[#E8DEEF] rounded-2xl p-4 text-left shadow-xs">
+          <span className="text-[10px] font-bold text-[#7E6C96] uppercase tracking-wider block mb-1">Commercial Quotes</span>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-[#b90064]">{enquiries.filter(e => e.status === 'Quoted').length}</span>
-            <span className="text-[10px] text-[#b90064] font-black uppercase tracking-widest">Ready to Compare</span>
+            <span className="text-2xl font-black text-[#6B2D8C]">{enquiries.filter(e => e.status === 'Quoted').length}</span>
+            <span className="text-[10px] text-[#6B2D8C] font-black uppercase tracking-widest">Ready to Compare</span>
           </div>
         </div>
-        <div className="bg-white border border-[#e8e8e8] rounded-2xl p-4 text-left shadow-xs">
-          <span className="text-[10px] font-bold text-[#8c7077] uppercase tracking-wider block mb-1">Response Velocity</span>
+        <div className="bg-white border border-[#E8DEEF] rounded-2xl p-4 text-left shadow-xs">
+          <span className="text-[10px] font-bold text-[#7E6C96] uppercase tracking-wider block mb-1">Response Velocity</span>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-[#0050d6]">4.2h</span>
-            <span className="text-[10px] text-[#0050d6] font-bold">Industry Leading</span>
+            <span className="text-2xl font-black text-[#6B2D8C]">4.2h</span>
+            <span className="text-[10px] text-[#6B2D8C] font-bold">Industry Leading</span>
           </div>
         </div>
       </div>
@@ -552,16 +552,16 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
         <div className="lg:col-span-5 space-y-4">
           
           {/* Search bar & Filter */}
-          <div className="bg-white border border-[#e8e8e8] rounded-2xl p-4 shadow-xs space-y-3">
+          <div className="bg-white border border-[#E8DEEF] rounded-2xl p-4 shadow-xs space-y-3">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search by product, supplier, or request..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] placeholder-[#8c7077] focus:outline-hidden focus:border-[#b90064] font-medium"
+                className="w-full pl-9 pr-4 py-2.5 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-xs text-[#2A0E3F] placeholder-[#7E6C96] focus:outline-hidden focus:border-[#C9A961] font-medium"
               />
-              <Search className="w-4 h-4 text-[#8c7077] absolute left-3 top-3" />
+              <Search className="w-4 h-4 text-[#7E6C96] absolute left-3 top-3" />
             </div>
 
             {/* Filter Tabs */}
@@ -572,8 +572,8 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
                   onClick={() => setActiveTab(tab)}
                   className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border shrink-0 transition-all cursor-pointer ${
                     activeTab === tab
-                      ? 'bg-[#b90064] text-white border-[#b90064] shadow-xs'
-                      : 'bg-[#fcf9f8] text-[#594047] border-[#e8e8e8] hover:bg-[#f0edec]'
+                      ? 'bg-[#6B2D8C] text-white border-[#6B2D8C] shadow-xs'
+                      : 'bg-[#FDFBF7] text-[#5B4A6E] border-[#E8DEEF] hover:bg-[#F4F0E9]'
                   }`}
                 >
                   {tab} ({tab === 'All' ? enquiries.length : enquiries.filter(e => e.status === tab).length})
@@ -593,12 +593,12 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
                     onClick={() => setSelectedEnquiryId(enq.id)}
                     className={`border rounded-2xl p-4 text-left transition-all cursor-pointer relative ${
                       isSelected
-                        ? 'bg-[#fdf8f8] border-[#b90064] shadow-xs'
-                        : 'bg-white border-[#e8e8e8] hover:border-[#8c7077]'
+                        ? 'bg-[#FDFBF7] border-[#6B2D8C] shadow-xs'
+                        : 'bg-white border-[#E8DEEF] hover:border-[#7E6C96]'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <span className="text-[10px] text-[#8c7077] font-bold block mb-1">
+                      <span className="text-[10px] text-[#7E6C96] font-bold block mb-1">
                         Ref: {enq.id} • Posted {enq.date}
                       </span>
                       <span className={`px-2 py-0.5 rounded-full border text-[9px] font-black uppercase tracking-wider ${getStatusColor(enq.status)}`}>
@@ -606,27 +606,27 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
                       </span>
                     </div>
 
-                    <h3 className="text-xs font-bold text-[#1c1b1b] mt-1 hover:text-[#b90064] transition-colors line-clamp-1">
+                    <h3 className="text-xs font-bold text-[#2A0E3F] mt-1 hover:text-[#6B2D8C] transition-colors line-clamp-1">
                       {enq.productName}
                     </h3>
 
-                    <div className="flex items-center gap-1 text-[10px] text-[#594047] font-semibold mt-1">
-                      <Building2 className="w-3 h-3 text-[#b90064]" />
+                    <div className="flex items-center gap-1 text-[10px] text-[#5B4A6E] font-semibold mt-1">
+                      <Building2 className="w-3 h-3 text-[#6B2D8C]" />
                       <span>{enq.supplierName}</span>
                     </div>
 
-                    <p className="text-[11px] text-[#8c7077] font-medium mt-2 line-clamp-2 italic bg-[#fcf9f8] p-2 rounded-lg border border-[#f0edec]">
+                    <p className="text-[11px] text-[#7E6C96] font-medium mt-2 line-clamp-2 italic bg-[#FDFBF7] p-2 rounded-lg border border-[#F4F0E9]">
                       &ldquo;{enq.subject}&rdquo;
                     </p>
 
                     {isSelected && (
-                      <div className="absolute right-4 bottom-4 w-1.5 h-1.5 rounded-full bg-[#b90064]" />
+                      <div className="absolute right-4 bottom-4 w-1.5 h-1.5 rounded-full bg-[#6B2D8C]" />
                     )}
                   </div>
                 );
               })
             ) : (
-              <div className="bg-white border border-[#e8e8e8] rounded-2xl p-10 text-center text-xs text-[#8c7077] font-bold">
+              <div className="bg-white border border-[#E8DEEF] rounded-2xl p-10 text-center text-xs text-[#7E6C96] font-bold">
                 No beauty enquiries found matching your search.
               </div>
             )}
@@ -637,25 +637,25 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
         {/* RIGHT COLUMN: Active Sourcing Conversation Hub (7 cols) */}
         <div className="lg:col-span-7">
           {selectedEnquiry ? (
-            <div className="bg-white border border-[#e8e8e8] rounded-2xl overflow-hidden shadow-xs flex flex-col min-h-[620px]">
+            <div className="bg-white border border-[#E8DEEF] rounded-2xl overflow-hidden shadow-xs flex flex-col min-h-[620px]">
               
               {/* Card Top Information */}
-              <div className="p-5 border-b border-[#f0edec] bg-[#fcf9f8] text-left">
+              <div className="p-5 border-b border-[#F4F0E9] bg-[#FDFBF7] text-left">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                   <div>
-                    <span className="text-[10px] font-extrabold text-[#b90064] tracking-widest uppercase block mb-1">
+                    <span className="text-[10px] font-extrabold text-[#6B2D8C] tracking-widest uppercase block mb-1">
                       Verified Sourcing Discussion (Enquiry {selectedEnquiry.id})
                     </span>
-                    <h2 className="text-base font-black text-[#1c1b1b] leading-tight">
+                    <h2 className="text-base font-black text-[#2A0E3F] leading-tight">
                       {selectedEnquiry.productName}
                     </h2>
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#594047] font-medium mt-1">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#5B4A6E] font-medium mt-1">
                       <span className="flex items-center gap-1">
-                        <Building2 className="w-3.5 h-3.5 text-[#8c7077]" />
+                        <Building2 className="w-3.5 h-3.5 text-[#7E6C96]" />
                         <strong>{selectedEnquiry.supplierName}</strong>
                       </span>
-                      <span className="text-[#8c7077]">•</span>
-                      <span className="flex items-center gap-1 text-[#0050d6] font-bold">
+                      <span className="text-[#7E6C96]">•</span>
+                      <span className="flex items-center gap-1 text-[#6B2D8C] font-bold">
                         <Clock className="w-3.5 h-3.5" />
                         <span>Date Initiated: {selectedEnquiry.date}</span>
                       </span>
@@ -669,7 +669,7 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
               </div>
 
               {/* Chat Timeline list */}
-              <div className="flex-1 p-5 overflow-y-auto space-y-4 max-h-[350px] bg-[#fdf8f8]/30">
+              <div className="flex-1 p-5 overflow-y-auto space-y-4 max-h-[350px] bg-[#FDFBF7]/30">
                 {selectedMessages.map((msg, index) => {
                   const isBuyer = msg.sender === 'buyer';
                   return (
@@ -679,14 +679,14 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
                         isBuyer ? 'ml-auto items-end' : 'mr-auto items-start'
                       }`}
                     >
-                      <div className="text-[9px] font-bold text-[#8c7077] uppercase tracking-wider mb-1 px-1">
+                      <div className="text-[9px] font-bold text-[#7E6C96] uppercase tracking-wider mb-1 px-1">
                         {isBuyer ? 'Elena Rostova (You)' : selectedEnquiry.supplierName} • {msg.time}
                       </div>
                       <div 
                         className={`p-3.5 rounded-2xl text-xs leading-relaxed font-medium whitespace-pre-line text-left ${
                           isBuyer 
-                            ? 'bg-[#b90064] text-white rounded-tr-none shadow-xs' 
-                            : 'bg-white border border-[#e8e8e8] text-[#1c1b1b] rounded-tl-none shadow-xs'
+                            ? 'bg-[#6B2D8C] text-white rounded-tr-none shadow-xs' 
+                            : 'bg-white border border-[#E8DEEF] text-[#2A0E3F] rounded-tl-none shadow-xs'
                         }`}
                       >
                         {msg.text}
@@ -702,90 +702,90 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
                 if (!neg) return null;
                 
                 return (
-                  <div className="border-t border-b border-[#f0edec] bg-[#fdf8f8]/40 p-4 text-left">
+                  <div className="border-t border-b border-[#F4F0E9] bg-[#FDFBF7]/40 p-4 text-left">
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-xs font-black text-[#1c1b1b] uppercase tracking-wider flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#b90064] animate-pulse"></span>
+                      <h4 className="text-xs font-black text-[#2A0E3F] uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#6B2D8C] animate-pulse"></span>
                         B2B Pricing & Sourcing Negotiation Center
                       </h4>
-                      <span className="text-[10px] font-bold text-[#b90064] bg-[#fde7f3] px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      <span className="text-[10px] font-bold text-[#6B2D8C] bg-[#F5EEF8] px-2 py-0.5 rounded-full uppercase tracking-wider">
                         Stage: {neg.stage.replace('_', ' ')}
                       </span>
                     </div>
 
                     {/* Step Timeline Progress */}
                     <div className="grid grid-cols-4 gap-2 mb-4 text-center">
-                      <div className="bg-white border border-[#e8e8e8] rounded-lg p-1.5">
+                      <div className="bg-white border border-[#E8DEEF] rounded-lg p-1.5">
                         <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest block">Step 1</span>
-                        <span className="text-[10px] font-black text-[#1c1b1b] block">RFQ Posted</span>
-                        <span className="text-[8px] font-bold text-[#8c7077]">Completed</span>
+                        <span className="text-[10px] font-black text-[#2A0E3F] block">RFQ Posted</span>
+                        <span className="text-[8px] font-bold text-[#7E6C96]">Completed</span>
                       </div>
-                      <div className="bg-white border border-[#e8e8e8] rounded-lg p-1.5">
+                      <div className="bg-white border border-[#E8DEEF] rounded-lg p-1.5">
                         <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest block">Step 2</span>
-                        <span className="text-[10px] font-black text-[#1c1b1b] block">Initial: ₹{neg.originalPrice}</span>
-                        <span className="text-[8px] font-bold text-[#8c7077]">Quote Received</span>
+                        <span className="text-[10px] font-black text-[#2A0E3F] block">Initial: ₹{neg.originalPrice}</span>
+                        <span className="text-[8px] font-bold text-[#7E6C96]">Quote Received</span>
                       </div>
-                      <div className="bg-white border border-[#e8e8e8] rounded-lg p-1.5">
-                        <span className="text-[9px] font-bold text-[#b90064] uppercase tracking-widest block">Step 3</span>
-                        <span className="text-[10px] font-black text-[#1c1b1b] block">
+                      <div className="bg-white border border-[#E8DEEF] rounded-lg p-1.5">
+                        <span className="text-[9px] font-bold text-[#6B2D8C] uppercase tracking-widest block">Step 3</span>
+                        <span className="text-[10px] font-black text-[#2A0E3F] block">
                           {neg.stage === 'initial' ? 'Pending' : `Countered: ₹${neg.counterPrice}`}
                         </span>
-                        <span className={`text-[8px] font-bold block ${neg.stage === 'initial' ? 'text-[#8c7077]' : 'text-[#b90064]'}`}>
+                        <span className={`text-[8px] font-bold block ${neg.stage === 'initial' ? 'text-[#7E6C96]' : 'text-[#6B2D8C]'}`}>
                           {neg.stage === 'initial' ? 'Ready' : 'Submitted'}
                         </span>
                       </div>
-                      <div className="bg-white border border-[#e8e8e8] rounded-lg p-1.5">
+                      <div className="bg-white border border-[#E8DEEF] rounded-lg p-1.5">
                         <span className="text-[9px] font-bold uppercase tracking-widest block text-stone-500">Step 4</span>
-                        <span className="text-[10px] font-black text-[#1c1b1b] block">
+                        <span className="text-[10px] font-black text-[#2A0E3F] block">
                           {neg.stage === 'final_accepted' ? 'Accepted' : neg.stage === 'final_declined' ? 'Declined' : 'Awaiting Review'}
                         </span>
-                        <span className="text-[8px] font-bold text-[#8c7077]">Final Outcome</span>
+                        <span className="text-[8px] font-bold text-[#7E6C96]">Final Outcome</span>
                       </div>
                     </div>
 
                     {/* Live interactive console forms */}
                     {neg.stage === 'initial' && (
-                      <form onSubmit={handleCounterOffer} className="space-y-3 bg-white border border-[#e8e8e8] rounded-xl p-3.5 shadow-xs">
+                      <form onSubmit={handleCounterOffer} className="space-y-3 bg-white border border-[#E8DEEF] rounded-xl p-3.5 shadow-xs">
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="text-[9px] font-bold text-[#8c7077] uppercase tracking-wider block mb-1">Your Counter Price (per unit)</label>
+                            <label className="text-[9px] font-bold text-[#7E6C96] uppercase tracking-wider block mb-1">Your Counter Price (per unit)</label>
                             <div className="relative">
-                              <span className="absolute left-2.5 top-2 text-xs font-black text-[#8c7077]">₹</span>
+                              <span className="absolute left-2.5 top-2 text-xs font-black text-[#7E6C96]">₹</span>
                               <input 
                                 type="number" 
                                 required
                                 placeholder="185"
                                 value={counterPriceInput}
                                 onChange={e => setCounterPriceInput(e.target.value)}
-                                className="w-full pl-6 pr-2.5 py-1.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-lg text-xs font-bold focus:outline-hidden focus:border-[#b90064]"
+                                className="w-full pl-6 pr-2.5 py-1.5 bg-[#FDFBF7] border border-[#E8DEEF] rounded-lg text-xs font-bold focus:outline-hidden focus:border-[#C9A961]"
                               />
                             </div>
                           </div>
                           <div>
-                            <label className="text-[9px] font-bold text-[#8c7077] uppercase tracking-wider block mb-1">Target Volume (MOQ Units)</label>
+                            <label className="text-[9px] font-bold text-[#7E6C96] uppercase tracking-wider block mb-1">Target Volume (MOQ Units)</label>
                             <input 
                               type="number" 
                               required
                               placeholder="5000"
                               value={counterQtyInput}
                               onChange={e => setCounterQtyInput(e.target.value)}
-                              className="w-full px-2.5 py-1.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-lg text-xs font-bold focus:outline-hidden focus:border-[#b90064]"
+                              className="w-full px-2.5 py-1.5 bg-[#FDFBF7] border border-[#E8DEEF] rounded-lg text-xs font-bold focus:outline-hidden focus:border-[#C9A961]"
                             />
                           </div>
                         </div>
                         <div>
-                          <label className="text-[9px] font-bold text-[#8c7077] uppercase tracking-wider block mb-1">Commercial Sourcing Terms / Remarks (Optional)</label>
+                          <label className="text-[9px] font-bold text-[#7E6C96] uppercase tracking-wider block mb-1">Commercial Sourcing Terms / Remarks (Optional)</label>
                           <input 
                             type="text" 
                             placeholder="e.g. Can sign annual contract for regular dispatch if price is locked."
                             value={negotiationNotes}
                             onChange={e => setNegotiationNotes(e.target.value)}
-                            className="w-full px-2.5 py-1.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-lg text-xs font-bold focus:outline-hidden focus:border-[#b90064]"
+                            className="w-full px-2.5 py-1.5 bg-[#FDFBF7] border border-[#E8DEEF] rounded-lg text-xs font-bold focus:outline-hidden focus:border-[#C9A961]"
                           />
                         </div>
                         <button 
                           type="submit"
-                          className="w-full py-2 bg-[#b90064] text-white text-[11px] font-black uppercase tracking-wider rounded-lg hover:bg-[#8e004b] transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
+                          className="w-full py-2 bg-[#6B2D8C] text-white text-[11px] font-black uppercase tracking-wider rounded-lg hover:bg-[#4A2560] transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
                         >
                           Submit Formal Counter-Offer
                         </button>
@@ -793,10 +793,10 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
                     )}
 
                     {neg.stage === 'counter_submitted' && (
-                      <div className="bg-white border border-[#e8e8e8] rounded-xl p-4 text-center shadow-xs space-y-2">
-                        <div className="animate-spin w-5 h-5 border-2 border-[#b90064] border-t-transparent rounded-full mx-auto" />
-                        <h5 className="text-xs font-bold text-[#1c1b1b]">Awaiting Supplier Commercial Feedback</h5>
-                        <p className="text-[10px] text-[#594047] max-w-md mx-auto">
+                      <div className="bg-white border border-[#E8DEEF] rounded-xl p-4 text-center shadow-xs space-y-2">
+                        <div className="animate-spin w-5 h-5 border-2 border-[#6B2D8C] border-t-transparent rounded-full mx-auto" />
+                        <h5 className="text-xs font-bold text-[#2A0E3F]">Awaiting Supplier Commercial Feedback</h5>
+                        <p className="text-[10px] text-[#5B4A6E] max-w-md mx-auto">
                           Our smart pricing routing has forwarded your Counter-Offer of <strong>₹{neg.counterPrice} / unit</strong> to {selectedEnquiry.supplierName}. Supplier sourcing managers are auditing batch formulation margins...
                         </p>
                       </div>
@@ -806,20 +806,20 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
                       <div className="bg-[#fffbeb] border border-[#fef3c7] rounded-xl p-3.5 shadow-xs text-left space-y-3">
                         <div>
                           <span className="text-[9px] font-black text-[#d97706] uppercase tracking-wider block mb-0.5">Supplier Decisive Proposal Received</span>
-                          <p className="text-[11px] text-[#1c1b1b] leading-relaxed">
-                            {selectedEnquiry.supplierName} returned a final bottom price offer of <strong className="text-[#b90064] text-xs">₹{neg.currentOfferPrice} / unit</strong> for {neg.volume.toLocaleString()} units.
+                          <p className="text-[11px] text-[#2A0E3F] leading-relaxed">
+                            {selectedEnquiry.supplierName} returned a final bottom price offer of <strong className="text-[#6B2D8C] text-xs">₹{neg.currentOfferPrice} / unit</strong> for {neg.volume.toLocaleString()} units.
                           </p>
                         </div>
                         <div className="flex gap-2">
                           <button 
                             onClick={handleAcceptNegotiation}
-                            className="flex-1 py-1.5 bg-[#b90064] text-white text-[10px] font-black uppercase tracking-wider rounded-lg hover:bg-[#8e004b] transition-all cursor-pointer shadow-xs"
+                            className="flex-1 py-1.5 bg-[#6B2D8C] text-white text-[10px] font-black uppercase tracking-wider rounded-lg hover:bg-[#4A2560] transition-all cursor-pointer shadow-xs"
                           >
                             Accept Final Offer (₹{neg.currentOfferPrice})
                           </button>
                           <button 
                             onClick={handleDeclineNegotiation}
-                            className="flex-1 py-1.5 bg-white border border-[#e8e8e8] text-[#594047] hover:text-[#b90064] text-[10px] font-black uppercase tracking-wider rounded-lg hover:bg-gray-50 transition-all cursor-pointer"
+                            className="flex-1 py-1.5 bg-white border border-[#E8DEEF] text-[#5B4A6E] hover:text-[#6B2D8C] text-[10px] font-black uppercase tracking-wider rounded-lg hover:bg-gray-50 transition-all cursor-pointer"
                           >
                             Decline & Close Sourcing
                           </button>
@@ -852,31 +852,31 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
               })()}
 
               {/* Action and Input Reply Tray */}
-              <div className="p-4 border-t border-[#f0edec] bg-[#fcf9f8] space-y-4">
+              <div className="p-4 border-t border-[#F4F0E9] bg-[#FDFBF7] space-y-4">
                 
                 {/* Instant CTA Links */}
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <span className="text-[10px] font-bold text-[#8c7077] uppercase tracking-wider mr-1">Direct Sourcing Actions:</span>
+                  <span className="text-[10px] font-bold text-[#7E6C96] uppercase tracking-wider mr-1">Direct Sourcing Actions:</span>
                   
                   <button
                     onClick={() => onCallSupplier(selectedEnquiry.supplierName)}
-                    className="px-3 py-1.5 bg-white hover:bg-gray-50 text-[#1c1b1b] border border-[#e8e8e8] rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
+                    className="px-3 py-1.5 bg-white hover:bg-gray-50 text-[#2A0E3F] border border-[#E8DEEF] rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
                   >
-                    <Phone className="w-3 h-3 text-[#b90064]" />
+                    <Phone className="w-3 h-3 text-[#6B2D8C]" />
                     <span>Call Supplier</span>
                   </button>
 
                   <button
                     onClick={() => onWhatsAppSupplier(selectedEnquiry.supplierName)}
-                    className="px-3 py-1.5 bg-white hover:bg-gray-50 text-[#1c1b1b] border border-[#e8e8e8] rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
+                    className="px-3 py-1.5 bg-white hover:bg-gray-50 text-[#2A0E3F] border border-[#E8DEEF] rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
                   >
-                    <MessageSquare className="w-3 h-3 text-green-600 fill-green-600/10" />
+                    <MessageSquare className="w-3 h-3 text-emerald-600 fill-emerald-600/10" />
                     <span>WhatsApp Supplier</span>
                   </button>
 
                   <button
                     onClick={() => onNavigateToChat(selectedEnquiry.supplierName)}
-                    className="px-3 py-1.5 bg-white hover:bg-[#b90064] hover:text-white hover:border-[#b90064] text-[#b90064] border border-[#b90064]/30 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
+                    className="px-3 py-1.5 bg-white hover:bg-[#6B2D8C] hover:text-white hover:border-[#6B2D8C] text-[#6B2D8C] border border-[#6B2D8C]/30 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
                   >
                     <span>Request Quotation</span>
                     <ArrowRight className="w-3 h-3" />
@@ -890,12 +890,12 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
                     value={replyText}
                     onChange={e => setReplyText(e.target.value)}
                     placeholder="Enter message to negotiate pricing, request catalogs or custom formulations..."
-                    className="flex-1 px-4 py-3 bg-white border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-semibold"
+                    className="flex-1 px-4 py-3 bg-white border border-[#E8DEEF] rounded-xl text-xs text-[#2A0E3F] focus:outline-hidden focus:border-[#C9A961] font-semibold"
                   />
                   <button
                     type="submit"
                     disabled={!replyText.trim()}
-                    className={`px-5 py-3 bg-[#b90064] text-white rounded-xl text-xs font-black shadow-md hover:bg-[#8e004b] transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                    className={`px-5 py-3 bg-[#6B2D8C] text-white rounded-xl text-xs font-black shadow-md hover:bg-[#4A2560] transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
                       !replyText.trim() ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
@@ -908,10 +908,10 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
 
             </div>
           ) : (
-            <div className="bg-white border border-[#e8e8e8] rounded-2xl p-16 text-center shadow-xs">
-              <AlertCircle className="w-12 h-12 text-[#b90064] mx-auto mb-4" />
-              <h3 className="text-base font-bold text-[#1c1b1b]">No Enquiry Selected</h3>
-              <p className="text-xs text-[#594047] max-w-sm mx-auto mt-2 font-medium">
+            <div className="bg-white border border-[#E8DEEF] rounded-2xl p-16 text-center shadow-xs">
+              <AlertCircle className="w-12 h-12 text-[#6B2D8C] mx-auto mb-4" />
+              <h3 className="text-base font-bold text-[#2A0E3F]">No Enquiry Selected</h3>
+              <p className="text-xs text-[#5B4A6E] max-w-sm mx-auto mt-2 font-medium">
                 Please select a sourcing request from the left panel list to inspect verified dialogue history and engage suppliers.
               </p>
             </div>
@@ -922,17 +922,17 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
 
       {/* MODAL: SUBMIT NEW ENQUIRY (SIMULATION) */}
       {isNewEnquiryOpen && (
-        <div className="fixed inset-0 bg-[#1c1b1b]/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-[#e8e8e8] rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-[#2A0E3F]/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-[#E8DEEF] rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
             
-            <div className="p-5 border-b border-[#f0edec] bg-[#fcf9f8] flex items-center justify-between">
+            <div className="p-5 border-b border-[#F4F0E9] bg-[#FDFBF7] flex items-center justify-between">
               <div className="text-left">
-                <span className="text-[10px] font-bold text-[#b90064] uppercase tracking-wider block">Submit B2B Sourcing Enquiry</span>
-                <h3 className="text-base font-black text-[#1c1b1b]">Connect with Beauty Suppliers</h3>
+                <span className="text-[10px] font-bold text-[#6B2D8C] uppercase tracking-wider block">Submit B2B Sourcing Enquiry</span>
+                <h3 className="text-base font-black text-[#2A0E3F]">Connect with Beauty Suppliers</h3>
               </div>
               <button 
                 onClick={() => setIsNewEnquiryOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 text-[#8c7077] transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-[#7E6C96] transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -940,8 +940,8 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
 
             <form onSubmit={handleCreateEnquiry} className="p-5 space-y-4 text-left">
               <div>
-                <label className="text-[10px] font-black text-[#8c7077] uppercase tracking-widest block mb-1">
-                  Product / Sourcing Requirement <span className="text-[#b90064]">*</span>
+                <label className="text-[10px] font-black text-[#7E6C96] uppercase tracking-widest block mb-1">
+                  Product / Sourcing Requirement <span className="text-[#6B2D8C]">*</span>
                 </label>
                 <input
                   type="text"
@@ -949,13 +949,13 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
                   placeholder="e.g., Organic Cold Pressed Rosehip Oil (Bulk)"
                   value={newProdName}
                   onChange={e => setNewProdName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-medium"
+                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-xs text-[#2A0E3F] focus:outline-hidden focus:border-[#C9A961] font-medium"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-black text-[#8c7077] uppercase tracking-widest block mb-1">
-                  Target Supplier Name <span className="text-[#b90064]">*</span>
+                <label className="text-[10px] font-black text-[#7E6C96] uppercase tracking-widest block mb-1">
+                  Target Supplier Name <span className="text-[#6B2D8C]">*</span>
                 </label>
                 <input
                   type="text"
@@ -963,13 +963,13 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
                   placeholder="e.g., Aura Beauty Labs or Radiant Cosmeceuticals"
                   value={newSuppName}
                   onChange={e => setNewSuppName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-medium"
+                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-xs text-[#2A0E3F] focus:outline-hidden focus:border-[#C9A961] font-medium"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-black text-[#8c7077] uppercase tracking-widest block mb-1">
-                  Sourcing Subject <span className="text-[#b90064]">*</span>
+                <label className="text-[10px] font-black text-[#7E6C96] uppercase tracking-widest block mb-1">
+                  Sourcing Subject <span className="text-[#6B2D8C]">*</span>
                 </label>
                 <input
                   type="text"
@@ -977,12 +977,12 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
                   placeholder="e.g., Request for pricing matrix & custom packaging options"
                   value={newSubject}
                   onChange={e => setNewSubject(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-medium"
+                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-xs text-[#2A0E3F] focus:outline-hidden focus:border-[#C9A961] font-medium"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-black text-[#8c7077] uppercase tracking-widest block mb-1">
+                <label className="text-[10px] font-black text-[#7E6C96] uppercase tracking-widest block mb-1">
                   Message Details / Specifications
                 </label>
                 <textarea
@@ -990,21 +990,21 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
                   placeholder="Include volume needed, target pricing, ingredient specifications, certifications required (WHO-GMP, Cruelty-free etc.)..."
                   value={newDetails}
                   onChange={e => setNewDetails(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-xl text-xs text-[#1c1b1b] focus:outline-hidden focus:border-[#b90064] font-medium resize-none"
+                  className="w-full px-3.5 py-2.5 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-xs text-[#2A0E3F] focus:outline-hidden focus:border-[#C9A961] font-medium resize-none"
                 />
               </div>
 
-              <div className="pt-4 border-t border-[#f0edec] flex items-center justify-end gap-3">
+              <div className="pt-4 border-t border-[#F4F0E9] flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsNewEnquiryOpen(false)}
-                  className="px-4 py-2 bg-[#fcf9f8] hover:bg-[#f0edec] border border-[#e8e8e8] text-xs font-black text-[#594047] rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-[#FDFBF7] hover:bg-[#F4F0E9] border border-[#E8DEEF] text-xs font-black text-[#5B4A6E] rounded-xl cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#b90064] text-white text-xs font-black rounded-xl hover:bg-[#8e004b] transition-all cursor-pointer shadow-md"
+                  className="px-5 py-2 bg-[#6B2D8C] text-white text-xs font-black rounded-xl hover:bg-[#4A2560] transition-all cursor-pointer shadow-md"
                 >
                   Post Sourcing Enquiry
                 </button>

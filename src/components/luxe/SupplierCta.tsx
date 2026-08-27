@@ -13,7 +13,7 @@ export const SupplierCta: React.FC<{
   onLogin: () => void;
 }> = ({ onJoin, onLogin }) => (
   <section className="max-w-[1280px] mx-auto px-4 md:px-6 pt-16 md:pt-20">
-    <div className="relative rounded-[24px] bg-[linear-gradient(135deg,#FBF5E9_0%,#F7EDDA_55%,#F3E6CC_100%)] border border-[#EDDDBC] overflow-hidden">
+    <div className="relative rounded-[24px] bg-[linear-gradient(135deg,#FBF5E9_0%,#F7EDDA_55%,#F3E6CC_100%)] border border-[#EDDDBC] overflow-hidden floral-pattern-gold">
       {/* subtle decor */}
       <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-[#C9A961]/15 blur-3xl pointer-events-none" />
       <div className="absolute -bottom-20 left-1/3 w-72 h-72 rounded-full bg-[#8A4B9E]/10 blur-3xl pointer-events-none" />
@@ -48,7 +48,7 @@ export const SupplierCta: React.FC<{
             {STEPS.map((s) => (
               <div
                 key={s.label}
-                className="flex sm:flex-col items-center gap-3 sm:gap-2.5 bg-white/70 backdrop-blur-sm border border-[#EDDDBC] rounded-xl px-4 py-4"
+                className="glass-card flex sm:flex-col items-center gap-3 sm:gap-2.5 rounded-xl px-4 py-4"
               >
                 <span className="w-10 h-10 rounded-full bg-royal-gradient flex items-center justify-center shrink-0 shadow-md">
                   <s.icon className="w-[18px] h-[18px] text-[#EFD9A0]" />
@@ -61,9 +61,11 @@ export const SupplierCta: React.FC<{
           <div className="mt-7 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
             <button
               onClick={onJoin}
-              className="inline-flex items-center gap-2 bg-royal-gradient hover:brightness-110 text-white text-[14.5px] font-semibold px-8 py-3.5 rounded-full shadow-[0_14px_30px_-10px_rgba(61,30,78,0.5)] transition-all hover:-translate-y-px"
+              className="btn-shine inline-flex items-center gap-2 bg-gold-gradient hover:brightness-105 text-[#2A0E3F] text-[14.5px] font-bold px-8 py-3.5 rounded-full shadow-gold-glow transition-all hover:-translate-y-px"
             >
-              Join as Supplier <ArrowRight className="w-4 h-4 text-[#EFD9A0]" />
+              <span className="relative z-10 inline-flex items-center gap-2">
+                Join as Supplier <ArrowRight className="w-4 h-4" />
+              </span>
             </button>
             <button
               onClick={onLogin}

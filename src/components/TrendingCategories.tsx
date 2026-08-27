@@ -66,21 +66,21 @@ export const TrendingCategories: React.FC<TrendingCategoriesProps> = ({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 pb-2 gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#B90064]"></span>
-            <span className="text-[11px] font-bold uppercase tracking-widest text-[#B90064]">
+            <span className="w-2 h-2 rounded-full bg-[#6B2D8C]"></span>
+            <span className="text-[11px] font-bold uppercase tracking-widest text-[#6B2D8C]">
               Marketplace Verticals
             </span>
           </div>
-          <h2 className="font-serif text-[22px] md:text-[28px] font-bold text-[#1C1B1B] mt-0.5 tracking-tight">
+          <h2 className="font-serif text-[22px] md:text-[28px] font-bold text-[#2A0E3F] mt-0.5 tracking-tight">
             Trending Sourcing Categories
           </h2>
-          <p className="text-[13px] text-[#594047] mt-0.5">
+          <p className="text-[13px] text-[#5B4A6E] mt-0.5">
             Discover audited manufacturers, bulk formulations, and verified beauty suppliers
           </p>
         </div>
         <button
           onClick={onViewAll}
-          className="text-[13px] font-bold text-[#B90064] hover:text-[#500037] flex items-center gap-1.5 transition-colors cursor-pointer group shrink-0 px-3.5 py-1.5 rounded-lg hover:bg-[#FAF1F5]"
+          className="text-[13px] font-bold text-[#6B2D8C] hover:text-[#2A0E3F] flex items-center gap-1.5 transition-colors cursor-pointer group shrink-0 px-3.5 py-1.5 rounded-lg hover:bg-[#F5EEF8]"
         >
           <span>View All 7 Core Verticals</span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -95,12 +95,12 @@ export const TrendingCategories: React.FC<TrendingCategoriesProps> = ({
             onClick={() => onCategoryClick?.(category.name)}
             className={`card-hover-fx group text-left rounded-2xl flex flex-col justify-between cursor-pointer relative overflow-hidden backdrop-blur-md ${
               category.isHighlighted
-                ? 'bg-gradient-to-b from-white/90 to-[#FFF5F8]/80 border-2 border-[#B90064]/40 shadow-sm'
-                : 'bg-white/80 border border-[#E8DFE3] hover:border-[#B90064]/40 shadow-xs'
+                ? 'bg-gradient-to-b from-white/90 to-[#FFF5F8]/80 border-2 border-[#6B2D8C]/40 shadow-sm'
+                : 'bg-white/80 border border-[#E5D8EE] hover:border-[#6B2D8C]/40 shadow-xs'
             }`}
           >
             {/* Card Top: Photographic Visual Hero Container with Smooth Zoom Animation */}
-            <div className="relative w-full aspect-[4/3] rounded-t-2xl overflow-hidden bg-[#FAF1F5]">
+            <div className="relative w-full aspect-[4/3] rounded-t-2xl overflow-hidden bg-[#F5EEF8]">
               <img
                 src={category.image}
                 alt={category.name}
@@ -116,8 +116,8 @@ export const TrendingCategories: React.FC<TrendingCategoriesProps> = ({
                 <div
                   className={`w-7 h-7 rounded-lg flex items-center justify-center backdrop-blur-md border shadow-2xs transition-all duration-300 ${
                     category.isHighlighted
-                      ? 'bg-[#B90064] text-white border-[#B90064]/50'
-                      : 'bg-white/90 text-[#500037] border-white/80 group-hover:bg-[#B90064] group-hover:text-white'
+                      ? 'bg-[#6B2D8C] text-white border-[#6B2D8C]/50'
+                      : 'bg-white/90 text-[#2A0E3F] border-white/80 group-hover:bg-[#6B2D8C] group-hover:text-white'
                   }`}
                 >
                   <div className="transition-transform duration-300 ease-out group-hover:scale-110">
@@ -128,7 +128,7 @@ export const TrendingCategories: React.FC<TrendingCategoriesProps> = ({
 
               {/* Top Right Highlight Tag or Status */}
               {category.isHighlighted ? (
-                <div className="absolute top-2.5 right-2.5 bg-[#B90064] text-white text-[9.5px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+                <div className="absolute top-2.5 right-2.5 bg-[#6B2D8C] text-white text-[9.5px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
                   <ShieldCheck className="w-2.5 h-2.5" />
                   <span>Turnkey</span>
                 </div>
@@ -150,20 +150,20 @@ export const TrendingCategories: React.FC<TrendingCategoriesProps> = ({
             {/* Card Content Details */}
             <div className="p-3.5 flex flex-col justify-between flex-1">
               <div>
-                <h3 className="text-[13.5px] sm:text-[14px] font-extrabold text-[#1C1B1B] group-hover:text-[#B90064] transition-colors leading-snug line-clamp-1">
+                <h3 className="text-[13.5px] sm:text-[14px] font-extrabold text-[#2A0E3F] group-hover:text-[#6B2D8C] transition-colors leading-snug line-clamp-1">
                   {category.name}
                 </h3>
-                <p className="text-[11px] text-[#594047] line-clamp-1 mt-0.5 font-normal">
+                <p className="text-[11px] text-[#5B4A6E] line-clamp-1 mt-0.5 font-normal">
                   {category.subtitle}
                 </p>
               </div>
 
               {/* Bottom Meta & Action */}
               <div className="mt-2.5 pt-2 border-t border-[#F0E8EB] flex items-center justify-between">
-                <span className="text-[10.5px] font-bold text-[#8D8087] group-hover:text-[#500037] transition-colors">
+                <span className="text-[10.5px] font-bold text-[#8B7FA3] group-hover:text-[#2A0E3F] transition-colors">
                   {category.itemCount}
                 </span>
-                <span className="text-[10.5px] font-extrabold text-[#B90064] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200 flex items-center gap-0.5">
+                <span className="text-[10.5px] font-extrabold text-[#6B2D8C] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200 flex items-center gap-0.5">
                   Explore →
                 </span>
               </div>

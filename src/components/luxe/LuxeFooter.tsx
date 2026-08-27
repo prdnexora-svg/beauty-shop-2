@@ -1,6 +1,6 @@
 import React from 'react';
 import { Facebook, Instagram, Linkedin, Youtube, ShieldCheck, MapPin, ChevronRight } from 'lucide-react';
-import { LuxeLogo } from './LuxeHeader';
+import { LuxeLogo } from './LuxeLogo';
 
 interface LuxeFooterProps {
   onNavigate: (screen: any, params?: any) => void;
@@ -57,7 +57,7 @@ export const LuxeFooter: React.FC<LuxeFooterProps> = ({ onNavigate, onOpenRFQMod
     l.action === 'screen' && l.screen ? onNavigate(l.screen) : onOpenRFQModal();
 
   return (
-    <footer className="relative overflow-hidden bg-[#241033] text-white mt-4">
+    <footer className="relative overflow-hidden bg-gradient-to-b from-purple-900 to-purple-950 text-white mt-4">
       {/* top gold hairline */}
       <div className="h-[3px] bg-gold-gradient" />
       <div className="absolute -top-24 right-1/4 w-[420px] h-[420px] rounded-full bg-[#6B3585]/25 blur-[130px] pointer-events-none" />
@@ -78,9 +78,9 @@ export const LuxeFooter: React.FC<LuxeFooterProps> = ({ onNavigate, onOpenRFQMod
                 <button
                   key={i}
                   aria-label="Social link"
-                  className="w-9 h-9 rounded-full border border-white/15 hover:border-[#C9A961] hover:bg-white/5 flex items-center justify-center text-white/70 hover:text-[#EFD9A0] transition-colors"
+                  className="w-9 h-9 rounded-full border border-[#C9A961]/45 bg-[#C9A961]/10 flex items-center justify-center text-[#EFD9A0] hover:bg-gold-gradient hover:text-[#2A0E3F] hover:border-[#C9A961] hover:shadow-gold-glow transition-all"
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="relative z-10 w-4 h-4" />
                 </button>
               ))}
             </div>
@@ -103,7 +103,7 @@ export const LuxeFooter: React.FC<LuxeFooterProps> = ({ onNavigate, onOpenRFQMod
                   <li key={l.label}>
                     <button
                       onClick={() => handle(l)}
-                      className="group inline-flex items-center gap-1 text-[13px] text-white/60 hover:text-white transition-colors"
+                      className="group inline-flex items-center gap-1 text-[13px] text-purple-200 hover:text-gold-400 transition-colors"
                     >
                       <ChevronRight className="w-3 h-3 text-[#C9A961] opacity-0 -ml-1 group-hover:opacity-100 group-hover:ml-0 transition-all" />
                       {l.label}

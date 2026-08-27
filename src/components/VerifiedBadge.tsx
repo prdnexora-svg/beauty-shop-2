@@ -48,7 +48,7 @@ export const VerifiedBadge: React.FC<VerifiedBadgeProps> = ({
             : size === 'lg'
             ? 'px-3 py-1 text-[12px]'
             : 'px-2.5 py-0.5 text-[11px]'
-        } bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-900 border-amber-300 ${className}`}
+        } bg-gradient-to-r from-amber-50 to-gold-50 text-amber-900 border-amber-300 ${className}`}
         title="Gold Verified Supplier • Audited Top Tier Quality & Reliability"
       >
         <Award className={`${size === 'sm' ? 'w-3 h-3' : size === 'lg' ? 'w-4 h-4' : 'w-3.5 h-3.5'} text-amber-600 fill-amber-500`} />

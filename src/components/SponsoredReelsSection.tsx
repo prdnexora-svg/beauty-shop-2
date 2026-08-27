@@ -97,15 +97,15 @@ export const SponsoredReelsSection: React.FC<SponsoredReelsSectionProps> = ({
       case 'YouTube':
         return { label: 'YouTube Short', bg: 'bg-red-600' };
       case 'Instagram':
-        return { label: 'Instagram Reel', bg: 'bg-gradient-to-r from-purple-600 to-pink-500' };
+        return { label: 'Instagram Reel', bg: 'bg-gradient-to-r from-purple-600 to-purple-600' };
       case 'Facebook':
-        return { label: 'Facebook Reel', bg: 'bg-blue-600' };
+        return { label: 'Facebook Reel', bg: 'bg-purple-700' };
       case 'X':
         return { label: 'X Video', bg: 'bg-black' };
       case 'LinkedIn':
-        return { label: 'LinkedIn Video', bg: 'bg-blue-700' };
+        return { label: 'LinkedIn Video', bg: 'bg-purple-800' };
       default:
-        return { label: 'Video', bg: 'bg-[#b90064]' };
+        return { label: 'Video', bg: 'bg-[#6B2D8C]' };
     }
   };
 
@@ -114,19 +114,19 @@ export const SponsoredReelsSection: React.FC<SponsoredReelsSectionProps> = ({
       {/* Section Header */}
       <div className="flex items-center justify-between mb-5 px-1">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-[#fde7f3] border border-[#f7c5e0] flex items-center justify-center text-[#b90064] shadow-xs">
-            <Film className="w-5 h-5 text-[#b90064]" />
+          <div className="w-9 h-9 rounded-xl bg-[#F5EEF8] border border-[#E8D5F2] flex items-center justify-center text-[#6B2D8C] shadow-xs">
+            <Film className="w-5 h-5 text-[#6B2D8C]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg md:text-xl font-extrabold text-[#1c1b1b] tracking-tight">
+              <h2 className="text-lg md:text-xl font-extrabold text-[#2A0E3F] tracking-tight">
                 Reels & Shorts
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full bg-[#fde7f3] border border-[#f7c5e0] text-[#b90064] text-[10px] font-extrabold uppercase tracking-wider">
+              <span className="px-2.5 py-0.5 rounded-full bg-[#F5EEF8] border border-[#E8D5F2] text-[#6B2D8C] text-[10px] font-extrabold uppercase tracking-wider">
                 Sponsored Video Ads
               </span>
             </div>
-            <p className="text-xs text-[#594047] font-medium hidden sm:block mt-0.5">
+            <p className="text-xs text-[#5B4A6E] font-medium hidden sm:block mt-0.5">
               Watch 9:16 short video showcases, product demos & lab reels from verified suppliers
             </p>
           </div>
@@ -137,14 +137,14 @@ export const SponsoredReelsSection: React.FC<SponsoredReelsSectionProps> = ({
           <div className="flex sm:hidden items-center gap-1">
             <button
               onClick={handleScrollLeft}
-              className="w-7 h-7 rounded-full bg-white border border-[#e8e8e8] flex items-center justify-center text-zinc-700 active:scale-95 shadow-2xs"
+              className="w-7 h-7 rounded-full bg-white border border-[#E8DEEF] flex items-center justify-center text-zinc-700 active:scale-95 shadow-2xs"
               aria-label="Previous Reel"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={handleScrollRight}
-              className="w-7 h-7 rounded-full bg-white border border-[#e8e8e8] flex items-center justify-center text-zinc-700 active:scale-95 shadow-2xs"
+              className="w-7 h-7 rounded-full bg-white border border-[#E8DEEF] flex items-center justify-center text-zinc-700 active:scale-95 shadow-2xs"
               aria-label="Next Reel"
             >
               <ChevronRight className="w-4 h-4" />
@@ -154,7 +154,7 @@ export const SponsoredReelsSection: React.FC<SponsoredReelsSectionProps> = ({
           {onOpenAdManager && (
             <button
               onClick={onOpenAdManager}
-              className="bg-[#b90064] hover:bg-[#a00056] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs"
+              className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs"
             >
               <Plus className="w-3.5 h-3.5 text-white" />
               <span>Create Ad</span>
@@ -176,7 +176,7 @@ export const SponsoredReelsSection: React.FC<SponsoredReelsSectionProps> = ({
               key={reel.video_ad_id}
               data-ad-id={reel.video_ad_id}
               onClick={() => setActiveModalReel(reel)}
-              className="sponsored-reel-card group relative flex-shrink-0 w-[160px] sm:w-auto aspect-[9/16] rounded-2xl overflow-hidden border border-[#e8dfe3] bg-[#1a1718] cursor-pointer shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] snap-start"
+              className="sponsored-reel-card group relative flex-shrink-0 w-[160px] sm:w-auto aspect-[9/16] rounded-2xl overflow-hidden border border-[#E5D8EE] bg-[#1a1718] cursor-pointer shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] snap-start"
             >
               {/* Lightweight Poster Image (NO IFRAME PRELOAD) */}
               <img
@@ -191,7 +191,7 @@ export const SponsoredReelsSection: React.FC<SponsoredReelsSectionProps> = ({
 
               {/* Center Play Icon Overlay */}
               <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                <div className="w-12 h-12 rounded-full bg-white/25 backdrop-blur-md border border-white/40 flex items-center justify-center group-hover:scale-110 group-hover:bg-[#b90064] group-hover:border-[#b90064] transition-all duration-300 shadow-lg">
+                <div className="w-12 h-12 rounded-full bg-white/25 backdrop-blur-md border border-white/40 flex items-center justify-center group-hover:scale-110 group-hover:bg-[#6B2D8C] group-hover:border-[#6B2D8C] transition-all duration-300 shadow-lg">
                   <Play className="w-5 h-5 text-white fill-white ml-0.5" />
                 </div>
               </div>
@@ -206,12 +206,12 @@ export const SponsoredReelsSection: React.FC<SponsoredReelsSectionProps> = ({
                 )}
 
                 {/* Supplier Name */}
-                <span className="text-[10px] font-bold text-pink-300 tracking-wide truncate mb-0.5 uppercase">
+                <span className="text-[10px] font-bold text-purple-300 tracking-wide truncate mb-0.5 uppercase">
                   {reel.supplierName}
                 </span>
 
                 {/* Video Title */}
-                <h3 className="text-xs font-bold text-white leading-snug line-clamp-2 drop-shadow-sm group-hover:text-pink-100 transition-colors">
+                <h3 className="text-xs font-bold text-white leading-snug line-clamp-2 drop-shadow-sm group-hover:text-purple-100 transition-colors">
                   {reel.display_title}
                 </h3>
               </div>

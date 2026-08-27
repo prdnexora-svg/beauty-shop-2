@@ -636,45 +636,45 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
   ]);
 
   return (
-    <div className="bg-[#fdf8f8] min-h-screen text-[#1c1b1b] flex flex-col pb-28">
+    <div className="bg-[#FDFBF7] min-h-screen text-[#2A0E3F] flex flex-col pb-28">
       
       {/* Sticky Search & Filter Header */}
-      <div className="bg-[#fcf9f8]/95 backdrop-blur-sm sticky top-20 z-30 border-b border-[#e8e8e8] py-4 shadow-2xs">
+      <div className="bg-[#FDFBF7]/95 backdrop-blur-sm sticky top-20 z-30 border-b border-[#E8DEEF] py-4 shadow-2xs">
         <div className="max-w-[1440px] mx-auto px-5 md:px-10 flex flex-col gap-3">
           
           {/* Search Inputs Row */}
           <div className="flex flex-col md:flex-row gap-3 w-full">
             {/* Query Input */}
-            <div className="flex-1 relative flex items-center bg-[#f0edec] rounded-xl border border-transparent focus-within:border-[#b90064] focus-within:bg-white transition-all px-4 py-2.5">
-              <Search className="w-4 h-4 text-[#594047] mr-3 shrink-0" />
+            <div className="flex-1 relative flex items-center bg-[#F4F0E9] rounded-xl border border-transparent focus-within:border-[#6B2D8C] focus-within:bg-white transition-all px-4 py-2.5">
+              <Search className="w-4 h-4 text-[#5B4A6E] mr-3 shrink-0" />
               <input
                 type="text"
                 id="search-main-input"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search products, suppliers, OEM formulations, machines..."
-                className="w-full bg-transparent border-none text-[14px] text-[#1c1b1b] placeholder:text-[#8c7077] focus:outline-none"
+                className="w-full bg-transparent border-none text-[14px] text-[#2A0E3F] placeholder:text-[#B9A8C6] focus:outline-none"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="text-[#8c7077] hover:text-[#1c1b1b]">
+                <button onClick={() => setSearchQuery('')} className="text-[#7E6C96] hover:text-[#2A0E3F]">
                   <X className="w-4 h-4" />
                 </button>
               )}
             </div>
 
             {/* Location Input */}
-            <div className="w-full md:w-1/3 relative flex items-center bg-[#f0edec] rounded-xl border border-transparent focus-within:border-[#b90064] focus-within:bg-white transition-all px-4 py-2.5">
-              <MapPin className="w-4 h-4 text-[#594047] mr-3 shrink-0" />
+            <div className="w-full md:w-1/3 relative flex items-center bg-[#F4F0E9] rounded-xl border border-transparent focus-within:border-[#6B2D8C] focus-within:bg-white transition-all px-4 py-2.5">
+              <MapPin className="w-4 h-4 text-[#5B4A6E] mr-3 shrink-0" />
               <input
                 type="text"
                 id="search-location-input"
                 value={locationQuery}
                 onChange={(e) => setLocationQuery(e.target.value)}
                 placeholder="City, State (or radius)"
-                className="w-full bg-transparent border-none text-[14px] text-[#1c1b1b] placeholder:text-[#8c7077] focus:outline-none"
+                className="w-full bg-transparent border-none text-[14px] text-[#2A0E3F] placeholder:text-[#B9A8C6] focus:outline-none"
               />
               {locationQuery && locationQuery !== 'All India' && (
-                <button onClick={() => setLocationQuery('All India')} className="text-[#8c7077] hover:text-[#1c1b1b] ml-1">
+                <button onClick={() => setLocationQuery('All India')} className="text-[#7E6C96] hover:text-[#2A0E3F] ml-1">
                   <X className="w-4 h-4" />
                 </button>
               )}
@@ -683,7 +683,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
             {/* Submit Button */}
             <button
               id="search-submit-btn"
-              className="bg-[#b90064] hover:bg-[#8e004b] text-white font-bold text-[14px] px-8 py-2.5 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 active:scale-98 shrink-0"
+              className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-bold text-[14px] px-8 py-2.5 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 active:scale-98 shrink-0"
             >
               <Search className="w-4 h-4" />
               <span>Search</span>
@@ -692,15 +692,15 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
 
           {/* Quick Filter Suggested Tags */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-            <span className="text-[11px] font-bold text-[#8c7077] uppercase tracking-wider shrink-0 mr-1">
+            <span className="text-[11px] font-bold text-[#7E6C96] uppercase tracking-wider shrink-0 mr-1">
               Quick Filter:
             </span>
             <button
               onClick={() => toggleCertification('GMP')}
               className={`px-3 py-1 rounded-full text-[12px] font-semibold transition-all shrink-0 border ${
                 selectedCertifications.includes('GMP')
-                  ? 'bg-[#b90064] text-white border-[#b90064]'
-                  : 'bg-white text-[#594047] border-[#e8e8e8] hover:border-[#b90064]'
+                  ? 'bg-[#6B2D8C] text-white border-[#6B2D8C]'
+                  : 'bg-white text-[#5B4A6E] border-[#E8DEEF] hover:border-[#6B2D8C]'
               }`}
             >
               WHO-GMP
@@ -709,8 +709,8 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
               onClick={() => toggleCertification('ISO')}
               className={`px-3 py-1 rounded-full text-[12px] font-semibold transition-all shrink-0 border ${
                 selectedCertifications.includes('ISO')
-                  ? 'bg-[#b90064] text-white border-[#b90064]'
-                  : 'bg-white text-[#594047] border-[#e8e8e8] hover:border-[#b90064]'
+                  ? 'bg-[#6B2D8C] text-white border-[#6B2D8C]'
+                  : 'bg-white text-[#5B4A6E] border-[#E8DEEF] hover:border-[#6B2D8C]'
               }`}
             >
               ISO Certified
@@ -719,8 +719,8 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
               onClick={() => toggleCertification('Organic')}
               className={`px-3 py-1 rounded-full text-[12px] font-semibold transition-all shrink-0 border ${
                 selectedCertifications.includes('Organic')
-                  ? 'bg-[#b90064] text-white border-[#b90064]'
-                  : 'bg-white text-[#594047] border-[#e8e8e8] hover:border-[#b90064]'
+                  ? 'bg-[#6B2D8C] text-white border-[#6B2D8C]'
+                  : 'bg-white text-[#5B4A6E] border-[#E8DEEF] hover:border-[#6B2D8C]'
               }`}
             >
               Organic / ECOCERT
@@ -729,8 +729,8 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
               onClick={() => toggleMoqTier('lt_50')}
               className={`px-3 py-1 rounded-full text-[12px] font-semibold transition-all shrink-0 border ${
                 selectedMoqTiers.includes('lt_50')
-                  ? 'bg-[#b90064] text-white border-[#b90064]'
-                  : 'bg-white text-[#594047] border-[#e8e8e8] hover:border-[#b90064]'
+                  ? 'bg-[#6B2D8C] text-white border-[#6B2D8C]'
+                  : 'bg-white text-[#5B4A6E] border-[#E8DEEF] hover:border-[#6B2D8C]'
               }`}
             >
               Low MOQ (&lt;50 units)
@@ -739,8 +739,8 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
               onClick={() => toggleLocation('Maharashtra')}
               className={`px-3 py-1 rounded-full text-[12px] font-semibold transition-all shrink-0 border ${
                 selectedLocations.includes('Maharashtra')
-                  ? 'bg-[#b90064] text-white border-[#b90064]'
-                  : 'bg-white text-[#594047] border-[#e8e8e8] hover:border-[#b90064]'
+                  ? 'bg-[#6B2D8C] text-white border-[#6B2D8C]'
+                  : 'bg-white text-[#5B4A6E] border-[#E8DEEF] hover:border-[#6B2D8C]'
               }`}
             >
               📍 Maharashtra Hub
@@ -749,8 +749,8 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
               onClick={() => toggleLocation('Delhi NCR')}
               className={`px-3 py-1 rounded-full text-[12px] font-semibold transition-all shrink-0 border ${
                 selectedLocations.includes('Delhi NCR')
-                  ? 'bg-[#b90064] text-white border-[#b90064]'
-                  : 'bg-white text-[#594047] border-[#e8e8e8] hover:border-[#b90064]'
+                  ? 'bg-[#6B2D8C] text-white border-[#6B2D8C]'
+                  : 'bg-white text-[#5B4A6E] border-[#E8DEEF] hover:border-[#6B2D8C]'
               }`}
             >
               📍 Delhi NCR
@@ -759,8 +759,8 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
               onClick={() => toggleEstablishedYear('15_plus')}
               className={`px-3 py-1 rounded-full text-[12px] font-semibold transition-all shrink-0 border ${
                 selectedEstablishedYears.includes('15_plus')
-                  ? 'bg-[#b90064] text-white border-[#b90064]'
-                  : 'bg-white text-[#594047] border-[#e8e8e8] hover:border-[#b90064]'
+                  ? 'bg-[#6B2D8C] text-white border-[#6B2D8C]'
+                  : 'bg-white text-[#5B4A6E] border-[#E8DEEF] hover:border-[#6B2D8C]'
               }`}
             >
               15+ Yrs Legacy
@@ -769,8 +769,8 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
               onClick={() => setIsExportReadyOnly(!isExportReadyOnly)}
               className={`px-3 py-1 rounded-full text-[12px] font-semibold transition-all shrink-0 border ${
                 isExportReadyOnly
-                  ? 'bg-[#b90064] text-white border-[#b90064]'
-                  : 'bg-white text-[#594047] border-[#e8e8e8] hover:border-[#b90064]'
+                  ? 'bg-[#6B2D8C] text-white border-[#6B2D8C]'
+                  : 'bg-white text-[#5B4A6E] border-[#E8DEEF] hover:border-[#6B2D8C]'
               }`}
             >
               Export Ready
@@ -778,23 +778,23 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
           </div>
 
           {/* Active Filter Chips & Clear All */}
-          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-[#f0edec]">
-            <span className="text-[11px] font-semibold text-[#8c7077] uppercase tracking-wider mr-1">
+          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-[#F4F0E9]">
+            <span className="text-[11px] font-semibold text-[#7E6C96] uppercase tracking-wider mr-1">
               Active Filters:
             </span>
 
             {activeChips.length === 0 ? (
-              <span className="text-[12px] text-[#8c7077] italic">No active filters applied (Showing all results)</span>
+              <span className="text-[12px] text-[#7E6C96] italic">No active filters applied (Showing all results)</span>
             ) : (
               activeChips.map((chip) => (
                 <div
                   key={chip.id}
-                  className="flex items-center bg-[#fde7f3] border border-[#e0bec6] rounded-full px-3 py-0.5 gap-1.5 transition-colors"
+                  className="flex items-center bg-[#F5EEF8] border border-[#D9C3E8] rounded-full px-3 py-0.5 gap-1.5 transition-colors"
                 >
-                  <span className="text-[12px] font-semibold text-[#b90064]">{chip.label}</span>
+                  <span className="text-[12px] font-semibold text-[#6B2D8C]">{chip.label}</span>
                   <button
                     onClick={chip.onRemove}
-                    className="text-[#b90064] hover:text-[#8e004b] flex items-center transition-colors"
+                    className="text-[#6B2D8C] hover:text-[#4A2560] flex items-center transition-colors"
                     title={`Remove ${chip.label}`}
                   >
                     <X className="w-3.5 h-3.5" />
@@ -806,7 +806,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
             {activeChips.length > 0 && (
               <button
                 onClick={handleClearAllFilters}
-                className="text-[12px] font-semibold text-[#594047] underline hover:text-[#b90064] ml-2 transition-colors"
+                className="text-[12px] font-semibold text-[#5B4A6E] underline hover:text-[#6B2D8C] ml-2 transition-colors"
               >
                 Clear All Filters
               </button>
@@ -815,9 +815,9 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
             {/* Mobile Filter Toggle Button */}
             <button
               onClick={() => setIsMobileFilterOpen(true)}
-              className="md:hidden ml-auto flex items-center gap-1.5 text-[12px] font-bold bg-white border border-[#e8e8e8] px-3 py-1 rounded-lg text-[#1c1b1b]"
+              className="md:hidden ml-auto flex items-center gap-1.5 text-[12px] font-bold bg-white border border-[#E8DEEF] px-3 py-1 rounded-lg text-[#2A0E3F]"
             >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-[#b90064]" />
+              <SlidersHorizontal className="w-3.5 h-3.5 text-[#6B2D8C]" />
               <span>Filters</span>
             </button>
           </div>
@@ -862,12 +862,12 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
             />
 
             {/* Live Market Demand Widget */}
-            <div className="bg-[#f7f2f2] border border-[#e8e8e8] rounded-xl p-4 relative overflow-hidden group hover:border-[#b90064]/50 transition-colors shadow-2xs mt-4">
+            <div className="bg-[#F6F1FA] border border-[#E8DEEF] rounded-xl p-4 relative overflow-hidden group hover:border-[#6B2D8C]/50 transition-colors shadow-2xs mt-4">
               <div className="flex items-center gap-2 mb-2">
-                <span className="w-2 h-2 rounded-full bg-[#b90064] animate-pulse"></span>
-                <h4 className="text-[12px] font-bold uppercase tracking-wider text-[#b90064]">Live Market Demand</h4>
+                <span className="w-2 h-2 rounded-full bg-[#6B2D8C] animate-pulse"></span>
+                <h4 className="text-[12px] font-bold uppercase tracking-wider text-[#6B2D8C]">Live Market Demand</h4>
               </div>
-              <p className="text-[13px] text-[#1c1b1b] mb-3 leading-snug">
+              <p className="text-[13px] text-[#2A0E3F] mb-3 leading-snug">
                 Buyer in Delhi requested <strong className="font-bold">500 units</strong> of Argan Oil Serum.
               </p>
               <button
@@ -880,7 +880,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                     targetPrice: '₹350 / Unit'
                   })
                 }
-                className="w-full text-center py-2 px-4 border border-[#b90064] text-[#b90064] hover:bg-[#b90064] hover:text-white font-bold text-[12px] rounded-lg transition-colors shadow-2xs"
+                className="w-full text-center py-2 px-4 border border-[#6B2D8C] text-[#6B2D8C] hover:bg-[#6B2D8C] hover:text-white font-bold text-[12px] rounded-lg transition-colors shadow-2xs"
               >
                 Submit Quote
               </button>
@@ -892,13 +892,13 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
         <div className="flex-1 flex flex-col min-w-0">
           
           {/* Result Summary Bar */}
-          <div className="mb-6 bg-white border border-[#e8e8e8] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
+          <div className="mb-6 bg-white border border-[#E8DEEF] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
             <div className="flex flex-col gap-1">
-              <h2 className="text-[18px] font-extrabold text-[#1c1b1b]">
-                {activeTab === 'products' ? filteredProducts.length : activeTab === 'suppliers' ? filteredSuppliers.length : filteredOem.length} results for <span className="text-[#b90064]">“{searchQuery || 'All Beauty Categories'}”</span>
+              <h2 className="text-[18px] font-extrabold text-[#2A0E3F]">
+                {activeTab === 'products' ? filteredProducts.length : activeTab === 'suppliers' ? filteredSuppliers.length : filteredOem.length} results for <span className="text-[#6B2D8C]">“{searchQuery || 'All Beauty Categories'}”</span>
               </h2>
-              <div className="flex items-center gap-2 text-[12px] font-bold text-[#594047]">
-                <MapPin className="w-3.5 h-3.5 text-[#b90064]" />
+              <div className="flex items-center gap-2 text-[12px] font-bold text-[#5B4A6E]">
+                <MapPin className="w-3.5 h-3.5 text-[#6B2D8C]" />
                 <span>{locationQuery}</span>
                 <span className="mx-1 opacity-40">•</span>
                 <span>Sorted by: {
@@ -913,12 +913,12 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
 
             {activeChips.length > 0 && (
               <div className="flex flex-wrap gap-2 items-center">
-                <span className="text-[11px] font-bold text-[#8c7077] uppercase mr-1">Active:</span>
+                <span className="text-[11px] font-bold text-[#7E6C96] uppercase mr-1">Active:</span>
                 {activeChips.map((chip) => (
                   <button
                     key={chip.id}
                     onClick={chip.onRemove}
-                    className="flex items-center gap-1.5 bg-[#f7f2f2] border border-[#e8e8e8] px-2.5 py-1 rounded-lg text-[11px] font-bold text-[#594047] hover:border-[#b90064] hover:text-[#b90064] transition-all group"
+                    className="flex items-center gap-1.5 bg-[#F6F1FA] border border-[#E8DEEF] px-2.5 py-1 rounded-lg text-[11px] font-bold text-[#5B4A6E] hover:border-[#6B2D8C] hover:text-[#6B2D8C] transition-all group"
                   >
                     {chip.label}
                     <X className="w-3 h-3 opacity-60 group-hover:opacity-100" />
@@ -929,7 +929,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
           </div>
 
           {/* Tabs & Sorting Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#e8e8e8] pb-4 mb-6 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#E8DEEF] pb-4 mb-6 gap-4">
             
             {/* Primary Tabs */}
             <div className="flex items-center gap-6 overflow-x-auto no-scrollbar pb-1">
@@ -937,33 +937,33 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                 onClick={() => setActiveTab('products')}
                 className={`text-[15px] font-bold pb-1 whitespace-nowrap transition-colors border-b-2 ${
                   activeTab === 'products'
-                    ? 'text-[#b90064] border-[#b90064]'
-                    : 'text-[#594047] border-transparent hover:text-[#b90064]'
+                    ? 'text-[#6B2D8C] border-[#6B2D8C]'
+                    : 'text-[#5B4A6E] border-transparent hover:text-[#6B2D8C]'
                 }`}
               >
-                Products <span className="text-[#8c7077] font-normal text-xs ml-1">({filteredProducts.length})</span>
+                Products <span className="text-[#7E6C96] font-normal text-xs ml-1">({filteredProducts.length})</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('suppliers')}
                 className={`text-[15px] font-bold pb-1 whitespace-nowrap transition-colors border-b-2 ${
                   activeTab === 'suppliers'
-                    ? 'text-[#b90064] border-[#b90064]'
-                    : 'text-[#594047] border-transparent hover:text-[#b90064]'
+                    ? 'text-[#6B2D8C] border-[#6B2D8C]'
+                    : 'text-[#5B4A6E] border-transparent hover:text-[#6B2D8C]'
                 }`}
               >
-                Suppliers <span className="text-[#8c7077] font-normal text-xs ml-1">({filteredSuppliers.length})</span>
+                Suppliers <span className="text-[#7E6C96] font-normal text-xs ml-1">({filteredSuppliers.length})</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('oem')}
                 className={`text-[15px] font-bold pb-1 whitespace-nowrap transition-colors border-b-2 ${
                   activeTab === 'oem'
-                    ? 'text-[#b90064] border-[#b90064]'
-                    : 'text-[#594047] border-transparent hover:text-[#b90064]'
+                    ? 'text-[#6B2D8C] border-[#6B2D8C]'
+                    : 'text-[#5B4A6E] border-transparent hover:text-[#6B2D8C]'
                 }`}
               >
-                OEM &amp; Private Label <span className="text-[#8c7077] font-normal text-xs ml-1">({filteredOem.length})</span>
+                OEM &amp; Private Label <span className="text-[#7E6C96] font-normal text-xs ml-1">({filteredOem.length})</span>
               </button>
             </div>
 
@@ -972,7 +972,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
               {activeTab === 'products' && comparedProductIds.length > 0 && (
                 <button
                   onClick={() => setIsCompareModalOpen(true)}
-                  className="bg-[#fde7f3] hover:bg-[#fbd0e8] text-[#b90064] text-[12px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all shadow-2xs border border-[#b90064]/20"
+                  className="bg-[#F5EEF8] hover:bg-[#fbd0e8] text-[#6B2D8C] text-[12px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all shadow-2xs border border-[#6B2D8C]/20"
                 >
                   <ArrowLeftRight className="w-3.5 h-3.5" />
                   <span>Compare ({comparedProductIds.length})</span>
@@ -982,18 +982,18 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
               {activeTab === 'suppliers' && comparedSupplierIds.length > 0 && (
                 <button
                   onClick={() => setIsSupplierCompareModalOpen(true)}
-                  className="bg-[#fde7f3] hover:bg-[#fbd0e8] text-[#b90064] text-[12px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all shadow-2xs border border-[#b90064]/20"
+                  className="bg-[#F5EEF8] hover:bg-[#fbd0e8] text-[#6B2D8C] text-[12px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all shadow-2xs border border-[#6B2D8C]/20"
                 >
                   <ArrowLeftRight className="w-3.5 h-3.5" />
                   <span>Compare ({comparedSupplierIds.length})</span>
                 </button>
               )}
 
-              <div className="flex items-center border border-[#e8e8e8] rounded-lg bg-white p-1">
+              <div className="flex items-center border border-[#E8DEEF] rounded-lg bg-white p-1">
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-1.5 rounded transition-colors ${
-                    viewMode === 'grid' ? 'bg-[#f0edec] text-[#1c1b1b]' : 'text-[#594047] hover:text-[#b90064]'
+                    viewMode === 'grid' ? 'bg-[#F4F0E9] text-[#2A0E3F]' : 'text-[#5B4A6E] hover:text-[#6B2D8C]'
                   }`}
                   title="Grid View"
                 >
@@ -1002,7 +1002,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                 <button
                   onClick={() => setViewMode('list')}
                   className={`p-1.5 rounded transition-colors ${
-                    viewMode === 'list' ? 'bg-[#f0edec] text-[#1c1b1b]' : 'text-[#594047] hover:text-[#b90064]'
+                    viewMode === 'list' ? 'bg-[#F4F0E9] text-[#2A0E3F]' : 'text-[#5B4A6E] hover:text-[#6B2D8C]'
                   }`}
                   title="List View"
                 >
@@ -1014,7 +1014,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="bg-white border border-[#e8e8e8] hover:border-[#8c7077] rounded-lg px-3 py-1.5 text-[12px] font-semibold text-[#1c1b1b] focus:outline-none focus:border-[#b90064] cursor-pointer appearance-none pr-8 shadow-2xs"
+                  className="bg-white border border-[#E8DEEF] hover:border-[#7E6C96] rounded-lg px-3 py-1.5 text-[12px] font-semibold text-[#2A0E3F] focus:outline-none focus:border-[#C9A961] cursor-pointer appearance-none pr-8 shadow-2xs"
                 >
                   {activeTab === 'products' ? (
                     <>
@@ -1046,7 +1046,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                     </>
                   )}
                 </select>
-                <ChevronDown className="w-3.5 h-3.5 text-[#594047] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <ChevronDown className="w-3.5 h-3.5 text-[#5B4A6E] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             </div>
 
@@ -1056,15 +1056,15 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
           {activeTab === 'products' && (
             <div>
               {filteredProducts.length === 0 ? (
-                <div className="text-center py-16 bg-white rounded-2xl border border-[#e8e8e8] p-8">
-                  <FlaskConical className="w-12 h-12 text-[#8c7077] mx-auto mb-3 opacity-60" />
-                  <h3 className="text-base font-bold text-[#1c1b1b]">No matching formulations or products</h3>
-                  <p className="text-[13px] text-[#594047] max-w-md mx-auto mt-1 mb-4">
+                <div className="text-center py-16 bg-white rounded-2xl border border-[#E8DEEF] p-8">
+                  <FlaskConical className="w-12 h-12 text-[#7E6C96] mx-auto mb-3 opacity-60" />
+                  <h3 className="text-base font-bold text-[#2A0E3F]">No matching formulations or products</h3>
+                  <p className="text-[13px] text-[#5B4A6E] max-w-md mx-auto mt-1 mb-4">
                     Try adjusting your category or location filters, or broadcast your custom requirement directly to 120+ audited factories.
                   </p>
                   <button
                     onClick={onOpenRFQModal}
-                    className="bg-[#b90064] text-white font-bold px-6 py-2.5 rounded-lg text-[13px] shadow-sm hover:bg-[#8e004b] transition-colors"
+                    className="bg-[#6B2D8C] text-white font-bold px-6 py-2.5 rounded-lg text-[13px] shadow-sm hover:bg-[#4A2560] transition-colors"
                   >
                     Post Custom Requirement / RFQ
                   </button>
@@ -1093,10 +1093,10 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                             duration: 0.22,
                             ease: [0.16, 1, 0.3, 1]
                           }}
-                          className="bg-white/80 backdrop-blur-xs border border-[#e8e8e8] rounded-xl overflow-hidden flex flex-col hover:scale-[1.02] hover:border-[#b90064] transition-all duration-300 group shadow-2xs"
+                          className="bg-white/80 backdrop-blur-xs border border-[#E8DEEF] rounded-xl overflow-hidden flex flex-col hover:scale-[1.02] hover:border-[#6B2D8C] transition-all duration-300 group shadow-2xs"
                         >
                           {/* Image Header */}
-                          <div className="relative h-48 bg-[#f0edec] overflow-hidden">
+                          <div className="relative h-48 bg-[#F4F0E9] overflow-hidden">
                             <img
                               src={prod.image}
                               alt={prod.title}
@@ -1105,12 +1105,12 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                             />
                             <div className="absolute top-3 left-3 flex gap-2">
                               {prod.isGstVerified && (
-                                <span className="bg-[#0150d6] text-white font-bold text-[11px] px-2 py-1 rounded shadow-xs tracking-wide">
+                                <span className="bg-[#6B2D8C] text-white font-bold text-[11px] px-2 py-1 rounded shadow-xs tracking-wide">
                                   GST Verified
                                 </span>
                               )}
                               {prod.isNexoraVerified && (
-                                <span className="bg-[#b90064] text-white font-bold text-[11px] px-2 py-1 rounded shadow-xs tracking-wide">
+                                <span className="bg-[#6B2D8C] text-white font-bold text-[11px] px-2 py-1 rounded shadow-xs tracking-wide">
                                   Nexora Verified
                                 </span>
                               )}
@@ -1122,16 +1122,16 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                                   type="checkbox"
                                   checked={isCompared}
                                   onChange={() => toggleCompare(prod.id)}
-                                  className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+                                  className="rounded border-[#7E6C96] text-[#6B2D8C] focus:ring-[#C9A961]/30 w-4 h-4 cursor-pointer accent-[#6B2D8C]"
                                 />
-                                <span className="text-[11.5px] font-bold text-[#594047]">Compare</span>
+                                <span className="text-[11.5px] font-bold text-[#5B4A6E]">Compare</span>
                               </label>
                               <button
                                 onClick={() => toggleFavorite(prod.id)}
-                                className="p-1.5 bg-white/90 rounded-md text-[#594047] hover:text-[#b90064] transition-colors shadow-xs"
+                                className="p-1.5 bg-white/90 rounded-md text-[#5B4A6E] hover:text-[#6B2D8C] transition-colors shadow-xs"
                                 title={isFav ? 'Remove Favorite' : 'Save to Favorites'}
                               >
-                                <Heart className={`w-4 h-4 ${isFav ? 'fill-[#b90064] text-[#b90064]' : ''}`} />
+                                <Heart className={`w-4 h-4 ${isFav ? 'fill-[#6B2D8C] text-[#6B2D8C]' : ''}`} />
                               </button>
                             </div>
                           </div>
@@ -1139,40 +1139,40 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                           {/* Card Content */}
                           <div className="p-5 flex flex-col flex-1">
                             <div className="mb-2">
-                              <h3 className="font-bold text-[15px] text-[#1c1b1b] line-clamp-2 mb-1 group-hover:text-[#b90064] transition-colors leading-snug">
+                              <h3 className="font-bold text-[15px] text-[#2A0E3F] line-clamp-2 mb-1 group-hover:text-[#6B2D8C] transition-colors leading-snug">
                                 {prod.title}
                               </h3>
-                              <p className="text-[12.5px] text-[#594047] flex items-center gap-1">
-                                <Store className="w-3.5 h-3.5 text-[#b90064] shrink-0" />
+                              <p className="text-[12.5px] text-[#5B4A6E] flex items-center gap-1">
+                                <Store className="w-3.5 h-3.5 text-[#6B2D8C] shrink-0" />
                                 <span className="truncate">{prod.supplierName}</span>
-                                <span className="text-[#8c7077] mx-1">•</span>
+                                <span className="text-[#7E6C96] mx-1">•</span>
                                 <span>{prod.supplierLocation}</span>
                               </p>
                             </div>
 
                             {/* Verification Tag Chips */}
                             <div className="flex flex-wrap gap-2 mb-3">
-                              <span className="bg-[#f0edec] text-[#1c1b1b] font-semibold text-[11.5px] px-2.5 py-1 rounded-md">
+                              <span className="bg-[#F4F0E9] text-[#2A0E3F] font-semibold text-[11.5px] px-2.5 py-1 rounded-md">
                                 MOQ: {prod.moq}
                               </span>
-                              <span className="bg-[#f0edec] text-[#1c1b1b] font-semibold text-[11.5px] px-2.5 py-1 rounded-md">
+                              <span className="bg-[#F4F0E9] text-[#2A0E3F] font-semibold text-[11.5px] px-2.5 py-1 rounded-md">
                                 Ships in 7-10 Days
                               </span>
                             </div>
 
                             {/* Premium Tiered Pricing Box */}
-                            <div className="bg-[#fcf9f8] rounded-xl p-3 mb-4 border border-[#e8e8e8] shadow-2xs">
-                              <span className="block text-[11px] font-extrabold text-[#8c7077] uppercase tracking-wider mb-2">
+                            <div className="bg-[#FDFBF7] rounded-xl p-3 mb-4 border border-[#E8DEEF] shadow-2xs">
+                              <span className="block text-[11px] font-extrabold text-[#7E6C96] uppercase tracking-wider mb-2">
                                 Tiered Pricing
                               </span>
                               <div className="grid grid-cols-2 gap-2">
-                                <div className="flex justify-between border-r border-[#e8e8e8] pr-2.5">
-                                  <span className="text-[12px] font-semibold text-[#594047]">100u:</span>
-                                  <span className="text-[13px] font-bold text-[#1c1b1b]">₹{prod.priceMin || 350}</span>
+                                <div className="flex justify-between border-r border-[#E8DEEF] pr-2.5">
+                                  <span className="text-[12px] font-semibold text-[#5B4A6E]">100u:</span>
+                                  <span className="text-[13px] font-bold text-[#2A0E3F]">₹{prod.priceMin || 350}</span>
                                 </div>
                                 <div className="flex justify-between pl-2.5">
-                                  <span className="text-[12px] font-semibold text-[#594047]">500u:</span>
-                                  <span className="text-[13px] font-bold text-[#b90064]">₹{Math.round((prod.priceMin || 350) * 0.8)}</span>
+                                  <span className="text-[12px] font-semibold text-[#5B4A6E]">500u:</span>
+                                  <span className="text-[13px] font-bold text-[#6B2D8C]">₹{Math.round((prod.priceMin || 350) * 0.8)}</span>
                                 </div>
                               </div>
                             </div>
@@ -1181,14 +1181,14 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                             <div className="flex gap-2 mt-auto">
                               <button
                                 onClick={() => onOpenEnquiryModal(prod)}
-                                className="flex-1 bg-[#b90064] hover:bg-[#8e004b] text-white font-bold text-[13px] py-2.5 rounded-xl shadow-xs transition-opacity cursor-pointer text-center"
+                                className="flex-1 bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-bold text-[13px] py-2.5 rounded-xl shadow-xs transition-opacity cursor-pointer text-center"
                               >
                                 Get Quote
                               </button>
                               <div className="flex gap-1.5">
                                 <button
                                   onClick={() => onCallSupplier(prod.supplierName)}
-                                  className="px-3 py-2.5 border border-[#e8e8e8] text-[#594047] hover:bg-[#f7f2f2] rounded-xl transition-colors flex items-center justify-center"
+                                  className="px-3 py-2.5 border border-[#E8DEEF] text-[#5B4A6E] hover:bg-[#F6F1FA] rounded-xl transition-colors flex items-center justify-center"
                                   title="Call Supplier"
                                 >
                                   <Phone className="w-4 h-4" />
@@ -1204,13 +1204,13 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                             </div>
                             <button
                               onClick={() => onNavigate('sample-request')}
-                              className="w-full mt-2 border border-[#e8e8e8] hover:border-[#b90064] hover:text-[#b90064] text-[#594047] font-bold text-[12px] py-2 rounded-xl transition-all cursor-pointer text-center bg-transparent"
+                              className="w-full mt-2 border border-[#E8DEEF] hover:border-[#6B2D8C] hover:text-[#6B2D8C] text-[#5B4A6E] font-bold text-[12px] py-2 rounded-xl transition-all cursor-pointer text-center bg-transparent"
                             >
                               Request Sample
                             </button>
                             <button
                               onClick={() => onNavigate('product-detail', { productId: prod.id })}
-                              className="w-full mt-2 bg-[#fcf9f8] border border-[#e8e8e8] hover:border-[#b90064] text-[#1c1b1b] font-bold text-[12px] py-2 rounded-xl transition-all cursor-pointer text-center"
+                              className="w-full mt-2 bg-[#FDFBF7] border border-[#E8DEEF] hover:border-[#6B2D8C] text-[#2A0E3F] font-bold text-[12px] py-2 rounded-xl transition-all cursor-pointer text-center"
                             >
                               View Full Specifications
                             </button>
@@ -1228,15 +1228,15 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
           {activeTab === 'suppliers' && (
             <div>
               {filteredSuppliers.length === 0 ? (
-                <div className="text-center py-16 bg-white rounded-2xl border border-[#e8e8e8] p-8">
-                  <Building2 className="w-12 h-12 text-[#8c7077] mx-auto mb-3 opacity-60" />
-                  <h3 className="text-base font-bold text-[#1c1b1b]">No verified suppliers found for this filter</h3>
-                  <p className="text-[13px] text-[#594047] max-w-md mx-auto mt-1 mb-4">
+                <div className="text-center py-16 bg-white rounded-2xl border border-[#E8DEEF] p-8">
+                  <Building2 className="w-12 h-12 text-[#7E6C96] mx-auto mb-3 opacity-60" />
+                  <h3 className="text-base font-bold text-[#2A0E3F]">No verified suppliers found for this filter</h3>
+                  <p className="text-[13px] text-[#5B4A6E] max-w-md mx-auto mt-1 mb-4">
                     Try selecting "All India Hubs" or clearing category filters to view all audited manufacturers.
                   </p>
                   <button
                     onClick={handleClearAllFilters}
-                    className="bg-[#b90064] text-white font-bold px-6 py-2.5 rounded-lg text-[13px] shadow-sm hover:bg-[#8e004b] transition-colors"
+                    className="bg-[#6B2D8C] text-white font-bold px-6 py-2.5 rounded-lg text-[13px] shadow-sm hover:bg-[#4A2560] transition-colors"
                   >
                     Reset Location &amp; Filters
                   </button>
@@ -1257,24 +1257,24 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                             duration: 0.22,
                             ease: [0.16, 1, 0.3, 1]
                           }}
-                          className="bg-white rounded-xl border border-[#e8e8e8] p-5 shadow-2xs hover:border-[#8c7077] transition-all flex flex-col justify-between group"
+                          className="bg-white rounded-xl border border-[#E8DEEF] p-5 shadow-2xs hover:border-[#7E6C96] transition-all flex flex-col justify-between group"
                         >
                           <div>
                             <div className="flex items-center justify-between mb-3">
                               <div className="flex items-center gap-3">
-                                <div className="w-11 h-11 rounded-xl bg-[#b90064] text-white font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
+                                <div className="w-11 h-11 rounded-xl bg-[#6B2D8C] text-white font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
                                   {sup.shortCode}
                                 </div>
                                 <div>
-                                  <h3 className="font-bold text-[15px] text-[#1c1b1b]">{sup.name}</h3>
+                                  <h3 className="font-bold text-[15px] text-[#2A0E3F]">{sup.name}</h3>
                                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                    <p className="text-[12px] text-[#594047]">
+                                    <p className="text-[12px] text-[#5B4A6E]">
                                       📍 {sup.city}, {sup.state}
                                     </p>
                                     {onOpenMapModal && (
                                       <button
                                         onClick={() => onOpenMapModal(sup)}
-                                        className="text-[11px] font-bold text-[#b90064] hover:text-[#8e004b] bg-[#fde7f3] hover:bg-[#fbd0e8] px-2 py-0.5 rounded-md flex items-center gap-1 transition-colors cursor-pointer"
+                                        className="text-[11px] font-bold text-[#6B2D8C] hover:text-[#4A2560] bg-[#F5EEF8] hover:bg-[#fbd0e8] px-2 py-0.5 rounded-md flex items-center gap-1 transition-colors cursor-pointer"
                                         title="View manufacturer proximity to shipping ports, airports and raw material hubs"
                                       >
                                         <MapPin className="w-3 h-3" />
@@ -1290,29 +1290,29 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                                     onClick={() => onToggleSaveSupplier(sup.id, sup.name)}
                                     className={`p-1.5 rounded-lg border transition-all ${
                                       saved
-                                        ? 'bg-[#fde7f3] border-[#b90064] text-[#b90064]'
-                                        : 'bg-white border-[#e8e8e8] text-[#8c7077] hover:text-[#b90064] hover:border-[#b90064]'
+                                        ? 'bg-[#F5EEF8] border-[#6B2D8C] text-[#6B2D8C]'
+                                        : 'bg-white border-[#E8DEEF] text-[#7E6C96] hover:text-[#6B2D8C] hover:border-[#6B2D8C]'
                                     }`}
                                     title={saved ? 'Remove from Saved Suppliers' : 'Save Supplier'}
                                   >
                                     {saved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
                                   </button>
                                 )}
-                                <label className="flex items-center gap-1.5 bg-[#fcf9f8] px-2 py-1.5 rounded-lg border border-[#e8e8e8] cursor-pointer hover:bg-[#fde7f3]/50 transition-all select-none">
+                                <label className="flex items-center gap-1.5 bg-[#FDFBF7] px-2 py-1.5 rounded-lg border border-[#E8DEEF] cursor-pointer hover:bg-[#F5EEF8]/50 transition-all select-none">
                                   <input
                                     type="checkbox"
                                     checked={comparedSupplierIds.includes(sup.id)}
                                     onChange={() => toggleSupplierCompare(sup.id)}
-                                    className="w-3.5 h-3.5 accent-[#b90064] rounded cursor-pointer"
+                                    className="w-3.5 h-3.5 accent-[#6B2D8C] rounded cursor-pointer"
                                   />
-                                  <span className="text-[11px] font-bold text-[#594047]">Compare</span>
+                                  <span className="text-[11px] font-bold text-[#5B4A6E]">Compare</span>
                                 </label>
                                 <VerifiedBadge
                                   trustScore={sup.trustScore}
                                   overallRating={sup.overallRating}
                                   size="sm"
                                 />
-                                <span className="text-[11px] font-bold text-[#b90064] bg-[#fde7f3] px-2 py-0.5 rounded-full block">
+                                <span className="text-[11px] font-bold text-[#6B2D8C] bg-[#F5EEF8] px-2 py-0.5 rounded-full block">
                                   {sup.trustScore}/100 Trust
                                 </span>
                               </div>
@@ -1320,20 +1320,20 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
 
                             <div className="flex flex-wrap gap-1.5 my-3">
                               {sup.categories.map((cat, idx) => (
-                                <span key={idx} className="bg-[#f7f2f2] text-[#1c1b1b] text-[11px] px-2.5 py-1 rounded-md font-medium">
+                                <span key={idx} className="bg-[#F6F1FA] text-[#2A0E3F] text-[11px] px-2.5 py-1 rounded-md font-medium">
                                   {cat}
                                 </span>
                               ))}
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2 text-[11.5px] text-[#594047] py-2.5 border-t border-b border-[#e8e8e8] my-3">
+                            <div className="grid grid-cols-2 gap-2 text-[11.5px] text-[#5B4A6E] py-2.5 border-t border-b border-[#E8DEEF] my-3">
                               <div>
-                                <span className="text-[#8c7077] block text-[10px] uppercase">Min Order Value</span>
-                                <strong className="text-[#1c1b1b]">{sup.minOrderValue}</strong>
+                                <span className="text-[#7E6C96] block text-[10px] uppercase">Min Order Value</span>
+                                <strong className="text-[#2A0E3F]">{sup.minOrderValue}</strong>
                               </div>
                               <div>
-                                <span className="text-[#8c7077] block text-[10px] uppercase">Response SLA</span>
-                                <strong className="text-[#0050d6]">{sup.responseTime} ({sup.responseRate})</strong>
+                                <span className="text-[#7E6C96] block text-[10px] uppercase">Response SLA</span>
+                                <strong className="text-[#6B2D8C]">{sup.responseTime} ({sup.responseRate})</strong>
                               </div>
                             </div>
                           </div>
@@ -1348,14 +1348,14 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                                   image: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=400&q=80'
                                 })
                               }
-                              className="flex-1 bg-[#b90064] hover:bg-[#8e004b] text-white font-bold text-[12px] py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                              className="flex-1 bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-bold text-[12px] py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5"
                             >
                               <Send className="w-3.5 h-3.5" />
                               Contact
                             </button>
                             <button
                               onClick={() => onCallSupplier(sup.name)}
-                              className="px-3 py-2 border border-[#e8e8e8] text-[#594047] hover:bg-[#f7f2f2] rounded-lg transition-colors flex items-center justify-center"
+                              className="px-3 py-2 border border-[#E8DEEF] text-[#5B4A6E] hover:bg-[#F6F1FA] rounded-lg transition-colors flex items-center justify-center"
                               title="Call Supplier"
                             >
                               <Phone className="w-4 h-4" />
@@ -1370,7 +1370,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                           </div>
                           <button
                             onClick={() => onNavigate('supplier-profile', { supplierId: sup.id })}
-                            className="w-full mt-2 bg-[#fcf9f8] border border-[#e8e8e8] hover:border-[#b90064] text-[#1c1b1b] font-bold text-[12px] py-2 rounded-lg transition-all cursor-pointer text-center"
+                            className="w-full mt-2 bg-[#FDFBF7] border border-[#E8DEEF] hover:border-[#6B2D8C] text-[#2A0E3F] font-bold text-[12px] py-2 rounded-lg transition-all cursor-pointer text-center"
                           >
                             View Full Profile
                           </button>
@@ -1387,15 +1387,15 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
           {activeTab === 'oem' && (
             <div>
               {filteredOem.length === 0 ? (
-                <div className="text-center py-16 bg-white rounded-2xl border border-[#e8e8e8] p-8">
-                  <FlaskConical className="w-12 h-12 text-[#8c7077] mx-auto mb-3 opacity-60" />
-                  <h3 className="text-base font-bold text-[#1c1b1b]">No OEM formulations found</h3>
-                  <p className="text-[13px] text-[#594047] max-w-md mx-auto mt-1 mb-4">
+                <div className="text-center py-16 bg-white rounded-2xl border border-[#E8DEEF] p-8">
+                  <FlaskConical className="w-12 h-12 text-[#7E6C96] mx-auto mb-3 opacity-60" />
+                  <h3 className="text-base font-bold text-[#2A0E3F]">No OEM formulations found</h3>
+                  <p className="text-[13px] text-[#5B4A6E] max-w-md mx-auto mt-1 mb-4">
                     Adjust your category or location filters to discover private label contract developers.
                   </p>
                   <button
                     onClick={handleClearAllFilters}
-                    className="bg-[#b90064] text-white font-bold px-6 py-2.5 rounded-lg text-[13px] shadow-sm hover:bg-[#8e004b] transition-colors"
+                    className="bg-[#6B2D8C] text-white font-bold px-6 py-2.5 rounded-lg text-[13px] shadow-sm hover:bg-[#4A2560] transition-colors"
                   >
                     Reset Filters
                   </button>
@@ -1414,28 +1414,28 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                           duration: 0.22,
                           ease: [0.16, 1, 0.3, 1]
                         }}
-                        className="bg-white rounded-xl border border-[#e8e8e8] p-5 shadow-2xs hover:border-[#8c7077] transition-all flex flex-col md:flex-row gap-5 items-start md:items-center justify-between"
+                        className="bg-white rounded-xl border border-[#E8DEEF] p-5 shadow-2xs hover:border-[#7E6C96] transition-all flex flex-col md:flex-row gap-5 items-start md:items-center justify-between"
                       >
                         <div className="flex gap-4 items-start">
                           <img
                             src={oem.image}
                             alt={oem.title}
-                            className="w-20 h-20 rounded-xl object-cover border border-[#e8e8e8] shrink-0"
+                            className="w-20 h-20 rounded-xl object-cover border border-[#E8DEEF] shrink-0"
                           />
                           <div>
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="bg-[#fde7f3] text-[#b90064] font-bold text-[10px] px-2 py-0.5 rounded uppercase">
+                              <span className="bg-[#F5EEF8] text-[#6B2D8C] font-bold text-[10px] px-2 py-0.5 rounded uppercase">
                                 OEM Formulation
                               </span>
-                              <span className="text-[12px] text-[#594047]">📍 {oem.location}</span>
+                              <span className="text-[12px] text-[#5B4A6E]">📍 {oem.location}</span>
                             </div>
-                            <h3 className="font-bold text-[15px] text-[#1c1b1b]">{oem.title}</h3>
-                            <p className="text-[12px] text-[#594047] mt-0.5">
+                            <h3 className="font-bold text-[15px] text-[#2A0E3F]">{oem.title}</h3>
+                            <p className="text-[12px] text-[#5B4A6E] mt-0.5">
                               Lab Developer: <strong>{oem.developer}</strong> • Capacity: {oem.batchCapacity}
                             </p>
                             <div className="flex flex-wrap gap-1.5 mt-2">
                               {oem.tags.map((t, idx) => (
-                                <span key={idx} className="bg-[#f0f5ff] text-[#0050d6] text-[10px] font-semibold px-2 py-0.5 rounded">
+                                <span key={idx} className="bg-[#f0f5ff] text-[#6B2D8C] text-[10px] font-semibold px-2 py-0.5 rounded">
                                   {t}
                                 </span>
                               ))}
@@ -1443,17 +1443,17 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                           </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row md:flex-col items-end gap-3 w-full md:w-auto shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[#e8e8e8]">
+                        <div className="flex flex-col sm:flex-row md:flex-col items-end gap-3 w-full md:w-auto shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[#E8DEEF]">
                           <div className="text-right">
-                            <span className="text-[11px] text-[#8c7077] block">Target Unit Cost</span>
-                            <strong className="text-[15px] font-bold text-[#b90064]">{oem.targetPrice}</strong>
-                            <span className="text-[10px] text-[#594047] block">MOQ: {oem.moq}</span>
+                            <span className="text-[11px] text-[#7E6C96] block">Target Unit Cost</span>
+                            <strong className="text-[15px] font-bold text-[#6B2D8C]">{oem.targetPrice}</strong>
+                            <span className="text-[10px] text-[#5B4A6E] block">MOQ: {oem.moq}</span>
                           </div>
                           <div className="flex flex-col gap-2 w-full">
                             <div className="flex gap-2">
                               <button
                                 onClick={() => onNavigate('sample-request')}
-                                className="flex-1 bg-[#1c1b1b] text-white font-bold text-[12px] px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 hover:bg-[#313030]"
+                                className="flex-1 bg-[#2A0E3F] text-white font-bold text-[12px] px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 hover:bg-[#352B44]"
                               >
                                 <FlaskConical className="w-3.5 h-3.5" />
                                 Request Sample
@@ -1469,7 +1469,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                                     image: oem.image
                                   })
                                 }
-                                className="flex-1 bg-[#b90064] hover:bg-[#8e004b] text-white font-bold text-[12px] px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+                                className="flex-1 bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-bold text-[12px] px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
                               >
                                 <Send className="w-3.5 h-3.5" />
                                 Contact
@@ -1478,7 +1478,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                             <div className="flex gap-1.5">
                               <button
                                 onClick={() => onCallSupplier(oem.developer)}
-                                className="flex-1 py-2 border border-[#e8e8e8] text-[#594047] hover:bg-[#f7f2f2] rounded-lg transition-colors flex items-center justify-center gap-2"
+                                className="flex-1 py-2 border border-[#E8DEEF] text-[#5B4A6E] hover:bg-[#F6F1FA] rounded-lg transition-colors flex items-center justify-center gap-2"
                               >
                                 <Phone className="w-3.5 h-3.5" />
                                 <span className="text-[11px] font-bold">Call Lab</span>
@@ -1509,12 +1509,12 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
       {comparedProducts.length > 0 && activeTab === 'products' && (
         <div
           id="floating-compare-dock"
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white border border-[#e8e8e8] rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-5 py-3.5 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-[92%] max-w-3xl animate-in slide-in-from-bottom-5 duration-200"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white border border-[#E8DEEF] rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-5 py-3.5 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-[92%] max-w-3xl animate-in slide-in-from-bottom-5 duration-200"
         >
           <div className="flex items-center justify-between w-full sm:w-auto sm:block shrink-0">
             <div>
-              <span className="font-bold text-[14px] text-[#1c1b1b] block">Compare Products</span>
-              <span className="text-[12px] font-semibold text-[#b90064]">
+              <span className="font-bold text-[14px] text-[#2A0E3F] block">Compare Products</span>
+              <span className="text-[12px] font-semibold text-[#6B2D8C]">
                 {comparedProducts.length}/4 Selected
               </span>
             </div>
@@ -1524,7 +1524,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
             {comparedProducts.map((prod) => (
               <div
                 key={prod.id}
-                className="w-12 h-12 rounded-lg border border-[#e8e8e8] overflow-hidden relative group shrink-0 shadow-2xs"
+                className="w-12 h-12 rounded-lg border border-[#E8DEEF] overflow-hidden relative group shrink-0 shadow-2xs"
               >
                 <img src={prod.image} alt={prod.title} className="w-full h-full object-cover" />
                 <button
@@ -1541,13 +1541,13 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
           <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
             <button
               onClick={() => setComparedProductIds([])}
-              className="text-[12px] font-semibold text-[#594047] hover:text-red-600 transition-colors px-2 py-1"
+              className="text-[12px] font-semibold text-[#5B4A6E] hover:text-red-600 transition-colors px-2 py-1"
             >
               Clear
             </button>
             <button
               onClick={() => setIsCompareModalOpen(true)}
-              className="w-full sm:w-auto bg-[#0050d6] hover:bg-[#0040ab] text-white font-bold text-[13px] px-5 py-2.5 rounded-xl shadow-xs transition-colors whitespace-nowrap flex items-center justify-center gap-1.5"
+              className="w-full sm:w-auto bg-[#6B2D8C] hover:bg-[#0040ab] text-white font-bold text-[13px] px-5 py-2.5 rounded-xl shadow-xs transition-colors whitespace-nowrap flex items-center justify-center gap-1.5"
             >
               <ArrowLeftRight className="w-4 h-4" />
               Compare Specs
@@ -1559,12 +1559,12 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
       {/* Floating Comparison Dock (Suppliers) */}
       {comparedSupplierIds.length > 0 && activeTab === 'suppliers' && (
         <div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white border border-[#e8e8e8] rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-5 py-3.5 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-[92%] max-w-3xl animate-in slide-in-from-bottom-5 duration-200"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white border border-[#E8DEEF] rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] px-5 py-3.5 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-[92%] max-w-3xl animate-in slide-in-from-bottom-5 duration-200"
         >
           <div className="flex items-center justify-between w-full sm:w-auto sm:block shrink-0">
             <div>
-              <span className="font-bold text-[14px] text-[#1c1b1b] block">Compare Suppliers</span>
-              <span className="text-[12px] font-semibold text-[#b90064]">
+              <span className="font-bold text-[14px] text-[#2A0E3F] block">Compare Suppliers</span>
+              <span className="text-[12px] font-semibold text-[#6B2D8C]">
                 {comparedSupplierIds.length}/3 Selected
               </span>
             </div>
@@ -1574,9 +1574,9 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
             {comparedSuppliers.map((sup) => (
               <div
                 key={sup.id}
-                className="w-12 h-12 rounded-lg border border-[#e8e8e8] overflow-hidden relative group shrink-0 shadow-2xs bg-[#fdf8f8] flex items-center justify-center"
+                className="w-12 h-12 rounded-lg border border-[#E8DEEF] overflow-hidden relative group shrink-0 shadow-2xs bg-[#FDFBF7] flex items-center justify-center"
               >
-                <div className="text-[10px] font-bold text-[#b90064] truncate px-1">{sup.name.split(' ')[0]}</div>
+                <div className="text-[10px] font-bold text-[#6B2D8C] truncate px-1">{sup.name.split(' ')[0]}</div>
                 <button
                   onClick={() => toggleSupplierCompare(sup.id)}
                   className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center text-white transition-opacity"
@@ -1591,13 +1591,13 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
           <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
             <button
               onClick={() => setComparedSupplierIds([])}
-              className="text-[12px] font-semibold text-[#594047] hover:text-red-600 transition-colors px-2 py-1"
+              className="text-[12px] font-semibold text-[#5B4A6E] hover:text-red-600 transition-colors px-2 py-1"
             >
               Clear
             </button>
             <button
               onClick={() => setIsSupplierCompareModalOpen(true)}
-              className="w-full sm:w-auto bg-[#b90064] hover:bg-[#8e004b] text-white font-bold text-[13px] px-5 py-2.5 rounded-xl shadow-xs transition-colors whitespace-nowrap flex items-center justify-center gap-1.5"
+              className="w-full sm:w-auto bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-bold text-[13px] px-5 py-2.5 rounded-xl shadow-xs transition-colors whitespace-nowrap flex items-center justify-center gap-1.5"
             >
               <ArrowLeftRight className="w-4 h-4" />
               Compare Business Stats
@@ -1639,16 +1639,16 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="ml-auto w-[85%] max-w-sm h-full bg-white flex flex-col shadow-2xl"
           >
-            <div className="flex items-center justify-between p-5 border-b border-[#e8e8e8]">
+            <div className="flex items-center justify-between p-5 border-b border-[#E8DEEF]">
               <div className="flex items-center gap-2">
-                <SlidersHorizontal className="w-4 h-4 text-[#b90064]" />
-                <h2 className="text-lg font-bold text-[#1c1b1b]">Filters</h2>
+                <SlidersHorizontal className="w-4 h-4 text-[#6B2D8C]" />
+                <h2 className="text-lg font-bold text-[#2A0E3F]">Filters</h2>
               </div>
               <button
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="p-2 hover:bg-[#f7f2f2] rounded-full transition-colors"
+                className="p-2 hover:bg-[#F6F1FA] rounded-full transition-colors"
               >
-                <X className="w-5 h-5 text-[#594047]" />
+                <X className="w-5 h-5 text-[#5B4A6E]" />
               </button>
             </div>
 
@@ -1684,10 +1684,10 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
               />
             </div>
 
-            <div className="p-5 border-t border-[#e8e8e8] bg-[#fcf9f8]">
+            <div className="p-5 border-t border-[#E8DEEF] bg-[#FDFBF7]">
               <button
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="w-full bg-[#b90064] hover:bg-[#8e004b] text-white font-bold py-3.5 rounded-xl shadow-xs transition-all active:scale-98 flex items-center justify-center gap-2"
+                className="w-full bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-bold py-3.5 rounded-xl shadow-xs transition-all active:scale-98 flex items-center justify-center gap-2"
               >
                 Show Results
               </button>

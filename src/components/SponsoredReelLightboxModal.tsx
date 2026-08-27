@@ -40,11 +40,11 @@ export const SponsoredReelLightboxModal: React.FC<SponsoredReelLightboxModalProp
   const getPlatformBadgeColor = () => {
     switch (reel.platform) {
       case 'YouTube': return 'bg-red-600 text-white';
-      case 'Instagram': return 'bg-gradient-to-r from-purple-600 to-pink-500 text-white';
-      case 'Facebook': return 'bg-blue-600 text-white';
+      case 'Instagram': return 'bg-gradient-to-r from-purple-600 to-purple-600 text-white';
+      case 'Facebook': return 'bg-purple-700 text-white';
       case 'X': return 'bg-black text-white';
-      case 'LinkedIn': return 'bg-blue-700 text-white';
-      default: return 'bg-[#b90064] text-white';
+      case 'LinkedIn': return 'bg-purple-800 text-white';
+      default: return 'bg-[#6B2D8C] text-white';
     }
   };
 
@@ -110,7 +110,7 @@ export const SponsoredReelLightboxModal: React.FC<SponsoredReelLightboxModalProp
                   href={reel.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-2.5 px-4 bg-[#b90064] hover:bg-[#a00056] text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg"
+                  className="w-full py-2.5 px-4 bg-[#6B2D8C] hover:bg-[#4A2560] text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg"
                 >
                   <ExternalLink className="w-4 h-4" />
                   <span>{platformActionText}</span>
@@ -128,7 +128,7 @@ export const SponsoredReelLightboxModal: React.FC<SponsoredReelLightboxModalProp
               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${getPlatformBadgeColor()}`}>
                 {reel.platform} Reel
               </span>
-              <span className="px-2 py-0.5 rounded-full bg-[#b90064]/20 border border-[#b90064]/40 text-[#f7a0cd] text-[10px] font-bold uppercase tracking-wider">
+              <span className="px-2 py-0.5 rounded-full bg-[#6B2D8C]/20 border border-[#6B2D8C]/40 text-[#f7a0cd] text-[10px] font-bold uppercase tracking-wider">
                 Sponsored Ad
               </span>
             </div>
@@ -139,8 +139,8 @@ export const SponsoredReelLightboxModal: React.FC<SponsoredReelLightboxModalProp
             </h3>
 
             {/* Supplier / Brand */}
-            <div className="flex items-center gap-2 text-xs font-semibold text-pink-300 mb-4">
-              <span className="w-2 h-2 rounded-full bg-[#b90064]" />
+            <div className="flex items-center gap-2 text-xs font-semibold text-purple-300 mb-4">
+              <span className="w-2 h-2 rounded-full bg-[#6B2D8C]" />
               <span>{reel.supplierName}</span>
             </div>
 
@@ -166,7 +166,7 @@ export const SponsoredReelLightboxModal: React.FC<SponsoredReelLightboxModalProp
               rel="noopener noreferrer"
               className="w-full py-3 px-4 bg-white hover:bg-gray-100 text-[#111011] text-xs font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
             >
-              <ExternalLink className="w-4 h-4 text-[#b90064]" />
+              <ExternalLink className="w-4 h-4 text-[#6B2D8C]" />
               <span>{platformActionText}</span>
             </a>
             <p className="text-[10px] text-gray-400 text-center mt-2">

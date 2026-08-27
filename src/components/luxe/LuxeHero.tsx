@@ -34,15 +34,9 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
   };
 
   return (
-    <section className="relative overflow-hidden">
-      {/* Gradient canvas */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'linear-gradient(112deg, #240B33 0%, #3D1E4E 30%, #6B3585 58%, #A8549B 80%, #E8A9CB 100%)',
-        }}
-      />
+    <section className="relative overflow-hidden bg-gradient-to-br from-luxe-purple via-luxe-purple-light to-luxe-purple">
+      {/* Subtle floral damask texture */}
+      <div className="absolute inset-0 floral-pattern-gold opacity-50" />
       <Sparkles />
 
       <div className="relative z-10 max-w-[1360px] mx-auto px-4 md:px-8 pt-[112px] md:pt-[128px] pb-28 md:pb-32">
@@ -53,7 +47,7 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
               <img src={heroSerum} alt="Luxury saffron & gold face serum dropper bottle" className="w-full aspect-[3/4] object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#240B33]/35 via-transparent to-transparent" />
             </div>
-            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white/14 backdrop-blur-md border border-white/30 rounded-full px-4 py-2 text-[11.5px] font-semibold text-white shadow-lg">
+            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap glass-card-dark rounded-full px-4 py-2 text-[11.5px] font-semibold text-white">
               ✦ Saffron Gold Serum · MOQ 100 pcs
             </div>
           </div>
@@ -64,42 +58,42 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
               <img src={heroBrushes} alt="Professional makeup brush set with gold ferrules" className="w-full aspect-[3/4] object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#240B33]/35 via-transparent to-transparent" />
             </div>
-            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white/14 backdrop-blur-md border border-white/30 rounded-full px-4 py-2 text-[11.5px] font-semibold text-white shadow-lg">
+            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap glass-card-dark rounded-full px-4 py-2 text-[11.5px] font-semibold text-white">
               ✦ Pro Brush Set · 12 pc Gold Ferrule
             </div>
           </div>
 
           {/* Center — headline + search */}
           <div className="order-1 lg:order-none text-center max-w-[720px] mx-auto">
-            <div className="inline-flex items-center gap-2 bg-white/12 border border-white/25 backdrop-blur-md rounded-full px-4 py-1.5 text-[12px] font-semibold tracking-wide text-white/95 mb-6">
+            <div className="glass-card-dark inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[12px] font-semibold tracking-wide text-white/95 mb-6">
               <span className="text-[#EFD9A0]">✦</span> India's Premium B2B Beauty Marketplace
             </div>
 
             <h1 className="font-display text-white text-[34px] leading-[1.16] md:text-[52px] md:leading-[1.12] font-semibold text-editorial-tight">
-              Find <span className="italic text-[#EFD9A0]">Verified</span> Beauty Suppliers, Products &amp; OEM Manufacturers
+              Find <span className="italic text-[#EFD9A0]">Verified</span> Beauty Suppliers,{" "}
+              <span className="text-gold-shimmer">Products &amp; OEM</span> Manufacturers
             </h1>
 
-            <p className="mt-4 text-white/75 text-[14.5px] md:text-[16px] max-w-[560px] mx-auto leading-relaxed">
-              Source from 25,000+ GST-verified manufacturers, wholesalers &amp; private-label
-              specialists across India — with MOQs and quotes that fit your business.
+            <p className="mt-4 text-white/80 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+              India&rsquo;s premium B2B marketplace for beauty, cosmetics &amp; wellness
             </p>
 
             {/* Search bar */}
             <form
               onSubmit={submit}
-              className="mt-8 bg-white rounded-2xl p-2 flex flex-col sm:flex-row items-stretch gap-2 shadow-[0_24px_60px_-16px_rgba(20,5,35,0.55)]"
+              className="mt-8 glass-card rounded-2xl p-2 flex flex-col sm:flex-row items-stretch gap-2"
             >
               <div className="flex items-center flex-1 min-w-0 pl-3.5">
-                <Search className="w-[18px] h-[18px] text-[#8A7A94] shrink-0" />
+                <Search className="w-[18px] h-[18px] text-white/70 shrink-0" />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search for products, suppliers, brands or services"
-                  className="w-full bg-transparent outline-none px-3 py-3 text-[14px] text-[#2A0E3F] placeholder:text-[#9C8CA8]"
+                  placeholder="Search products, suppliers, brands..."
+                  className="w-full bg-transparent outline-none px-3 py-3 text-[14px] text-white placeholder:text-white/60"
                 />
               </div>
 
-              <div className="hidden sm:block w-px bg-[#EDE3F0] my-2" />
+              <div className="hidden sm:block w-px bg-white/25 my-2" />
 
               {/* Location dropdown */}
               <div className="relative sm:w-[168px] shrink-0">
@@ -107,7 +101,7 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
                 <select
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="w-full appearance-none bg-[#FAF6FB] border border-[#EDE3F0] rounded-xl pl-9 pr-8 py-3 text-[13.5px] font-medium text-[#2A0E3F] outline-none cursor-pointer hover:border-[#D9B96A] transition-colors"
+                  className="w-full appearance-none bg-white/10 border border-white/30 rounded-xl pl-9 pr-8 py-3 text-[13.5px] font-medium text-white outline-none cursor-pointer hover:border-[#EFD9A0] transition-colors [&>option]:text-[#2A0E3F]"
                 >
                   {CITIES.map((c) => (
                     <option key={c}>{c}</option>
@@ -118,9 +112,9 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
 
               <button
                 type="submit"
-                className="bg-royal-gradient hover:brightness-110 text-white text-[14px] font-semibold px-8 py-3 rounded-xl transition-all shadow-[0_10px_24px_-8px_rgba(61,30,78,0.6)] hover:-translate-y-px"
+                className="btn-shine px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-luxe-gold to-luxe-gold-light text-luxe-purple text-[14px] font-bold transition-all duration-300 shadow-luxe hover:scale-105 hover:shadow-gold-glow"
               >
-                Search
+                <span className="relative z-10">Search</span>
               </button>
             </form>
 
@@ -130,7 +124,7 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
                 <button
                   key={t}
                   onClick={() => onSearch(t, location)}
-                  className="text-white/70 hover:text-white border border-white/20 hover:border-white/45 rounded-full px-3 py-1 transition-colors"
+                  className="glass-button text-white/80 hover:text-white rounded-full px-3 py-1 text-[12px]"
                 >
                   {t}
                 </button>
@@ -143,7 +137,7 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
                 <button
                   key={tab.label}
                   onClick={() => onTabChange(tab.scope, tab.label)}
-                  className="group flex items-center justify-center gap-2 bg-white/12 hover:bg-white/22 border border-white/25 hover:border-[#EFD9A0]/60 backdrop-blur-md rounded-full px-4 py-2.5 text-[12.5px] font-semibold text-white transition-all"
+                  className="glass-button group flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-[12.5px] font-semibold text-white"
                 >
                   <tab.icon className="w-4 h-4 text-[#EFD9A0]" />
                   {tab.label === 'OEM / Private Label' ? 'OEM' : tab.label}
@@ -155,7 +149,7 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
       </div>
 
       {/* Soft blend into page */}
-      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#FDF9FB] to-transparent z-[5]" />
+      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#FDFBF7] to-transparent z-[5]" />
     </section>
   );
 };

@@ -246,45 +246,45 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
   );
 
   return (
-    <div className="bg-[#fdf8f8] min-h-screen flex flex-col font-sans pb-28 selection:bg-[#fde7f3] selection:text-[#b90064]">
+    <div className="bg-[#FDFBF7] min-h-screen flex flex-col font-sans pb-28 selection:bg-[#F5EEF8] selection:text-[#6B2D8C]">
       
       {/* Breadcrumbs Strip */}
-      <div className="bg-white border-b border-[#e8e8e8] py-2.5 shadow-2xs">
+      <div className="bg-white border-b border-[#E8DEEF] py-2.5 shadow-2xs">
         <div className="max-w-[1440px] mx-auto px-5 md:px-10 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-[#594047] text-[12px] font-medium flex-wrap">
+          <div className="flex items-center gap-2 text-[#5B4A6E] text-[12px] font-medium flex-wrap">
             <button
               onClick={onNavigateToExplore}
-              className="hover:text-[#b90064] transition-colors"
+              className="hover:text-[#6B2D8C] transition-colors"
             >
               Home
             </button>
-            <ChevronRight className="w-3.5 h-3.5 text-[#8c7077]" />
+            <ChevronRight className="w-3.5 h-3.5 text-[#7E6C96]" />
             <button
               onClick={() => onNavigateToSearch({ tab: 'products' })}
-              className="hover:text-[#b90064] transition-colors"
+              className="hover:text-[#6B2D8C] transition-colors"
             >
               Marketplace
             </button>
-            <ChevronRight className="w-3.5 h-3.5 text-[#8c7077]" />
+            <ChevronRight className="w-3.5 h-3.5 text-[#7E6C96]" />
             <button
               onClick={() => setSelectedCategory('Haircare')}
-              className="hover:text-[#b90064] transition-colors"
+              className="hover:text-[#6B2D8C] transition-colors"
             >
               Haircare
             </button>
-            <ChevronRight className="w-3.5 h-3.5 text-[#8c7077]" />
-            <span className="text-[#1c1b1b] font-bold">
+            <ChevronRight className="w-3.5 h-3.5 text-[#7E6C96]" />
+            <span className="text-[#2A0E3F] font-bold">
               Professional Hair Serums
             </span>
           </div>
 
-          <div className="hidden sm:flex items-center gap-3 text-xs text-[#594047]">
+          <div className="hidden sm:flex items-center gap-3 text-xs text-[#5B4A6E]">
             <span className="flex items-center gap-1">
-              <ShieldCheck className="w-4 h-4 text-[#0050d6]" />
+              <ShieldCheck className="w-4 h-4 text-[#6B2D8C]" />
               <strong>120+</strong> Audited Laboratories
             </span>
-            <span className="text-[#8c7077]">•</span>
-            <span className="text-[#b90064] font-semibold">Zero Commission B2B</span>
+            <span className="text-[#7E6C96]">•</span>
+            <span className="text-[#6B2D8C] font-semibold">Zero Commission B2B</span>
           </div>
         </div>
       </div>
@@ -293,14 +293,14 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
       <div className="max-w-[1440px] w-full mx-auto px-5 md:px-10 py-6 flex flex-col lg:flex-row gap-8">
         
         {/* Mobile Filters Toggle Button */}
-        <div className="lg:hidden flex items-center justify-between bg-white p-3.5 rounded-xl border border-[#e8e8e8] shadow-2xs">
+        <div className="lg:hidden flex items-center justify-between bg-white p-3.5 rounded-xl border border-[#E8DEEF] shadow-2xs">
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-[#b90064]" />
-            <span className="font-bold text-sm text-[#1c1b1b]">Filters &amp; Sourcing Hubs</span>
+            <Filter className="w-4 h-4 text-[#6B2D8C]" />
+            <span className="font-bold text-sm text-[#2A0E3F]">Filters &amp; Sourcing Hubs</span>
           </div>
           <button
             onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
-            className="bg-[#b90064] text-white px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 shadow-xs"
+            className="bg-[#6B2D8C] text-white px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 shadow-xs"
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
             {mobileFilterOpen ? 'Hide Filters' : 'Refine Filters'}
@@ -314,14 +314,14 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
           }`}
         >
           {/* Filter Header */}
-          <div className="flex justify-between items-center pb-3 border-b border-[#e8e8e8]">
-            <h2 className="text-base font-bold text-[#1c1b1b] flex items-center gap-2">
-              <Filter className="w-4 h-4 text-[#b90064]" />
+          <div className="flex justify-between items-center pb-3 border-b border-[#E8DEEF]">
+            <h2 className="text-base font-bold text-[#2A0E3F] flex items-center gap-2">
+              <Filter className="w-4 h-4 text-[#6B2D8C]" />
               Filters
             </h2>
             <button
               onClick={handleClearAllFilters}
-              className="text-xs font-semibold text-[#b90064] hover:underline cursor-pointer"
+              className="text-xs font-semibold text-[#6B2D8C] hover:underline cursor-pointer"
             >
               Clear All
             </button>
@@ -331,13 +331,13 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
           <div className="space-y-3">
             <button
               onClick={() => setCategoryAccordionOpen(!categoryAccordionOpen)}
-              className="w-full flex justify-between items-center text-[12px] font-bold text-[#594047] uppercase tracking-wider text-left"
+              className="w-full flex justify-between items-center text-[12px] font-bold text-[#5B4A6E] uppercase tracking-wider text-left"
             >
               Category
               {categoryAccordionOpen ? (
-                <ChevronUp className="w-4 h-4 text-[#8c7077]" />
+                <ChevronUp className="w-4 h-4 text-[#7E6C96]" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-[#8c7077]" />
+                <ChevronDown className="w-4 h-4 text-[#7E6C96]" />
               )}
             </button>
 
@@ -360,9 +360,9 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                               setSelectedSubcategories([]);
                             }
                           }}
-                          className="w-4 h-4 rounded text-[#b90064] focus:ring-[#b90064] border-[#e8e8e8] accent-[#b90064]"
+                          className="w-4 h-4 rounded text-[#6B2D8C] focus:ring-[#C9A961]/30 border-[#E8DEEF] accent-[#6B2D8C]"
                         />
-                        <span className={`text-[13px] transition-colors ${isCatSelected ? 'font-extrabold text-[#b90064]' : 'font-bold text-[#1c1b1b] group-hover:text-[#b90064]'}`}>
+                        <span className={`text-[13px] transition-colors ${isCatSelected ? 'font-extrabold text-[#6B2D8C]' : 'font-bold text-[#2A0E3F] group-hover:text-[#6B2D8C]'}`}>
                           {catName}
                         </span>
                       </label>
@@ -376,9 +376,9 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                                 type="checkbox"
                                 checked={selectedSubcategories.includes(subName)}
                                 onChange={() => toggleSubcategory(subName)}
-                                className="w-3.5 h-3.5 rounded text-[#b90064] focus:ring-[#b90064] border-[#e8e8e8] accent-[#b90064]"
+                                className="w-3.5 h-3.5 rounded text-[#6B2D8C] focus:ring-[#C9A961]/30 border-[#E8DEEF] accent-[#6B2D8C]"
                               />
-                              <span className="text-[12px] text-[#594047] group-hover:text-[#1c1b1b] transition-colors">
+                              <span className="text-[12px] text-[#5B4A6E] group-hover:text-[#2A0E3F] transition-colors">
                                 {subName}
                               </span>
                             </label>
@@ -393,24 +393,24 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
           </div>
 
           {/* Location & Radius Filter */}
-          <div className="space-y-3 pt-4 border-t border-[#e8e8e8]">
-            <h3 className="text-[12px] font-bold text-[#594047] uppercase tracking-wider">
+          <div className="space-y-3 pt-4 border-t border-[#E8DEEF]">
+            <h3 className="text-[12px] font-bold text-[#5B4A6E] uppercase tracking-wider">
               Location &amp; Radius
             </h3>
             <div className="relative">
-              <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#8c7077]" />
+              <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#7E6C96]" />
               <input
                 type="text"
                 value={locationCity}
                 onChange={(e) => setLocationCity(e.target.value)}
                 placeholder="e.g. Mumbai"
-                className="w-full pl-9 pr-3 py-2 border border-[#e8e8e8] rounded-lg text-[13px] bg-white focus:border-[#b90064] focus:ring-1 focus:ring-[#b90064] outline-none text-[#1c1b1b]"
+                className="w-full pl-9 pr-3 py-2 border border-[#E8DEEF] rounded-lg text-[13px] bg-white focus:border-[#C9A961] focus:ring-1 focus:ring-[#C9A961]/30 outline-none text-[#2A0E3F]"
               />
             </div>
             <select
               value={selectedRadius}
               onChange={(e) => setSelectedRadius(e.target.value)}
-              className="w-full border border-[#e8e8e8] rounded-lg px-3 py-2 text-[12.5px] bg-white text-[#1c1b1b] outline-none focus:border-[#b90064]"
+              className="w-full border border-[#E8DEEF] rounded-lg px-3 py-2 text-[12.5px] bg-white text-[#2A0E3F] outline-none focus:border-[#C9A961]"
             >
               <option value="+50 km">Radius: +50 km</option>
               <option value="+100 km">Radius: +100 km</option>
@@ -436,8 +436,8 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                   }}
                   className={`text-[11px] px-2.5 py-1 rounded-full border transition-all ${
                     selectedHub === hub.id
-                      ? 'bg-[#fde7f3] border-[#b90064] text-[#b90064] font-bold'
-                      : 'bg-white border-[#e8e8e8] text-[#594047] hover:border-[#b90064]'
+                      ? 'bg-[#F5EEF8] border-[#6B2D8C] text-[#6B2D8C] font-bold'
+                      : 'bg-white border-[#E8DEEF] text-[#5B4A6E] hover:border-[#6B2D8C]'
                   }`}
                 >
                   {hub.label}
@@ -447,8 +447,8 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
           </div>
 
           {/* Min Order Qty (MOQ) */}
-          <div className="space-y-3 pt-4 border-t border-[#e8e8e8]">
-            <h3 className="text-[12px] font-bold text-[#594047] uppercase tracking-wider">
+          <div className="space-y-3 pt-4 border-t border-[#E8DEEF]">
+            <h3 className="text-[12px] font-bold text-[#5B4A6E] uppercase tracking-wider">
               Min. Order Qty (MOQ)
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -456,8 +456,8 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                 onClick={() => setSelectedMoqTier(selectedMoqTier === '<100' ? 'all' : '<100')}
                 className={`px-3 py-1 border rounded-full text-xs transition-all ${
                   selectedMoqTier === '<100'
-                    ? 'border-[#b90064] bg-[#fde7f3] text-[#b90064] font-bold'
-                    : 'border-[#e8e8e8] bg-white text-[#594047] hover:border-[#b90064]'
+                    ? 'border-[#6B2D8C] bg-[#F5EEF8] text-[#6B2D8C] font-bold'
+                    : 'border-[#E8DEEF] bg-white text-[#5B4A6E] hover:border-[#6B2D8C]'
                 }`}
               >
                 &lt; 100
@@ -466,8 +466,8 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                 onClick={() => setSelectedMoqTier(selectedMoqTier === '100-500' ? 'all' : '100-500')}
                 className={`px-3 py-1 border rounded-full text-xs font-medium transition-all ${
                   selectedMoqTier === '100-500'
-                    ? 'border-[#b90064] bg-[#fde7f3] text-[#b90064] font-bold'
-                    : 'border-[#e8e8e8] bg-white text-[#594047] hover:border-[#b90064]'
+                    ? 'border-[#6B2D8C] bg-[#F5EEF8] text-[#6B2D8C] font-bold'
+                    : 'border-[#E8DEEF] bg-white text-[#5B4A6E] hover:border-[#6B2D8C]'
                 }`}
               >
                 100 - 500
@@ -476,8 +476,8 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                 onClick={() => setSelectedMoqTier(selectedMoqTier === '500+' ? 'all' : '500+')}
                 className={`px-3 py-1 border rounded-full text-xs transition-all ${
                   selectedMoqTier === '500+'
-                    ? 'border-[#b90064] bg-[#fde7f3] text-[#b90064] font-bold'
-                    : 'border-[#e8e8e8] bg-white text-[#594047] hover:border-[#b90064]'
+                    ? 'border-[#6B2D8C] bg-[#F5EEF8] text-[#6B2D8C] font-bold'
+                    : 'border-[#E8DEEF] bg-white text-[#5B4A6E] hover:border-[#6B2D8C]'
                 }`}
               >
                 500+
@@ -489,26 +489,26 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                 value={customMinMoq}
                 onChange={(e) => setCustomMinMoq(e.target.value)}
                 placeholder="Min"
-                className="w-full border border-[#e8e8e8] rounded-lg px-2.5 py-1.5 text-xs bg-white text-[#1c1b1b] focus:border-[#b90064] outline-none"
+                className="w-full border border-[#E8DEEF] rounded-lg px-2.5 py-1.5 text-xs bg-white text-[#2A0E3F] focus:border-[#C9A961] outline-none"
               />
-              <span className="text-[#8c7077]">-</span>
+              <span className="text-[#7E6C96]">-</span>
               <input
                 type="number"
                 value={customMaxMoq}
                 onChange={(e) => setCustomMaxMoq(e.target.value)}
                 placeholder="Max"
-                className="w-full border border-[#e8e8e8] rounded-lg px-2.5 py-1.5 text-xs bg-white text-[#1c1b1b] focus:border-[#b90064] outline-none"
+                className="w-full border border-[#E8DEEF] rounded-lg px-2.5 py-1.5 text-xs bg-white text-[#2A0E3F] focus:border-[#C9A961] outline-none"
               />
             </div>
           </div>
 
           {/* Price Range Slider */}
-          <div className="space-y-3 pt-4 border-t border-[#e8e8e8]">
+          <div className="space-y-3 pt-4 border-t border-[#E8DEEF]">
             <div className="flex justify-between items-center">
-              <h3 className="text-[12px] font-bold text-[#594047] uppercase tracking-wider">
+              <h3 className="text-[12px] font-bold text-[#5B4A6E] uppercase tracking-wider">
                 Price Range (₹)
               </h3>
-              <span className="text-xs font-bold text-[#b90064]">Up to ₹{maxPrice}</span>
+              <span className="text-xs font-bold text-[#6B2D8C]">Up to ₹{maxPrice}</span>
             </div>
             <input
               type="range"
@@ -517,9 +517,9 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
               step="50"
               value={maxPrice}
               onChange={(e) => setMaxPrice(parseInt(e.target.value, 10))}
-              className="w-full accent-[#b90064] cursor-pointer"
+              className="w-full accent-[#6B2D8C] cursor-pointer"
             />
-            <div className="flex justify-between text-[11px] text-[#8c7077]">
+            <div className="flex justify-between text-[11px] text-[#7E6C96]">
               <span>₹100</span>
               <span>₹1,000</span>
               <span>₹2,000+</span>
@@ -527,8 +527,8 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
           </div>
 
           {/* Supplier Capabilities */}
-          <div className="space-y-3 pt-4 border-t border-[#e8e8e8]">
-            <h3 className="text-[12px] font-bold text-[#594047] uppercase tracking-wider">
+          <div className="space-y-3 pt-4 border-t border-[#E8DEEF]">
+            <h3 className="text-[12px] font-bold text-[#5B4A6E] uppercase tracking-wider">
               Supplier Capabilities
             </h3>
             <div className="space-y-2">
@@ -537,11 +537,11 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                   type="checkbox"
                   checked={capabilities.verifiedMfg}
                   onChange={() => toggleCapability('verifiedMfg')}
-                  className="w-4 h-4 rounded text-[#b90064] focus:ring-[#b90064] border-[#e8e8e8] accent-[#b90064]"
+                  className="w-4 h-4 rounded text-[#6B2D8C] focus:ring-[#C9A961]/30 border-[#E8DEEF] accent-[#6B2D8C]"
                 />
-                <span className="text-[13px] text-[#1c1b1b] flex items-center gap-1 group-hover:text-[#b90064] transition-colors">
+                <span className="text-[13px] text-[#2A0E3F] flex items-center gap-1 group-hover:text-[#6B2D8C] transition-colors">
                   Verified Manufacturer
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#0050d6]" />
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#6B2D8C]" />
                 </span>
               </label>
 
@@ -550,9 +550,9 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                   type="checkbox"
                   checked={capabilities.oemPrivateLabel}
                   onChange={() => toggleCapability('oemPrivateLabel')}
-                  className="w-4 h-4 rounded text-[#b90064] focus:ring-[#b90064] border-[#e8e8e8] accent-[#b90064]"
+                  className="w-4 h-4 rounded text-[#6B2D8C] focus:ring-[#C9A961]/30 border-[#E8DEEF] accent-[#6B2D8C]"
                 />
-                <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
+                <span className="text-[13px] text-[#2A0E3F] group-hover:text-[#6B2D8C] transition-colors">
                   OEM / Private Label
                 </span>
               </label>
@@ -562,9 +562,9 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                   type="checkbox"
                   checked={capabilities.isoCertified}
                   onChange={() => toggleCapability('isoCertified')}
-                  className="w-4 h-4 rounded text-[#b90064] focus:ring-[#b90064] border-[#e8e8e8] accent-[#b90064]"
+                  className="w-4 h-4 rounded text-[#6B2D8C] focus:ring-[#C9A961]/30 border-[#E8DEEF] accent-[#6B2D8C]"
                 />
-                <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
+                <span className="text-[13px] text-[#2A0E3F] group-hover:text-[#6B2D8C] transition-colors">
                   ISO Certified
                 </span>
               </label>
@@ -574,9 +574,9 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                   type="checkbox"
                   checked={capabilities.gmpCompliant}
                   onChange={() => toggleCapability('gmpCompliant')}
-                  className="w-4 h-4 rounded text-[#b90064] focus:ring-[#b90064] border-[#e8e8e8] accent-[#b90064]"
+                  className="w-4 h-4 rounded text-[#6B2D8C] focus:ring-[#C9A961]/30 border-[#E8DEEF] accent-[#6B2D8C]"
                 />
-                <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
+                <span className="text-[13px] text-[#2A0E3F] group-hover:text-[#6B2D8C] transition-colors">
                   GMP Compliant
                 </span>
               </label>
@@ -586,9 +586,9 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                   type="checkbox"
                   checked={capabilities.fdaRegistered}
                   onChange={() => toggleCapability('fdaRegistered')}
-                  className="w-4 h-4 rounded text-[#b90064] focus:ring-[#b90064] border-[#e8e8e8] accent-[#b90064]"
+                  className="w-4 h-4 rounded text-[#6B2D8C] focus:ring-[#C9A961]/30 border-[#E8DEEF] accent-[#6B2D8C]"
                 />
-                <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
+                <span className="text-[13px] text-[#2A0E3F] group-hover:text-[#6B2D8C] transition-colors">
                   FDA Registered
                 </span>
               </label>
@@ -596,8 +596,8 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
           </div>
 
           {/* Supplier Performance */}
-          <div className="space-y-3 pt-4 border-t border-[#e8e8e8]">
-            <h3 className="text-[12px] font-bold text-[#594047] uppercase tracking-wider">
+          <div className="space-y-3 pt-4 border-t border-[#E8DEEF]">
+            <h3 className="text-[12px] font-bold text-[#5B4A6E] uppercase tracking-wider">
               Supplier Performance
             </h3>
             <div className="space-y-2">
@@ -606,9 +606,9 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                   type="checkbox"
                   checked={capabilities.fastResponse}
                   onChange={() => toggleCapability('fastResponse')}
-                  className="w-4 h-4 rounded text-[#b90064] focus:ring-[#b90064] border-[#e8e8e8] accent-[#b90064]"
+                  className="w-4 h-4 rounded text-[#6B2D8C] focus:ring-[#C9A961]/30 border-[#E8DEEF] accent-[#6B2D8C]"
                 />
-                <span className="text-[13px] text-[#1c1b1b] group-hover:text-[#b90064] transition-colors">
+                <span className="text-[13px] text-[#2A0E3F] group-hover:text-[#6B2D8C] transition-colors">
                   Response Time &lt; 24h
                 </span>
               </label>
@@ -616,44 +616,44 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
           </div>
 
           {/* Real-time RFQs Widget (Sidebar Ticker) */}
-          <div className="mt-2 bg-white border border-[#e8e8e8] rounded-xl p-4 shadow-2xs">
-            <h4 className="text-[13px] font-bold text-[#b90064] flex items-center gap-2 mb-3">
-              <Radio className="w-4 h-4 animate-pulse text-[#e6007e]" />
+          <div className="mt-2 bg-white border border-[#E8DEEF] rounded-xl p-4 shadow-2xs">
+            <h4 className="text-[13px] font-bold text-[#6B2D8C] flex items-center gap-2 mb-3">
+              <Radio className="w-4 h-4 animate-pulse text-[#8236A0]" />
               Live Buyer Requests
             </h4>
             <div className="space-y-3 text-xs">
-              <div className="pb-2.5 border-b border-[#e8e8e8]">
-                <p className="font-bold text-[#1c1b1b]">Req: Bulk Argan Oil Serum</p>
-                <p className="text-[#594047] mt-1 flex items-center gap-1">
-                  <Package className="w-3.5 h-3.5 text-[#8c7077]" />
+              <div className="pb-2.5 border-b border-[#E8DEEF]">
+                <p className="font-bold text-[#2A0E3F]">Req: Bulk Argan Oil Serum</p>
+                <p className="text-[#5B4A6E] mt-1 flex items-center gap-1">
+                  <Package className="w-3.5 h-3.5 text-[#7E6C96]" />
                   <span>5,000 units</span>
                 </p>
-                <p className="text-[#8c7077] mt-0.5 flex items-center gap-1 text-[11px]">
-                  <MapPin className="w-3 h-3 text-[#b90064]" />
+                <p className="text-[#7E6C96] mt-0.5 flex items-center gap-1 text-[11px]">
+                  <MapPin className="w-3 h-3 text-[#6B2D8C]" />
                   <span>Dubai, UAE</span>
                 </p>
               </div>
 
-              <div className="pb-2.5 border-b border-[#e8e8e8]">
-                <p className="font-bold text-[#1c1b1b]">Req: Private Label Hair Serum</p>
-                <p className="text-[#594047] mt-1 flex items-center gap-1">
-                  <Package className="w-3.5 h-3.5 text-[#8c7077]" />
+              <div className="pb-2.5 border-b border-[#E8DEEF]">
+                <p className="font-bold text-[#2A0E3F]">Req: Private Label Hair Serum</p>
+                <p className="text-[#5B4A6E] mt-1 flex items-center gap-1">
+                  <Package className="w-3.5 h-3.5 text-[#7E6C96]" />
                   <span>1,000 units</span>
                 </p>
-                <p className="text-[#8c7077] mt-0.5 flex items-center gap-1 text-[11px]">
-                  <MapPin className="w-3 h-3 text-[#b90064]" />
+                <p className="text-[#7E6C96] mt-0.5 flex items-center gap-1 text-[11px]">
+                  <MapPin className="w-3 h-3 text-[#6B2D8C]" />
                   <span>Mumbai, IND</span>
                 </p>
               </div>
 
               <div>
-                <p className="font-bold text-[#1c1b1b]">Req: Keratin Concentrate 500L</p>
-                <p className="text-[#594047] mt-1 flex items-center gap-1">
-                  <Package className="w-3.5 h-3.5 text-[#8c7077]" />
+                <p className="font-bold text-[#2A0E3F]">Req: Keratin Concentrate 500L</p>
+                <p className="text-[#5B4A6E] mt-1 flex items-center gap-1">
+                  <Package className="w-3.5 h-3.5 text-[#7E6C96]" />
                   <span>500 Liters</span>
                 </p>
-                <p className="text-[#8c7077] mt-0.5 flex items-center gap-1 text-[11px]">
-                  <MapPin className="w-3 h-3 text-[#b90064]" />
+                <p className="text-[#7E6C96] mt-0.5 flex items-center gap-1 text-[11px]">
+                  <MapPin className="w-3 h-3 text-[#6B2D8C]" />
                   <span>Delhi, IND</span>
                 </p>
               </div>
@@ -661,7 +661,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
 
             <button
               onClick={onOpenRFQModal}
-              className="w-full mt-3 text-xs text-[#b90064] font-bold hover:underline text-center cursor-pointer block pt-1"
+              className="w-full mt-3 text-xs text-[#6B2D8C] font-bold hover:underline text-center cursor-pointer block pt-1"
             >
               View All Requests &amp; Post RFQ →
             </button>
@@ -672,20 +672,20 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
         <div className="flex-1 flex flex-col min-w-0">
           
           {/* Header, Quick Chips & Sorting */}
-          <div className="flex flex-col gap-4 mb-6 border-b border-[#e8e8e8] pb-4">
+          <div className="flex flex-col gap-4 mb-6 border-b border-[#E8DEEF] pb-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="w-2 h-2 rounded-full bg-[#b90064]"></span>
-                <span className="text-[11px] font-bold uppercase tracking-widest text-[#b90064]">
+                <span className="w-2 h-2 rounded-full bg-[#6B2D8C]"></span>
+                <span className="text-[11px] font-bold uppercase tracking-widest text-[#6B2D8C]">
                   B2B FORMULATION SOURCING
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#1c1b1b] tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#2A0E3F] tracking-tight">
                 Professional Hair Serum
               </h1>
-              <p className="text-[13px] text-[#594047] mt-1">
+              <p className="text-[13px] text-[#5B4A6E] mt-1">
                 Source professional formulations, salon supplies and verified manufacturing partners.{' '}
-                <strong className="text-[#1c1b1b] font-bold">248 products found.</strong>
+                <strong className="text-[#2A0E3F] font-bold">248 products found.</strong>
               </p>
             </div>
 
@@ -702,8 +702,8 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                   onClick={() => setSelectedCategory(chip.id)}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
                     selectedCategory === chip.id
-                      ? 'bg-[#b90064] text-white shadow-xs'
-                      : 'bg-white border border-[#e8e8e8] text-[#594047] hover:border-[#b90064] hover:text-[#b90064]'
+                      ? 'bg-[#6B2D8C] text-white shadow-xs'
+                      : 'bg-white border border-[#E8DEEF] text-[#5B4A6E] hover:border-[#6B2D8C] hover:text-[#6B2D8C]'
                   }`}
                 >
                   {chip.label}
@@ -716,10 +716,10 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
               
               {/* Active Filter Tags */}
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs text-[#594047] font-semibold">Active:</span>
+                <span className="text-xs text-[#5B4A6E] font-semibold">Active:</span>
                 
                 {selectedCategory && (
-                  <span className="bg-[#fde7f3] text-[#b90064] px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 border border-[#e0bec6]">
+                  <span className="bg-[#F5EEF8] text-[#6B2D8C] px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 border border-[#D9C3E8]">
                     {selectedCategory}
                     <button
                       onClick={() => setSelectedCategory('All Categories')}
@@ -731,7 +731,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                 )}
 
                 {selectedMoqTier !== 'all' && (
-                  <span className="bg-[#fde7f3] text-[#b90064] px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 border border-[#e0bec6]">
+                  <span className="bg-[#F5EEF8] text-[#6B2D8C] px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 border border-[#D9C3E8]">
                     MOQ {selectedMoqTier === '<100' ? '< 100' : selectedMoqTier === '100-500' ? '< 500' : '500+'}
                     <button
                       onClick={() => setSelectedMoqTier('all')}
@@ -743,7 +743,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                 )}
 
                 {capabilities.verifiedMfg && (
-                  <span className="bg-[#f0f5ff] text-[#0050d6] px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 border border-[#dbe1ff]">
+                  <span className="bg-[#f0f5ff] text-[#6B2D8C] px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 border border-[#EDE0F5]">
                     Verified Mfg Only
                     <button
                       onClick={() => toggleCapability('verifiedMfg')}
@@ -757,11 +757,11 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
 
               {/* Sorting & Layout View Toggle */}
               <div className="flex items-center gap-3">
-                <span className="text-xs text-[#594047] font-medium hidden sm:inline">Sort by:</span>
+                <span className="text-xs text-[#5B4A6E] font-medium hidden sm:inline">Sort by:</span>
                 <select
                   value={sortOption}
                   onChange={(e) => setSortOption(e.target.value as any)}
-                  className="bg-white border border-[#e8e8e8] rounded-lg px-3 py-1.5 text-xs text-[#1c1b1b] focus:border-[#b90064] focus:ring-1 focus:ring-[#b90064] outline-none cursor-pointer font-medium"
+                  className="bg-white border border-[#E8DEEF] rounded-lg px-3 py-1.5 text-xs text-[#2A0E3F] focus:border-[#C9A961] focus:ring-1 focus:ring-[#C9A961]/30 outline-none cursor-pointer font-medium"
                 >
                   <option value="relevance">Relevance</option>
                   <option value="moq-asc">Lowest MOQ</option>
@@ -770,13 +770,13 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                   <option value="rating">Highest Rated</option>
                 </select>
 
-                <div className="hidden sm:flex border border-[#e8e8e8] rounded-lg overflow-hidden bg-white shadow-2xs">
+                <div className="hidden sm:flex border border-[#E8DEEF] rounded-lg overflow-hidden bg-white shadow-2xs">
                   <button
                     onClick={() => setViewMode('grid')}
                     className={`p-1.5 transition-colors ${
                       viewMode === 'grid'
-                        ? 'bg-[#f0edec] text-[#b90064]'
-                        : 'text-[#8c7077] hover:bg-[#f7f2f2]'
+                        ? 'bg-[#F4F0E9] text-[#6B2D8C]'
+                        : 'text-[#7E6C96] hover:bg-[#F6F1FA]'
                     }`}
                     title="Grid View"
                   >
@@ -786,8 +786,8 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                     onClick={() => setViewMode('list')}
                     className={`p-1.5 transition-colors ${
                       viewMode === 'list'
-                        ? 'bg-[#f0edec] text-[#b90064]'
-                        : 'text-[#8c7077] hover:bg-[#f7f2f2]'
+                        ? 'bg-[#F4F0E9] text-[#6B2D8C]'
+                        : 'text-[#7E6C96] hover:bg-[#F6F1FA]'
                     }`}
                     title="List View"
                   >
@@ -800,15 +800,15 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
 
           {/* Product Cards Grid */}
           {filteredProducts.length === 0 ? (
-            <div className="py-16 text-center bg-white rounded-2xl border border-[#e8e8e8] p-8">
-              <FlaskConical className="w-12 h-12 text-[#8c7077] mx-auto mb-3 opacity-60" />
-              <h3 className="text-base font-bold text-[#1c1b1b]">No formulation matches your filters</h3>
-              <p className="text-[13px] text-[#594047] max-w-md mx-auto mt-1 mb-4">
+            <div className="py-16 text-center bg-white rounded-2xl border border-[#E8DEEF] p-8">
+              <FlaskConical className="w-12 h-12 text-[#7E6C96] mx-auto mb-3 opacity-60" />
+              <h3 className="text-base font-bold text-[#2A0E3F]">No formulation matches your filters</h3>
+              <p className="text-[13px] text-[#5B4A6E] max-w-md mx-auto mt-1 mb-4">
                 Try expanding your price range or reset your location filters to view all audited laboratories.
               </p>
               <button
                 onClick={handleClearAllFilters}
-                className="bg-[#b90064] text-white font-bold px-6 py-2.5 rounded-lg text-xs hover:bg-[#8e004b] transition-colors shadow-xs"
+                className="bg-[#6B2D8C] text-white font-bold px-6 py-2.5 rounded-lg text-xs hover:bg-[#4A2560] transition-colors shadow-xs"
               >
                 Reset All Filters
               </button>
@@ -834,10 +834,10 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.94, y: -8 }}
                       transition={{ duration: 0.22 }}
-                      className="bg-white border border-[#e8e8e8] rounded-xl overflow-hidden flex flex-col group hover:shadow-md hover:border-[#8c7077] transition-all duration-300 relative shadow-2xs"
+                      className="bg-white border border-[#E8DEEF] rounded-xl overflow-hidden flex flex-col group hover:shadow-md hover:border-[#7E6C96] transition-all duration-300 relative shadow-2xs"
                     >
                       {/* Product Image & Badges */}
-                      <div className="h-48 w-full relative overflow-hidden bg-[#f7f2f2]">
+                      <div className="h-48 w-full relative overflow-hidden bg-[#F6F1FA]">
                         <img
                           src={prod.image}
                           alt={prod.title}
@@ -848,18 +848,18 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                         {/* Top Left Verification Badge */}
                         <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1">
                           {prod.isNexoraVerified && (
-                            <span className="bg-white/95 backdrop-blur-xs text-[#0050d6] px-2 py-0.5 rounded text-[10px] font-bold shadow-xs border border-[#e8e8e8] flex items-center gap-1">
-                              <ShieldCheck className="w-3.5 h-3.5 fill-[#0050d6] text-white" />
+                            <span className="bg-white/95 backdrop-blur-xs text-[#6B2D8C] px-2 py-0.5 rounded text-[10px] font-bold shadow-xs border border-[#E8DEEF] flex items-center gap-1">
+                              <ShieldCheck className="w-3.5 h-3.5 fill-[#6B2D8C] text-white" />
                               Verified Mfg
                             </span>
                           )}
                           {prod.id === 'sp-2' && (
-                            <span className="bg-white/95 backdrop-blur-xs text-[#1c1b1b] px-2 py-0.5 rounded text-[10px] font-bold shadow-xs border border-[#e8e8e8] w-fit">
+                            <span className="bg-white/95 backdrop-blur-xs text-[#2A0E3F] px-2 py-0.5 rounded text-[10px] font-bold shadow-xs border border-[#E8DEEF] w-fit">
                               OEM Available
                             </span>
                           )}
                           {prod.id === 'sp-3' && (
-                            <span className="bg-white/95 backdrop-blur-xs text-[#1c1b1b] px-2 py-0.5 rounded text-[10px] font-bold shadow-xs border border-[#e8e8e8] w-fit">
+                            <span className="bg-white/95 backdrop-blur-xs text-[#2A0E3F] px-2 py-0.5 rounded text-[10px] font-bold shadow-xs border border-[#E8DEEF] w-fit">
                               Private Label
                             </span>
                           )}
@@ -874,10 +874,10 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                           )}
                           <button
                             onClick={() => toggleFavorite(prod.id)}
-                            className="p-1.5 bg-white/90 rounded-full text-[#594047] hover:text-[#b90064] transition-colors shadow-2xs"
+                            className="p-1.5 bg-white/90 rounded-full text-[#5B4A6E] hover:text-[#6B2D8C] transition-colors shadow-2xs"
                             title={isFav ? 'Remove Favorite' : 'Save to Favorites'}
                           >
-                            <Heart className={`w-3.5 h-3.5 ${isFav ? 'fill-[#b90064] text-[#b90064]' : ''}`} />
+                            <Heart className={`w-3.5 h-3.5 ${isFav ? 'fill-[#6B2D8C] text-[#6B2D8C]' : ''}`} />
                           </button>
                         </div>
                       </div>
@@ -889,58 +889,58 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                         <div className="flex items-center gap-1 mb-1">
                           <div className="flex items-center gap-0.5">
                             {[1, 2, 3, 4, 5].map((s) => (
-                              <Star key={s} className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                              <Star key={s} className="w-2.5 h-2.5 fill-gold-400 text-gold-400" />
                             ))}
                           </div>
-                          <span className="text-[10px] font-bold text-[#8c7077]">4.9 (85+)</span>
+                          <span className="text-[10px] font-bold text-[#7E6C96]">4.9 (85+)</span>
                         </div>
-                        <h3 className="font-bold text-[14px] text-[#1c1b1b] leading-snug mb-1 group-hover:text-[#b90064] transition-colors line-clamp-2">
+                        <h3 className="font-bold text-[14px] text-[#2A0E3F] leading-snug mb-1 group-hover:text-[#6B2D8C] transition-colors line-clamp-2">
                           {prod.title}
                         </h3>
                         
-                        <div className="flex items-center gap-1 mb-2 text-[12px] text-[#594047]">
-                          <Building2 className="w-3.5 h-3.5 text-[#b90064] shrink-0" />
+                        <div className="flex items-center gap-1 mb-2 text-[12px] text-[#5B4A6E]">
+                          <Building2 className="w-3.5 h-3.5 text-[#6B2D8C] shrink-0" />
                           <span className="truncate">{prod.supplierName} • {prod.supplierLocation}</span>
                         </div>
 
                         {/* Pricing & MOQ Container */}
-                        <div className="mt-1 mb-3 bg-[#f7f2f2] p-2.5 rounded-lg border border-[#e8e8e8]/80">
+                        <div className="mt-1 mb-3 bg-[#F6F1FA] p-2.5 rounded-lg border border-[#E8DEEF]/80">
                           
                           {/* Top row: Est Price & MOQ */}
                           <div className="flex justify-between items-end mb-1.5">
                             <div>
-                              <p className="text-[10px] text-[#8c7077] uppercase font-bold tracking-wider">Est. Price</p>
-                              <p className="font-bold text-sm text-[#1c1b1b]">
+                              <p className="text-[10px] text-[#7E6C96] uppercase font-bold tracking-wider">Est. Price</p>
+                              <p className="font-bold text-sm text-[#2A0E3F]">
                                 {prod.priceRange}
-                                <span className="text-[10px] font-normal text-[#594047]"> / unit</span>
+                                <span className="text-[10px] font-normal text-[#5B4A6E]"> / unit</span>
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className="text-[10px] text-[#8c7077] uppercase font-bold tracking-wider">MOQ</p>
-                              <p className="font-bold text-sm text-[#1c1b1b]">{prod.moq}</p>
+                              <p className="text-[10px] text-[#7E6C96] uppercase font-bold tracking-wider">MOQ</p>
+                              <p className="font-bold text-sm text-[#2A0E3F]">{prod.moq}</p>
                             </div>
                           </div>
 
                           {/* Tiered Minimal or 3-Tier Grid */}
                           {prod.id === 'sp-2' ? (
-                            <div className="grid grid-cols-3 gap-1 text-center divide-x divide-[#e8e8e8] pt-1.5 border-t border-[#e8e8e8]/80">
+                            <div className="grid grid-cols-3 gap-1 text-center divide-x divide-[#E8DEEF] pt-1.5 border-t border-[#E8DEEF]/80">
                               <div>
-                                <p className="text-[9px] text-[#8c7077]">10-49 L</p>
-                                <p className="font-bold text-[11px] text-[#1c1b1b]">₹1,200</p>
+                                <p className="text-[9px] text-[#7E6C96]">10-49 L</p>
+                                <p className="font-bold text-[11px] text-[#2A0E3F]">₹1,200</p>
                               </div>
                               <div>
-                                <p className="text-[9px] text-[#8c7077]">50-199 L</p>
-                                <p className="font-bold text-[11px] text-[#1c1b1b]">₹1,050</p>
+                                <p className="text-[9px] text-[#7E6C96]">50-199 L</p>
+                                <p className="font-bold text-[11px] text-[#2A0E3F]">₹1,050</p>
                               </div>
                               <div>
-                                <p className="text-[9px] text-[#8c7077]">≥200 L</p>
-                                <p className="font-bold text-[11px] text-[#b90064]">₹980</p>
+                                <p className="text-[9px] text-[#7E6C96]">≥200 L</p>
+                                <p className="font-bold text-[11px] text-[#6B2D8C]">₹980</p>
                               </div>
                             </div>
                           ) : (
                             prod.bulkTierText && (
-                              <div className="flex gap-2 text-[10.5px] text-[#594047] border-t border-[#e8e8e8]/80 pt-1.5 font-medium">
-                                <Info className="w-3 h-3 text-[#0050d6] shrink-0 mt-0.5" />
+                              <div className="flex gap-2 text-[10.5px] text-[#5B4A6E] border-t border-[#E8DEEF]/80 pt-1.5 font-medium">
+                                <Info className="w-3 h-3 text-[#6B2D8C] shrink-0 mt-0.5" />
                                 <span>{prod.bulkTierText}</span>
                               </div>
                             )
@@ -953,14 +953,14 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                             {prod.certifications.slice(0, 2).map((cert, idx) => (
                               <span
                                 key={idx}
-                                className="px-1.5 py-0.5 bg-[#ece7e7] border border-[#e8e8e8] rounded text-[9.5px] text-[#594047] font-semibold"
+                                className="px-1.5 py-0.5 bg-[#ece7e7] border border-[#E8DEEF] rounded text-[9.5px] text-[#5B4A6E] font-semibold"
                               >
                                 {cert}
                               </span>
                             ))}
                           </div>
-                          <span className="flex items-center gap-1 text-[11px] text-[#594047] font-medium">
-                            <Clock className="w-3 h-3 text-[#b90064]" />
+                          <span className="flex items-center gap-1 text-[11px] text-[#5B4A6E] font-medium">
+                            <Clock className="w-3 h-3 text-[#6B2D8C]" />
                             {prod.responseTime}
                           </span>
                         </div>
@@ -969,7 +969,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                         <div className="flex flex-col gap-2">
                           <button
                             onClick={() => onOpenEnquiryModal(prod)}
-                            className="w-full bg-[#b90064] hover:bg-[#8e004b] text-white py-2 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+                            className="w-full bg-[#6B2D8C] hover:bg-[#4A2560] text-white py-2 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
                           >
                             <Send className="w-3.5 h-3.5" />
                             Send Enquiry
@@ -982,7 +982,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                                 e.stopPropagation();
                                 onCallSupplier(prod.supplierName);
                               }}
-                              className="flex-1 py-1.5 border border-[#b90064] text-[#b90064] hover:bg-[#fde7f3] rounded-lg text-xs font-bold transition-colors flex justify-center items-center gap-1 shadow-2xs"
+                              className="flex-1 py-1.5 border border-[#6B2D8C] text-[#6B2D8C] hover:bg-[#F5EEF8] rounded-lg text-xs font-bold transition-colors flex justify-center items-center gap-1 shadow-2xs"
                             >
                               <Phone className="w-3.5 h-3.5" />
                               {isLoggedIn ? 'Call' : 'View Number'}
@@ -1004,8 +1004,8 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                             <label
                               className={`flex items-center justify-center p-1.5 border rounded-lg cursor-pointer transition-colors shadow-2xs ${
                                 isCompared
-                                  ? 'bg-[#fde7f3] border-[#b90064] text-[#b90064]'
-                                  : 'border-[#e8e8e8] text-[#594047] hover:bg-[#f7f2f2]'
+                                  ? 'bg-[#F5EEF8] border-[#6B2D8C] text-[#6B2D8C]'
+                                  : 'border-[#E8DEEF] text-[#5B4A6E] hover:bg-[#F6F1FA]'
                               }`}
                               title={isCompared ? 'Remove from Compare Dock' : 'Add to Compare Dock'}
                             >
@@ -1022,8 +1022,8 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                           {/* Visible Contact Number & Verification Barrier */}
                           <div className="flex items-center justify-between px-1 py-1">
                             <div className="flex items-center gap-1.5">
-                              <Phone className="w-3 h-3 text-[#8c7077]" />
-                              <span className="text-[11px] font-bold text-[#1c1b1b]">
+                              <Phone className="w-3 h-3 text-[#7E6C96]" />
+                              <span className="text-[11px] font-bold text-[#2A0E3F]">
                                 {isLoggedIn ? '+91 98201 55443' : '+91 98XXX XXXXX'}
                               </span>
                             </div>
@@ -1033,7 +1033,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                                   e.stopPropagation();
                                   onOpenAuth();
                                 }}
-                                className="text-[10px] font-bold text-[#b90064] hover:underline"
+                                className="text-[10px] font-bold text-[#6B2D8C] hover:underline"
                               >
                                 Login to reveal
                               </button>
@@ -1042,7 +1042,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
 
                           <button
                             onClick={() => onNavigateToProductDetail?.(prod.id)}
-                            className="w-full mt-1 border border-[#e8e8e8] text-[#1c1b1b] hover:bg-[#f7f2f2] hover:border-[#b90064] py-2 rounded-lg text-[11px] font-bold transition-all shadow-2xs flex items-center justify-center gap-1.5"
+                            className="w-full mt-1 border border-[#E8DEEF] text-[#2A0E3F] hover:bg-[#F6F1FA] hover:border-[#6B2D8C] py-2 rounded-lg text-[11px] font-bold transition-all shadow-2xs flex items-center justify-center gap-1.5"
                           >
                             <span>View Full Specifications</span>
                             <ArrowUpRight className="w-3.5 h-3.5" />
@@ -1058,8 +1058,8 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
           )}
 
           {/* Pagination Controls */}
-          <div className="mt-10 flex flex-col sm:flex-row justify-between items-center border-t border-[#e8e8e8] pt-6 gap-4">
-            <span className="text-xs text-[#594047] font-medium">
+          <div className="mt-10 flex flex-col sm:flex-row justify-between items-center border-t border-[#E8DEEF] pt-6 gap-4">
+            <span className="text-xs text-[#5B4A6E] font-medium">
               Showing 1-{filteredProducts.length} of 248 products
             </span>
 
@@ -1067,7 +1067,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="w-8 h-8 flex items-center justify-center border border-[#e8e8e8] rounded-lg text-[#594047] hover:bg-[#f7f2f2] disabled:opacity-40 transition-colors"
+                className="w-8 h-8 flex items-center justify-center border border-[#E8DEEF] rounded-lg text-[#5B4A6E] hover:bg-[#F6F1FA] disabled:opacity-40 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -1076,8 +1076,8 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                 onClick={() => setCurrentPage(1)}
                 className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-colors ${
                   currentPage === 1
-                    ? 'bg-[#b90064] text-white shadow-2xs'
-                    : 'border border-[#e8e8e8] text-[#1c1b1b] hover:bg-[#f7f2f2]'
+                    ? 'bg-[#6B2D8C] text-white shadow-2xs'
+                    : 'border border-[#E8DEEF] text-[#2A0E3F] hover:bg-[#F6F1FA]'
                 }`}
               >
                 1
@@ -1087,8 +1087,8 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                 onClick={() => setCurrentPage(2)}
                 className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-colors ${
                   currentPage === 2
-                    ? 'bg-[#b90064] text-white shadow-2xs'
-                    : 'border border-[#e8e8e8] text-[#1c1b1b] hover:bg-[#f7f2f2]'
+                    ? 'bg-[#6B2D8C] text-white shadow-2xs'
+                    : 'border border-[#E8DEEF] text-[#2A0E3F] hover:bg-[#F6F1FA]'
                 }`}
               >
                 2
@@ -1098,21 +1098,21 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                 onClick={() => setCurrentPage(3)}
                 className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-colors ${
                   currentPage === 3
-                    ? 'bg-[#b90064] text-white shadow-2xs'
-                    : 'border border-[#e8e8e8] text-[#1c1b1b] hover:bg-[#f7f2f2]'
+                    ? 'bg-[#6B2D8C] text-white shadow-2xs'
+                    : 'border border-[#E8DEEF] text-[#2A0E3F] hover:bg-[#F6F1FA]'
                 }`}
               >
                 3
               </button>
 
-              <span className="text-xs text-[#8c7077] px-1">...</span>
+              <span className="text-xs text-[#7E6C96] px-1">...</span>
 
               <button
                 onClick={() => setCurrentPage(11)}
                 className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-colors ${
                   currentPage === 11
-                    ? 'bg-[#b90064] text-white shadow-2xs'
-                    : 'border border-[#e8e8e8] text-[#1c1b1b] hover:bg-[#f7f2f2]'
+                    ? 'bg-[#6B2D8C] text-white shadow-2xs'
+                    : 'border border-[#E8DEEF] text-[#2A0E3F] hover:bg-[#F6F1FA]'
                 }`}
               >
                 11
@@ -1121,7 +1121,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
               <button
                 onClick={() => setCurrentPage((p) => Math.min(11, p + 1))}
                 disabled={currentPage === 11}
-                className="w-8 h-8 flex items-center justify-center border border-[#e8e8e8] rounded-lg text-[#594047] hover:bg-[#f7f2f2] disabled:opacity-40 transition-colors"
+                className="w-8 h-8 flex items-center justify-center border border-[#E8DEEF] rounded-lg text-[#5B4A6E] hover:bg-[#F6F1FA] disabled:opacity-40 transition-colors"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -1129,24 +1129,24 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
           </div>
 
           {/* Post Requirement Fallback Banner */}
-          <div className="mt-8 bg-gradient-to-r from-[#fde7f3] via-[#fcf9f8] to-[#fde7f3] border border-[#e0bec6] rounded-2xl p-6 sm:p-7 flex flex-col md:flex-row items-center justify-between gap-5 text-center md:text-left shadow-2xs">
+          <div className="mt-8 bg-gradient-to-r from-[#F5EEF8] via-[#FDFBF7] to-[#F5EEF8] border border-[#D9C3E8] rounded-2xl p-6 sm:p-7 flex flex-col md:flex-row items-center justify-between gap-5 text-center md:text-left shadow-2xs">
             <div>
               <div className="flex items-center justify-center md:justify-start gap-2 mb-1.5">
-                <Sparkles className="w-4 h-4 text-[#b90064]" />
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#b90064]">
+                <Sparkles className="w-4 h-4 text-[#6B2D8C]" />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B2D8C]">
                   DIRECT SOURCING BROADCAST
                 </span>
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-[#1c1b1b]">
+              <h3 className="text-lg sm:text-xl font-bold text-[#2A0E3F]">
                 Can't find the exact product or formula?
               </h3>
-              <p className="text-xs sm:text-sm text-[#594047] max-w-xl mt-1">
+              <p className="text-xs sm:text-sm text-[#5B4A6E] max-w-xl mt-1">
                 Post your custom sourcing requirement, and let our verified manufacturing labs and formulation chemists quote you directly with lab dossiers.
               </p>
             </div>
             <button
               onClick={onOpenRFQModal}
-              className="bg-[#b90064] hover:bg-[#8e004b] text-white px-6 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap shadow-sm hover:shadow-md cursor-pointer shrink-0"
+              className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white px-6 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap shadow-sm hover:shadow-md cursor-pointer shrink-0"
             >
               Post Requirement Free
             </button>
@@ -1157,11 +1157,11 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
 
       {/* Sticky Bottom Comparison Tray */}
       {comparedProducts.length > 0 && (
-        <div className="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-[#e8e8e8] shadow-[0_-4px_16px_rgba(0,0,0,0.08)] z-40 animate-in slide-in-from-bottom-5 duration-300">
+        <div className="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-[#E8DEEF] shadow-[0_-4px_16px_rgba(0,0,0,0.08)] z-40 animate-in slide-in-from-bottom-5 duration-300">
           <div className="max-w-[1440px] mx-auto px-5 md:px-10 py-3 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <span className="text-xs sm:text-sm font-bold text-[#1c1b1b]">
-                <strong className="text-[#b90064]">{comparedProducts.length}</strong> Product{comparedProducts.length > 1 ? 's' : ''} Selected
+              <span className="text-xs sm:text-sm font-bold text-[#2A0E3F]">
+                <strong className="text-[#6B2D8C]">{comparedProducts.length}</strong> Product{comparedProducts.length > 1 ? 's' : ''} Selected
               </span>
 
               {/* Thumbnails of selected items */}
@@ -1169,7 +1169,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                 {comparedProducts.map((prod) => (
                   <div
                     key={prod.id}
-                    className="w-10 h-10 border border-[#b90064] rounded-lg overflow-hidden bg-[#f7f2f2] relative group shrink-0"
+                    className="w-10 h-10 border border-[#6B2D8C] rounded-lg overflow-hidden bg-[#F6F1FA] relative group shrink-0"
                   >
                     <img
                       src={prod.image}
@@ -1178,7 +1178,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                     />
                     <button
                       onClick={() => toggleCompare(prod.id)}
-                      className="absolute -top-1 -right-1 bg-[#1c1b1b] text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] hover:bg-[#b90064] transition-colors"
+                      className="absolute -top-1 -right-1 bg-[#2A0E3F] text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] hover:bg-[#6B2D8C] transition-colors"
                       title="Remove"
                     >
                       ×
@@ -1190,10 +1190,10 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                 {Array.from({ length: Math.max(0, 4 - comparedProducts.length) }).map((_, idx) => (
                   <div
                     key={`empty-${idx}`}
-                    className="w-10 h-10 border border-dashed border-[#e8e8e8] rounded-lg flex items-center justify-center text-[#8c7077]"
+                    className="w-10 h-10 border border-dashed border-[#E8DEEF] rounded-lg flex items-center justify-center text-[#7E6C96]"
                     title="Empty slot"
                   >
-                    <span className="text-xs font-light text-[#8c7077]">+</span>
+                    <span className="text-xs font-light text-[#7E6C96]">+</span>
                   </div>
                 ))}
               </div>
@@ -1203,7 +1203,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
             <div className="flex items-center gap-3">
               <button
                 onClick={handleClearComparison}
-                className="text-xs font-semibold text-[#594047] hover:text-[#b90064] transition-colors cursor-pointer"
+                className="text-xs font-semibold text-[#5B4A6E] hover:text-[#6B2D8C] transition-colors cursor-pointer"
               >
                 Clear
               </button>
@@ -1214,10 +1214,10 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                     onOpenProductComparison(comparedProducts);
                   }
                 }}
-                className="bg-[#1c1b1b] hover:bg-[#313030] text-white px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
+                className="bg-[#2A0E3F] hover:bg-[#352B44] text-white px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
               >
                 <span>Compare Now</span>
-                <ArrowLeftRight className="w-3.5 h-3.5 text-[#e6007e]" />
+                <ArrowLeftRight className="w-3.5 h-3.5 text-[#8236A0]" />
               </button>
             </div>
           </div>

@@ -101,26 +101,26 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   ];
 
   return (
-    <div className="flex flex-col gap-5 bg-white border border-[#e8e8e8] rounded-2xl p-5 shadow-2xs">
+    <div className="flex flex-col gap-5 bg-white border border-[#E8DEEF] rounded-2xl p-5 shadow-2xs">
       <div className="flex items-center justify-between pb-1">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-[#b90064]" />
-          <h2 className="text-[15px] font-extrabold text-[#1c1b1b]">Filter Sourcing</h2>
+          <SlidersHorizontal className="w-4 h-4 text-[#6B2D8C]" />
+          <h2 className="text-[15px] font-extrabold text-[#2A0E3F]">Filter Sourcing</h2>
         </div>
         <button 
           onClick={onClearAll}
-          className="text-[11px] font-bold text-[#b90064] hover:underline"
+          className="text-[11px] font-bold text-[#6B2D8C] hover:underline"
         >
           Reset All
         </button>
       </div>
 
       {/* Category Filter */}
-      <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5">
+      <div className="flex flex-col gap-2.5 border-t border-[#F4F0E9] pt-3.5">
         <div className="flex items-center justify-between">
-          <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Category</h3>
+          <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#5B4A6E]">Category</h3>
           {selectedCategories.length > 0 && (
-            <span className="text-[10px] bg-[#fde7f3] text-[#b90064] font-bold px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] bg-[#F5EEF8] text-[#6B2D8C] font-bold px-1.5 py-0.5 rounded-full">
               {selectedCategories.length}
             </span>
           )}
@@ -135,9 +135,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                     type="checkbox"
                     checked={isChecked}
                     onChange={() => toggleCategory(item.name)}
-                    className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+                    className="rounded border-[#7E6C96] text-[#6B2D8C] focus:ring-[#C9A961]/30 w-4 h-4 cursor-pointer accent-[#6B2D8C]"
                   />
-                  <span className={`text-[13px] ${isChecked ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+                  <span className={`text-[13px] ${isChecked ? 'font-bold text-[#6B2D8C]' : 'text-[#2A0E3F]'} group-hover:text-[#6B2D8C] transition-colors`}>
                     {item.name}
                   </span>
                 </div>
@@ -149,11 +149,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 
       {/* Subcategory Filter (Conditional) */}
       {availableSubcategories.length > 0 && (
-        <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5 animate-in fade-in slide-in-from-top-1 duration-200">
+        <div className="flex flex-col gap-2.5 border-t border-[#F4F0E9] pt-3.5 animate-in fade-in slide-in-from-top-1 duration-200">
           <div className="flex items-center justify-between">
-            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Subcategory</h3>
+            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#5B4A6E]">Subcategory</h3>
             {selectedSubcategories.length > 0 && (
-              <span className="text-[10px] bg-[#fde7f3] text-[#b90064] font-bold px-1.5 py-0.5 rounded-full">
+              <span className="text-[10px] bg-[#F5EEF8] text-[#6B2D8C] font-bold px-1.5 py-0.5 rounded-full">
                 {selectedSubcategories.length}
               </span>
             )}
@@ -167,9 +167,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                     type="checkbox"
                     checked={isChecked}
                     onChange={() => toggleSubcategory(sub)}
-                    className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+                    className="rounded border-[#7E6C96] text-[#6B2D8C] focus:ring-[#C9A961]/30 w-4 h-4 cursor-pointer accent-[#6B2D8C]"
                   />
-                  <span className={`text-[12px] ${isChecked ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+                  <span className={`text-[12px] ${isChecked ? 'font-bold text-[#6B2D8C]' : 'text-[#2A0E3F]'} group-hover:text-[#6B2D8C] transition-colors`}>
                     {sub}
                   </span>
                 </label>
@@ -180,14 +180,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       )}
 
       {/* Certifications (Multi-Select) */}
-      <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5">
+      <div className="flex flex-col gap-2.5 border-t border-[#F4F0E9] pt-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <Award className="w-3.5 h-3.5 text-[#b90064]" />
-            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Certifications</h3>
+            <Award className="w-3.5 h-3.5 text-[#6B2D8C]" />
+            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#5B4A6E]">Certifications</h3>
           </div>
           {selectedCertifications.length > 0 && (
-            <span className="text-[10px] bg-[#fde7f3] text-[#b90064] font-bold px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] bg-[#F5EEF8] text-[#6B2D8C] font-bold px-1.5 py-0.5 rounded-full">
               {selectedCertifications.length}
             </span>
           )}
@@ -201,13 +201,13 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   type="checkbox"
                   checked={isChecked}
                   onChange={() => toggleCertification(cert.id)}
-                  className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 mt-0.5 cursor-pointer accent-[#b90064]"
+                  className="rounded border-[#7E6C96] text-[#6B2D8C] focus:ring-[#C9A961]/30 w-4 h-4 mt-0.5 cursor-pointer accent-[#6B2D8C]"
                 />
                 <div className="flex flex-col">
-                  <span className={`text-[12px] ${isChecked ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors leading-tight`}>
+                  <span className={`text-[12px] ${isChecked ? 'font-bold text-[#6B2D8C]' : 'text-[#2A0E3F]'} group-hover:text-[#6B2D8C] transition-colors leading-tight`}>
                     {cert.label}
                   </span>
-                  <span className="text-[10px] text-[#8c7077]">{cert.desc}</span>
+                  <span className="text-[10px] text-[#7E6C96]">{cert.desc}</span>
                 </div>
               </label>
             );
@@ -216,14 +216,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       </div>
 
       {/* Location / Region Filter (Multi-Select) */}
-      <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5">
+      <div className="flex flex-col gap-2.5 border-t border-[#F4F0E9] pt-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-[#b90064]" />
-            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Location / Region</h3>
+            <MapPin className="w-3.5 h-3.5 text-[#6B2D8C]" />
+            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#5B4A6E]">Location / Region</h3>
           </div>
           {selectedLocations.length > 0 && (
-            <span className="text-[10px] bg-[#fde7f3] text-[#b90064] font-bold px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] bg-[#F5EEF8] text-[#6B2D8C] font-bold px-1.5 py-0.5 rounded-full">
               {selectedLocations.length}
             </span>
           )}
@@ -237,9 +237,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   type="checkbox"
                   checked={isChecked}
                   onChange={() => toggleLocation(loc.id)}
-                  className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+                  className="rounded border-[#7E6C96] text-[#6B2D8C] focus:ring-[#C9A961]/30 w-4 h-4 cursor-pointer accent-[#6B2D8C]"
                 />
-                <span className={`text-[12px] ${isChecked ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+                <span className={`text-[12px] ${isChecked ? 'font-bold text-[#6B2D8C]' : 'text-[#2A0E3F]'} group-hover:text-[#6B2D8C] transition-colors`}>
                   {loc.label}
                 </span>
               </label>
@@ -249,14 +249,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       </div>
 
       {/* Minimum Order Quantity (MOQ) Filter (Multi-Select) */}
-      <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5">
+      <div className="flex flex-col gap-2.5 border-t border-[#F4F0E9] pt-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <Package className="w-3.5 h-3.5 text-[#b90064]" />
-            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Min. Order Quantity (MOQ)</h3>
+            <Package className="w-3.5 h-3.5 text-[#6B2D8C]" />
+            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#5B4A6E]">Min. Order Quantity (MOQ)</h3>
           </div>
           {selectedMoqTiers.length > 0 && (
-            <span className="text-[10px] bg-[#fde7f3] text-[#b90064] font-bold px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] bg-[#F5EEF8] text-[#6B2D8C] font-bold px-1.5 py-0.5 rounded-full">
               {selectedMoqTiers.length}
             </span>
           )}
@@ -270,9 +270,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   type="checkbox"
                   checked={isChecked}
                   onChange={() => toggleMoqTier(tier.id)}
-                  className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+                  className="rounded border-[#7E6C96] text-[#6B2D8C] focus:ring-[#C9A961]/30 w-4 h-4 cursor-pointer accent-[#6B2D8C]"
                 />
-                <span className={`text-[12px] ${isChecked ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+                <span className={`text-[12px] ${isChecked ? 'font-bold text-[#6B2D8C]' : 'text-[#2A0E3F]'} group-hover:text-[#6B2D8C] transition-colors`}>
                   {tier.label}
                 </span>
               </label>
@@ -282,14 +282,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       </div>
 
       {/* Established Year / Experience Filter (Multi-Select) */}
-      <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5">
+      <div className="flex flex-col gap-2.5 border-t border-[#F4F0E9] pt-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-[#b90064]" />
-            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Established Year</h3>
+            <Calendar className="w-3.5 h-3.5 text-[#6B2D8C]" />
+            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#5B4A6E]">Established Year</h3>
           </div>
           {selectedEstablishedYears.length > 0 && (
-            <span className="text-[10px] bg-[#fde7f3] text-[#b90064] font-bold px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] bg-[#F5EEF8] text-[#6B2D8C] font-bold px-1.5 py-0.5 rounded-full">
               {selectedEstablishedYears.length}
             </span>
           )}
@@ -303,9 +303,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   type="checkbox"
                   checked={isChecked}
                   onChange={() => toggleEstablishedYear(yr.id)}
-                  className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+                  className="rounded border-[#7E6C96] text-[#6B2D8C] focus:ring-[#C9A961]/30 w-4 h-4 cursor-pointer accent-[#6B2D8C]"
                 />
-                <span className={`text-[12px] ${isChecked ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+                <span className={`text-[12px] ${isChecked ? 'font-bold text-[#6B2D8C]' : 'text-[#2A0E3F]'} group-hover:text-[#6B2D8C] transition-colors`}>
                   {yr.label}
                 </span>
               </label>
@@ -315,14 +315,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       </div>
 
       {/* Supplier Type */}
-      <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5">
+      <div className="flex flex-col gap-2.5 border-t border-[#F4F0E9] pt-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <Building2 className="w-3.5 h-3.5 text-[#b90064]" />
-            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Supplier Business Type</h3>
+            <Building2 className="w-3.5 h-3.5 text-[#6B2D8C]" />
+            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#5B4A6E]">Supplier Business Type</h3>
           </div>
           {selectedSupplierTypes.length > 0 && (
-            <span className="text-[10px] bg-[#fde7f3] text-[#b90064] font-bold px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] bg-[#F5EEF8] text-[#6B2D8C] font-bold px-1.5 py-0.5 rounded-full">
               {selectedSupplierTypes.length}
             </span>
           )}
@@ -336,9 +336,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   type="checkbox"
                   checked={isChecked}
                   onChange={() => toggleSupplierType(type)}
-                  className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+                  className="rounded border-[#7E6C96] text-[#6B2D8C] focus:ring-[#C9A961]/30 w-4 h-4 cursor-pointer accent-[#6B2D8C]"
                 />
-                <span className={`text-[12px] ${isChecked ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+                <span className={`text-[12px] ${isChecked ? 'font-bold text-[#6B2D8C]' : 'text-[#2A0E3F]'} group-hover:text-[#6B2D8C] transition-colors`}>
                   {type}
                 </span>
               </label>
@@ -348,10 +348,10 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       </div>
 
       {/* Verification & Trust */}
-      <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5">
+      <div className="flex flex-col gap-2.5 border-t border-[#F4F0E9] pt-3.5">
         <div className="flex items-center gap-1.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-[#b90064]" />
-          <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Trust &amp; Verification</h3>
+          <ShieldCheck className="w-3.5 h-3.5 text-[#6B2D8C]" />
+          <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#5B4A6E]">Trust &amp; Verification</h3>
         </div>
         <div className="flex flex-col gap-2">
           <label className="flex items-center gap-2.5 cursor-pointer group select-none">
@@ -359,9 +359,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               type="checkbox"
               checked={isNexoraVerifiedOnly}
               onChange={(e) => setIsNexoraVerifiedOnly(e.target.checked)}
-              className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+              className="rounded border-[#7E6C96] text-[#6B2D8C] focus:ring-[#C9A961]/30 w-4 h-4 cursor-pointer accent-[#6B2D8C]"
             />
-            <span className={`text-[12px] ${isNexoraVerifiedOnly ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+            <span className={`text-[12px] ${isNexoraVerifiedOnly ? 'font-bold text-[#6B2D8C]' : 'text-[#2A0E3F]'} group-hover:text-[#6B2D8C] transition-colors`}>
               Nexora Verified
             </span>
           </label>
@@ -370,9 +370,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               type="checkbox"
               checked={isGstOnly}
               onChange={(e) => setIsGstOnly(e.target.checked)}
-              className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+              className="rounded border-[#7E6C96] text-[#6B2D8C] focus:ring-[#C9A961]/30 w-4 h-4 cursor-pointer accent-[#6B2D8C]"
             />
-            <span className={`text-[12px] ${isGstOnly ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+            <span className={`text-[12px] ${isGstOnly ? 'font-bold text-[#6B2D8C]' : 'text-[#2A0E3F]'} group-hover:text-[#6B2D8C] transition-colors`}>
               GST Registered &amp; Verified
             </span>
           </label>
@@ -381,9 +381,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               type="checkbox"
               checked={isBusinessVerifiedOnly}
               onChange={(e) => setIsBusinessVerifiedOnly(e.target.checked)}
-              className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+              className="rounded border-[#7E6C96] text-[#6B2D8C] focus:ring-[#C9A961]/30 w-4 h-4 cursor-pointer accent-[#6B2D8C]"
             />
-            <span className={`text-[12px] ${isBusinessVerifiedOnly ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+            <span className={`text-[12px] ${isBusinessVerifiedOnly ? 'font-bold text-[#6B2D8C]' : 'text-[#2A0E3F]'} group-hover:text-[#6B2D8C] transition-colors`}>
               Business On-Site Audited
             </span>
           </label>
@@ -392,9 +392,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               type="checkbox"
               checked={isExportReadyOnly}
               onChange={(e) => setIsExportReadyOnly(e.target.checked)}
-              className="rounded border-[#8c7077] text-[#b90064] focus:ring-[#b90064] w-4 h-4 cursor-pointer accent-[#b90064]"
+              className="rounded border-[#7E6C96] text-[#6B2D8C] focus:ring-[#C9A961]/30 w-4 h-4 cursor-pointer accent-[#6B2D8C]"
             />
-            <span className={`text-[12px] ${isExportReadyOnly ? 'font-bold text-[#b90064]' : 'text-[#1c1b1b]'} group-hover:text-[#b90064] transition-colors`}>
+            <span className={`text-[12px] ${isExportReadyOnly ? 'font-bold text-[#6B2D8C]' : 'text-[#2A0E3F]'} group-hover:text-[#6B2D8C] transition-colors`}>
               Export Ready (AEO / Port Dock)
             </span>
           </label>
@@ -402,10 +402,10 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       </div>
 
       {/* Price Slider */}
-      <div className="flex flex-col gap-2.5 border-t border-[#f0edec] pt-3.5 mb-1">
+      <div className="flex flex-col gap-2.5 border-t border-[#F4F0E9] pt-3.5 mb-1">
         <div className="flex items-center justify-between">
-          <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#594047]">Max Unit Price</h3>
-          <span className="text-[12px] font-bold text-[#b90064]">₹{maxPrice >= 5000 ? '5,000+' : maxPrice.toLocaleString('en-IN')}</span>
+          <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#5B4A6E]">Max Unit Price</h3>
+          <span className="text-[12px] font-bold text-[#6B2D8C]">₹{maxPrice >= 5000 ? '5,000+' : maxPrice.toLocaleString('en-IN')}</span>
         </div>
         <input
           type="range"
@@ -414,9 +414,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           step="50"
           value={maxPrice}
           onChange={(e) => setMaxPrice(Number(e.target.value))}
-          className="w-full accent-[#b90064] cursor-pointer"
+          className="w-full accent-[#6B2D8C] cursor-pointer"
         />
-        <div className="flex justify-between text-[10px] font-medium text-[#8c7077]">
+        <div className="flex justify-between text-[10px] font-medium text-[#7E6C96]">
           <span>₹50</span>
           <span>₹5,000+</span>
         </div>

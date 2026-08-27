@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4A2560"/>
+      <stop offset="0.55" stop-color="#3D1E4E"/>
+      <stop offset="1" stop-color="#2A0E3F"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E8C547"/>
+      <stop offset="0.5" stop-color="#C9A961"/>
+      <stop offset="1" stop-color="#B08D45"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="12.5" fill="none" stroke="url(#gold)" stroke-opacity="0.55" stroke-width="1.6"/>
+  <text x="32" y="43" text-anchor="middle" font-family="Playfair Display, Georgia, 'Times New Roman', serif" font-weight="700" font-style="italic" font-size="30" letter-spacing="-1" fill="url(#gold)">NL</text>
+  <rect x="20" y="49" width="24" height="1.8" rx="0.9" fill="url(#gold)" opacity="0.85"/>
+</svg>

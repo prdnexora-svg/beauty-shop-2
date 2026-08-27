@@ -158,22 +158,22 @@ export const LiveChatWidget: React.FC<LiveChatWidgetProps> = ({
         <button
           id="open-live-chat-btn"
           onClick={() => setIsOpen(true)}
-          className="group relative flex items-center gap-3 bg-[#b90064] hover:bg-[#9a0053] text-white px-4 py-3.5 rounded-full shadow-2xl transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] border border-white/20"
+          className="group relative flex items-center gap-3 bg-[#6B2D8C] hover:bg-[#9a0053] text-white px-4 py-3.5 rounded-full shadow-2xl transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] border border-white/20"
         >
           <div className="relative">
             <MessageSquare className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#00ff88] rounded-full ring-2 ring-[#b90064] animate-pulse"></span>
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#00ff88] rounded-full ring-2 ring-[#6B2D8C] animate-pulse"></span>
           </div>
 
           <div className="text-left hidden sm:block">
             <span className="text-[12px] font-bold tracking-tight block leading-tight">Live Sourcing Desk</span>
-            <span className="text-[10px] text-pink-100 font-medium flex items-center gap-1">
+            <span className="text-[10px] text-purple-100 font-medium flex items-center gap-1">
               <Sparkles className="w-2.5 h-2.5" /> AI Assistant Online
             </span>
           </div>
 
           {unreadCount > 0 && (
-            <span className="w-5 h-5 rounded-full bg-white text-[#b90064] text-[11px] font-black flex items-center justify-center shadow-xs">
+            <span className="w-5 h-5 rounded-full bg-white text-[#6B2D8C] text-[11px] font-black flex items-center justify-center shadow-xs">
               {unreadCount}
             </span>
           )}
@@ -184,12 +184,12 @@ export const LiveChatWidget: React.FC<LiveChatWidgetProps> = ({
       {isOpen && (
         <div
           id="live-chat-drawer"
-          className="w-[92vw] sm:w-[410px] h-[560px] max-h-[85vh] bg-white rounded-2xl shadow-2xl border border-[#e8e8e8] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
+          className="w-[92vw] sm:w-[410px] h-[560px] max-h-[85vh] bg-white rounded-2xl shadow-2xl border border-[#E8DEEF] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
         >
           {/* Header */}
-          <div className="bg-[#1c1b1b] text-white p-4 flex items-center justify-between border-b border-[#313030]">
+          <div className="bg-[#2A0E3F] text-white p-4 flex items-center justify-between border-b border-[#352B44]">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-[#b90064] flex items-center justify-center text-white shadow-sm">
+              <div className="w-9 h-9 rounded-xl bg-[#6B2D8C] flex items-center justify-center text-white shadow-sm">
                 {activeTab === 'ai' ? <Sparkles className="w-5 h-5 text-white" /> : <UserCheck className="w-5 h-5 text-white" />}
               </div>
               <div>
@@ -222,14 +222,14 @@ export const LiveChatWidget: React.FC<LiveChatWidgetProps> = ({
           </div>
 
           {/* Mode Switcher Tab */}
-          <div className="bg-[#fcf9f8] px-3 py-2 border-b border-[#e8e8e8] flex items-center justify-between gap-2">
+          <div className="bg-[#FDFBF7] px-3 py-2 border-b border-[#E8DEEF] flex items-center justify-between gap-2">
             <div className="flex rounded-lg bg-[#eee7ea] p-0.5 text-[11px] font-semibold w-full">
               <button
                 onClick={() => setActiveTab('ai')}
                 className={`flex-1 py-1.5 px-3 rounded-md flex items-center justify-center gap-1.5 transition-all ${
                   activeTab === 'ai'
-                    ? 'bg-white text-[#b90064] shadow-xs'
-                    : 'text-[#594047] hover:text-[#1c1b1b]'
+                    ? 'bg-white text-[#6B2D8C] shadow-xs'
+                    : 'text-[#5B4A6E] hover:text-[#2A0E3F]'
                 }`}
               >
                 <Bot className="w-3.5 h-3.5" />
@@ -239,8 +239,8 @@ export const LiveChatWidget: React.FC<LiveChatWidgetProps> = ({
                 onClick={() => setActiveTab('support')}
                 className={`flex-1 py-1.5 px-3 rounded-md flex items-center justify-center gap-1.5 transition-all ${
                   activeTab === 'support'
-                    ? 'bg-white text-[#0050d6] shadow-xs'
-                    : 'text-[#594047] hover:text-[#1c1b1b]'
+                    ? 'bg-white text-[#6B2D8C] shadow-xs'
+                    : 'text-[#5B4A6E] hover:text-[#2A0E3F]'
                 }`}
               >
                 <UserCheck className="w-3.5 h-3.5" />
@@ -250,7 +250,7 @@ export const LiveChatWidget: React.FC<LiveChatWidgetProps> = ({
           </div>
 
           {/* Chat Messages Body */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-[#fdf8f8]">
+          <div className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-[#FDFBF7]">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -258,7 +258,7 @@ export const LiveChatWidget: React.FC<LiveChatWidgetProps> = ({
               >
                 <div className="flex items-end gap-2 max-w-[85%]">
                   {msg.sender !== 'user' && (
-                    <div className="w-6 h-6 rounded-full bg-[#b90064] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mb-1">
+                    <div className="w-6 h-6 rounded-full bg-[#6B2D8C] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mb-1">
                       {msg.sender === 'ai' ? 'AI' : 'NX'}
                     </div>
                   )}
@@ -266,23 +266,23 @@ export const LiveChatWidget: React.FC<LiveChatWidgetProps> = ({
                   <div
                     className={`p-3 rounded-2xl text-[12.5px] leading-relaxed shadow-2xs ${
                       msg.sender === 'user'
-                        ? 'bg-[#b90064] text-white rounded-br-xs'
-                        : 'bg-white text-[#1c1b1b] border border-[#e8e8e8] rounded-bl-xs'
+                        ? 'bg-[#6B2D8C] text-white rounded-br-xs'
+                        : 'bg-white text-[#2A0E3F] border border-[#E8DEEF] rounded-bl-xs'
                     }`}
                   >
                     <p>{msg.text}</p>
 
                     {/* Rich Action Card in Message */}
                     {msg.actionType === 'supplier_recommendation' && msg.actionData && (
-                      <div className="mt-2.5 p-2.5 bg-[#fcf9f8] rounded-xl border border-[#e8e8e8] text-[11px] text-[#1c1b1b]">
+                      <div className="mt-2.5 p-2.5 bg-[#FDFBF7] rounded-xl border border-[#E8DEEF] text-[11px] text-[#2A0E3F]">
                         <div className="flex items-center justify-between font-bold mb-1">
-                          <span className="flex items-center gap-1 text-[#b90064]">
+                          <span className="flex items-center gap-1 text-[#6B2D8C]">
                             <Building2 className="w-3.5 h-3.5" />
                             {msg.actionData.name}
                           </span>
-                          <span className="text-[10px] text-[#0050d6] font-semibold">{msg.actionData.rating}</span>
+                          <span className="text-[10px] text-[#6B2D8C] font-semibold">{msg.actionData.rating}</span>
                         </div>
-                        <div className="flex items-center justify-between text-[#594047] mb-2">
+                        <div className="flex items-center justify-between text-[#5B4A6E] mb-2">
                           <span>📍 {msg.actionData.location}</span>
                           <span>MOQ: {msg.actionData.moq}</span>
                         </div>
@@ -298,7 +298,7 @@ export const LiveChatWidget: React.FC<LiveChatWidgetProps> = ({
                               });
                             }
                           }}
-                          className="w-full py-1.5 bg-[#b90064] text-white font-bold rounded-lg text-center hover:bg-[#9a0053] transition-colors flex items-center justify-center gap-1"
+                          className="w-full py-1.5 bg-[#6B2D8C] text-white font-bold rounded-lg text-center hover:bg-[#9a0053] transition-colors flex items-center justify-center gap-1"
                         >
                           <Send className="w-3 h-3" /> Send Direct Sourcing Enquiry
                         </button>
@@ -311,7 +311,7 @@ export const LiveChatWidget: React.FC<LiveChatWidgetProps> = ({
                           onClick={() => {
                             if (onOpenRFQModal) onOpenRFQModal();
                           }}
-                          className="w-full py-1.5 px-3 bg-[#0050d6] hover:bg-[#0040ab] text-white font-bold rounded-lg text-center text-[11px] transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+                          className="w-full py-1.5 px-3 bg-[#6B2D8C] hover:bg-[#0040ab] text-white font-bold rounded-lg text-center text-[11px] transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
                         >
                           <FileText className="w-3.5 h-3.5" /> Launch RFQ Form (Broadcast to 120+ Suppliers)
                         </button>
@@ -320,17 +320,17 @@ export const LiveChatWidget: React.FC<LiveChatWidgetProps> = ({
 
                     {msg.actionType === 'callback' && (
                       <div className="mt-2.5 p-2 bg-[#f0f5ff] rounded-xl border border-[#d0e0ff] text-[11px]">
-                        <p className="font-semibold text-[#0050d6] mb-1.5 flex items-center gap-1">
+                        <p className="font-semibold text-[#6B2D8C] mb-1.5 flex items-center gap-1">
                           <PhoneCall className="w-3.5 h-3.5" /> Free Sourcing Consultation Line
                         </p>
-                        <p className="text-[10px] text-[#594047] mb-2">
+                        <p className="text-[10px] text-[#5B4A6E] mb-2">
                           Direct Desk Toll-Free: <strong>1800-420-LUXE (9 AM - 8 PM IST)</strong>
                         </p>
                         <button
                           onClick={() => {
                             alert('Callback request scheduled! A Category Specialist will contact your registered business phone within 15 minutes.');
                           }}
-                          className="w-full py-1.5 bg-[#0050d6] text-white font-bold rounded-lg text-center hover:bg-[#0040ab] transition-colors text-[11px]"
+                          className="w-full py-1.5 bg-[#6B2D8C] text-white font-bold rounded-lg text-center hover:bg-[#0040ab] transition-colors text-[11px]"
                         >
                           Confirm Instant Callback
                         </button>
@@ -339,7 +339,7 @@ export const LiveChatWidget: React.FC<LiveChatWidgetProps> = ({
                   </div>
                 </div>
 
-                <span className="text-[9.5px] text-[#8c7077] mt-1 px-1">
+                <span className="text-[9.5px] text-[#7E6C96] mt-1 px-1">
                   {msg.time}
                 </span>
               </div>
@@ -347,13 +347,13 @@ export const LiveChatWidget: React.FC<LiveChatWidgetProps> = ({
 
             {isTyping && (
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-[#b90064] text-white flex items-center justify-center text-[10px] font-bold">
+                <div className="w-6 h-6 rounded-full bg-[#6B2D8C] text-white flex items-center justify-center text-[10px] font-bold">
                   AI
                 </div>
-                <div className="bg-white border border-[#e8e8e8] px-3 py-2 rounded-2xl rounded-bl-xs flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-[#b90064] rounded-full animate-bounce"></span>
-                  <span className="w-1.5 h-1.5 bg-[#b90064] rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                  <span className="w-1.5 h-1.5 bg-[#b90064] rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                <div className="bg-white border border-[#E8DEEF] px-3 py-2 rounded-2xl rounded-bl-xs flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-[#6B2D8C] rounded-full animate-bounce"></span>
+                  <span className="w-1.5 h-1.5 bg-[#6B2D8C] rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                  <span className="w-1.5 h-1.5 bg-[#6B2D8C] rounded-full animate-bounce [animation-delay:0.4s]"></span>
                 </div>
               </div>
             )}
@@ -362,12 +362,12 @@ export const LiveChatWidget: React.FC<LiveChatWidgetProps> = ({
           </div>
 
           {/* Quick Sourcing Prompts */}
-          <div className="bg-[#fcf9f8] px-3 py-2 border-t border-[#e8e8e8] flex gap-1.5 overflow-x-auto no-scrollbar">
+          <div className="bg-[#FDFBF7] px-3 py-2 border-t border-[#E8DEEF] flex gap-1.5 overflow-x-auto no-scrollbar">
             {QUICK_PROMPTS.map((prompt, idx) => (
               <button
                 key={idx}
                 onClick={() => handleSendMessage(prompt)}
-                className="whitespace-nowrap text-[10.5px] font-medium bg-white hover:bg-[#fde7f3] text-[#594047] hover:text-[#b90064] border border-[#e8e8e8] hover:border-[#b90064]/30 px-2.5 py-1.5 rounded-full transition-colors shrink-0"
+                className="whitespace-nowrap text-[10.5px] font-medium bg-white hover:bg-[#F5EEF8] text-[#5B4A6E] hover:text-[#6B2D8C] border border-[#E8DEEF] hover:border-[#6B2D8C]/30 px-2.5 py-1.5 rounded-full transition-colors shrink-0"
               >
                 {prompt}
               </button>
@@ -375,7 +375,7 @@ export const LiveChatWidget: React.FC<LiveChatWidgetProps> = ({
           </div>
 
           {/* Chat Input Bar */}
-          <div className="p-3 bg-white border-t border-[#e8e8e8]">
+          <div className="p-3 bg-white border-t border-[#E8DEEF]">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -389,12 +389,12 @@ export const LiveChatWidget: React.FC<LiveChatWidgetProps> = ({
                 placeholder={activeTab === 'ai' ? 'Ask AI about formulas, MOQ, suppliers...' : 'Type message to desk specialist...'}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                className="flex-1 bg-[#fcf9f8] border border-[#e8e8e8] focus:border-[#b90064] focus:bg-white rounded-xl px-3.5 py-2 text-[12.5px] text-[#1c1b1b] outline-none transition-colors"
+                className="flex-1 bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:bg-white rounded-xl px-3.5 py-2 text-[12.5px] text-[#2A0E3F] outline-none transition-colors"
               />
               <button
                 type="submit"
                 disabled={!inputText.trim()}
-                className="w-9 h-9 bg-[#b90064] disabled:bg-[#eee7ea] disabled:text-[#a09095] hover:bg-[#9a0053] text-white rounded-xl flex items-center justify-center transition-colors shrink-0 shadow-xs"
+                className="w-9 h-9 bg-[#6B2D8C] disabled:bg-[#eee7ea] disabled:text-[#a09095] hover:bg-[#9a0053] text-white rounded-xl flex items-center justify-center transition-colors shrink-0 shadow-xs"
               >
                 <Send className="w-4 h-4" />
               </button>

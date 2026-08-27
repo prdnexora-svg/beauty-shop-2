@@ -280,15 +280,15 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
       if (certLower.includes('iso')) {
         return {
           label: certStr.replace(/certified|compliant/gi, '').trim(),
-          icon: <Award className="w-3 h-3 text-[#b90064]" />,
-          style: 'bg-[#fde7f3] text-[#b90064] border-[#e0bec6]'
+          icon: <Award className="w-3 h-3 text-[#6B2D8C]" />,
+          style: 'bg-[#F5EEF8] text-[#6B2D8C] border-[#D9C3E8]'
         };
       }
       if (certLower.includes('gmp')) {
         return {
           label: certStr.replace(/compliant|certified/gi, '').trim(),
-          icon: <BadgeCheck className="w-3 h-3 text-[#00875a]" />,
-          style: 'bg-[#e8f5e9] text-[#00875a] border-[#a5d6a7]'
+          icon: <BadgeCheck className="w-3 h-3 text-[#059669]" />,
+          style: 'bg-[#e8f5e9] text-[#059669] border-[#a5d6a7]'
         };
       }
       if (
@@ -306,8 +306,8 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
       if (certLower.includes('fda')) {
         return {
           label: certStr.replace(/registered|filed/gi, '').trim(),
-          icon: <FileCheck2 className="w-3 h-3 text-[#0050d6]" />,
-          style: 'bg-[#dbe1ff] text-[#0050d6] border-[#a5c0ff]'
+          icon: <FileCheck2 className="w-3 h-3 text-[#6B2D8C]" />,
+          style: 'bg-[#EDE0F5] text-[#6B2D8C] border-[#a5c0ff]'
         };
       }
       if (
@@ -318,14 +318,14 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
       ) {
         return {
           label: certStr.replace(/certified|ready|support/gi, '').trim(),
-          icon: <ShieldCheck className="w-3 h-3 text-[#6b21a8]" />,
-          style: 'bg-[#f3e8ff] text-[#6b21a8] border-[#e9d5ff]'
+          icon: <ShieldCheck className="w-3 h-3 text-[#6B2D8C]" />,
+          style: 'bg-[#F8F3FB] text-[#6B2D8C] border-[#E5D4ED]'
         };
       }
       return {
         label: certStr.trim(),
-        icon: <Award className="w-3 h-3 text-[#594047]" />,
-        style: 'bg-white text-[#594047] border-[#e8e8e8]'
+        icon: <Award className="w-3 h-3 text-[#5B4A6E]" />,
+        style: 'bg-white text-[#5B4A6E] border-[#E8DEEF]'
       };
     });
   };
@@ -335,26 +335,26 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
   const selectedSuppliersList = suppliers.filter((s) => selectedComparisonIds.includes(s.id));
 
   return (
-    <section id="suppliers" className="py-14 bg-white border-t border-[#e8e8e8] relative">
+    <section id="suppliers" className="py-14 bg-white border-t border-[#E8DEEF] relative">
       <div className="max-w-[1440px] mx-auto px-5 md:px-10">
         
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-6">
           <div className="max-w-2xl">
             <div className="flex items-center gap-3 mb-3">
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#fde7f3] text-[#b90064] text-[10px] font-black uppercase tracking-widest border border-[#f5b8d6]">
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#F5EEF8] text-[#6B2D8C] text-[10px] font-black uppercase tracking-widest border border-[#f5b8d6]">
                 <ShieldCheck className="w-3 h-3" />
                 Verified Network
               </div>
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#dbe1ff] text-[#0050d6] text-[10px] font-black uppercase tracking-widest border border-[#a5c0ff]">
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#EDE0F5] text-[#6B2D8C] text-[10px] font-black uppercase tracking-widest border border-[#a5c0ff]">
                 <Factory className="w-3 h-3" />
                 Facility Audited
               </div>
             </div>
-            <h2 className="text-3xl md:text-4xl font-black text-[#1c1b1b] tracking-tight mb-4">
+            <h2 className="text-3xl md:text-4xl font-black text-[#2A0E3F] tracking-tight mb-4">
               Verified Manufacturing Partners
             </h2>
-            <p className="text-[15px] text-[#594047] leading-relaxed">
+            <p className="text-[15px] text-[#5B4A6E] leading-relaxed">
               Direct connection to audited cosmetic laboratories, active extract suppliers, and high-capacity packaging lines. Every facility listed has passed our **24-point professional audit**.
             </p>
           </div>
@@ -366,14 +366,14 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                 onClick={onOpenComparisonModal}
                 className={`text-[13px] font-black px-6 py-3.5 rounded-xl border transition-all flex items-center gap-2 shadow-sm ${
                   selectedComparisonIds.length > 0
-                    ? 'bg-[#b90064] border-[#b90064] text-white hover:bg-[#8e004b]'
-                    : 'bg-white border-[#e8e8e8] text-[#1c1b1b] hover:border-[#b90064] hover:text-[#b90064]'
+                    ? 'bg-[#6B2D8C] border-[#6B2D8C] text-white hover:bg-[#4A2560]'
+                    : 'bg-white border-[#E8DEEF] text-[#2A0E3F] hover:border-[#6B2D8C] hover:text-[#6B2D8C]'
                 }`}
               >
                 <Scale className="w-4.5 h-4.5" />
                 <span>Compare Manufacturers</span>
                 {selectedComparisonIds.length > 0 && (
-                  <span className="bg-white text-[#b90064] text-[11px] font-black px-2 py-0.5 rounded-full ml-1">
+                  <span className="bg-white text-[#6B2D8C] text-[11px] font-black px-2 py-0.5 rounded-full ml-1">
                     {selectedComparisonIds.length}/3
                   </span>
                 )}
@@ -383,17 +383,17 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
         </div>
 
         {/* Proximity / 'Near Me' Control Bar */}
-        <div className="mb-8 p-4 bg-[#fcf9f8] rounded-2xl border border-[#e8e8e8] shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="mb-8 p-4 bg-[#FDFBF7] rounded-2xl border border-[#E8DEEF] shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl transition-colors shrink-0 ${nearMeEnabled ? 'bg-[#b90064] text-white' : 'bg-white text-[#594047] border border-[#e8e8e8]'}`}>
+            <div className={`p-2.5 rounded-xl transition-colors shrink-0 ${nearMeEnabled ? 'bg-[#6B2D8C] text-white' : 'bg-white text-[#5B4A6E] border border-[#E8DEEF]'}`}>
               <Compass className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[13px] font-bold text-[#1c1b1b]">Proximity Sourcing ("Near Me")</span>
-                <span className="text-[10px] font-extrabold bg-[#fde7f3] text-[#b90064] px-1.5 py-0.2 rounded-full uppercase tracking-wider">NEW</span>
+                <span className="text-[13px] font-bold text-[#2A0E3F]">Proximity Sourcing ("Near Me")</span>
+                <span className="text-[10px] font-extrabold bg-[#F5EEF8] text-[#6B2D8C] px-1.5 py-0.2 rounded-full uppercase tracking-wider">NEW</span>
               </div>
-              <p className="text-[11.5px] text-[#594047]">
+              <p className="text-[11.5px] text-[#5B4A6E]">
                 Filter and sort manufacturers dynamically based on proximity to your warehouse or head office.
               </p>
             </div>
@@ -405,12 +405,12 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
               onClick={() => setNearMeEnabled(!nearMeEnabled)}
               className={`px-4 py-2 rounded-xl text-[12.5px] font-bold flex items-center gap-2 border transition-all cursor-pointer ${
                 nearMeEnabled
-                  ? 'bg-[#b90064] border-[#b90064] text-white shadow-sm'
-                  : 'bg-white border-[#e8e8e8] text-[#594047] hover:border-[#b90064] hover:text-[#b90064]'
+                  ? 'bg-[#6B2D8C] border-[#6B2D8C] text-white shadow-sm'
+                  : 'bg-white border-[#E8DEEF] text-[#5B4A6E] hover:border-[#6B2D8C] hover:text-[#6B2D8C]'
               }`}
             >
               <span>{nearMeEnabled ? 'Proximity Filter Active' : 'Enable Near Me'}</span>
-              <div className={`w-8 h-4 rounded-full p-0.5 transition-colors ${nearMeEnabled ? 'bg-white/30' : 'bg-[#e8e8e8]'} flex items-center`}>
+              <div className={`w-8 h-4 rounded-full p-0.5 transition-colors ${nearMeEnabled ? 'bg-white/30' : 'bg-[#E8DEEF]'} flex items-center`}>
                 <div className={`w-3 h-3 rounded-full bg-white transition-transform ${nearMeEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
               </div>
             </button>
@@ -418,12 +418,12 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
             {nearMeEnabled && (
               <>
                 {/* City Location dropdown */}
-                <div className="flex items-center gap-1.5 bg-white border border-[#e8e8e8] px-3 py-1.8 rounded-xl text-[12px] shadow-2xs">
-                  <span className="text-[#8c7077] font-semibold">Your Location:</span>
+                <div className="flex items-center gap-1.5 bg-white border border-[#E8DEEF] px-3 py-1.8 rounded-xl text-[12px] shadow-2xs">
+                  <span className="text-[#7E6C96] font-semibold">Your Location:</span>
                   <select
                     value={selectedCity}
                     onChange={(e) => handleCityChange(e.target.value)}
-                    className="bg-transparent font-bold text-[#1c1b1b] focus:outline-none cursor-pointer"
+                    className="bg-transparent font-bold text-[#2A0E3F] focus:outline-none cursor-pointer"
                   >
                     <option value="Mumbai">Mumbai Hub</option>
                     <option value="Delhi">Delhi NCR Hub</option>
@@ -441,7 +441,7 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                 <button
                   onClick={handleAutoDetectLocation}
                   disabled={geoLoading}
-                  className="bg-white hover:bg-[#fde7f3]/20 border border-[#e8e8e8] hover:border-[#b90064] text-[#b90064] text-[12px] font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer disabled:opacity-60"
+                  className="bg-white hover:bg-[#F5EEF8]/20 border border-[#E8DEEF] hover:border-[#6B2D8C] text-[#6B2D8C] text-[12px] font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer disabled:opacity-60"
                   title="Auto-detect current location using browser GPS"
                 >
                   <MapPin className={`w-3.5 h-3.5 ${geoLoading ? 'animate-bounce' : ''}`} />
@@ -449,12 +449,12 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                 </button>
 
                 {/* Range Limit dropdown */}
-                <div className="flex items-center gap-1.5 bg-white border border-[#e8e8e8] px-3 py-1.8 rounded-xl text-[12px] shadow-2xs">
-                  <span className="text-[#8c7077] font-semibold">Max Distance:</span>
+                <div className="flex items-center gap-1.5 bg-white border border-[#E8DEEF] px-3 py-1.8 rounded-xl text-[12px] shadow-2xs">
+                  <span className="text-[#7E6C96] font-semibold">Max Distance:</span>
                   <select
                     value={maxDistance}
                     onChange={(e) => setMaxDistance(Number(e.target.value))}
-                    className="bg-transparent font-bold text-[#1c1b1b] focus:outline-none cursor-pointer"
+                    className="bg-transparent font-bold text-[#2A0E3F] focus:outline-none cursor-pointer"
                   >
                     <option value={100}>Within 100 km</option>
                     <option value={300}>Within 300 km</option>
@@ -483,22 +483,22 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
 
         {/* Suppliers Grid */}
         {processedSuppliers.length === 0 ? (
-          <div className="text-center py-16 bg-[#fcf9f8] rounded-2xl border border-dashed border-[#e8e8e8] p-6 w-full">
-            <Compass className="w-12 h-12 text-[#8c7077] mx-auto mb-3 animate-pulse" />
-            <h3 className="text-lg font-bold text-[#1c1b1b]">No Manufacturers Found</h3>
-            <p className="text-[13px] text-[#594047] max-w-md mx-auto mt-1">
+          <div className="text-center py-16 bg-[#FDFBF7] rounded-2xl border border-dashed border-[#E8DEEF] p-6 w-full">
+            <Compass className="w-12 h-12 text-[#7E6C96] mx-auto mb-3 animate-pulse" />
+            <h3 className="text-lg font-bold text-[#2A0E3F]">No Manufacturers Found</h3>
+            <p className="text-[13px] text-[#5B4A6E] max-w-md mx-auto mt-1">
               There are no verified manufacturing facilities within {maxDistance} km of {selectedCity === 'Auto-Detected' ? 'your GPS coordinates' : `${selectedCity} Hub`}.
             </p>
             <div className="mt-5 flex items-center justify-center gap-3">
               <button
                 onClick={() => setMaxDistance(-1)}
-                className="bg-[#b90064] text-white font-bold text-[12.5px] px-4 py-2 rounded-xl hover:bg-[#8e004b] transition-colors shadow-2xs cursor-pointer"
+                className="bg-[#6B2D8C] text-white font-bold text-[12.5px] px-4 py-2 rounded-xl hover:bg-[#4A2560] transition-colors shadow-2xs cursor-pointer"
               >
                 Show All (Distance Sorted)
               </button>
               <button
                 onClick={() => setMaxDistance(1000)}
-                className="bg-white border border-[#e8e8e8] hover:border-[#b90064] text-[#594047] hover:text-[#b90064] font-bold text-[12.5px] px-4 py-2 rounded-xl transition-all shadow-2xs cursor-pointer"
+                className="bg-white border border-[#E8DEEF] hover:border-[#6B2D8C] text-[#5B4A6E] hover:text-[#6B2D8C] font-bold text-[12.5px] px-4 py-2 rounded-xl transition-all shadow-2xs cursor-pointer"
               >
                 Expand to 1000 km
               </button>
@@ -519,12 +519,12 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
             return (
               <div
                 key={sup.id}
-                className={`bg-[#fcf9f8] rounded-2xl border p-6 flex flex-col justify-between card-hover-fx transition-all ${
+                className={`bg-[#FDFBF7] rounded-2xl border p-6 flex flex-col justify-between card-hover-fx transition-all ${
                   inComparison
-                    ? 'border-[#b90064] ring-1 ring-[#b90064]/20 shadow-md'
+                    ? 'border-[#6B2D8C] ring-1 ring-[#6B2D8C]/20 shadow-md'
                     : isLocalHighlight
                       ? 'border-emerald-500 ring-2 ring-emerald-500/10 shadow-xs bg-[#f8fdf9]'
-                      : 'border-[#e8e8e8]'
+                      : 'border-[#E8DEEF]'
                 }`}
               >
                 <div>
@@ -534,17 +534,17 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                     
                     <div className="flex items-center gap-3.5">
                       {/* Monogram Logo */}
-                      <div className="w-13 h-13 rounded-xl bg-[#b90064] text-white flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
+                      <div className="w-13 h-13 rounded-xl bg-[#6B2D8C] text-white flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
                         {sup.shortCode}
                       </div>
                       
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="text-base font-bold text-[#1c1b1b]">{sup.name}</h3>
+                          <h3 className="text-base font-bold text-[#2A0E3F]">{sup.name}</h3>
 
                           {/* Verified Badge */}
-                          <span className="inline-flex items-center gap-1 bg-[#fde7f3] text-[#b90064] border border-[#f5b8d6] px-2 py-0.5 rounded-full text-[11px] font-extrabold shadow-2xs">
-                            <ShieldCheck className="w-3.5 h-3.5 text-[#b90064]" />
+                          <span className="inline-flex items-center gap-1 bg-[#F5EEF8] text-[#6B2D8C] border border-[#f5b8d6] px-2 py-0.5 rounded-full text-[11px] font-extrabold shadow-2xs">
+                            <ShieldCheck className="w-3.5 h-3.5 text-[#6B2D8C]" />
                             Verified
                           </span>
 
@@ -570,7 +570,7 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                                           ? 'fill-[#f59e0b] text-[#f59e0b]'
                                           : star - ratingVal <= 0.5
                                           ? 'fill-[#f59e0b]/50 text-[#f59e0b]'
-                                          : 'text-[#d1d5db]'
+                                          : 'text-[#D6C3E4]'
                                       }`}
                                     />
                                   );
@@ -586,7 +586,7 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
 
                             {/* Reliability & Product Quality Rating Popover */}
                             <div
-                              className={`absolute top-full left-0 mt-1.5 w-68 bg-white border border-[#e8e8e8] rounded-xl p-3.5 shadow-xl z-40 transition-all duration-200 ${
+                              className={`absolute top-full left-0 mt-1.5 w-68 bg-white border border-[#E8DEEF] rounded-xl p-3.5 shadow-xl z-40 transition-all duration-200 ${
                                 activeRatingSupplierId === sup.id
                                   ? 'opacity-100 pointer-events-auto scale-100'
                                   : 'opacity-0 pointer-events-none group-hover/rating:opacity-100 group-hover/rating:pointer-events-auto scale-95 group-hover/rating:scale-100'
@@ -595,11 +595,11 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                               <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#f0f0f0]">
                                 <div className="flex items-center gap-1.5">
                                   <Star className="w-4 h-4 fill-[#f59e0b] text-[#f59e0b]" />
-                                  <span className="text-[13px] font-bold text-[#1c1b1b]">
+                                  <span className="text-[13px] font-bold text-[#2A0E3F]">
                                     {sup.overallRating || 4.9} / 5.0 Rating
                                   </span>
                                 </div>
-                                <span className="text-[10px] font-bold text-[#00875a] bg-[#e6f4ea] px-2 py-0.5 rounded-full">
+                                <span className="text-[10px] font-bold text-[#059669] bg-[#D1FAE5] px-2 py-0.5 rounded-full">
                                   Verified Feedback
                                 </span>
                               </div>
@@ -608,17 +608,17 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                                 {/* Product Quality Rating */}
                                 <div>
                                   <div className="flex justify-between items-center mb-1">
-                                    <span className="font-medium text-[#594047] flex items-center gap-1">
-                                      <Sparkles className="w-3 h-3 text-[#b90064]" />
+                                    <span className="font-medium text-[#5B4A6E] flex items-center gap-1">
+                                      <Sparkles className="w-3 h-3 text-[#6B2D8C]" />
                                       Product Quality
                                     </span>
-                                    <span className="font-extrabold text-[#1c1b1b]">
+                                    <span className="font-extrabold text-[#2A0E3F]">
                                       {((sup.productQualityRating || 98) / 20).toFixed(1)} / 5.0 ({sup.productQualityRating || 98}%)
                                     </span>
                                   </div>
-                                  <div className="w-full bg-[#f0edec] h-1.5 rounded-full overflow-hidden">
+                                  <div className="w-full bg-[#F4F0E9] h-1.5 rounded-full overflow-hidden">
                                     <div
-                                      className="bg-[#00875a] h-full rounded-full transition-all"
+                                      className="bg-[#059669] h-full rounded-full transition-all"
                                       style={{ width: `${sup.productQualityRating || 98}%` }}
                                     />
                                   </div>
@@ -627,17 +627,17 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                                 {/* Reliability Rating */}
                                 <div>
                                   <div className="flex justify-between items-center mb-1">
-                                    <span className="font-medium text-[#594047] flex items-center gap-1">
-                                      <CheckCircle2 className="w-3 h-3 text-[#00875a]" />
+                                    <span className="font-medium text-[#5B4A6E] flex items-center gap-1">
+                                      <CheckCircle2 className="w-3 h-3 text-[#059669]" />
                                       Reliability & Spec Match
                                     </span>
-                                    <span className="font-extrabold text-[#1c1b1b]">
+                                    <span className="font-extrabold text-[#2A0E3F]">
                                       {((sup.reliabilityRating || 99) / 20).toFixed(1)} / 5.0 ({sup.reliabilityRating || 99}%)
                                     </span>
                                   </div>
-                                  <div className="w-full bg-[#f0edec] h-1.5 rounded-full overflow-hidden">
+                                  <div className="w-full bg-[#F4F0E9] h-1.5 rounded-full overflow-hidden">
                                     <div
-                                      className="bg-[#b90064] h-full rounded-full transition-all"
+                                      className="bg-[#6B2D8C] h-full rounded-full transition-all"
                                       style={{ width: `${sup.reliabilityRating || 99}%` }}
                                     />
                                   </div>
@@ -646,39 +646,39 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                                 {/* Response Speed */}
                                 <div>
                                   <div className="flex justify-between items-center mb-1">
-                                    <span className="font-medium text-[#594047] flex items-center gap-1">
-                                      <Zap className="w-3 h-3 text-[#0050d6]" />
+                                    <span className="font-medium text-[#5B4A6E] flex items-center gap-1">
+                                      <Zap className="w-3 h-3 text-[#6B2D8C]" />
                                       Response Speed
                                     </span>
-                                    <span className="font-extrabold text-[#1c1b1b]">
+                                    <span className="font-extrabold text-[#2A0E3F]">
                                       {sup.responseRate || '98% within 2 hrs'}
                                     </span>
                                   </div>
-                                  <div className="w-full bg-[#f0edec] h-1.5 rounded-full overflow-hidden">
+                                  <div className="w-full bg-[#F4F0E9] h-1.5 rounded-full overflow-hidden">
                                     <div
-                                      className="bg-[#0050d6] h-full rounded-full transition-all"
+                                      className="bg-[#6B2D8C] h-full rounded-full transition-all"
                                       style={{ width: `${sup.responseScore || 97}%` }}
                                     />
                                   </div>
                                 </div>
                               </div>
 
-                              <div className="mt-3 pt-2 border-t border-[#f0f0f0] text-[10px] text-[#8c7077] flex items-center justify-between">
+                              <div className="mt-3 pt-2 border-t border-[#f0f0f0] text-[10px] text-[#7E6C96] flex items-center justify-between">
                                 <span>{sup.totalReviewsCount || 142} verified B2B orders</span>
-                                <span className="text-[#b90064] font-bold">Audited</span>
+                                <span className="text-[#6B2D8C] font-bold">Audited</span>
                               </div>
                             </div>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          <p className="text-[12px] font-medium text-[#594047]">
+                          <p className="text-[12px] font-medium text-[#5B4A6E]">
                             {sup.type} • {sup.city}{sup.state ? `, ${sup.state}` : ''}
                           </p>
                           {onOpenMapModal && (
                             <button
                               onClick={() => onOpenMapModal(sup)}
-                              className="text-[11px] font-bold text-[#b90064] hover:text-[#8e004b] bg-[#fde7f3] hover:bg-[#fbd0e8] px-2 py-0.5 rounded-md flex items-center gap-1 transition-colors cursor-pointer"
+                              className="text-[11px] font-bold text-[#6B2D8C] hover:text-[#4A2560] bg-[#F5EEF8] hover:bg-[#fbd0e8] px-2 py-0.5 rounded-md flex items-center gap-1 transition-colors cursor-pointer"
                               title="View manufacturer proximity to shipping ports, airports and raw material hubs"
                             >
                               <MapPin className="w-3 h-3" />
@@ -688,7 +688,7 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                           {nearMeEnabled && computedDistance !== undefined && (
                             <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 transition-colors ${
                               computedDistance <= 150
-                                ? 'bg-[#e6f4ea] text-[#137333] border border-[#a3cfb1]'
+                                ? 'bg-[#D1FAE5] text-[#047857] border border-[#a3cfb1]'
                                 : 'bg-[#fffcf7] text-[#9a3412] border border-[#ffedd5]'
                             }`}
                             title={`Calculated proximity to your chosen ${selectedCity} office hub`}>
@@ -709,8 +709,8 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                           onClick={() => onToggleComparison(sup)}
                           className={`px-2.5 py-1.5 rounded-lg border text-[11px] font-bold transition-all flex items-center gap-1 shadow-2xs ${
                             inComparison
-                              ? 'bg-[#b90064] border-[#b90064] text-white'
-                              : 'bg-white border-[#e8e8e8] text-[#594047] hover:border-[#b90064] hover:text-[#b90064]'
+                              ? 'bg-[#6B2D8C] border-[#6B2D8C] text-white'
+                              : 'bg-white border-[#E8DEEF] text-[#5B4A6E] hover:border-[#6B2D8C] hover:text-[#6B2D8C]'
                           }`}
                           title={inComparison ? 'Remove from comparison' : 'Add to side-by-side comparison (up to 3)'}
                         >
@@ -721,7 +721,7 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                             </>
                           ) : (
                             <>
-                              <Scale className="w-3.5 h-3.5 text-[#b90064]" />
+                              <Scale className="w-3.5 h-3.5 text-[#6B2D8C]" />
                               <span>Compare</span>
                             </>
                           )}
@@ -734,8 +734,8 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                           onClick={() => onToggleSave(sup.id, sup.name)}
                           className={`p-1.5 rounded-lg border transition-all ${
                             saved
-                              ? 'bg-[#fde7f3] border-[#b90064] text-[#b90064]'
-                              : 'bg-white border-[#e8e8e8] text-[#8c7077] hover:text-[#b90064] hover:border-[#b90064]'
+                              ? 'bg-[#F5EEF8] border-[#6B2D8C] text-[#6B2D8C]'
+                              : 'bg-white border-[#E8DEEF] text-[#7E6C96] hover:text-[#6B2D8C] hover:border-[#6B2D8C]'
                           }`}
                           title={saved ? 'Remove from Saved Suppliers' : 'Save Supplier'}
                         >
@@ -748,23 +748,23 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                   </div>
 
                   {/* Trust Score & Facility Pill */}
-                  <div className="flex items-center justify-between mb-4 bg-white border border-[#e8e8e8] p-2.5 rounded-xl shadow-2xs">
+                  <div className="flex items-center justify-between mb-4 bg-white border border-[#E8DEEF] p-2.5 rounded-xl shadow-2xs">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#8c7077]">Trust Score</span>
-                      <span className="text-[13px] font-extrabold text-[#b90064]">{sup.trustScore || 98}/100</span>
-                      <span className="text-[10px] font-semibold text-[#0050d6] bg-[#dbe1ff] px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#7E6C96]">Trust Score</span>
+                      <span className="text-[13px] font-extrabold text-[#6B2D8C]">{sup.trustScore || 98}/100</span>
+                      <span className="text-[10px] font-semibold text-[#6B2D8C] bg-[#EDE0F5] px-2 py-0.5 rounded-full">
                         {sup.establishedYear || '10+ yrs in business'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#00875a]"></span>
-                        <span className="text-[11px] font-medium text-[#1c1b1b]">Audit Passed</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#059669]"></span>
+                        <span className="text-[11px] font-medium text-[#2A0E3F]">Audit Passed</span>
                       </div>
                       {onOpenFacilityTour && (
                         <button
                           onClick={() => onOpenFacilityTour(sup)}
-                          className="text-[11px] font-bold text-[#b90064] bg-[#fde7f3] hover:bg-[#b90064] hover:text-white border border-[#e0bec6] px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer shadow-2xs"
+                          className="text-[11px] font-bold text-[#6B2D8C] bg-[#F5EEF8] hover:bg-[#6B2D8C] hover:text-white border border-[#D9C3E8] px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer shadow-2xs"
                           title="Play 15-second virtual tour video of manufacturing facility"
                         >
                           <Video className="w-3.5 h-3.5" />
@@ -776,14 +776,14 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
 
                   {/* Certifications & Compliance Badge Row */}
                   <div className="mb-4">
-                    <span className="text-[10.5px] font-bold text-[#8c7077] uppercase tracking-wider block mb-1.5 flex items-center gap-1">
-                      <Award className="w-3 h-3 text-[#b90064]" />
+                    <span className="text-[10.5px] font-bold text-[#7E6C96] uppercase tracking-wider block mb-1.5 flex items-center gap-1">
+                      <Award className="w-3 h-3 text-[#6B2D8C]" />
                       Accreditations & Certifications
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {sup.isGstVerified && (
-                        <span className="text-[11px] font-semibold bg-white border border-[#e8e8e8] text-[#0050d6] px-2 py-0.5 rounded-md flex items-center gap-1 shadow-2xs">
-                          <FileCheck2 className="w-3 h-3 text-[#0050d6]" />
+                        <span className="text-[11px] font-semibold bg-white border border-[#E8DEEF] text-[#6B2D8C] px-2 py-0.5 rounded-md flex items-center gap-1 shadow-2xs">
+                          <FileCheck2 className="w-3 h-3 text-[#6B2D8C]" />
                           <span>GST Verified</span>
                         </span>
                       )}
@@ -800,20 +800,20 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                   </div>
 
                   {/* Verified Performance Metrics & Progress Bars */}
-                  <div className="bg-white rounded-xl border border-[#e8e8e8] p-3.5 mb-4 space-y-3 shadow-2xs">
+                  <div className="bg-white rounded-xl border border-[#E8DEEF] p-3.5 mb-4 space-y-3 shadow-2xs">
                     
                     {/* Reliability Metric */}
                     <div>
                       <div className="flex items-center justify-between text-[11px] mb-1">
-                        <span className="font-semibold text-[#1c1b1b] flex items-center gap-1.5">
-                          <Activity className="w-3.5 h-3.5 text-[#0050d6]" />
+                        <span className="font-semibold text-[#2A0E3F] flex items-center gap-1.5">
+                          <Activity className="w-3.5 h-3.5 text-[#6B2D8C]" />
                           Reliability & Batch Consistency
                         </span>
-                        <span className="font-bold text-[#0050d6]">{sup.reliabilityRating || 99}%</span>
+                        <span className="font-bold text-[#6B2D8C]">{sup.reliabilityRating || 99}%</span>
                       </div>
-                      <div className="w-full h-1.5 bg-[#f0e6eb] rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-[#F0E5F7] rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-[#0050d6] rounded-full transition-all duration-500"
+                          className="h-full bg-[#6B2D8C] rounded-full transition-all duration-500"
                           style={{ width: `${sup.reliabilityRating || 99}%` }}
                         ></div>
                       </div>
@@ -822,15 +822,15 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                     {/* Response Speed Metric */}
                     <div>
                       <div className="flex items-center justify-between text-[11px] mb-1">
-                        <span className="font-semibold text-[#1c1b1b] flex items-center gap-1.5">
-                          <Zap className="w-3.5 h-3.5 text-[#b90064]" />
+                        <span className="font-semibold text-[#2A0E3F] flex items-center gap-1.5">
+                          <Zap className="w-3.5 h-3.5 text-[#6B2D8C]" />
                           Response Time (SLA)
                         </span>
-                        <span className="font-bold text-[#b90064]">{sup.responseTimeText || '< 2 hrs'} ({sup.responseScore || 97}%)</span>
+                        <span className="font-bold text-[#6B2D8C]">{sup.responseTimeText || '< 2 hrs'} ({sup.responseScore || 97}%)</span>
                       </div>
-                      <div className="w-full h-1.5 bg-[#f0e6eb] rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-[#F0E5F7] rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-[#b90064] rounded-full transition-all duration-500"
+                          className="h-full bg-[#6B2D8C] rounded-full transition-all duration-500"
                           style={{ width: `${sup.responseScore || 97}%` }}
                         ></div>
                       </div>
@@ -839,21 +839,21 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                     {/* Export Readiness Metric */}
                     <div>
                       <div className="flex items-center justify-between text-[11px] mb-1">
-                        <span className="font-semibold text-[#1c1b1b] flex items-center gap-1.5">
-                          <Globe2 className="w-3.5 h-3.5 text-[#00875a]" />
+                        <span className="font-semibold text-[#2A0E3F] flex items-center gap-1.5">
+                          <Globe2 className="w-3.5 h-3.5 text-[#059669]" />
                           Export Compliance Readiness
                         </span>
-                        <span className="font-bold text-[#00875a]">{sup.exportReadiness || 94}%</span>
+                        <span className="font-bold text-[#059669]">{sup.exportReadiness || 94}%</span>
                       </div>
-                      <div className="w-full h-1.5 bg-[#f0e6eb] rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-[#F0E5F7] rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-[#00875a] rounded-full transition-all duration-500"
+                          className="h-full bg-[#059669] rounded-full transition-all duration-500"
                           style={{ width: `${sup.exportReadiness || 94}%` }}
                         ></div>
                       </div>
                       {sup.exportCertifications && (
-                        <p className="text-[10px] text-[#594047] font-medium mt-1 flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3 text-[#00875a]" />
+                        <p className="text-[10px] text-[#5B4A6E] font-medium mt-1 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-[#059669]" />
                           {sup.exportCertifications}
                         </p>
                       )}
@@ -863,12 +863,12 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
 
                   {/* Production Capabilities / Categories */}
                   <div className="mb-4">
-                    <span className="text-[11px] font-semibold text-[#8c7077] uppercase tracking-wider block mb-1.5">
+                    <span className="text-[11px] font-semibold text-[#7E6C96] uppercase tracking-wider block mb-1.5">
                       Core Specialties & Capabilities
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {(sup.specialties || sup.categories).map((c, idx) => (
-                        <span key={idx} className="text-[11px] bg-white border border-[#e8e8e8] text-[#594047] px-2.5 py-0.5 rounded shadow-2xs">
+                        <span key={idx} className="text-[11px] bg-white border border-[#E8DEEF] text-[#5B4A6E] px-2.5 py-0.5 rounded shadow-2xs">
                           {c}
                         </span>
                       ))}
@@ -883,15 +883,15 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                         onClick={() => togglePortfolio(sup.id)}
                         className={`flex items-center justify-between px-3 py-2 rounded-xl border transition-all text-[11.5px] font-bold cursor-pointer ${
                           isPortfolioExpanded
-                            ? 'bg-[#fde7f3] border-[#b90064] text-[#b90064] shadow-2xs'
-                            : 'bg-white border-[#e8e8e8] text-[#1c1b1b] hover:border-[#b90064] hover:text-[#b90064] shadow-2xs'
+                            ? 'bg-[#F5EEF8] border-[#6B2D8C] text-[#6B2D8C] shadow-2xs'
+                            : 'bg-white border-[#E8DEEF] text-[#2A0E3F] hover:border-[#6B2D8C] hover:text-[#6B2D8C] shadow-2xs'
                         }`}
                       >
                         <div className="flex items-center gap-1.5 truncate">
-                          <Sparkles className="w-3.5 h-3.5 text-[#b90064] shrink-0" />
+                          <Sparkles className="w-3.5 h-3.5 text-[#6B2D8C] shrink-0" />
                           <span className="truncate">Portfolio</span>
                         </div>
-                        <span className="text-[10px] font-extrabold bg-[#b90064] text-white px-1.5 py-0.2 rounded-full shrink-0">
+                        <span className="text-[10px] font-extrabold bg-[#6B2D8C] text-white px-1.5 py-0.2 rounded-full shrink-0">
                           3
                         </span>
                       </button>
@@ -901,15 +901,15 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                         onClick={() => toggleCompliance(sup.id)}
                         className={`flex items-center justify-between px-3 py-2 rounded-xl border transition-all text-[11.5px] font-bold cursor-pointer ${
                           isComplianceExpanded
-                            ? 'bg-[#e6f4ea] border-[#00875a] text-[#00875a] shadow-2xs'
-                            : 'bg-white border-[#e8e8e8] text-[#1c1b1b] hover:border-[#00875a] hover:text-[#00875a] shadow-2xs'
+                            ? 'bg-[#D1FAE5] border-[#059669] text-[#059669] shadow-2xs'
+                            : 'bg-white border-[#E8DEEF] text-[#2A0E3F] hover:border-[#059669] hover:text-[#059669] shadow-2xs'
                         }`}
                       >
                         <div className="flex items-center gap-1.5 truncate">
-                          <FileCheck className="w-3.5 h-3.5 text-[#00875a] shrink-0" />
+                          <FileCheck className="w-3.5 h-3.5 text-[#059669] shrink-0" />
                           <span className="truncate">Compliance</span>
                         </div>
-                        <span className="text-[10px] font-extrabold bg-[#00875a] text-white px-1.5 py-0.2 rounded-full shrink-0">
+                        <span className="text-[10px] font-extrabold bg-[#059669] text-white px-1.5 py-0.2 rounded-full shrink-0">
                           4 PDF
                         </span>
                       </button>
@@ -917,13 +917,13 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
 
                     {/* Portfolio Content */}
                     {isPortfolioExpanded && (
-                      <div className="mt-2.5 p-3 bg-white border border-[#e0bec6] rounded-xl shadow-2xs animate-in fade-in duration-200">
-                        <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-[#f0edec]">
-                          <span className="text-[10.5px] font-bold text-[#8c7077] uppercase tracking-wider flex items-center gap-1">
-                            <Package className="w-3 h-3 text-[#b90064]" />
+                      <div className="mt-2.5 p-3 bg-white border border-[#D9C3E8] rounded-xl shadow-2xs animate-in fade-in duration-200">
+                        <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-[#F4F0E9]">
+                          <span className="text-[10.5px] font-bold text-[#7E6C96] uppercase tracking-wider flex items-center gap-1">
+                            <Package className="w-3 h-3 text-[#6B2D8C]" />
                             Top 3 Best-Selling Products
                           </span>
-                          <span className="text-[10px] font-medium text-[#0050d6] bg-[#dbe1ff] px-1.5 py-0.2 rounded">
+                          <span className="text-[10px] font-medium text-[#6B2D8C] bg-[#EDE0F5] px-1.5 py-0.2 rounded">
                             Click product to enquire
                           </span>
                         </div>
@@ -945,11 +945,11 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                                   category: sup.categories[0] || 'Cosmetics'
                                 })
                               }
-                              className="group/item border border-[#e8e8e8] hover:border-[#b90064] rounded-lg p-2 bg-[#fcf9f8] hover:bg-[#fde7f3]/30 transition-all cursor-pointer flex flex-col justify-between"
+                              className="group/item border border-[#E8DEEF] hover:border-[#6B2D8C] rounded-lg p-2 bg-[#FDFBF7] hover:bg-[#F5EEF8]/30 transition-all cursor-pointer flex flex-col justify-between"
                               title={`Click to enquire about ${prod.name}`}
                             >
                               <div>
-                                <div className="aspect-square rounded-md overflow-hidden bg-[#f0edec] mb-1.5 relative border border-[#e8e8e8]">
+                                <div className="aspect-square rounded-md overflow-hidden bg-[#F4F0E9] mb-1.5 relative border border-[#E8DEEF]">
                                   <img
                                     src={prod.image}
                                     alt={prod.name}
@@ -963,14 +963,14 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                                     Best
                                   </span>
                                 </div>
-                                <h5 className="text-[11px] font-bold text-[#1c1b1b] group-hover/item:text-[#b90064] line-clamp-2 leading-tight mb-1">
+                                <h5 className="text-[11px] font-bold text-[#2A0E3F] group-hover/item:text-[#6B2D8C] line-clamp-2 leading-tight mb-1">
                                   {prod.name}
                                 </h5>
                               </div>
 
-                              <div className="pt-1.5 border-t border-[#f0edec] mt-1 text-[10px]">
-                                <p className="font-extrabold text-[#b90064]">{prod.price}</p>
-                                <p className="text-[#8c7077] font-medium truncate">MOQ: {prod.moq}</p>
+                              <div className="pt-1.5 border-t border-[#F4F0E9] mt-1 text-[10px]">
+                                <p className="font-extrabold text-[#6B2D8C]">{prod.price}</p>
+                                <p className="text-[#7E6C96] font-medium truncate">MOQ: {prod.moq}</p>
                               </div>
                             </div>
                           ))}
@@ -980,13 +980,13 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
 
                     {/* Compliance & Audit Reports Content */}
                     {isComplianceExpanded && (
-                      <div className="mt-2.5 p-3 bg-white border border-[#00875a]/30 rounded-xl shadow-2xs animate-in fade-in duration-200">
-                        <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-[#f0edec]">
-                          <span className="text-[10.5px] font-bold text-[#00875a] uppercase tracking-wider flex items-center gap-1">
-                            <ShieldCheck className="w-3.5 h-3.5 text-[#00875a]" />
+                      <div className="mt-2.5 p-3 bg-white border border-[#059669]/30 rounded-xl shadow-2xs animate-in fade-in duration-200">
+                        <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-[#F4F0E9]">
+                          <span className="text-[10.5px] font-bold text-[#059669] uppercase tracking-wider flex items-center gap-1">
+                            <ShieldCheck className="w-3.5 h-3.5 text-[#059669]" />
                             Verified Audit Reports & ISO Documents
                           </span>
-                          <span className="text-[10px] font-bold text-[#00875a] bg-[#e6f4ea] px-2 py-0.5 rounded-full">
+                          <span className="text-[10px] font-bold text-[#059669] bg-[#D1FAE5] px-2 py-0.5 rounded-full">
                             Official PDFs
                           </span>
                         </div>
@@ -995,21 +995,21 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                           {getComplianceReportsForSupplier(sup).map((report) => (
                             <div
                               key={report.id}
-                              className="p-2.5 bg-[#fcf9f8] border border-[#e8e8e8] rounded-lg hover:border-[#00875a] transition-all flex items-start justify-between gap-2"
+                              className="p-2.5 bg-[#FDFBF7] border border-[#E8DEEF] rounded-lg hover:border-[#059669] transition-all flex items-start justify-between gap-2"
                             >
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5 mb-1">
-                                  <span className="text-[9.5px] font-bold uppercase tracking-wider bg-[#e6f4ea] text-[#00875a] px-1.5 py-0.2 rounded">
+                                  <span className="text-[9.5px] font-bold uppercase tracking-wider bg-[#D1FAE5] text-[#059669] px-1.5 py-0.2 rounded">
                                     {report.category}
                                   </span>
-                                  <span className="text-[10px] text-[#8c7077] font-medium">
+                                  <span className="text-[10px] text-[#7E6C96] font-medium">
                                     {report.issuedBy}
                                   </span>
                                 </div>
-                                <h6 className="text-[11.5px] font-bold text-[#1c1b1b] leading-snug line-clamp-1">
+                                <h6 className="text-[11.5px] font-bold text-[#2A0E3F] leading-snug line-clamp-1">
                                   {report.title}
                                 </h6>
-                                <p className="text-[10.5px] text-[#594047] line-clamp-1 mt-0.5">
+                                <p className="text-[10.5px] text-[#5B4A6E] line-clamp-1 mt-0.5">
                                   {report.summary}
                                 </p>
                               </div>
@@ -1017,10 +1017,10 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                               <button
                                 type="button"
                                 onClick={() => triggerPdfDownload(report.title)}
-                                className="shrink-0 bg-white border border-[#e8e8e8] hover:border-[#00875a] text-[#00875a] hover:bg-[#e6f4ea] px-2.5 py-1.5 rounded-md text-[10.5px] font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-2xs"
+                                className="shrink-0 bg-white border border-[#E8DEEF] hover:border-[#059669] text-[#059669] hover:bg-[#D1FAE5] px-2.5 py-1.5 rounded-md text-[10.5px] font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-2xs"
                                 title={`Download PDF (${report.fileSize})`}
                               >
-                                <Download className="w-3 h-3 text-[#00875a]" />
+                                <Download className="w-3 h-3 text-[#059669]" />
                                 <span>PDF</span>
                               </button>
                             </div>
@@ -1033,11 +1033,11 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                 </div>
 
                 {/* Action Buttons */}
-                <div className="pt-4 border-t border-[#e8e8e8] grid grid-cols-5 gap-2.5">
+                <div className="pt-4 border-t border-[#E8DEEF] grid grid-cols-5 gap-2.5">
                   
                   <button
                     onClick={() => onOpenEnquiry(sup)}
-                    className="col-span-3 bg-[#b90064] hover:bg-[#8e004b] text-white text-[13px] font-bold py-2.5 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-2xs active:scale-98"
+                    className="col-span-3 bg-[#6B2D8C] hover:bg-[#4A2560] text-white text-[13px] font-bold py-2.5 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-2xs active:scale-98"
                   >
                     <Send className="w-3.5 h-3.5" />
                     <span>{isLoggedIn ? 'Contact Supplier' : 'Login to Connect'}</span>
@@ -1049,7 +1049,7 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                       else onOpenAuth();
                     }}
                     title={isLoggedIn ? "Call Phone" : "Login to Call"}
-                    className="col-span-1 bg-white hover:bg-[#f7f2f2] border border-[#e8e8e8] text-[#594047] hover:text-[#1c1b1b] rounded-lg transition-colors flex items-center justify-center"
+                    className="col-span-1 bg-white hover:bg-[#F6F1FA] border border-[#E8DEEF] text-[#5B4A6E] hover:text-[#2A0E3F] rounded-lg transition-colors flex items-center justify-center"
                   >
                     <Phone className="w-4 h-4" />
                   </button>
@@ -1067,15 +1067,15 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
                 {/* Visible Contact Number & Verification Barrier */}
                 <div className="mt-3 flex items-center justify-between px-1">
                   <div className="flex items-center gap-1.5">
-                    <Phone className="w-3 h-3 text-[#8c7077]" />
-                    <span className="text-[11px] font-bold text-[#1c1b1b]">
+                    <Phone className="w-3 h-3 text-[#7E6C96]" />
+                    <span className="text-[11px] font-bold text-[#2A0E3F]">
                       {isLoggedIn ? (sup.phone || '+91 98201 55443') : '+91 98XXX XXXXX'}
                     </span>
                   </div>
                   {!isLoggedIn && (
                     <button 
                       onClick={onOpenAuth}
-                      className="text-[10px] font-bold text-[#b90064] hover:underline"
+                      className="text-[10px] font-bold text-[#6B2D8C] hover:underline"
                     >
                       Login to reveal
                     </button>
@@ -1092,7 +1092,7 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
 
       {/* Download Toast Notification */}
       {downloadToast && (
-        <div className="fixed bottom-20 right-6 z-50 bg-[#00875a] text-white text-[13px] font-semibold px-4 py-3 rounded-xl shadow-2xl border border-[#00875a]/30 flex items-center gap-2.5 animate-in slide-in-from-bottom-5">
+        <div className="fixed bottom-20 right-6 z-50 bg-[#059669] text-white text-[13px] font-semibold px-4 py-3 rounded-xl shadow-2xl border border-[#059669]/30 flex items-center gap-2.5 animate-in slide-in-from-bottom-5">
           <CheckCircle2 className="w-4 h-4 text-white" />
           <span>{downloadToast}</span>
         </div>
@@ -1100,9 +1100,9 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
 
       {/* Floating Bottom Comparison Drawer Bar */}
       {selectedComparisonIds.length > 0 && onOpenComparisonModal && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-[#1c1b1b] text-white px-5 py-3 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4 animate-slideUp max-w-[92vw] sm:max-w-xl">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-[#2A0E3F] text-white px-5 py-3 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4 animate-slideUp max-w-[92vw] sm:max-w-xl">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#b90064] text-white flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-[#6B2D8C] text-white flex items-center justify-center shrink-0">
               <Scale className="w-4 h-4" />
             </div>
             <div>
@@ -1125,7 +1125,7 @@ export const VerifiedSuppliersSection: React.FC<VerifiedSuppliersSectionProps> =
           <div className="flex items-center gap-2 ml-auto">
             <button
               onClick={onOpenComparisonModal}
-              className="bg-[#b90064] hover:bg-[#8e004b] text-white text-[12px] font-bold px-3.5 py-2 rounded-xl transition-colors flex items-center gap-1.5 shadow-sm active:scale-98 whitespace-nowrap"
+              className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white text-[12px] font-bold px-3.5 py-2 rounded-xl transition-colors flex items-center gap-1.5 shadow-sm active:scale-98 whitespace-nowrap"
             >
               <span>Compare Side-by-Side</span>
             </button>
