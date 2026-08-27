@@ -463,6 +463,14 @@
   @media (prefers-reduced-motion: reduce) {
     .reveal, .reveal-left, .reveal-right { opacity: 1; transform: none; transition: none; }
     .nl-twinkle, .nl-float, .nl-float-delayed, .btn-shine::after { animation: none; }
+    /* Shimmer → static gold text; sparkle → subtle static glint */
+    .text-gold-shimmer {
+      animation: none;
+      background: none;
+      -webkit-text-fill-color: #C9A961;
+      color: #C9A961;
+    }
+    .sparkle { animation: none; opacity: 0.5; }
   }
 
   /* ── Forms ────────────────────────────────────────────────────────── */
