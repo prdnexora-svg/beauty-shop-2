@@ -121,6 +121,15 @@ import { SPONSORED_PRODUCTS_DB } from '../data/sponsoredProductsData';
 import { SponsoredVideoItem, VideoPlatform } from '../types';
 import { saveSponsoredReel, saveSponsoredFullVideo, detectPlatformFromUrl } from '../data/sponsoredReelsData';
 import { getStoredSponsoredAnalyticsEvents } from '../data/sponsoredAnalyticsStore';
+import { MediaUploader } from './media/MediaUploader';
+import { useMediaOwner } from '../hooks/useMediaOwner';
+import {
+  MediaAsset,
+  capturePosterFromUrl,
+  persistableUrl,
+  resolveMediaUrl,
+  uploadMedia,
+} from '../lib/mediaService';
 
 interface SponsoredAdManagerProps {
   supplierId?: string;
@@ -190,6 +199,9 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
   const [formEndDate, setFormEndDate] = useState('2026-09-18');
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [fileUploadError, setFileUploadError] = useState<string | null>(null);
+  const [creativeAsset, setCreativeAsset] = useState<MediaAsset | null>(null);
+  const [videoAsset, setVideoAsset] = useState<MediaAsset | null>(null);
+  const [isCapturingPoster, setIsCapturingPoster] = useState(false);
 
   // Load data & run auto-reconciliation on mount and updates
   useEffect(() => {
@@ -443,23 +455,69 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
     setShowCreateModal(true);
   };
 
-  // Image Upload handler
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      setFileUploadError('File size exceeds 5MB limit. Please upload an image under 5MB.');
+  // -------------------------------------------------------------------------
+  // Creative assets — uploaded to Supabase Storage (`ad-creatives` for images,
+  // `videos` for self-hosted video). Previously the picker produced a base64
+  // data URL that was persisted straight into localStorage.
+  // -------------------------------------------------------------------------
+  const { ownerId: mediaOwnerId, isAuthenticated: isMediaAuthenticated } = useMediaOwner();
+
+  const handleCreativeImageChange = async (next: MediaAsset | MediaAsset[] | null) => {
+    const asset = Array.isArray(next) ? next[0] ?? null : next;
+    setFileUploadError(null);
+    if (!asset) {
+      setCreativeAsset(null);
+      setUploadedFileName(null);
       return;
     }
+    setCreativeAsset(asset);
+    setUploadedFileName(asset.originalName);
+    const url = await persistableUrl(asset, 1200);
+    setFormImageUrl(url || asset.publicUrl || PRESET_SAMPLE_IMAGES[0].url);
+  };
+
+  const handleVideoAssetChange = (next: MediaAsset | MediaAsset[] | null) => {
+    const asset = Array.isArray(next) ? next[0] ?? null : next;
     setFileUploadError(null);
-    setUploadedFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        setFormImageUrl(reader.result);
+    setVideoAsset(asset);
+    if (!asset) {
+      setFormVideoUrl('');
+      return;
+    }
+    // A self-hosted file needs a public playback URL, not a platform embed.
+    setFormVideoUrl(asset.publicUrl || '');
+    setFormVideoPlatform('Self-hosted');
+    // Reel cards and ad units need a still frame. If the advertiser has not
+    // supplied one, grab the first decodable frame and store it as a poster.
+    if (!creativeAsset) void captureAndStoreVideoPoster(asset);
+  };
+
+  const captureAndStoreVideoPoster = async (video: MediaAsset) => {
+    setIsCapturingPoster(true);
+    try {
+      const source = await resolveMediaUrl(video);
+      if (!source) return;
+      const dataUrl = await capturePosterFromUrl(source);
+      if (!dataUrl) return;
+      const blob = await (await fetch(dataUrl)).blob();
+      const posterFile = new File([blob], `${video.originalName || 'video'}-poster.jpg`, {
+        type: 'image/jpeg',
+      });
+      const uploaded = await uploadMedia({
+        file: posterFile,
+        scope: 'video-poster',
+        ownerId: mediaOwnerId as string,
+        entityType: 'ad_campaign',
+        metadata: { generatedFor: video.id },
+      });
+      if (uploaded.ok && uploaded.asset) {
+        await handleCreativeImageChange(uploaded.asset);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      // Poster generation is a nicety — never block the campaign on it.
+    } finally {
+      setIsCapturingPoster(false);
+    }
   };
 
   // Video URL Change
@@ -1467,20 +1525,50 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                     <label className="block text-xs font-bold text-zinc-800 mb-1">
                       {formCreativeType === 'image_ad' ? 'Banner Image Asset' : 'Video Thumbnail Poster'}
                     </label>
-                    <div className="border-2 border-dashed border-stone-300 hover:border-[#6B2D8C] bg-white rounded-xl p-4 text-center transition-colors relative cursor-pointer group">
-                      <input
-                        type="file"
-                        accept="image/png, image/jpeg, image/webp"
-                        onChange={handleFileUpload}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      />
-                      <Upload className="w-5 h-5 text-stone-400 group-hover:text-[#6B2D8C] mx-auto mb-1 transition-colors" />
-                      <p className="text-xs font-bold text-zinc-800">
-                        {uploadedFileName ? `Uploaded: ${uploadedFileName}` : 'Click or Drag & Drop Image Asset'}
+                    <MediaUploader
+                      ownerId={mediaOwnerId}
+                      scope="ad-creative"
+                      entityType="ad_campaign"
+                      value={creativeAsset}
+                      onChange={(next) => void handleCreativeImageChange(next)}
+                      variant="dropzone"
+                      maxFiles={1}
+                      helperText="PNG, JPG, WebP up to 10MB"
+                    />
+                    {fileUploadError && (
+                      <p className="text-[10px] font-bold text-red-600 mt-1">{fileUploadError}</p>
+                    )}
+                    {!isMediaAuthenticated && (
+                      <p className="text-[10px] font-bold text-amber-700 mt-1">
+                        Sign in to upload a creative image.
                       </p>
-                      <p className="text-[10px] text-[#5B4A6E] mt-0.5">PNG, JPG, WebP under 5MB</p>
-                    </div>
+                    )}
                   </div>
+
+                  {/* Self-hosted video upload (reels / full video only) */}
+                  {formCreativeType !== 'image_ad' && (
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-800 mb-1">
+                        Or upload a video file (MP4 / WebM)
+                      </label>
+                      <MediaUploader
+                        ownerId={mediaOwnerId}
+                        scope="video"
+                        entityType="ad_campaign"
+                        value={videoAsset}
+                        onChange={handleVideoAssetChange}
+                        variant="compact"
+                        maxFiles={1}
+                        helperText="MP4, WebM or MOV up to 200MB — plays natively, no third-party player"
+                      />
+                      {isCapturingPoster && (
+                        <p className="text-[10px] font-bold text-[#6B2D8C] mt-1 flex items-center gap-1">
+                          <RefreshCw className="w-3 h-3 animate-spin" />
+                          Generating poster frame…
+                        </p>
+                      )}
+                    </div>
+                  )}
 
                   {/* Preset Selector */}
                   <div>

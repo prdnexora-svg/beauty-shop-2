@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, ExternalLink, Play, AlertCircle, Video } from 'lucide-react';
 import { SponsoredReelItem } from '../types';
+import { isSelfHostedMediaUrl } from '../lib/mediaConfig';
+import { MediaPlayer } from './media/MediaPlayer';
 
 interface SponsoredReelLightboxModalProps {
   reel: SponsoredReelItem | null;
@@ -48,9 +50,9 @@ export const SponsoredReelLightboxModal: React.FC<SponsoredReelLightboxModalProp
     }
   };
 
-  // Determine if platform supports direct iframe embed smoothly in MVP
-  // YouTube embed works cleanly; others may block cross-origin or require direct link
-  const supportsDirectEmbed = reel.platform === 'YouTube' && !!reel.embed_url;
+  // Files in our own storage bucket play natively; only YouTube can iframe.
+  const isSelfHosted = isSelfHostedMediaUrl(reel.source_url) || reel.platform === 'Self-hosted';
+  const supportsDirectEmbed = !isSelfHosted && reel.platform === 'YouTube' && !!reel.embed_url;
 
   return (
     <div 
@@ -80,6 +82,15 @@ export const SponsoredReelLightboxModal: React.FC<SponsoredReelLightboxModalProp
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
               onError={() => setHasEmbedError(true)}
+            />
+          ) : isSelfHosted ? (
+            <MediaPlayer
+              asset={null}
+              src={reel.source_url}
+              poster={reel.poster_url}
+              title={reel.display_title}
+              aspect="reel"
+              controls
             />
           ) : (
             /* Fallback or non-iframe social platform container */

@@ -26,13 +26,15 @@ import {
   Info,
   Cloud,
   Zap,
-  AlertCircle
+  AlertCircle,
+  HardDrive
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from '../db/database';
 import { DatabaseState } from '../db/database';
 import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../data/categories';
 import { testSupabaseConnection, isSupabaseConfigured, getSupabaseConfigInfo, syncAllDataToSupabase } from '../lib/supabase';
+import { StorageHealthPanel } from './media/StorageHealthPanel';
 
 /**
  * Simple auth health - Email + Password only (no mobile, no OTP)
@@ -261,7 +263,7 @@ export const DatabaseStatusModal: React.FC<DatabaseStatusModalProps> = ({
 }) => {
   const [dbState, setDbState] = useState<DatabaseState>(db.getRawState());
   const [activeTable, setActiveTable] = useState<keyof DatabaseState>('rfqs_enquiries');
-  const [activeTab, setActiveTab] = useState<'records' | 'schema' | 'simulator' | 'supabase'>('supabase');
+  const [activeTab, setActiveTab] = useState<'records' | 'schema' | 'simulator' | 'supabase' | 'storage'>('supabase');
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -713,6 +715,18 @@ CREATE TABLE IF NOT EXISTS follow_ups (
             >
               <Code2 className="w-3.5 h-3.5" />
               <span>Schema &amp; Foreign Keys</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('storage')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'storage'
+                  ? 'bg-[#6B2D8C] text-white shadow-xs'
+                  : 'bg-[#FDFBF7] text-[#5B4A6E] hover:bg-[#F5EEF8] hover:text-[#6B2D8C] border border-[#E5D8EE]'
+              }`}
+            >
+              <HardDrive className="w-3.5 h-3.5" />
+              <span>Storage &amp; Media</span>
             </button>
 
             <button
@@ -1177,6 +1191,8 @@ CREATE TABLE IF NOT EXISTS follow_ups (
             )}
 
             {/* TAB 3: LEAD ROUTING SIMULATOR */}
+            {activeTab === 'storage' && <StorageHealthPanel />}
+
             {activeTab === 'simulator' && (
               <div className="flex-1 overflow-auto p-5 custom-scrollbar space-y-4">
                 <div className="bg-white p-4 rounded-xl border border-[#E5D8EE] space-y-3 shadow-2xs">

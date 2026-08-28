@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { B2B_CATEGORIES } from '../data/categories';
+import { MediaUploader } from './media/MediaUploader';
+import { useMediaOwner } from '../hooks/useMediaOwner';
+import { MediaAsset, persistableUrl } from '../lib/mediaService';
 import { 
   ShieldCheck, 
   ArrowRight, 
@@ -175,20 +178,37 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
   }, [selectedState, selectedDistrict]);
 
   // Step 3: Product Catalog
-  const [products, setProducts] = useState<Array<{ id: string; name: string; category: string; subCategory: string; price: string; moq: string; image?: string }>>([
+  const [products, setProducts] = useState<Array<{
+    id: string;
+    name: string;
+    category: string;
+    subCategory: string;
+    price: string;
+    moq: string;
+    image?: string;
+    imageAsset?: MediaAsset | null;
+  }>>([
     { id: '1', name: '', category: '', subCategory: '', price: '', moq: '', image: '' }
   ]);
+
+  // Product images upload to the public `product-media` bucket.
+  const { ownerId: mediaOwnerId } = useMediaOwner();
+  const productPickers = useRef<Record<string, { current: (() => void) | null }>>({});
 
   const handleAddProduct = () => {
     setProducts([...products, { id: Date.now().toString(), name: '', category: '', subCategory: '', price: '', moq: '', image: '' }]);
   };
 
-  const handleImageUpload = (id: string, file: File) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setProducts(products.map(p => p.id === id ? { ...p, image: reader.result as string } : p));
-    };
-    reader.readAsDataURL(file);
+  const handleProductImage = async (id: string, next: MediaAsset | MediaAsset[] | null) => {
+    const asset = Array.isArray(next) ? next[0] ?? null : next;
+    const url = asset ? await persistableUrl(asset, 800) : null;
+    setProducts(prev =>
+      prev.map(p =>
+        p.id === id
+          ? { ...p, imageAsset: asset, image: asset ? url || asset.publicUrl || '' : '' }
+          : p,
+      ),
+    );
   };
 
   const handleRemoveProduct = (id: string) => {
@@ -558,16 +578,32 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                       <div className="w-full md:w-32 lg:w-40 shrink-0 space-y-2">
                         <label className="text-[11px] font-bold text-[#5B4A6E] uppercase">Product Image</label>
                         <div className="relative group">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleImageUpload(product.id, file);
+                          {/* Storage-backed uploader (hidden; the tile below drives it) */}
+                          <div className="hidden">
+                            <MediaUploader
+                              ownerId={mediaOwnerId}
+                              scope="product"
+                              entityType="supplier_product"
+                              entityId={product.id}
+                              value={product.imageAsset ?? null}
+                              onChange={(next) => void handleProductImage(product.id, next)}
+                              pickerRef={productPickers.current[product.id] ?? (productPickers.current[product.id] = { current: null })}
+                              variant="compact"
+                              hidePreview
+                            />
+                          </div>
+                          <div
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`Upload image for product ${idx + 1}`}
+                            onClick={() => productPickers.current[product.id]?.current?.()}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                productPickers.current[product.id]?.current?.();
+                              }
                             }}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-                          />
-                          <div className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-all ${
+                            className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-all cursor-pointer ${
                             product.image 
                               ? 'border-[#6B2D8C] bg-white' 
                               : 'border-[#E8DEEF] bg-[#FDFBF7] group-hover:border-[#6B2D8C] group-hover:bg-[#F5EEF8]/20'

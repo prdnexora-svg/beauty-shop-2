@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   ChevronRight,
   FileText,
@@ -29,6 +29,9 @@ import {
 } from 'lucide-react';
 import { db } from '../db/database';
 import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../data/categories';
+import { MediaUploader } from './media/MediaUploader';
+import { useMediaOwner } from '../hooks/useMediaOwner';
+import { MediaAsset } from '../lib/mediaService';
 
 interface PostRequirementScreenProps {
   onNavigateToExplore: () => void;
@@ -70,11 +73,27 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
   );
   const [requireSamples, setRequireSamples] = useState<'yes' | 'no'>('yes');
   
-  // Uploaded Files
-  const [attachments, setAttachments] = useState<Array<{ id: string; name: string; size: string; type: string }>>([
-    { id: '1', name: 'brand_formulation_brief.pdf', size: '2.4 MB', type: 'pdf' },
-    { id: '2', name: 'reference_bottle_packaging.jpg', size: '1.1 MB', type: 'image' }
-  ]);
+  // Uploaded Files — stored in the private `documents` bucket. The seeded
+  // placeholder entries were removed: an RFQ must never list a file that was
+  // not actually uploaded.
+  const [attachments, setAttachments] = useState<
+    Array<{ id: string; name: string; size: string; type: string }>
+  >([]);
+  const [attachedAssets, setAttachedAssets] = useState<MediaAsset[]>([]);
+  const { ownerId: mediaOwnerId, isAuthenticated } = useMediaOwner();
+
+  const handleAttachmentsChange = (next: MediaAsset | MediaAsset[] | null) => {
+    const list = Array.isArray(next) ? next : next ? [next] : [];
+    setAttachedAssets(list);
+    setAttachments(
+      list.map((asset) => ({
+        id: asset.id,
+        name: asset.originalName || 'attachment',
+        size: `${(asset.byteSize / (1024 * 1024)).toFixed(1)} MB`,
+        type: asset.mediaKind === 'image' ? 'image' : 'pdf',
+      })),
+    );
+  };
 
   // Step 2: Supplier Preferences
   const [preferredSupplierTypes, setPreferredSupplierTypes] = useState<string[]>(['Manufacturer / OEM', 'Brand Owner']);
@@ -117,21 +136,11 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
     );
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const newFile = {
-        id: Date.now().toString(),
-        name: file.name,
-        size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-        type: file.type.includes('image') ? 'image' : 'pdf'
-      };
-      setAttachments([...attachments, newFile]);
-    }
-  };
+  const visualRefPickerRef = useRef<(() => void) | null>(null);
 
-  const handleRemoveFile = (id: string) => {
-    setAttachments(attachments.filter((f) => f.id !== id));
+  const addVisualReference = () => {
+    if (!isAuthenticated) return;
+    visualRefPickerRef.current?.();
   };
 
   const toggleCompliance = (item: string) => {
@@ -202,7 +211,9 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
         target_budget: totalBudget ? parseFloat(totalBudget) : (parseFloat(targetUnitPrice) * (parseInt(quantity, 10) || 1000)),
         delivery_location: deliveryCity,
         details: `${details}\n\nCompliance: ${selectedCompliance.join(', ')}\nPackaging: ${selectedVisualRefs.join(', ')}\nSupplier Notes: ${additionalSupplierNotes}`,
-        attachments: attachments.map(a => a.name),
+        attachments: attachedAssets.map(a =>
+          a.isLocal ? `local-demo:${a.id}` : a.publicUrl || `${a.bucket}/${a.path}`,
+        ),
         status: 'new',
         type: 'public_rfq',
         send_to_similar_suppliers: true
@@ -761,11 +772,32 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                           );
                         })}
 
-                        <label className="w-24 h-24 rounded-2xl border-2 border-dashed border-[#E8DEEF] bg-[#FDFBF7] hover:bg-[#F4F0E9] flex flex-col items-center justify-center text-[#5B4A6E] cursor-pointer shrink-0 transition-colors">
+                        <button
+                          type="button"
+                          onClick={addVisualReference}
+                          disabled={!isAuthenticated}
+                          title={isAuthenticated ? 'Upload a reference image' : 'Sign in to upload references'}
+                          className="w-24 h-24 rounded-2xl border-2 border-dashed border-[#E8DEEF] bg-[#FDFBF7] hover:bg-[#F4F0E9] flex flex-col items-center justify-center text-[#5B4A6E] cursor-pointer shrink-0 transition-colors disabled:opacity-50"
+                        >
                           <Plus className="w-5 h-5 text-[#6B2D8C]" />
                           <span className="text-[10px] font-bold mt-1">Add Own</span>
-                          <input type="file" onChange={handleFileUpload} className="hidden" />
-                        </label>
+                        </button>
+
+                        {/* Uploads land in the same attachment list above */}
+                        <div className="hidden">
+                          <MediaUploader
+                            ownerId={mediaOwnerId}
+                            scope="attachment"
+                            entityType="public_rfq"
+                            value={attachedAssets}
+                            onChange={handleAttachmentsChange}
+                            pickerRef={visualRefPickerRef}
+                            variant="compact"
+                            multiple
+                            maxFiles={5}
+                            hidePreview
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -991,47 +1023,28 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                   </div>
                 </section>
 
-                {/* 6. Attachments Section */}
+                {/* 6. Attachments Section — real uploads to the private
+                    `documents` bucket. Nothing is recorded on the RFQ unless
+                    the file actually finished uploading. */}
                 <section className="space-y-4">
                   <h3 className="text-[14px] font-bold text-[#2A0E3F]">Attachments (Optional)</h3>
 
-                  <div className="border-2 border-dashed border-[#E8DEEF] hover:border-[#6B2D8C] rounded-2xl p-8 text-center bg-[#FDFBF7] transition-all cursor-pointer group">
-                    <label className="cursor-pointer block">
-                      <div className="w-14 h-14 rounded-full bg-[#F5EEF8] text-[#6B2D8C] flex items-center justify-center mx-auto mb-3 group-hover:scale-105 transition-transform">
-                        <Upload className="w-7 h-7" />
-                      </div>
-                      <p className="text-[14px] font-bold text-[#2A0E3F]">Click to upload or drag and drop</p>
-                      <p className="text-[12px] text-[#5B4A6E] font-medium mt-1">
-                        Upload spec sheets, benchmark product photos, or brand guidelines (PDF, JPG, PNG up to 10MB)
-                      </p>
-                      <input type="file" onChange={handleFileUpload} className="hidden" />
-                    </label>
-                  </div>
+                  <MediaUploader
+                    ownerId={mediaOwnerId}
+                    scope="attachment"
+                    entityType="public_rfq"
+                    value={attachedAssets}
+                    onChange={handleAttachmentsChange}
+                    multiple
+                    maxFiles={5}
+                    variant="dropzone"
+                    helperText="Spec sheets, benchmark photos or brand guidelines — PDF, JPG, PNG up to 25MB each (max 5)"
+                  />
 
-                  {/* Attachment Preview Cards */}
-                  {attachments.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      {attachments.map((file) => (
-                        <div key={file.id} className="bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl p-3 flex items-center justify-between">
-                          <div className="flex items-center gap-2.5 truncate">
-                            <div className="w-8 h-8 rounded-lg bg-[#F5EEF8] text-[#6B2D8C] flex items-center justify-center shrink-0">
-                              <FileText className="w-4 h-4" />
-                            </div>
-                            <div className="truncate">
-                              <p className="text-[12px] font-bold text-[#2A0E3F] truncate">{file.name}</p>
-                              <p className="text-[10px] text-[#7E6C96] font-medium">{file.size}</p>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveFile(file.id)}
-                            className="text-[#7E6C96] hover:text-[#E11D48] p-1 rounded-md transition-colors cursor-pointer"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
+                  {!isAuthenticated && (
+                    <p className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                      Sign in to attach files to this requirement.
+                    </p>
                   )}
                 </section>
 

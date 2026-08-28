@@ -43,6 +43,10 @@ import { BuyerOnboardingScreen } from './components/BuyerOnboardingScreen';
 import { DatabaseStatusModal } from './components/DatabaseStatusModal';
 import { getBuyerProfile, BUYER_PROFILES_DB } from './data/buyerProfilesData';
 import {
+  clearDemoOwner,
+  ensureDemoOwner,
+} from './hooks/useMediaOwner';
+import {
   SupabaseProvider,
   useSupabase,
   AUTH_LOGIN_PATH,
@@ -232,6 +236,9 @@ function NexoraShopApp() {
     localStorage.removeItem('nexora_guest_mode');
     localStorage.setItem('nexora_is_logged_in', 'false');
     localStorage.removeItem('nexora_user_role');
+    // Drop the local demo media owner so the next account cannot delete or
+    // replace media uploaded by the previous one.
+    clearDemoOwner();
     setIsLoggedIn(false);
     setUserRole(null);
     setIsEditProfileOpen(false);
@@ -246,6 +253,9 @@ function NexoraShopApp() {
     localStorage.setItem('nexora_is_logged_in', 'true');
     localStorage.setItem('nexora_user_role', role);
     setIsAuthModalOpen(false);
+    // In demo mode (no Supabase project) uploads still need a stable owner id
+    // so the storage path convention and delete/replace flows behave like real.
+    ensureDemoOwner();
     
     if (isNewUser) {
       const target = role === 'buyer' ? 'buyer-onboarding' : 'onboarding';

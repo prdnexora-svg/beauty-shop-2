@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo, useRef, useState 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { DatabaseState } from '../db/database';
+import { ENV, hasRealSupabaseCredentials } from './env';
 import { useLocationSync, LocationSyncStatus } from '../hooks/useLocationSync';
 
 // ============================================================================
@@ -16,8 +17,16 @@ export const AUTH_CALLBACK_PREFIX = '/auth/';
 const AUTH_REDIRECT_THROTTLE_MS = 3000;
 let lastAuthRedirectAt = 0;
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mock-nexora-project.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vY2stbmV4b3JhLXByb2plY3QiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTcwMDA0MDAwMCwiZXhwIjoyMDE1NjE2MDAwfQ.mock_key_nexora';
+// Placeholder credentials used only when the real ones are absent, so
+// `createClient` still constructs and the app can boot into demo mode.
+// Deliberately NOT a JWT — nothing in the codebase should ever contain a
+// key-shaped literal, and the verification harness fails the build if one
+// appears. `isSupabaseConfigured()` is what gates real network calls.
+const FALLBACK_URL = 'https://mock-nexora-project.supabase.co';
+const FALLBACK_ANON_KEY = 'placeholder-anon-key-not-configured';
+
+const supabaseUrl = ENV.SUPABASE_URL || FALLBACK_URL;
+const supabaseAnonKey = ENV.SUPABASE_ANON_KEY || FALLBACK_ANON_KEY;
 
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
@@ -35,27 +44,16 @@ export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKe
 });
 
 export function isSupabaseConfigured(): boolean {
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  return Boolean(
-    url &&
-    key &&
-    !url.includes('mock-nexora-project') &&
-    !url.includes('your-project') &&
-    !url.includes('your-project.supabase.co') &&
-    !key.includes('your-anon') &&
-    !key.includes('your-project'),
-  );
+  return hasRealSupabaseCredentials();
 }
 
 export function getSupabaseConfigInfo() {
+  const key = ENV.SUPABASE_ANON_KEY;
   return {
-    url: import.meta.env.VITE_SUPABASE_URL || '',
+    url: ENV.SUPABASE_URL,
     storageKey: SUPABASE_STORAGE_KEY,
     isConfigured: isSupabaseConfigured(),
-    anonKeyTruncated: import.meta.env.VITE_SUPABASE_ANON_KEY
-      ? `${import.meta.env.VITE_SUPABASE_ANON_KEY.slice(0, 10)}...${import.meta.env.VITE_SUPABASE_ANON_KEY.slice(-6)}`
-      : 'Not set'
+    anonKeyTruncated: key ? `${key.slice(0, 10)}...${key.slice(-6)}` : 'Not set'
   };
 }
 
@@ -446,6 +444,7 @@ export const parseAuthIdentifier = (raw: string) => {
 };
 export const phoneOtpAllowed = () => false;
 export const toE164Phone = (raw: string) => ({ value: raw, ok: false, error: 'Phone not supported' });
-export type AuthFailureKind = 'invalid_email' | 'credentials' | 'rate_limited' | 'network' | 'unknown';
+// `AuthFailureKind` is already exported above; the duplicate declaration that
+// used to live here made `tsc --noEmit` fail, so it was removed.
 export type OtpChannel = 'email' | 'sms' | 'whatsapp';
 export type PhoneCapability = 'disabled' | 'unknown' | 'available' | 'unavailable';

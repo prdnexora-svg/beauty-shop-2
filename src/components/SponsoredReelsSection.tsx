@@ -4,6 +4,7 @@ import { SponsoredVideoItem, VideoPlatform } from '../types';
 import { getStoredSponsoredReels, INITIAL_SPONSORED_REELS, validateSponsoredVideo } from '../data/sponsoredReelsData';
 import { recordSponsoredAnalyticsEvent } from '../data/sponsoredAnalyticsStore';
 import { SponsoredVideoLightboxModal } from './SponsoredVideoLightboxModal';
+import { SecureImage } from './media/SecureImage';
 
 interface SponsoredReelsSectionProps {
   onOpenAdManager?: () => void;
@@ -179,10 +180,9 @@ export const SponsoredReelsSection: React.FC<SponsoredReelsSectionProps> = ({
               className="sponsored-reel-card group relative flex-shrink-0 w-[160px] sm:w-auto aspect-[9/16] rounded-2xl overflow-hidden border border-[#E5D8EE] bg-[#1a1718] cursor-pointer shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] snap-start"
             >
               {/* Lightweight Poster Image (NO IFRAME PRELOAD) */}
-              <img
+              <SecureImage
                 src={reel.poster_url}
                 alt={reel.display_title}
-                loading="lazy"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
 

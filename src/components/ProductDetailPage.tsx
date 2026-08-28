@@ -22,6 +22,7 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { ProductDetailData } from '../types';
+import { SecureImage } from './media/SecureImage';
 import { SPONSORED_PRODUCTS_DB } from '../data/sponsoredProductsData';
 import { VerifiedBadge } from './VerifiedBadge';
 
@@ -122,10 +123,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           <div className="lg:col-span-5 space-y-4">
             <div className="bg-white border border-[#E8DEEF] rounded-2xl overflow-hidden p-3 relative group">
               <div className="aspect-square rounded-xl overflow-hidden bg-gray-50 relative">
-                <img
+                <SecureImage
                   src={product.images[activeImageIndex] || product.images[0]}
                   alt={product.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  showSpinner
                 />
                 <span className="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-[#6B2D8C] text-white text-[10px] font-black uppercase tracking-wider shadow-sm flex items-center gap-1">
                   <Sparkles className="w-3 h-3" />
@@ -147,7 +149,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <img src={img} alt="Thumbnail" className="w-full h-full object-cover" />
+                    <SecureImage src={img} alt="Thumbnail" className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>

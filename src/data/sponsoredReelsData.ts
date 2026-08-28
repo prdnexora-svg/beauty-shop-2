@@ -1,5 +1,6 @@
 import { SponsoredVideoItem, VideoPlatform } from '../types';
 import { SPONSORED_PRODUCTS_DB } from './sponsoredProductsData';
+import { isSelfHostedMediaUrl } from '../lib/mediaConfig';
 
 export const INITIAL_SPONSORED_REELS: SponsoredVideoItem[] = [
   {
@@ -250,6 +251,12 @@ export function saveSponsoredFullVideo(video: SponsoredVideoItem): void {
 
 export function detectPlatformFromUrl(url: string): { platform: VideoPlatform; videoId?: string; embedUrl?: string } {
   const cleanUrl = url.trim();
+
+  // Files uploaded to our own `videos` bucket play natively — no iframe.
+  if (isSelfHostedMediaUrl(cleanUrl)) {
+    return { platform: 'Self-hosted' };
+  }
+
   if (cleanUrl.includes('youtube.com') || cleanUrl.includes('youtu.be')) {
     let videoId = '';
     if (cleanUrl.includes('shorts/')) {

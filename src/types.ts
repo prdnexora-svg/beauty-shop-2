@@ -279,7 +279,11 @@ export interface BuyerRFQ {
   description?: string;
 }
 
-export type VideoPlatform = 'YouTube' | 'Instagram' | 'Facebook' | 'X' | 'LinkedIn';
+/**
+ * `Self-hosted` covers MP4/WebM files uploaded directly to the `videos`
+ * storage bucket — they play natively instead of through a platform iframe.
+ */
+export type VideoPlatform = 'YouTube' | 'Instagram' | 'Facebook' | 'X' | 'LinkedIn' | 'Self-hosted';
 
 export interface SponsoredVideoItem {
   video_ad_id: string;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { 
   CheckCircle2, 
   UploadCloud, 
@@ -8,9 +8,14 @@ import {
   Clock, 
   ChevronRight,
   Info,
-  Download
+  Download,
+  Loader2
 } from 'lucide-react';
 import { exportSupplierAuditVaultToCsv } from '../utils/exportCsv';
+import { MediaUploader } from './media/MediaUploader';
+import { SecureImage } from './media/SecureImage';
+import { useMediaOwner } from '../hooks/useMediaOwner';
+import { MediaAsset, deleteMedia, resolveMediaUrl } from '../lib/mediaService';
 
 interface SupplierVerificationScreenProps {
   onBack: () => void;
@@ -30,62 +35,107 @@ export const SupplierVerificationScreen: React.FC<SupplierVerificationScreenProp
   });
 
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
-  
-  // Track uploaded documents in session
-  const [uploadedDocs, setUploadedDocs] = useState<Record<string, { name: string, url: string, type: string, date: string }>>({});
-  
-  // Preview modal state
-  const [previewDoc, setPreviewDoc] = useState<{ name: string, url: string, type: string } | null>(null);
+
+  // Track uploaded documents in session. Compliance proofs are PRIVATE: they
+  // live in the `documents` bucket and are only readable through signed URLs.
+  const [uploadedDocs, setUploadedDocs] = useState<
+    Record<string, { name: string; url: string; type: string; date: string; asset?: MediaAsset }>
+  >({});
+
+  // Preview modal state — the URL is resolved lazily because signed URLs expire.
+  const [previewDoc, setPreviewDoc] = useState<{
+    name: string;
+    url: string;
+    type: string;
+    asset?: MediaAsset;
+  } | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isResolvingPreview, setIsResolvingPreview] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const { ownerId: mediaOwnerId, isAuthenticated } = useMediaOwner();
+  const docPickerRef = useRef<(() => void) | null>(null);
 
   const handleUploadClick = (docName: string) => {
-    setUploadingDoc(docName);
-    const input = document.getElementById('file-upload') as HTMLInputElement;
-    if (input) {
-      input.click();
+    setUploadError(null);
+    if (!isAuthenticated) {
+      setUploadError('Sign in to upload compliance documents.');
+      return;
     }
+    setUploadingDoc(docName);
+    // Let the pending state paint before the OS file dialog opens.
+    window.setTimeout(() => docPickerRef.current?.(), 0);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0 && uploadingDoc) {
-      const file = e.target.files[0];
-      const fileUrl = URL.createObjectURL(file);
-      
-      if (uploadingDoc === 'Bulk Archive') {
-        // Simulate extracting ZIP and applying to missing documents
-        setUploadedDocs(prev => ({
-          ...prev,
-          'ISO 9001:2015': { name: 'Extracted_ISO.pdf', url: fileUrl, type: 'application/pdf', date: 'Just now' },
-          'GMP Certificate': { name: 'Extracted_GMP.pdf', url: fileUrl, type: 'application/pdf', date: 'Just now' },
-          'US-FDA Registration': { name: 'Extracted_FDA.pdf', url: fileUrl, type: 'application/pdf', date: 'Just now' }
-        }));
-      } else {
-        setUploadedDocs(prev => ({
-          ...prev,
-          [uploadingDoc]: {
-            name: file.name,
-            url: fileUrl,
-            type: file.type,
-            date: 'Just now'
-          }
-        }));
-      }
-      
-      // Reset input
-      e.target.value = '';
-      setUploadingDoc(null);
-    }
+  const handleDocUploaded = (next: MediaAsset | MediaAsset[] | null) => {
+    const asset = Array.isArray(next) ? next[0] ?? null : next;
+    const docName = uploadingDoc;
+    setUploadingDoc(null);
+    if (!asset || !docName) return;
+
+    setUploadedDocs(prev => ({
+      ...prev,
+      [docName]: {
+        name: asset.originalName || docName,
+        // Preview URL is resolved on demand (private bucket ⇒ signed URL).
+        url: asset.isLocal ? asset.localUrl || '' : '',
+        type: asset.mimeType,
+        date: 'Just now',
+        asset,
+      },
+    }));
+  };
+
+  const openPreview = async (doc: { name: string; url: string; type: string; asset?: MediaAsset }) => {
+    setPreviewDoc(doc);
+    setIsResolvingPreview(true);
+    setPreviewUrl(null);
+    const url = doc.asset ? await resolveMediaUrl(doc.asset) : doc.url;
+    setPreviewUrl(url);
+    setIsResolvingPreview(false);
+  };
+
+  const removeDoc = async (docName: string) => {
+    const doc = uploadedDocs[docName];
+    if (doc?.asset) await deleteMedia(doc.asset);
+    setUploadedDocs(prev => {
+      const next = { ...prev };
+      delete next[docName];
+      return next;
+    });
+    if (previewDoc?.name === doc?.name) setPreviewDoc(null);
   };
 
   return (
     <div className="w-full min-h-[calc(100vh-80px)] bg-[#FDFBF7] pb-24">
-      {/* Hidden File Input */}
-      <input 
-        type="file" 
-        id="file-upload" 
-        className="hidden" 
-        accept=".pdf,.jpg,.jpeg,.png,.zip"
-        onChange={handleFileChange}
-      />
+      {/* Storage-backed compliance uploader (private `documents` bucket) */}
+      <div className="hidden">
+        <MediaUploader
+          ownerId={mediaOwnerId}
+          scope="verification"
+          entityType="supplier_verification"
+          onChange={handleDocUploaded}
+          pickerRef={docPickerRef}
+          variant="compact"
+          hidePreview
+        />
+      </div>
+
+      {uploadError && (
+        <div className="bg-red-50 border-b border-red-200 px-4 py-3 flex items-center justify-center gap-2">
+          <AlertCircle className="w-4 h-4 text-red-600" />
+          <span className="text-[13px] font-bold text-red-700">{uploadError}</span>
+        </div>
+      )}
+
+      {uploadingDoc && (
+        <div className="bg-[#F5EEF8] border-b border-[#E8D5F2] px-4 py-3 flex items-center justify-center gap-2">
+          <Loader2 className="w-4 h-4 text-[#6B2D8C] animate-spin" />
+          <span className="text-[13px] font-bold text-[#6B2D8C]">
+            Uploading {uploadingDoc}…
+          </span>
+        </div>
+      )}
       {/* Notification Banner */}
       <div className="bg-[#E5F5EB] border-b border-[#008A27]/20 px-4 py-3 flex items-center justify-center gap-2">
         <CheckCircle2 className="w-4 h-4 text-[#008A27]" />
@@ -375,7 +425,7 @@ export const SupplierVerificationScreen: React.FC<SupplierVerificationScreenProp
                   {uploadedDocs['ISO 9001:2015'] ? (
                     <>
                       <button 
-                        onClick={() => setPreviewDoc(uploadedDocs['ISO 9001:2015'])}
+                        onClick={() => void openPreview(uploadedDocs['ISO 9001:2015'])}
                         className="px-4 py-2 border border-[#E5D8EE] text-[#2A0E3F] text-[13px] font-semibold rounded-lg hover:bg-[#F4F0E9] transition-colors"
                       >
                         Preview
@@ -385,6 +435,13 @@ export const SupplierVerificationScreen: React.FC<SupplierVerificationScreenProp
                         className="px-4 py-2 border border-[#E5D8EE] text-[#2A0E3F] text-[13px] font-semibold rounded-lg hover:bg-[#F4F0E9] transition-colors"
                       >
                         Update
+                      </button>
+                      <button
+                        onClick={() => void removeDoc('ISO 9001:2015')}
+                        className="px-3 py-2 border border-red-100 text-red-600 text-[13px] font-semibold rounded-lg hover:bg-red-50 transition-colors"
+                        aria-label="Remove ISO 9001:2015 document"
+                      >
+                        Remove
                       </button>
                     </>
                   ) : (
@@ -442,7 +499,7 @@ export const SupplierVerificationScreen: React.FC<SupplierVerificationScreenProp
                   {uploadedDocs['US-FDA Registration'] ? (
                     <>
                       <button 
-                        onClick={() => setPreviewDoc(uploadedDocs['US-FDA Registration'])}
+                        onClick={() => void openPreview(uploadedDocs['US-FDA Registration'])}
                         className="px-4 py-2 border border-[#E5D8EE] text-[#2A0E3F] text-[13px] font-semibold rounded-lg hover:bg-[#F4F0E9] transition-colors"
                       >
                         Preview
@@ -452,6 +509,13 @@ export const SupplierVerificationScreen: React.FC<SupplierVerificationScreenProp
                         className="px-4 py-2 border border-[#E5D8EE] text-[#2A0E3F] text-[13px] font-semibold rounded-lg hover:bg-[#F4F0E9] transition-colors"
                       >
                         Update
+                      </button>
+                      <button
+                        onClick={() => void removeDoc('US-FDA Registration')}
+                        className="px-3 py-2 border border-red-100 text-red-600 text-[13px] font-semibold rounded-lg hover:bg-red-50 transition-colors"
+                        aria-label="Remove US-FDA Registration document"
+                      >
+                        Remove
                       </button>
                     </>
                   ) : (
@@ -494,28 +558,53 @@ export const SupplierVerificationScreen: React.FC<SupplierVerificationScreenProp
               </button>
             </div>
             <div className="flex-1 overflow-auto bg-[#F4F0E9] flex items-center justify-center p-2 md:p-4 min-h-[300px] md:min-h-[400px]">
-              {previewDoc.type.startsWith('image/') ? (
-                <img 
-                  src={previewDoc.url} 
-                  alt="Document Preview" 
+              {isResolvingPreview && (
+                <Loader2 className="w-6 h-6 animate-spin text-[#6B2D8C]" />
+              )}
+
+              {!isResolvingPreview && previewDoc.type.startsWith('image/') && previewDoc.asset && (
+                <SecureImage
+                  asset={previewDoc.asset}
+                  alt="Document Preview"
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
+                  showSpinner
+                />
+              )}
+
+              {!isResolvingPreview && previewDoc.type.startsWith('image/') && !previewDoc.asset && previewUrl && (
+                <img
+                  src={previewUrl}
+                  alt="Document Preview"
                   className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
                 />
-              ) : previewDoc.type === 'application/pdf' ? (
-                <iframe 
-                  src={previewDoc.url} 
+              )}
+
+              {!isResolvingPreview && previewDoc.type === 'application/pdf' && previewUrl && (
+                <iframe
+                  src={previewUrl}
                   className="w-full h-full min-h-[60vh] rounded-lg shadow-sm bg-white"
                   title="PDF Preview"
                 />
-              ) : (
-                <div className="flex flex-col items-center gap-3 text-[#5B4A6E] p-8 text-center">
-                  <FileText className="w-10 h-10 md:w-12 md:h-12 text-[#6B2D8C]" />
-                  <p className="text-[13px] md:text-[14px] font-medium">Preview not available for this file type.</p>
-                  <p className="text-[12px]">You can still submit it for review.</p>
-                </div>
               )}
+
+              {!isResolvingPreview && previewDoc.type === 'application/pdf' && !previewUrl && (
+                <p className="text-[13px] font-bold text-red-600 px-4 text-center">
+                  This document could not be opened. It may have been removed or its access link expired.
+                </p>
+              )}
+
+              {!isResolvingPreview &&
+                !previewDoc.type.startsWith('image/') &&
+                previewDoc.type !== 'application/pdf' && (
+                  <div className="flex flex-col items-center gap-3 text-[#5B4A6E] p-8 text-center">
+                    <FileText className="w-10 h-10 md:w-12 md:h-12 text-[#6B2D8C]" />
+                    <p className="text-[13px] md:text-[14px] font-medium">Preview not available for this file type.</p>
+                    <p className="text-[12px]">You can still submit it for review.</p>
+                  </div>
+                )}
             </div>
             <div className="p-3 md:p-4 border-t border-[#F4F0E9] flex justify-end gap-3 bg-white">
-              <button 
+              <button
                 onClick={() => setPreviewDoc(null)}
                 className="w-full md:w-auto px-5 py-2.5 md:py-2 bg-[#6B2D8C] text-white text-[14px] font-bold rounded-lg hover:bg-[#4A2560] transition-colors"
               >

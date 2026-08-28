@@ -4,6 +4,8 @@ import { SponsoredVideoItem } from '../types';
 import { SPONSORED_PRODUCTS_DB } from '../data/sponsoredProductsData';
 import { recordSponsoredAnalyticsEvent } from '../data/sponsoredAnalyticsStore';
 import { validateSponsoredVideo } from '../data/sponsoredReelsData';
+import { isSelfHostedMediaUrl } from '../lib/mediaConfig';
+import { MediaPlayer } from './media/MediaPlayer';
 
 interface SponsoredVideoLightboxModalProps {
   video: SponsoredVideoItem | null;
@@ -127,7 +129,9 @@ export const SponsoredVideoLightboxModal: React.FC<SponsoredVideoLightboxModalPr
   const supplierType = linkedProduct?.supplierType || 'Verified Beauty Supplier';
 
   const isReel = video.media_type === 'reel_or_short';
-  const supportsDirectEmbed = video.platform === 'YouTube' && !!video.embed_url;
+  /** Files in our own storage bucket play natively; only YouTube can iframe. */
+  const isSelfHosted = isSelfHostedMediaUrl(video.source_url) || video.platform === 'Self-hosted';
+  const supportsDirectEmbed = !isSelfHosted && video.platform === 'YouTube' && !!video.embed_url;
   const platformActionText = video.platform === 'X' ? 'View on X' : `Watch on ${video.platform}`;
 
   const getPlatformBadgeColor = () => {
@@ -223,7 +227,27 @@ export const SponsoredVideoLightboxModal: React.FC<SponsoredVideoLightboxModalPr
               : 'w-full aspect-[16/9] min-h-[240px] max-h-[420px]'
           }`}
         >
-          {supportsDirectEmbed && !hasEmbedError ? (
+          {isSelfHosted ? (
+            <MediaPlayer
+              asset={null}
+              src={video.source_url}
+              poster={video.poster_url}
+              title={video.display_title}
+              aspect={isReel ? 'reel' : 'video'}
+              controls
+              onPlay={() => {
+                if (hasRecordedPlay) return;
+                recordSponsoredAnalyticsEvent('video_play', {
+                  ad_id: video.video_ad_id,
+                  seller_id: video.seller_id,
+                  product_id: video.product_id,
+                  media_type: video.media_type,
+                  platform: video.platform,
+                  supplierName: video.supplierName
+                });
+              }}
+            />
+          ) : supportsDirectEmbed && !hasEmbedError ? (
             <iframe
               src={video.embed_url}
               title={video.display_title}

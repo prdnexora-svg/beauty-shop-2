@@ -40,6 +40,9 @@ import {
 } from 'lucide-react';
 import { VERIFIED_SUPPLIERS } from '../data/mockData';
 import { VerifiedBadge } from './VerifiedBadge';
+import { MediaUploader } from './media/MediaUploader';
+import { useMediaOwner } from '../hooks/useMediaOwner';
+import { MediaAsset } from '../lib/mediaService';
 
 interface SupplierProfileScreenProps {
   isLoggedIn: boolean;
@@ -75,6 +78,13 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
   const [claimFormPhone, setClaimFormPhone] = useState('');
   const [claimFormGst, setClaimFormGst] = useState('27AAAAA1111A1Z1');
   const [claimFormDoc, setClaimFormDoc] = useState<string | null>(null);
+  const [claimFormDocAsset, setClaimFormDocAsset] = useState<MediaAsset | null>(null);
+
+  const handleClaimDocChange = (next: MediaAsset | MediaAsset[] | null) => {
+    const asset = Array.isArray(next) ? next[0] ?? null : next;
+    setClaimFormDocAsset(asset);
+    setClaimFormDoc(asset ? asset.originalName || 'authority-proof' : null);
+  };
   const [claimStatus, setClaimStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
 
   // Compliance tab state
@@ -246,7 +256,13 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
   const [rfqProductInterest, setRfqProductInterest] = useState('Skincare • Serum Base');
   const [rfqVolume, setRfqVolume] = useState('');
   const [rfqMessage, setRfqMessage] = useState('');
-  const [uploadedFile, setUploadedFile] = useState<string | null>('packaging_artwork_v2.pdf');
+  // Attachments are real uploads now — no seeded placeholder file names.
+  const [rfqAttachments, setRfqAttachments] = useState<MediaAsset[]>([]);
+  const { ownerId: mediaOwnerId, isAuthenticated } = useMediaOwner();
+
+  const handleRfqAttachmentsChange = (next: MediaAsset | MediaAsset[] | null) => {
+    setRfqAttachments(Array.isArray(next) ? next : next ? [next] : []);
+  };
 
   // Bookmark state
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -1638,37 +1654,26 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
               {/* Multi-file Dropzone */}
               <div className="space-y-2">
                 <label className="block text-[12px] font-bold text-[#2A0E3F]">Technical Artwork &amp; Specs</label>
-                <div
-                  onClick={() => {
-                    setUploadedFile('custom_formula_brief_v1.pdf');
-                    showToast('File custom_formula_brief_v1.pdf attached!');
-                  }}
-                  className="border-2 border-dashed border-[#E8DEEF] bg-[#FDFBF7] hover:bg-[#F4F0E9] transition-colors rounded-xl p-5 text-center cursor-pointer flex flex-col items-center"
-                >
-                  <UploadCloud className="w-8 h-8 text-[#6B2D8C] mb-1.5" />
-                  <div className="text-[13px] font-bold text-[#2A0E3F]">Click to upload or drag &amp; drop artwork</div>
-                  <div className="text-[11.5px] text-[#7E6C96] mt-0.5">
-                    Technical specs, packaging artwork, or formula brief (PDF, PNG, JPG up to 10MB)
-                  </div>
-                </div>
+                {/* Real upload to the private `documents` bucket. The previous
+                    version hardcoded a file name and a fake "100% Uploaded"
+                    bar; now the bar tracks actual bytes sent. */}
+                <MediaUploader
+                  ownerId={mediaOwnerId}
+                  scope="attachment"
+                  entityType="supplier_rfq"
+                  entityId="supplier-profile"
+                  value={rfqAttachments}
+                  onChange={handleRfqAttachmentsChange}
+                  multiple
+                  maxFiles={3}
+                  variant="dropzone"
+                  helperText="Technical specs, packaging artwork, or formula brief (PDF, PNG, JPG up to 25MB each, max 3)"
+                />
 
-                {/* Uploaded File Progress Bar */}
-                {uploadedFile && (
-                  <div className="bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl p-3 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-[#F5EEF8] flex items-center justify-center text-[#6B2D8C] shrink-0">
-                      <FileText className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-[12px] font-bold text-[#2A0E3F]">{uploadedFile}</span>
-                        <span className="text-[10px] font-bold text-[#059669]">100% Uploaded</span>
-                      </div>
-                      <div className="w-full bg-[#E8DEEF] rounded-full h-1.5 overflow-hidden">
-                        <div className="bg-[#059669] h-1.5 rounded-full w-full"></div>
-                      </div>
-                    </div>
-                    <CheckCircle2 className="w-5 h-5 text-[#059669] shrink-0" />
-                  </div>
+                {!isAuthenticated && (
+                  <p className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                    Sign in to attach files to this request.
+                  </p>
                 )}
               </div>
 
@@ -2259,26 +2264,27 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
                     />
                   </div>
 
-                  {/* Drag-and-drop simulated file upload */}
+                  {/* Authority proof — real upload to the private `documents`
+                      bucket. The claim form now blocks submission until a file
+                      has actually finished uploading. */}
                   <div>
                     <label className="block text-[#2A0E3F] font-bold mb-1.5">Upload Authority Proof (GST Certificate / MoA) *</label>
-                    <div 
-                      onClick={() => setClaimFormDoc("gst_cert_attachment.pdf")}
-                      className="border-2 border-dashed border-[#E5D4ED] hover:border-[#6B2D8C] bg-[#FDFBF7] p-5 rounded-2xl text-center cursor-pointer transition-all"
-                    >
-                      <UploadCloud className="w-8 h-8 text-amber-600 mx-auto mb-2" />
-                      {claimFormDoc ? (
-                        <div>
-                          <span className="text-[12.5px] font-bold text-emerald-700">{claimFormDoc}</span>
-                          <p className="text-[10px] text-stone-500 mt-0.5">Click to replace file</p>
-                        </div>
-                      ) : (
-                        <div>
-                          <p className="font-bold text-[#2A0E3F] text-[12.5px]">Drag &amp; Drop or Click to Upload</p>
-                          <p className="text-[10.5px] text-[#7E6C96] mt-0.5">Support PDF, PNG, JPG (Max 5MB)</p>
-                        </div>
-                      )}
-                    </div>
+                    <MediaUploader
+                      ownerId={mediaOwnerId}
+                      scope="verification"
+                      entityType="profile_claim"
+                      entityId="supplier-profile"
+                      value={claimFormDocAsset}
+                      onChange={handleClaimDocChange}
+                      variant="dropzone"
+                      maxFiles={1}
+                      helperText="PDF, PNG or JPG up to 25MB"
+                    />
+                    {!isAuthenticated && (
+                      <p className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mt-2">
+                        Sign in to upload your authority proof.
+                      </p>
+                    )}
                   </div>
 
                   <div className="pt-3 border-t border-[#F4F0E9] flex justify-end gap-3">
