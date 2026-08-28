@@ -33,47 +33,23 @@ import { db } from '../db/database';
 import { DatabaseState } from '../db/database';
 import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../data/categories';
 import { testSupabaseConnection, isSupabaseConfigured, getSupabaseConfigInfo, syncAllDataToSupabase } from '../lib/supabase';
-import { SUPABASE_AUTH_PROVIDERS_URL, phoneOtpAllowed, readPhoneCapability } from '../lib/phoneAuth';
 
 /**
- * Sign-in channel health.
- *
- * "Unsupported phone provider" is the single most common auth support ticket for
- * this app: Supabase answers that when the project has no SMS provider wired
- * up. Rather than making someone dig through dashboard settings, the database
- * status panel reports the cached verdict here alongside the credentials.
+ * Simple auth health - Email + Password only (no mobile, no OTP)
  */
 const AuthChannelHealth: React.FC = () => {
   const configured = isSupabaseConfigured();
-  const capability = readPhoneCapability();
-  const smsEnabled = phoneOtpAllowed();
 
   const rows = [
     {
-      label: 'Email (OTP / magic link)',
+      label: 'Email + Password',
       state: configured ? 'ready' : 'local',
-      note: configured ? 'Delivered by Supabase Auth' : 'Simulated in demo mode',
+      note: configured ? 'Simple Gmail ID + Password auth enabled' : 'Demo mode - any Gmail + 6 char password works',
     },
     {
-      label: 'Mobile OTP (SMS)',
-      state: !configured
-        ? 'local'
-        : !smsEnabled
-          ? 'disabled'
-          : capability.state === 'unavailable'
-            ? 'blocked'
-            : capability.state === 'available'
-              ? 'ready'
-              : 'untested',
-      note: !configured
-        ? 'Demo mode accepts OTP 1234'
-        : !smsEnabled
-          ? 'Turned off via VITE_AUTH_PHONE_OTP_ENABLED'
-          : capability.state === 'unavailable'
-            ? `Supabase has no SMS provider configured (${capability.reason || 'Unsupported phone provider'})`
-            : capability.state === 'available'
-              ? 'A provider accepted an OTP request in this tab'
-              : 'No attempt yet — GoTrue needs Twilio / MessageBird / Vonage / TextLocal',
+      label: 'Google OAuth',
+      state: configured ? 'ready' : 'local',
+      note: configured ? 'Continue with Google enabled' : 'Demo mode - simulated Google login',
     },
   ] as const;
 
@@ -88,8 +64,8 @@ const AuthChannelHealth: React.FC = () => {
   return (
     <div className="p-2.5 rounded-lg bg-[#FDFBF7] border border-[#E5D8EE] space-y-2">
       <div className="flex items-center justify-between">
-        <div className="text-[10px] uppercase font-bold text-[#7E6C96]">Sign-in Channel Health</div>
-        <span className="text-[10px] font-bold text-[#7E6C96]">Supabase Auth</span>
+        <div className="text-[10px] uppercase font-bold text-[#7E6C96]">Sign-in Method</div>
+        <span className="text-[10px] font-bold text-[#7E6C96]">Simple Auth - No OTP, No Mobile</span>
       </div>
 
       <div className="space-y-1.5">
@@ -108,18 +84,6 @@ const AuthChannelHealth: React.FC = () => {
           );
         })}
       </div>
-
-      {configured && (rows[1].state === 'blocked' || rows[1].state === 'untested') && (
-        <a
-          href={SUPABASE_AUTH_PROVIDERS_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[#6B2D8C] font-bold hover:underline flex items-center gap-1 text-[10px]"
-        >
-          <span>Configure SMS provider</span>
-          <ExternalLink className="w-3 h-3" />
-        </a>
-      )}
     </div>
   );
 };
