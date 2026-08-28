@@ -67,17 +67,15 @@ export const authApi = {
     }
   },
 
-  async login(identifier: string, passwordOrOtp: string): Promise<{ success: boolean; session?: AuthSession; error?: string }> {
-    const isEmail = identifier.includes('@');
-    const { data, error } = isEmail && passwordOrOtp.length >= 8
-      ? await supabase.auth.signInWithPassword({ email: identifier, password: passwordOrOtp })
-      : await supabase.auth.signInWithOtp(isEmail ? { email: identifier } : { phone: identifier });
+  async login(identifier: string, password: string): Promise<{ success: boolean; session?: AuthSession; error?: string }> {
+    // Simple Gmail/Email + Password only - no OTP, no mobile
+    const { data, error } = await supabase.auth.signInWithPassword({ email: identifier, password });
 
     if (error) {
       return { success: false, error: error.message };
     }
     if (!data?.session?.user) {
-      return { success: false, error: 'Verification required. No active session yet.' };
+      return { success: false, error: 'Login failed. Please check your email and password.' };
     }
 
     return {
