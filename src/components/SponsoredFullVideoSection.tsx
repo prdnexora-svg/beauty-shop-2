@@ -4,6 +4,7 @@ import { SponsoredVideoItem } from '../types';
 import { getStoredSponsoredFullVideos, validateSponsoredVideo } from '../data/sponsoredReelsData';
 import { recordSponsoredAnalyticsEvent } from '../data/sponsoredAnalyticsStore';
 import { SponsoredVideoLightboxModal } from './SponsoredVideoLightboxModal';
+import { SecureImage } from './media/SecureImage';
 
 interface SponsoredFullVideoSectionProps {
   onOpenAdManager?: () => void;
@@ -161,11 +162,10 @@ export const SponsoredFullVideoSection: React.FC<SponsoredFullVideoSectionProps>
           >
             {/* YouTube 16:9 Compact Thumbnail */}
             <div className="relative aspect-[16/9] bg-stone-900 overflow-hidden">
-              <img
+              <SecureImage
                 src={video.poster_url}
                 alt={video.display_title}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                loading="lazy"
               />
               
               {/* Subtle Gradient Overlay */}

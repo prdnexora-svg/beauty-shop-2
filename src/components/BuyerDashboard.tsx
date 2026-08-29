@@ -56,6 +56,11 @@ import { EditProfileModal, BuyerProfileData } from './EditProfileModal';
 import { FollowerNetworkModal } from './FollowerNetworkModal';
 import { NotificationCenter } from './NotificationCenter';
 import { useNotifications } from '../hooks/useNotifications';
+import { MediaUploader } from './media/MediaUploader';
+import { SecureImage } from './media/SecureImage';
+import { MediaPlayer } from './media/MediaPlayer';
+import { useMediaOwner } from '../hooks/useMediaOwner';
+import { MediaAsset, hydrateDemoAssets } from '../lib/mediaService';
 
 interface BuyerDashboardProps {
   isLoggedIn: boolean;
@@ -95,6 +100,8 @@ interface TimelinePost {
   liked?: boolean;
   mediaUrl?: string;
   mediaType?: 'image' | 'video' | 'none';
+  /** Storage-backed attachment. Takes priority over `mediaUrl` when present. */
+  mediaAsset?: MediaAsset | null;
   commentsList?: CommentItem[];
   taggedProduct?: string;
 }
@@ -294,62 +301,121 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   const [taggedProduct, setTaggedProduct] = useState<string>('');
   const [isTaggingProduct, setIsTaggingProduct] = useState(false);
   const [isFollowersModalOpen, setIsFollowersModalOpen] = useState(false);
-  const postPhotoInputRef = useRef<HTMLInputElement>(null);
 
-  const handlePostPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // -------------------------------------------------------------------------
+  // Post attachments — images and videos go to Supabase Storage, not into
+  // localStorage as base64. `useMediaOwner` resolves the uploader identity
+  // from the live session (or a stable demo id when unconfigured).
+  // -------------------------------------------------------------------------
+  const { ownerId: mediaOwnerId, isAuthenticated: isMediaAuthenticated } = useMediaOwner();
+  const [postMediaAsset, setPostMediaAsset] = useState<MediaAsset | null>(null);
+  const postImagePickerRef = useRef<(() => void) | null>(null);
+  const postVideoPickerRef = useRef<(() => void) | null>(null);
 
-    const MAX_FILE_SIZE = 5 * 1024 * 1024;
-    if (file.size > MAX_FILE_SIZE) {
-      setProfileToast(`Selected photo is ${(file.size / (1024 * 1024)).toFixed(1)}MB. Max limit is 5MB.`);
-      setTimeout(() => setProfileToast(null), 3500);
+  const handlePostMediaChange = (next: MediaAsset | MediaAsset[] | null) => {
+    const asset = Array.isArray(next) ? next[0] ?? null : next;
+    setPostMediaAsset(asset);
+    if (asset) {
+      setMediaInputType(asset.mediaKind === 'video' ? 'video' : 'image');
+      setMediaUrlInput('');
+      setProfileToast(
+        asset.isLocal
+          ? `${asset.mediaKind === 'video' ? 'Video' : 'Photo'} attached (local demo — not uploaded).`
+          : `${asset.mediaKind === 'video' ? 'Video' : 'Photo'} uploaded successfully!`,
+      );
+      setTimeout(() => setProfileToast(null), 3000);
+    }
+  };
+
+  const openPostImagePicker = () => {
+    if (!isMediaAuthenticated) {
+      setProfileToast('Sign in to attach photos or videos.');
+      setTimeout(() => setProfileToast(null), 3000);
       return;
     }
-
-    setIsUploadingPostPhoto(true);
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new window.Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 800;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > MAX_WIDTH) {
-          height = Math.round((height * MAX_WIDTH) / width);
-          width = MAX_WIDTH;
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-          setMediaUrlInput(compressedDataUrl);
-          setMediaInputType('image');
-          setProfileToast(`Photo uploaded successfully!`);
-          setTimeout(() => setProfileToast(null), 3000);
-        }
-        setIsUploadingPostPhoto(false);
-      };
-      img.onerror = () => {
-        setProfileToast('Unable to process selected photo.');
-        setTimeout(() => setProfileToast(null), 3000);
-        setIsUploadingPostPhoto(false);
-      };
-      img.src = event.target?.result as string;
-    };
-    reader.onerror = () => {
-      setProfileToast('Failed to read photo file.');
-      setTimeout(() => setProfileToast(null), 3000);
-      setIsUploadingPostPhoto(false);
-    };
-    reader.readAsDataURL(file);
+    postImagePickerRef.current?.();
   };
+
+  const openPostVideoPicker = () => {
+    if (!isMediaAuthenticated) {
+      setProfileToast('Sign in to attach photos or videos.');
+      setTimeout(() => setProfileToast(null), 3000);
+      return;
+    }
+    postVideoPickerRef.current?.();
+  };
+
+  const clearPostMedia = () => {
+    setPostMediaAsset(null);
+    setMediaUrlInput('');
+    setMediaInputType('none');
+  };
+
+  /** Attachment preview shared by both composer layouts. */
+  const renderComposerPreview = () => {
+    const hasUrl = mediaUrlInput.trim() !== '' && mediaInputType !== 'none';
+    if (!postMediaAsset && !hasUrl) return null;
+
+    const isImage = postMediaAsset
+      ? postMediaAsset.mediaKind === 'image'
+      : mediaInputType === 'image';
+
+    return (
+      <div className="mt-4 p-3 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl space-y-2 animate-in zoom-in-95">
+        <div className="flex items-center justify-between text-[10px] font-bold text-[#7E6C96] uppercase tracking-wider pb-1.5 border-b border-[#E8DEEF]">
+          <span>
+            {postMediaAsset
+              ? `${postMediaAsset.mediaKind === 'video' ? 'Uploaded Video' : 'Uploaded Photo'} Preview`
+              : isImage
+                ? 'Uploaded Photo Preview'
+                : 'Live Video Preview'}
+          </span>
+          <button
+            type="button"
+            onClick={clearPostMedia}
+            className="text-red-500 hover:underline"
+          >
+            Clear Attachment
+          </button>
+        </div>
+
+        {postMediaAsset && postMediaAsset.mediaKind === 'image' && (
+          <div className="relative rounded-lg overflow-hidden border border-[#E8DEEF] bg-white max-h-48 flex items-center justify-center">
+            <SecureImage asset={postMediaAsset} alt="Live preview" className="max-h-48 object-contain" showSpinner />
+          </div>
+        )}
+
+        {postMediaAsset && postMediaAsset.mediaKind === 'video' && (
+          <div className="rounded-lg overflow-hidden border border-[#E8DEEF] bg-black max-h-48">
+            <MediaPlayer asset={postMediaAsset} aspect="video" controls className="max-h-48" />
+          </div>
+        )}
+
+        {!postMediaAsset && isImage && (
+          <div className="relative rounded-lg overflow-hidden border border-[#E8DEEF] bg-white max-h-48 flex items-center justify-center">
+            <img src={mediaUrlInput} alt="Live preview" className="max-h-48 object-contain" />
+          </div>
+        )}
+
+        {!postMediaAsset && !isImage && (
+          <div className="rounded-lg overflow-hidden border border-[#E8DEEF] bg-black aspect-video max-h-48 flex items-center justify-center">
+            {getEmbeddableVideoUrl(mediaUrlInput).includes('youtube.com/embed') ? (
+              <iframe src={getEmbeddableVideoUrl(mediaUrlInput)} className="w-full h-full max-h-48" frameBorder="0" allowFullScreen />
+            ) : (
+              <MediaPlayer src={mediaUrlInput} aspect="video" controls className="max-h-48" />
+            )}
+          </div>
+        )}
+
+        {postMediaAsset?.isLocal && (
+          <p className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
+            Local demo attachment — configure Supabase Storage to upload it for real.
+          </p>
+        )}
+      </div>
+    );
+  };
+
 
   // Track comment input values and expanded/drawer status per post ID
   const [openCommentPostIds, setOpenCommentPostIds] = useState<Record<string, boolean>>({});
@@ -429,6 +495,32 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
     localStorage.setItem('nexora_buyer_posts', JSON.stringify(feedPosts));
   }, [feedPosts]);
 
+  // Restore object URLs for demo assets attached before a page reload.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const attached = feedPosts
+        .map((p) => p.mediaAsset)
+        .filter((a): a is MediaAsset => Boolean(a));
+      if (attached.length === 0) return;
+      const hydrated = await hydrateDemoAssets(attached);
+      if (cancelled) return;
+      const byId = new Map(hydrated.map((a) => [a.id, a]));
+      setFeedPosts((posts) =>
+        posts.map((p) =>
+          p.mediaAsset && byId.has(p.mediaAsset.id)
+            ? { ...p, mediaAsset: byId.get(p.mediaAsset.id) as MediaAsset }
+            : p,
+        ),
+      );
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Mount-only by design: re-attaches blob URLs once per page load.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const getEmbeddableVideoUrl = (url: string) => {
     if (!url) return '';
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -455,8 +547,15 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
       comments: 0,
       shares: 0,
       liked: false,
-      mediaUrl: mediaInputType !== 'none' && mediaUrlInput.trim() ? mediaUrlInput.trim() : undefined,
-      mediaType: mediaInputType !== 'none' && mediaUrlInput.trim() ? mediaInputType : undefined,
+      mediaUrl: postMediaAsset ? undefined : mediaInputType !== 'none' && mediaUrlInput.trim() ? mediaUrlInput.trim() : undefined,
+      mediaType: postMediaAsset
+        ? postMediaAsset.mediaKind === 'video'
+          ? 'video'
+          : 'image'
+        : mediaInputType !== 'none' && mediaUrlInput.trim()
+          ? mediaInputType
+          : undefined,
+      mediaAsset: postMediaAsset || null,
       commentsList: [],
       taggedProduct: taggedProduct.trim() ? taggedProduct.trim() : undefined
     };
@@ -465,6 +564,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
     setNewPostText('');
     setMediaUrlInput('');
     setMediaInputType('none');
+    setPostMediaAsset(null);
     setPostTag('Buyer Update');
     setTaggedProduct('');
     setIsTaggingProduct(false);
@@ -632,18 +732,35 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
         </div>
 
         {/* Media Player or HD Image Rendering */}
-        {post.mediaUrl && post.mediaType === 'image' && (
+        {post.mediaAsset && post.mediaAsset.mediaKind === 'image' && (
+          <div className="rounded-xl overflow-hidden border border-[#E8DEEF] bg-[#FDFBF7] mt-3 max-h-96 flex justify-center items-center">
+            <SecureImage
+              asset={post.mediaAsset}
+              alt="Post Attachment"
+              className="max-h-96 object-contain w-full hover:scale-[1.01] transition-transform duration-300"
+              showSpinner
+            />
+          </div>
+        )}
+
+        {post.mediaAsset && post.mediaAsset.mediaKind === 'video' && (
+          <div className="rounded-xl overflow-hidden border border-[#E8DEEF] bg-black mt-3">
+            <MediaPlayer asset={post.mediaAsset} aspect="video" controls className="max-h-96" />
+          </div>
+        )}
+
+        {!post.mediaAsset && post.mediaUrl && post.mediaType === 'image' && (
           <div className="rounded-xl overflow-hidden border border-[#E8DEEF] bg-[#FDFBF7] mt-3 max-h-96 flex justify-center items-center">
             <img src={post.mediaUrl} alt="Post Attachment" className="max-h-96 object-contain w-full hover:scale-[1.01] transition-transform duration-300" referrerPolicy="no-referrer" />
           </div>
         )}
 
-        {post.mediaUrl && post.mediaType === 'video' && (
-          <div className="rounded-xl overflow-hidden border border-[#E8DEEF] bg-black aspect-video mt-3">
+        {!post.mediaAsset && post.mediaUrl && post.mediaType === 'video' && (
+          <div className="rounded-xl overflow-hidden border border-[#E8DEEF] bg-black mt-3">
             {isYoutube ? (
               <iframe src={embedUrl} className="w-full h-full" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
             ) : (
-              <video src={post.mediaUrl} controls className="w-full h-full object-contain" />
+              <MediaPlayer src={post.mediaUrl} aspect="video" controls />
             )}
           </div>
         )}
@@ -766,7 +883,32 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FDFBF7]">
-      
+
+      {/* Storage-backed post attachments. Rendered once, always mounted, and
+          driven imperatively by the composer buttons in both layouts. */}
+      <div className="hidden">
+        <MediaUploader
+          ownerId={mediaOwnerId}
+          scope="post"
+          entityType="timeline_post"
+          value={postMediaAsset}
+          onChange={handlePostMediaChange}
+          pickerRef={postImagePickerRef}
+          variant="compact"
+          hidePreview
+        />
+        <MediaUploader
+          ownerId={mediaOwnerId}
+          scope="video"
+          entityType="timeline_post"
+          value={postMediaAsset}
+          onChange={handlePostMediaChange}
+          pickerRef={postVideoPickerRef}
+          variant="compact"
+          hidePreview
+        />
+      </div>
+
       {/* Global Toast */}
       {profileToast && (
         <div className="fixed top-24 right-6 z-50 bg-[#2A0E3F] text-white px-4 py-3 rounded-xl shadow-xl border border-[#333] flex items-center gap-2 text-xs font-bold animate-in fade-in slide-in-from-top-2">
@@ -1304,13 +1446,6 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                         </div>
                         
                         <form onSubmit={handleCreatePost} className="flex-1 space-y-3">
-                          <input
-                            type="file"
-                            ref={postPhotoInputRef}
-                            accept="image/jpeg,image/png,image/webp"
-                            className="hidden"
-                            onChange={handlePostPhotoSelect}
-                          />
 
                           <div className="text-xs font-black text-[#2A0E3F] tracking-tight uppercase">Create Post / Share Update</div>
                           
@@ -1327,9 +1462,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                             <div className="flex flex-wrap items-center gap-2">
                               <button
                                 type="button"
-                                onClick={() => {
-                                  postPhotoInputRef.current?.click();
-                                }}
+                                onClick={openPostImagePicker}
                                 className={`px-3.5 py-1.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer border ${
                                   mediaInputType === 'image'
                                     ? 'bg-[#6B2D8C] text-white border-[#6B2D8C] shadow-sm'
@@ -1342,12 +1475,26 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
 
                               <button
                                 type="button"
+                                onClick={openPostVideoPicker}
+                                className={`px-3.5 py-1.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer border ${
+                                  postMediaAsset?.mediaKind === 'video'
+                                    ? 'bg-[#6B2D8C] text-white border-[#6B2D8C] shadow-sm'
+                                    : 'bg-[#FDFBF7] text-[#5B4A6E] border-[#E8DEEF] hover:bg-[#F4F0E9]'
+                                }`}
+                              >
+                                <Video className="w-3.5 h-3.5" />
+                                <span>{postMediaAsset?.mediaKind === 'video' ? 'Change Video' : 'Upload Video'}</span>
+                              </button>
+
+                              <button
+                                type="button"
                                 onClick={() => {
                                   setMediaInputType(mediaInputType === 'video' ? 'none' : 'video');
                                   if (mediaInputType !== 'video') setMediaUrlInput('');
+                                  setPostMediaAsset(null);
                                 }}
                                 className={`px-3.5 py-1.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer border ${
-                                  mediaInputType === 'video'
+                                  mediaInputType === 'video' && !postMediaAsset
                                     ? 'bg-[#6B2D8C] text-white border-[#6B2D8C] shadow-sm'
                                     : 'bg-[#FDFBF7] text-[#5B4A6E] border-[#E8DEEF] hover:bg-[#F4F0E9]'
                                 }`}
@@ -1399,37 +1546,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                           )}
 
                           {/* Live validated preview */}
-                          {mediaUrlInput.trim() !== '' && mediaInputType !== 'none' && (
-                            <div className="mt-4 p-3 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl space-y-2 animate-in zoom-in-95">
-                              <div className="flex items-center justify-between text-[10px] font-bold text-[#7E6C96] uppercase tracking-wider pb-1.5 border-b border-[#E8DEEF]">
-                                <span>{mediaInputType === 'image' ? 'Uploaded Photo Preview' : 'Live Video Preview'}</span>
-                                <button 
-                                  type="button" 
-                                  onClick={() => { setMediaUrlInput(''); setMediaInputType('none'); }} 
-                                  className="text-red-500 hover:underline"
-                                >
-                                  Clear Attachment
-                                </button>
-                              </div>
-                              {mediaInputType === 'image' ? (
-                                <div className="relative rounded-lg overflow-hidden border border-[#E8DEEF] bg-white max-h-48 flex items-center justify-center">
-                                  <img 
-                                    src={mediaUrlInput} 
-                                    alt="Live preview" 
-                                    className="max-h-48 object-contain" 
-                                  />
-                                </div>
-                              ) : (
-                                <div className="rounded-lg overflow-hidden border border-[#E8DEEF] bg-black aspect-video max-h-48 flex items-center justify-center">
-                                  {getEmbeddableVideoUrl(mediaUrlInput).includes('youtube.com/embed') ? (
-                                    <iframe src={getEmbeddableVideoUrl(mediaUrlInput)} className="w-full h-full max-h-48" frameBorder="0" allowFullScreen />
-                                  ) : (
-                                    <video src={mediaUrlInput} controls className="w-full h-full max-h-48 object-contain" />
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          )}
+                          {renderComposerPreview()}
 
                           {/* Publish Submit Button */}
                           <div className="pt-3 border-t border-[#F4F0E9] flex justify-end">
@@ -2062,14 +2179,6 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                   </div>
                   
                   <form onSubmit={handleCreatePost} className="flex-1 space-y-3">
-                    <input
-                      type="file"
-                      ref={postPhotoInputRef}
-                      accept="image/jpeg,image/png,image/webp"
-                      className="hidden"
-                      onChange={handlePostPhotoSelect}
-                    />
-
                     <div className="text-xs font-black text-[#2A0E3F] tracking-tight uppercase">Create Post / Share Update</div>
                     
                     <textarea
@@ -2086,18 +2195,29 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                         {/* 1. Photo/Video Attachment Button */}
                         <button
                           type="button"
-                          onClick={() => {
-                            postPhotoInputRef.current?.click();
-                          }}
-                          className={`px-3.5 py-1.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer border ${
-                            mediaInputType === 'image'
-                              ? 'bg-[#6B2D8C] text-white border-[#6B2D8C] shadow-sm'
-                              : 'bg-[#FDFBF7] text-[#5B4A6E] border-[#E8DEEF] hover:bg-[#F4F0E9]'
-                          }`}
-                        >
-                          <Image className="w-3.5 h-3.5" />
-                          <span>{isUploadingPostPhoto ? 'Processing...' : mediaInputType === 'image' ? 'Change Photo' : 'Photo/Video'}</span>
-                        </button>
+                            onClick={openPostImagePicker}
+                            className={`px-3.5 py-1.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer border ${
+                              mediaInputType === 'image'
+                                ? 'bg-[#6B2D8C] text-white border-[#6B2D8C] shadow-sm'
+                                : 'bg-[#FDFBF7] text-[#5B4A6E] border-[#E8DEEF] hover:bg-[#F4F0E9]'
+                            }`}
+                          >
+                            <Image className="w-3.5 h-3.5" />
+                            <span>{isUploadingPostPhoto ? 'Processing...' : mediaInputType === 'image' ? 'Change Photo' : 'Photo/Video'}</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={openPostVideoPicker}
+                            className={`px-3.5 py-1.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer border ${
+                              postMediaAsset?.mediaKind === 'video'
+                                ? 'bg-[#6B2D8C] text-white border-[#6B2D8C] shadow-sm'
+                                : 'bg-[#FDFBF7] text-[#5B4A6E] border-[#E8DEEF] hover:bg-[#F4F0E9]'
+                            }`}
+                          >
+                            <Video className="w-3.5 h-3.5" />
+                            <span>{postMediaAsset?.mediaKind === 'video' ? 'Change Video' : 'Upload Video'}</span>
+                          </button>
 
                         {/* 2. Product Tag Attachment Button */}
                         <button
@@ -2221,37 +2341,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                     )}
 
                     {/* Live validated preview */}
-                    {mediaUrlInput.trim() !== '' && mediaInputType !== 'none' && (
-                      <div className="mt-4 p-3 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl space-y-2 animate-in zoom-in-95">
-                        <div className="flex items-center justify-between text-[10px] font-bold text-[#7E6C96] uppercase tracking-wider pb-1.5 border-b border-[#E8DEEF]">
-                          <span>{mediaInputType === 'image' ? 'Uploaded Photo Preview' : 'Live Video Preview'}</span>
-                          <button 
-                            type="button" 
-                            onClick={() => { setMediaUrlInput(''); setMediaInputType('none'); }} 
-                            className="text-red-500 hover:underline"
-                          >
-                            Clear Attachment
-                          </button>
-                        </div>
-                        {mediaInputType === 'image' ? (
-                          <div className="relative rounded-lg overflow-hidden border border-[#E8DEEF] bg-white max-h-48 flex items-center justify-center">
-                            <img 
-                              src={mediaUrlInput} 
-                              alt="Live preview" 
-                              className="max-h-48 object-contain" 
-                            />
-                          </div>
-                        ) : (
-                          <div className="rounded-lg overflow-hidden border border-[#E8DEEF] bg-black aspect-video max-h-48 flex items-center justify-center">
-                            {getEmbeddableVideoUrl(mediaUrlInput).includes('youtube.com/embed') ? (
-                              <iframe src={getEmbeddableVideoUrl(mediaUrlInput)} className="w-full h-full max-h-48" frameBorder="0" allowFullScreen />
-                            ) : (
-                              <video src={mediaUrlInput} controls className="w-full h-full max-h-48 object-contain" />
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    {renderComposerPreview()}
 
                     {/* Publish Submit Button */}
                     <div className="pt-3 border-t border-[#F4F0E9] flex justify-end">

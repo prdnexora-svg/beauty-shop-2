@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { 
   Building2, Sparkles, ShieldCheck, Mail, ArrowRight, Settings, Plus, FileText, 
   TrendingUp, BarChart3, Users, CheckCircle2, ChevronRight, Edit3, Trash2, Check, Upload, Award, RefreshCw,
@@ -9,6 +9,10 @@ import { SupplierAnalyticsDashboard } from './SupplierAnalyticsDashboard';
 import { getStoredSponsoredAnalyticsEvents, SponsoredAnalyticsEvent } from '../data/sponsoredAnalyticsStore';
 import { getStoredChatThreads, supplierReplyMessage, ChatThread } from '../data/chatStore';
 import { CATEGORY_TAXONOMY, CATEGORIES_DATA, getSubcategoriesForCategoryName } from '../data/categories';
+import { MediaUploader } from './media/MediaUploader';
+import { MediaGallery } from './media/MediaGallery';
+import { useMediaOwner } from '../hooks/useMediaOwner';
+import { MediaAsset, listMedia } from '../lib/mediaService';
 
 // Mock initial listings
 const INITIAL_PRODUCTS = [
@@ -44,6 +48,32 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
   const [chatThreads, setChatThreads] = useState<ChatThread[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [portalReplyText, setPortalReplyText] = useState('');
+
+  // Compliance certificates live in the private `documents` bucket.
+  const { ownerId: mediaOwnerId, isAuthenticated } = useMediaOwner();
+  const [complianceAssets, setComplianceAssets] = useState<MediaAsset[]>([]);
+
+  const refreshComplianceAssets = useCallback(async () => {
+    if (!mediaOwnerId) {
+      setComplianceAssets([]);
+      return;
+    }
+    const result = await listMedia({
+      ownerId: mediaOwnerId,
+      scope: 'compliance',
+      entityType: 'supplier_profile',
+    });
+    setComplianceAssets(result);
+  }, [mediaOwnerId]);
+
+  useEffect(() => {
+    void refreshComplianceAssets();
+  }, [refreshComplianceAssets]);
+
+  const handleComplianceChange = (next: MediaAsset | MediaAsset[] | null) => {
+    const list = Array.isArray(next) ? next : next ? [next] : [];
+    setComplianceAssets(list);
+  };
 
   useEffect(() => {
     const loadEvents = () => {
@@ -753,11 +783,40 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
             <div className="bg-white border border-[#E8DEEF] rounded-xl p-5 space-y-4">
               <h3 className="font-extrabold text-xs text-[#7E6C96] uppercase tracking-wider">Manufacturing Certifications (GMP, ISO, organic)</h3>
               
-              <div className="border-2 border-dashed border-[#D9C3E8] rounded-xl p-6 text-center hover:bg-neutral-50 transition-colors cursor-pointer group">
-                <Upload className="w-8 h-8 text-zinc-400 group-hover:text-[#6B2D8C] mx-auto mb-2" />
-                <span className="block text-xs font-bold text-zinc-900">Upload GMP / ISO Compliance Certificate</span>
-                <span className="block text-[10px] text-zinc-400 mt-0.5">Supports high-res PDF or PNG up to 5MB</span>
-              </div>
+              {/* Real uploads to the private `documents` bucket, listed in a
+                  gallery that supports preview, replace and delete. */}
+              <MediaUploader
+                ownerId={mediaOwnerId}
+                scope="compliance"
+                entityType="supplier_profile"
+                value={complianceAssets}
+                onChange={handleComplianceChange}
+                multiple
+                maxFiles={5}
+                variant="dropzone"
+                helperText="High-res PDF, PNG or JPG up to 25MB each (max 5 certificates)"
+              />
+
+              {!isAuthenticated && (
+                <p className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                  Sign in to upload compliance certificates.
+                </p>
+              )}
+
+              <MediaGallery
+                assets={complianceAssets}
+                ownerId={mediaOwnerId}
+                canManage
+                scope="compliance"
+                entityType="supplier_profile"
+                maxFiles={5}
+                columns={4}
+                emptyLabel="No compliance certificates uploaded yet."
+                onAssetDeleted={(id) =>
+                  setComplianceAssets((prev) => prev.filter((a) => a.id !== id))
+                }
+                onChanged={() => void refreshComplianceAssets()}
+              />
             </div>
 
             {/* Privacy & Visibility Settings */}

@@ -1,5 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
+import { MediaUploader } from './media/MediaUploader';
+import { useMediaOwner } from '../hooks/useMediaOwner';
+import { MediaAsset, persistableUrl } from '../lib/mediaService';
 import { 
   X, 
   User, 
@@ -47,6 +50,9 @@ export interface BuyerProfileData {
   isBusinessVerified: boolean;
   avatarUrl?: string;
   coverPhotoUrl?: string;
+  /** Storage ledger ids, so a replaced image can delete the old object. */
+  avatarAssetId?: string | null;
+  coverAssetId?: string | null;
   bio?: string;
   joinedDate?: string;
   followersCount?: string;
@@ -129,132 +135,89 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
   const [gstVerifying, setGstVerifying] = useState(false);
   const [gstVerifySuccess, setGstVerifySuccess] = useState<boolean | null>(true);
-  
-  // Photo upload & auto-resize state
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const coverFileInputRef = useRef<HTMLInputElement>(null);
-  const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
-  const [isProcessingCover, setIsProcessingCover] = useState(false);
+
+  // -------------------------------------------------------------------------
+  // Media (avatar + cover banner) — real Supabase Storage uploads.
+  // Storage policies require an owner id, so uploads are refused when signed
+  // out instead of silently producing a dead preview.
+  // -------------------------------------------------------------------------
+  const { ownerId, isAuthenticated } = useMediaOwner();
+  const avatarPickerRef = useRef<(() => void) | null>(null);
+  const coverPickerRef = useRef<(() => void) | null>(null);
+  const [avatarAsset, setAvatarAsset] = useState<MediaAsset | null>(null);
+  const [coverAsset, setCoverAsset] = useState<MediaAsset | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [photoSuccessMsg, setPhotoSuccessMsg] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handlePhotoFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // Avatar + cover are stored in the `avatars` bucket (public read). The
+  // uploader handles MIME/size validation, progress, and replacing the old
+  // object; we only map the result back into the profile form.
+  const handleAvatarChange = async (next: MediaAsset | MediaAsset[] | null) => {
+    const asset = Array.isArray(next) ? next[0] ?? null : next;
+    setPhotoError(null);
 
-    // 5MB limit check (5 * 1024 * 1024 = 5,242,880 bytes)
-    const MAX_FILE_SIZE = 5 * 1024 * 1024;
-    if (file.size > MAX_FILE_SIZE) {
-      setPhotoError(`Selected photo is ${(file.size / (1024 * 1024)).toFixed(1)}MB. Max limit is 5MB.`);
-      setPhotoSuccessMsg(null);
+    if (!asset) {
+      setAvatarAsset(null);
+      setFormData(prev => ({ ...prev, avatarUrl: undefined, avatarAssetId: null }));
       return;
     }
 
-    setPhotoError(null);
-    setIsProcessingPhoto(true);
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new window.Image();
-      img.onload = () => {
-        // Auto resize image to max 400x400 while preserving aspect ratio
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 400;
-        const MAX_HEIGHT = 400;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height = Math.round((height * MAX_WIDTH) / width);
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width = Math.round((width * MAX_HEIGHT) / height);
-            height = MAX_HEIGHT;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
-          setFormData(prev => ({ ...prev, avatarUrl: compressedDataUrl }));
-          setPhotoSuccessMsg(`Photo uploaded and auto-resized (${width}x${height}px)`);
-          setTimeout(() => setPhotoSuccessMsg(null), 3500);
-        }
-        setIsProcessingPhoto(false);
-      };
-      img.onerror = () => {
-        setPhotoError('Unable to process selected image file.');
-        setIsProcessingPhoto(false);
-      };
-      img.src = event.target?.result as string;
-    };
-    reader.onerror = () => {
-      setPhotoError('Failed to read image file.');
-      setIsProcessingPhoto(false);
-    };
-    reader.readAsDataURL(file);
+    setAvatarAsset(asset);
+    const url = await persistableUrl(asset, 400);
+    setFormData(prev => ({
+      ...prev,
+      avatarUrl: url || asset.publicUrl || undefined,
+      avatarAssetId: asset.id,
+    }));
+    setPhotoSuccessMsg(
+      asset.isLocal
+        ? 'Photo attached (local demo — not uploaded to a server).'
+        : 'Photo uploaded to secure storage.',
+    );
+    setTimeout(() => setPhotoSuccessMsg(null), 3500);
   };
 
-  const handleCoverFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleCoverChange = async (next: MediaAsset | MediaAsset[] | null) => {
+    const asset = Array.isArray(next) ? next[0] ?? null : next;
+    setPhotoError(null);
 
-    const MAX_FILE_SIZE = 5 * 1024 * 1024;
-    if (file.size > MAX_FILE_SIZE) {
-      setPhotoError(`Selected cover banner is ${(file.size / (1024 * 1024)).toFixed(1)}MB. Max limit is 5MB.`);
-      setPhotoSuccessMsg(null);
+    if (!asset) {
+      setCoverAsset(null);
+      setFormData(prev => ({ ...prev, coverPhotoUrl: undefined, coverAssetId: null }));
       return;
     }
 
-    setPhotoError(null);
-    setIsProcessingCover(true);
+    setCoverAsset(asset);
+    const url = await persistableUrl(asset, 1200);
+    setFormData(prev => ({
+      ...prev,
+      coverPhotoUrl: url || asset.publicUrl || undefined,
+      coverAssetId: asset.id,
+    }));
+    setPhotoSuccessMsg(
+      asset.isLocal
+        ? 'Cover banner attached (local demo — not uploaded to a server).'
+        : 'Cover banner uploaded to secure storage.',
+    );
+    setTimeout(() => setPhotoSuccessMsg(null), 3500);
+  };
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new window.Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 1200;
-        const MAX_HEIGHT = 400;
-        let width = img.width;
-        let height = img.height;
+  const openAvatarPicker = () => {
+    if (!isAuthenticated) {
+      setPhotoError('Sign in to upload a profile photo.');
+      return;
+    }
+    avatarPickerRef.current?.();
+  };
 
-        if (width > MAX_WIDTH) {
-          height = Math.round((height * MAX_WIDTH) / width);
-          width = MAX_WIDTH;
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-          setFormData(prev => ({ ...prev, coverPhotoUrl: compressedDataUrl }));
-          setPhotoSuccessMsg(`Cover banner uploaded successfully! (${width}x${height}px)`);
-          setTimeout(() => setPhotoSuccessMsg(null), 3500);
-        }
-        setIsProcessingCover(false);
-      };
-      img.onerror = () => {
-        setPhotoError('Unable to process selected image file.');
-        setIsProcessingCover(false);
-      };
-      img.src = event.target?.result as string;
-    };
-    reader.onerror = () => {
-      setPhotoError('Failed to read image file.');
-      setIsProcessingCover(false);
-    };
-    reader.readAsDataURL(file);
+  const openCoverPicker = () => {
+    if (!isAuthenticated) {
+      setPhotoError('Sign in to upload a cover banner.');
+      return;
+    }
+    coverPickerRef.current?.();
   };
 
   const handleCategoryToggle = (category: string) => {
@@ -396,21 +359,31 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
           {/* TAB 1: General Info */}
           {activeTab === 'general' && (
             <div className="space-y-4 animate-in fade-in-50 duration-200">
-              {/* Hidden File Inputs */}
-              <input
-                type="file"
-                ref={fileInputRef}
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={handlePhotoFileSelect}
-              />
-              <input
-                type="file"
-                ref={coverFileInputRef}
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={handleCoverFileSelect}
-              />
+              {/* Storage-backed uploaders (drive the camera buttons below) */}
+              <div className="hidden">
+                <MediaUploader
+                  ownerId={ownerId}
+                  scope="avatar"
+                  entityType="buyer_profile"
+                  entityId={formData.id || undefined}
+                  value={avatarAsset}
+                  onChange={(next) => void handleAvatarChange(next)}
+                  pickerRef={avatarPickerRef}
+                  variant="compact"
+                  hidePreview
+                />
+                <MediaUploader
+                  ownerId={ownerId}
+                  scope="cover"
+                  entityType="buyer_profile"
+                  entityId={formData.id || undefined}
+                  value={coverAsset}
+                  onChange={(next) => void handleCoverChange(next)}
+                  pickerRef={coverPickerRef}
+                  variant="compact"
+                  hidePreview
+                />
+              </div>
 
               {/* Profile Photo Block */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-[#FDFBF7] rounded-xl border border-[#E8DEEF]">
@@ -425,7 +398,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   <button 
                     type="button" 
                     title="Upload or Change Photo"
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={openAvatarPicker}
                     className="absolute -bottom-1 -right-1 p-2 bg-white border border-[#E8DEEF] rounded-full text-[#2A0E3F] hover:text-[#6B2D8C] hover:border-[#6B2D8C] shadow-md cursor-pointer transition-all active:scale-95"
                   >
                     <Camera className="w-4 h-4" />
@@ -444,27 +417,17 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
                     <button
                       type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isProcessingPhoto}
+                      onClick={openAvatarPicker}
                       className="px-3 py-1.5 bg-white border border-[#E8DEEF] hover:border-[#6B2D8C] text-[#6B2D8C] rounded-lg text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                     >
-                      {isProcessingPhoto ? (
-                        <>
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#6B2D8C]" />
-                          <span>Resizing...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-3.5 h-3.5" />
-                          <span>Upload Photo (Max 5MB)</span>
-                        </>
-                      )}
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{formData.avatarUrl ? 'Change Photo' : 'Upload Photo (Max 5MB)'}</span>
                     </button>
 
                     {formData.avatarUrl && (
                       <button
                         type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, avatarUrl: undefined }))}
+                        onClick={() => void handleAvatarChange(null)}
                         className="px-2.5 py-1.5 bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
                       >
                         Remove Photo
@@ -472,7 +435,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                     )}
                   </div>
                   <p className="text-[10px] text-[#7E6C96] mt-1.5">
-                    Supports JPEG, PNG up to <strong>5MB</strong>. Automatically resizes to optimal 400x400px.
+                    JPEG, PNG, WebP up to <strong>5MB</strong>. Stored in the <code>avatars</code> storage bucket.
                   </p>
                 </div>
               </div>
@@ -496,7 +459,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   <button 
                     type="button" 
                     title="Upload Cover Banner"
-                    onClick={() => coverFileInputRef.current?.click()}
+                    onClick={openCoverPicker}
                     className="absolute bottom-2 right-2 px-3 py-1.5 bg-white/95 hover:bg-white text-[#2A0E3F] hover:text-[#6B2D8C] border border-[#E8DEEF] rounded-xl text-[10px] font-black shadow-md flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
                   >
                     <Camera className="w-3.5 h-3.5 text-[#6B2D8C]" />
@@ -507,32 +470,22 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 <div className="flex items-center gap-2 flex-wrap">
                   <button
                     type="button"
-                    onClick={() => coverFileInputRef.current?.click()}
-                    disabled={isProcessingCover}
-                    className="px-3 py-1.5 bg-white border border-[#E8DEEF] hover:border-[#6B2D8C] text-[#6B2D8C] rounded-lg text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                  >
-                    {isProcessingCover ? (
-                      <>
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#6B2D8C]" />
-                        <span>Resizing Banner...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>Select Banner File</span>
-                      </>
-                    )}
-                  </button>
-
-                  {formData.coverPhotoUrl && (
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, coverPhotoUrl: undefined }))}
-                      className="px-2.5 py-1.5 bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                      onClick={openCoverPicker}
+                      className="px-3 py-1.5 bg-white border border-[#E8DEEF] hover:border-[#6B2D8C] text-[#6B2D8C] rounded-lg text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                     >
-                      Remove Banner
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{formData.coverPhotoUrl ? 'Change Banner' : 'Select Banner File'}</span>
                     </button>
-                  )}
+
+                    {formData.coverPhotoUrl && (
+                      <button
+                        type="button"
+                        onClick={() => void handleCoverChange(null)}
+                        className="px-2.5 py-1.5 bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                      >
+                        Remove Banner
+                      </button>
+                    )}
                 </div>
               </div>
 

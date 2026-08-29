@@ -72,6 +72,23 @@ export interface DBProfileSupplier {
   updated_at: string;
 }
 
+/**
+ * Shape of `products.specifications` (JSONB).
+ *
+ * Suppliers may attach keys we do not model, so an index signature is required
+ * — but it is `unknown`, not `any`: reading an unmodelled key forces the caller
+ * to narrow it before use instead of silently treating it as a string.
+ */
+export interface ProductSpecifications {
+  formulationBase?: string;
+  packagingType?: string;
+  shelfLife?: string;
+  sampleLeadTime?: string;
+  productionCapacity?: string;
+  certifications?: string[];
+  [key: string]: unknown;
+}
+
 export type ProductStatus = 'draft' | 'active' | 'inactive' | 'rejected';
 
 export interface DBProduct {
@@ -83,15 +100,7 @@ export interface DBProduct {
   brand_name: string;
   description: string;
   images: string[];
-  specifications: {
-    formulationBase?: string;
-    packagingType?: string;
-    shelfLife?: string;
-    sampleLeadTime?: string;
-    productionCapacity?: string;
-    certifications?: string[];
-    [key: string]: any;
-  };
+  specifications: ProductSpecifications;
   moq: number;
   moq_unit: string; // 'Units', 'Bottles', 'Kg', 'Pcs'
   unit_price: number; // Base wholesale price in INR

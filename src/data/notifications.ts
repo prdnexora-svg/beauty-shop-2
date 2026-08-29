@@ -1,3 +1,4 @@
+import { readStorage, removeStorage, writeStorage } from '../lib/safeStorage';
 import { AppNotification } from '../types';
 
 export const INITIAL_NOTIFICATIONS: AppNotification[] = [
@@ -122,9 +123,9 @@ const EVENT_KEY = 'nexora:notifications:change';
 
 export function getStoredNotifications(): AppNotification[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = readStorage(STORAGE_KEY);
     if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_NOTIFICATIONS));
+      writeStorage(STORAGE_KEY, JSON.stringify(INITIAL_NOTIFICATIONS));
       return INITIAL_NOTIFICATIONS;
     }
     return JSON.parse(raw);
@@ -135,7 +136,7 @@ export function getStoredNotifications(): AppNotification[] {
 
 export function saveStoredNotifications(notifs: AppNotification[]): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(notifs));
+    writeStorage(STORAGE_KEY, JSON.stringify(notifs));
     window.dispatchEvent(new CustomEvent(EVENT_KEY, { detail: notifs }));
   } catch (e) {
     console.error('Failed to save notifications', e);

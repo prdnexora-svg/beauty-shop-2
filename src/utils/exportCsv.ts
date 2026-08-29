@@ -8,7 +8,7 @@
  * @param headers Array of header mapping objects { label: string, key: string }
  * @param data Array of records to export
  */
-export function exportToCsv<T extends Record<string, any>>(
+export function exportToCsv<T extends Record<string, unknown>>(
   filename: string,
   headers: Array<{ label: string; key: keyof T | string }>,
   data: T[]

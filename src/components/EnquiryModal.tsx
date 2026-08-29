@@ -24,6 +24,9 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from '../db/database';
 import { BuyerProfileData } from './EditProfileModal';
+import { MediaUploader } from './media/MediaUploader';
+import { useMediaOwner } from '../hooks/useMediaOwner';
+import { MediaAsset } from '../lib/mediaService';
 
 export type EnquiryIntent = 'Wholesale Purchase' | 'OEM / Private Label' | 'Sample Request' | 'Distributorship Enquiry';
 
@@ -106,8 +109,31 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
   const [description, setDescription] = useState(
     'Please provide your best quotation for bulk supply. Kindly share tier pricing, COA documentation, dispatch timeline, and MOQ terms.'
   );
+  // Attachment: uploaded to the private `documents` bucket. The URL recorded
+  // on the enquiry is the real storage URL — never a fabricated one.
   const [attachedFile, setAttachedFile] = useState<{ name: string; size: string } | null>(null);
+  const [attachedAsset, setAttachedAsset] = useState<MediaAsset | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const { ownerId: mediaOwnerId } = useMediaOwner();
+
+  const handleAttachmentChange = (next: MediaAsset | MediaAsset[] | null) => {
+    const asset = Array.isArray(next) ? next[0] ?? null : next;
+    setAttachedAsset(asset);
+    setAttachedFile(
+      asset
+        ? {
+            name: asset.originalName || 'attachment',
+            size: `${(asset.byteSize / (1024 * 1024)).toFixed(2)} MB`,
+          }
+        : null,
+    );
+    if (asset) {
+      setFormErrors((prev) => {
+        const { file: _file, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
 
   // Section B: Buyer Contact Details
   const [buyerName, setBuyerName] = useState('Priya Sharma');
@@ -288,7 +314,9 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
         target_budget: targetItem?.price ? (parseFloat(String(targetItem.price).replace(/[^0-9.]/g, '')) || 350) * qtyNum : undefined,
         delivery_location: `${cityLocation} (PIN: ${pincode})`,
         details: `${description}\n\n[Contact: ${buyerName} | ${companyName} | ${countryCode} ${mobileNumber}]`,
-        attachments: attachedFile ? [`https://storage.nexoraluxe.com/reqs/${attachedFile.name}`] : [],
+        attachments: attachedAsset
+          ? [attachedAsset.isLocal ? `local-demo:${attachedAsset.id}` : (attachedAsset.publicUrl || `${attachedAsset.bucket}/${attachedAsset.path}`)]
+          : [],
         status: 'new',
         type: 'direct_enquiry',
         send_to_similar_suppliers: broadcastToSimilar
@@ -537,51 +565,17 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
                   <label className="block text-xs font-bold text-[#2A0E3F] mb-1.5">
                     Specs / Packaging Reference Attachment <span className="text-[#7E6C96] font-normal">(Optional)</span>
                   </label>
-                  {!attachedFile ? (
-                    <div
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        setIsDragOver(true);
-                      }}
-                      onDragLeave={() => setIsDragOver(false)}
-                      onDrop={handleFileDrop}
-                      className={`border-2 border-dashed rounded-xl p-3.5 text-center transition-all cursor-pointer ${
-                        isDragOver ? 'border-[#6B2D8C] bg-[#F5EEF8]/30' : 'border-[#E5D8EE] bg-[#FDFBF7] hover:border-[#6B2D8C]'
-                      }`}
-                      onClick={() => document.getElementById('enquiry-file-upload')?.click()}
-                    >
-                      <input
-                        id="enquiry-file-upload"
-                        type="file"
-                        accept=".pdf,.png,.jpg,.jpeg"
-                        onChange={handleFileInput}
-                        className="hidden"
-                      />
-                      <UploadCloud className="w-5 h-5 mx-auto text-[#6B2D8C] mb-1" />
-                      <p className="text-xs font-semibold text-[#2A0E3F]">
-                        Drag & Drop or <span className="text-[#6B2D8C] underline">Browse File</span>
-                      </p>
-                      <p className="text-[10px] text-[#7E6C96] mt-0.5">
-                        Supports .pdf, .png, .jpg up to 5MB (Artwork, COA request, benchmark packaging)
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="bg-[#F5EEF8] border border-[#D9C3E8] rounded-xl p-2.5 flex items-center justify-between">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <FileText className="w-4 h-4 text-[#6B2D8C] shrink-0" />
-                        <span className="text-xs font-bold text-[#2A0E3F] truncate">{attachedFile.name}</span>
-                        <span className="text-[10px] text-[#7E6C96] shrink-0">({attachedFile.size})</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setAttachedFile(null)}
-                        className="text-[#7E6C96] hover:text-red-600 p-1 rounded transition-colors cursor-pointer"
-                        title="Remove file"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  )}
+                  <MediaUploader
+                    ownerId={mediaOwnerId}
+                    scope="attachment"
+                    entityType="enquiry"
+                    value={attachedAsset}
+                    onChange={handleAttachmentChange}
+                    variant="dropzone"
+                    maxFiles={1}
+                    helperText="PDF, PNG, JPG up to 25MB (artwork, COA request, benchmark packaging)"
+                    label=""
+                  />
                   {formErrors.file && (
                     <p className="text-[11px] text-red-600 mt-1 flex items-center gap-1 font-medium">
                       <AlertCircle className="w-3 h-3" />
