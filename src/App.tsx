@@ -1,46 +1,30 @@
 import React, { useEffect, useState } from 'react';
+import { PublicLanding } from './components/screens/PublicLanding';
+import { ScreenLoader } from './components/screens/ScreenLoader';
+import { ScreenRouter } from './components/screens/ScreenRouter';
+import { PROTECTED_SCREENS } from './components/screens/types';
+import type { AppScreenContext } from './components/screens/types';
+
+// Diagnostics panel: 1,328 lines behind a floating button, so it stays
+// out of the entry chunk.
+const DatabaseStatusModal = lazy(
+  () => import('./components/DatabaseStatusModal').then((m) => ({ default: m.DatabaseStatusModal })),
+);
+import { lazy, Suspense } from 'react';
 import { TopNavBar } from './components/TopNavBar';
+import { LuxeFooter } from './components/luxe/LuxeFooter';
 import { Footer } from './components/Footer';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { Breadcrumbs } from './components/Breadcrumbs';
 import { LuxeHeader } from './components/luxe/LuxeHeader';
-import { LuxeHero } from './components/luxe/LuxeHero';
-import { BuySmartCard } from './components/luxe/BuySmartCard';
-import { CategoryStrip } from './components/luxe/CategoryStrip';
-import { VerifiedSuppliers } from './components/luxe/VerifiedSuppliers';
-import { TrendingProducts } from './components/luxe/TrendingProducts';
-import { OemBanner } from './components/luxe/OemBanner';
-import { SupplierCta } from './components/luxe/SupplierCta';
-import { SourcingCities } from './components/luxe/SourcingCities';
-import { HowItWorks } from './components/luxe/HowItWorks';
-import { LuxeFooter } from './components/luxe/LuxeFooter';
-import { Reveal } from './components/luxe/Reveal';
-import { GoldDivider } from './components/luxe/GoldDivider';
-import { DirectoryHubScreen } from './components/DirectoryHubScreen';
+import { LiveChatWidget } from './components/LiveChatWidget';
 import { EnquiryModal } from './components/EnquiryModal';
 import { AuthModal } from './components/AuthModal';
 import { ProductCompareModal } from './components/ProductCompareModal';
 import { QuoteModal } from './components/QuoteModal';
-import { ProductListingScreen } from './components/ProductListingScreen';
-import { SearchFilterScreen } from './components/SearchFilterScreen';
-import { SupplierDirectoryScreen } from './components/SupplierDirectoryScreen';
 import { SupplierProfileScreen } from './components/SupplierProfileScreen';
-import { SellerProfileScreen } from './components/SellerProfileScreen';
-import { SupplierOnboardingScreen } from './components/SupplierOnboardingScreen';
-import { SupplierVerificationScreen } from './components/SupplierVerificationScreen';
-import { BrandDirectoryDetailScreen } from './components/BrandDirectoryDetailScreen';
-import { OemPrivateLabelHubScreen } from './components/OemPrivateLabelHubScreen';
-import { SupplierAdminPortal } from './components/SupplierAdminPortal';
-import { BuyerDashboard } from './components/BuyerDashboard';
-import { BuyerRFQTrackingScreen } from './components/BuyerRFQTrackingScreen';
-import { SampleRequestScreen } from './components/SampleRequestScreen';
-import { PostRequirementScreen } from './components/PostRequirementScreen';
-import { BuyerEnquiryLogScreen } from './components/BuyerEnquiryLogScreen';
 import { EditProfileModal, BuyerProfileData } from './components/EditProfileModal';
-import { ProductDetailPage } from './components/ProductDetailPage';
 import { ChatModalDrawer } from './components/ChatModalDrawer';
-import { BuyerOnboardingScreen } from './components/BuyerOnboardingScreen';
-import { DatabaseStatusModal } from './components/DatabaseStatusModal';
 import { getBuyerProfile, BUYER_PROFILES_DB } from './data/buyerProfilesData';
 import {
   clearDemoOwner,
@@ -215,6 +199,47 @@ function NexoraShopApp() {
     setChatModalOpen(true);
   };
 
+  // ---- Handlers for the sponsored ad surfaces -----------------------------
+  // These were built but never mounted, so the props below were dead ends.
+  const handleViewProduct = (productId: string, sellerId?: string) => {
+    handleNavigate('product-detail', { productId, ...(sellerId ? { supplierId: sellerId } : {}) });
+  };
+
+  const handleViewSupplier = (sellerId: string) => {
+    handleNavigate('supplier-profile', { supplierId: sellerId });
+  };
+
+  const handleSponsoredEnquire = (
+    productId: string | undefined,
+    sellerId: string,
+    supplierName: string,
+  ) => {
+    handleOpenEnquiry({
+      id: 'enq-' + Date.now(),
+      title: 'Enquiry for ' + (supplierName || sellerId),
+      supplierName: supplierName || sellerId,
+      type: 'supplier',
+      ...(productId ? { productId } : {}),
+      sellerId,
+    });
+  };
+
+  // Public "advertise here" affordances land in the supplier portal, where
+  // SponsoredAdManager already lives. Guests are sent to sign in first.
+  const handleOpenAdManager = () => {
+    if (!isLoggedIn) {
+      setAuthMode('login');
+      setIsAuthModalOpen(true);
+      triggerToast('Please sign in to manage sponsored campaigns.');
+      return;
+    }
+    if (userRole === 'buyer') {
+      triggerToast('Sponsored campaigns are available to supplier accounts.');
+      return;
+    }
+    handleNavigate('supplier-portal');
+  };
+
   // Interactive Toast Notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -292,8 +317,7 @@ function NexoraShopApp() {
       }
     } else {
       // If guest tries to access protected dashboard features, open login
-      const protectedScreens = [...supplierScreens, ...buyerScreens];
-      if (protectedScreens.includes(screen)) {
+      if ([...supplierScreens, ...buyerScreens].includes(screen)) {
         setAuthMode('login');
         setIsAuthModalOpen(true);
         triggerToast('Please sign in to access dashboard workspace features.');
@@ -481,12 +505,8 @@ function NexoraShopApp() {
     stripAuthCallbackParams();
   }, [session?.user?.id, isAuthRoute]);
 
-  const protectedScreens = [
-    'buyer-dashboard', 'buyer-profile', 'rfq-tracking', 'buyer-enquiry-log',
-    'post-rfq', 'sample-request', 'buyer-onboarding',
-    'supplier-portal', 'supplier-verification', 'onboarding',
-  ];
-  const isProtectedScreen = protectedScreens.includes(currentScreen);
+  // Shared with the screen router so a new owner route is guarded automatically.
+  const isProtectedScreen = PROTECTED_SCREENS.includes(currentScreen);
 
   // Never silently replace protected content with a public screen. A missing or
   // invalid session on a protected screen always enters the explicit login
@@ -571,6 +591,39 @@ function NexoraShopApp() {
     );
   }
 
+  // Everything the extracted screens need. Grouped into one object so the
+  // public landing, the public marketplace and the owner workspace each take a
+  // single prop instead of twenty.
+  const ctx: AppScreenContext = {
+    currentScreen,
+    isLoggedIn,
+    userRole,
+    buyerProfile,
+    buyerDashboardTab,
+    searchParams,
+    selectedProductId,
+    selectedSupplierId,
+    handleNavigate,
+    handleOpenAuthModal,
+    handleOpenEnquiry,
+    handleOpenChat,
+    handleOpenQuoteModal,
+    handleOpenProductComparison,
+    handleRemoveFromComparison,
+    setIsEditProfileOpen,
+    setSelectedProductId,
+    handleSearchSubmit,
+    handleViewProduct,
+    handleViewSupplier,
+    handleSponsoredEnquire,
+    handleOpenAdManager,
+    handleCallSupplier,
+    handleWhatsAppSupplier,
+    handleFacilityTour,
+    handleSaveProfile,
+    triggerToast,
+  };
+
   return (
       <div className="min-h-screen bg-[#FDFBF7] text-[#2A0E3F] flex flex-col font-sans selection:bg-[#E8D5F2] selection:text-[#3D1E4E] pb-16 md:pb-0">
       
@@ -617,414 +670,9 @@ function NexoraShopApp() {
             supplierName: currentScreen === 'supplier-profile' ? VERIFIED_SUPPLIERS.find(s => s.id === (selectedSupplierId || searchParams.supplierId))?.name : undefined
           }}
         />
-        {/* Screen 01: Homepage / Explore Hub — NEXORA LUXE purple-gold edition */}
-        {currentScreen === 'explore' && (
-          <main className="flex-1 -mt-20 bg-[linear-gradient(180deg,#FDFBF7_0%,#FAF6EF_45%,#F5EEF8_100%)]">
-            <LuxeHero
-              onSearch={(q, loc) => handleSearchSubmit({ query: q, location: loc })}
-              onTabChange={(scope) => {
-                if (scope === 'suppliers') {
-                  handleNavigate('supplier-directory');
-                } else if (scope === 'brands') {
-                  handleNavigate('brands');
-                } else if (scope === 'oem') {
-                  handleSearchSubmit({ query: 'OEM', location: 'All India' });
-                } else {
-                  handleNavigate('plp');
-                }
-              }}
-            />
+        <PublicLanding {...ctx} />
 
-            <Reveal>
-            <BuySmartCard
-              onGetQuotes={() => {
-                handleNavigate('post-rfq');
-                triggerToast('Requirement captured — complete the form to receive supplier quotes.');
-              }}
-              onPostDetailed={() => handleNavigate('post-rfq')}
-            />
-
-            </Reveal>
-
-            <GoldDivider className="pt-14 md:pt-16" />
-
-            <Reveal>
-            <CategoryStrip
-              onCategoryClick={(label) => {
-                if (label === 'OEM/Private Label') {
-                  handleSearchSubmit({ query: 'OEM', location: 'All India' });
-                } else {
-                  handleSearchSubmit({ query: label, location: 'All India' });
-                }
-              }}
-            />
-
-            </Reveal>
-
-            <GoldDivider className="pt-14 md:pt-16" />
-
-            <Reveal>
-            <VerifiedSuppliers
-              onViewProfile={(id) => handleNavigate('supplier-profile', { supplierId: id })}
-              onSendEnquiry={(name) => {
-                handleOpenEnquiry({
-                  id: 'enq-' + Date.now(),
-                  title: 'Enquiry for ' + name,
-                  supplierName: name,
-                  type: 'supplier',
-                });
-              }}
-              onViewAll={() => handleNavigate('supplier-directory')}
-            />
-
-            </Reveal>
-
-            <GoldDivider className="pt-14 md:pt-16" />
-
-            <Reveal>
-            <TrendingProducts
-              onViewDetails={(id) => handleNavigate('product-detail', { productId: id })}
-              onSendEnquiry={(title, supplier) => {
-                handleOpenEnquiry({
-                  id: 'enq-' + Date.now(),
-                  title,
-                  supplierName: supplier,
-                  type: 'product',
-                });
-              }}
-              onViewAll={() => handleNavigate('plp')}
-            />
-
-            </Reveal>
-
-            <GoldDivider className="pt-14 md:pt-16" />
-
-            <Reveal direction="none">
-            <OemBanner
-              onExplore={() => handleNavigate('oem-hub')}
-              onPostRequirement={() => handleNavigate('post-rfq')}
-            />
-
-            </Reveal>
-
-            <Reveal>
-            <SupplierCta
-              onJoin={() => handleNavigate('onboarding')}
-              onLogin={() => handleOpenAuthModal('login')}
-            />
-
-            </Reveal>
-
-            <GoldDivider className="pt-14 md:pt-16" />
-
-            <Reveal>
-            <SourcingCities
-              onCityClick={(city) => handleSearchSubmit({ query: '', location: city })}
-            />
-
-            </Reveal>
-
-            <GoldDivider className="pt-14 md:pt-16" />
-
-            <Reveal>
-            <HowItWorks onPost={() => handleNavigate('post-rfq')} />
-            </Reveal>
-          </main>
-        )}
-
-        {/* Screen 03: Product Listing Page (PLP) */}
-        {currentScreen === 'plp' && (
-          <main className="flex-1">
-            <ProductListingScreen
-              isLoggedIn={isLoggedIn}
-              onOpenEnquiryModal={handleOpenEnquiry}
-              onOpenQuoteModal={handleOpenQuoteModal}
-              onOpenRFQModal={() => handleNavigate('post-rfq')}
-              onNavigateToExplore={() => handleNavigate('explore')}
-              onNavigateToSearch={handleNavigate}
-              onNavigateToProductDetail={(productId) => handleNavigate('product-detail', { productId })}
-              onOpenProductComparison={handleOpenProductComparison}
-              onCallSupplier={handleCallSupplier}
-              onWhatsAppSupplier={handleWhatsAppSupplier}
-              onOpenAuth={() => handleOpenAuthModal('login')}
-            />
-          </main>
-        )}
-
-        {/* Screen 02: Global Search & Filter Results (Unified) */}
-        {currentScreen === 'search-results' && (
-          <main className="flex-1">
-            <SearchFilterScreen
-              initialQuery={searchParams.query}
-              initialCategory={searchParams.category}
-              initialLocation={searchParams.location}
-              onOpenEnquiryModal={handleOpenEnquiry}
-              onOpenQuoteModal={handleOpenQuoteModal}
-              onOpenRFQModal={() => handleNavigate('post-rfq')}
-              onNavigateToExplore={() => handleNavigate('explore')}
-              onCallSupplier={handleCallSupplier}
-              onWhatsAppSupplier={handleWhatsAppSupplier}
-              onNavigate={handleNavigate}
-            />
-          </main>
-        )}
-
-        {/* Screen 04: Product Detail Page */}
-        {currentScreen === 'product-detail' && (
-          <main className="flex-1">
-            <ProductDetailPage
-              productId={selectedProductId}
-              onBack={() => handleNavigate('explore')}
-              onOpenEnquiryModal={(item) => {
-                handleOpenEnquiry({
-                  id: 'enq-' + Date.now(),
-                  title: item.name,
-                  supplierName: item.supplierName,
-                  type: 'product'
-                });
-              }}
-              onOpenRFQModal={() => handleNavigate('post-rfq')}
-              onNavigateToSampleRequest={() => handleNavigate('sample-request')}
-              onNavigateToSupplierProfile={(supplierId) => {
-                handleNavigate('supplier-profile', { supplierId });
-              }}
-              onCallSupplier={(name) => handleCallSupplier(name)}
-              onWhatsAppSupplier={(name) => handleWhatsAppSupplier(name)}
-              onOpenChat={handleOpenChat}
-            />
-          </main>
-        )}
-
-        {/* Screen 06: Directory Hub */}
-        {currentScreen === 'directory' && (
-          <main className="flex-1">
-            <DirectoryHubScreen
-              onNavigate={handleNavigate}
-              onOpenRFQModal={() => handleNavigate('post-rfq')}
-            />
-          </main>
-        )}
-
-        {/* Screen 06 List: Supplier Directory */}
-        {currentScreen === 'supplier-directory' && (
-          <main className="flex-1">
-            <SupplierDirectoryScreen
-              onOpenEnquiryModal={handleOpenEnquiry}
-              onOpenQuoteModal={handleOpenQuoteModal}
-              onOpenRFQModal={() => handleNavigate('post-rfq')}
-              onNavigateToExplore={() => handleNavigate('explore')}
-              onNavigateToSupplierProfile={(supplierId) => handleNavigate('supplier-profile', { supplierId })}
-              onNavigateToProductDetail={(productId) => handleNavigate('product-detail', { productId })}
-              onCallSupplier={handleCallSupplier}
-              onWhatsAppSupplier={handleWhatsAppSupplier}
-            />
-          </main>
-        )}
-
-        {/* Screen 07: Dedicated Seller Profile / Mini-Website Page */}
-        {currentScreen === 'supplier-profile' && (
-          <main className="flex-1">
-            <SellerProfileScreen
-              sellerId={selectedSupplierId || searchParams.supplierId}
-              isLoggedIn={isLoggedIn}
-              onBack={() => handleNavigate('explore')}
-              onNavigateToProductDetail={(productId) => handleNavigate('product-detail', { productId })}
-              onOpenAuth={() => handleOpenAuthModal('login')}
-              onOpenEnquiryModal={handleOpenEnquiry}
-              onOpenQuoteModal={(suppName) => handleNavigate('post-rfq', { supplierName: suppName })}
-              onCallSupplier={(name) => handleCallSupplier(name)}
-              onWhatsAppSupplier={(name) => handleWhatsAppSupplier(name)}
-            />
-          </main>
-        )}
-
-        {/* Screen 08: Brand Directory */}
-        {currentScreen === 'brands' && (
-          <main className="flex-1">
-            <BrandDirectoryDetailScreen
-              onOpenEnquiryModal={(prodName, suppName) => {
-                handleOpenEnquiry({ name: prodName, supplierName: suppName });
-              }}
-              onOpenRFQModal={() => handleNavigate('post-rfq')}
-              onOpenFacilityTour={(suppName) => handleFacilityTour(suppName)}
-              onNavigateToSuppliers={() => handleNavigate('supplier-directory')}
-              onNavigateToSupplierProfile={(supplierId) => handleNavigate('supplier-profile', { supplierId })}
-            />
-          </main>
-        )}
-
-        {/* Screen 09: OEM / Private Label Hub */}
-        {currentScreen === 'oem-hub' && (
-          <main className="flex-1">
-            <OemPrivateLabelHubScreen
-              onOpenRFQModal={() => handleNavigate('post-rfq')}
-              onOpenEnquiryModal={(prodName, suppName) => {
-                handleOpenEnquiry({ name: prodName, supplierName: suppName });
-              }}
-              onOpenFacilityTour={(suppName) => handleFacilityTour(suppName)}
-              onNavigateToSuppliers={() => handleNavigate('supplier-directory')}
-              onNavigateToSupplierProfile={(supplierId) => handleNavigate('supplier-profile', { supplierId })}
-            />
-          </main>
-        )}
-
-        {/* Phase A: Buyer Onboarding Flow */}
-        {currentScreen === 'buyer-onboarding' && (
-          <main className="flex-1">
-            <BuyerOnboardingScreen
-              onComplete={(data) => {
-                handleSaveProfile({
-                  ...buyerProfile,
-                  businessName: data.businessName,
-                  businessType: data.buyerCategory,
-                  designation: data.designation,
-                  gstin: data.gstNumber,
-                  annualProcurementBudget: data.annualBudget,
-                  primaryCategories: data.primaryCategories,
-                  city: data.location.split(',')[0] || '',
-                  state: data.location.split(',')[1]?.trim() || '',
-                });
-                handleNavigate('buyer-dashboard');
-              }}
-              onNavigateToExplore={() => handleNavigate('explore')}
-            />
-          </main>
-        )}
-
-        {/* Phase B: Supplier Onboarding Flow */}
-        {currentScreen === 'onboarding' && (
-          <main className="flex-1">
-            <SupplierOnboardingScreen
-              authenticated={isLoggedIn && userRole === 'supplier'}
-              onComplete={() => {
-                triggerToast('Business listing created! Redirecting to Portal...');
-                handleNavigate('supplier-portal');
-              }}
-              onNavigateToExplore={() => handleNavigate('explore')}
-            />
-          </main>
-        )}
-
-        {/* Phase B: Supplier Admin Portal */}
-        {currentScreen === 'supplier-portal' && (
-          <main className="flex-1">
-            <SupplierAdminPortal 
-              onNavigateToProduct={(productId) => {
-                setSelectedProductId(productId);
-                handleNavigate('product-detail', { productId });
-              }}
-            />
-          </main>
-        )}
-
-        {/* Screen 24: Supplier Verification Center */}
-        {currentScreen === 'supplier-verification' && (
-          <main className="flex-1">
-            <SupplierVerificationScreen 
-              onBack={() => handleNavigate('supplier-portal')}
-            />
-          </main>
-        )}
-
-        {/* Screen 12: Buyer Dashboard */}
-        {currentScreen === 'buyer-dashboard' && (
-          <main className="flex-1">
-            <BuyerDashboard 
-              isLoggedIn={isLoggedIn}
-              onNavigate={handleNavigate}
-              onPostRFQ={() => handleNavigate('post-rfq')}
-              onCallSupplier={handleCallSupplier}
-              onWhatsAppSupplier={handleWhatsAppSupplier}
-              onOpenAuth={() => handleOpenAuthModal('login')}
-              buyerProfile={buyerProfile}
-              onSaveProfile={handleSaveProfile}
-              onOpenEditProfile={() => setIsEditProfileOpen(true)}
-              initialTab={buyerDashboardTab}
-              isProfileRoute={false}
-              currentScreen={currentScreen}
-            />
-          </main>
-        )}
-
-        {/* Specific /buyer/profile Route View */}
-        {currentScreen === 'buyer-profile' && (
-          <main className="flex-1">
-            <BuyerDashboard 
-              isLoggedIn={isLoggedIn}
-              onNavigate={handleNavigate}
-              onPostRFQ={() => handleNavigate('post-rfq')}
-              onCallSupplier={handleCallSupplier}
-              onWhatsAppSupplier={handleWhatsAppSupplier}
-              onOpenAuth={() => handleOpenAuthModal('login')}
-              buyerProfile={buyerProfile}
-              onSaveProfile={handleSaveProfile}
-              onOpenEditProfile={() => setIsEditProfileOpen(true)}
-              initialTab="activity"
-              isProfileRoute={true}
-              currentScreen={currentScreen}
-            />
-          </main>
-        )}
-
-        {/* Screen 13: Buyer RFQ Tracking & Quote Comparison */}
-        {currentScreen === 'rfq-tracking' && (
-          <main className="flex-1">
-            <BuyerRFQTrackingScreen
-              onBack={() => handleNavigate('buyer-dashboard')}
-              onNavigateToChat={(supplierIdOrName) => {
-                const supp = VERIFIED_SUPPLIERS.find(s => 
-                  s.name.toLowerCase().includes(supplierIdOrName.toLowerCase()) || 
-                  s.id === supplierIdOrName
-                );
-                handleOpenChat(
-                  {
-                    id: supp?.id || 'supp-rfq',
-                    name: supp?.name || supplierIdOrName,
-                    location: supp ? `${supp.city}${supp.state ? `, ${supp.state}` : ''}` : 'India',
-                    isVerified: supp ? supp.isVerified : true
-                  },
-                  { title: 'Vitamin C Brightening Serum (Bulk)', image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80', price: '₹195 / unit', moq: '2,000 Units' }
-                );
-              }}
-            />
-          </main>
-        )}
-
-        {/* Sample Request Screen */}
-        {currentScreen === 'sample-request' && (
-          <main className="flex-1">
-            <SampleRequestScreen 
-              onBack={() => handleNavigate('search-results')}
-              onSubmit={(data) => {
-                console.log('Sample Request Submitted:', data);
-                handleNavigate('buyer-dashboard');
-              }}
-            />
-          </main>
-        )}
-
-        {/* Screen 10: Post Requirement / Public RFQ Form */}
-        {currentScreen === 'post-rfq' && (
-          <main className="flex-1">
-            <PostRequirementScreen
-              onNavigateToExplore={() => handleNavigate('explore')}
-              onNavigateToRFQs={() => handleNavigate('rfq-tracking')}
-            />
-          </main>
-        )}
-
-        {/* Screen 14: Buyer Enquiry Log */}
-        {currentScreen === 'buyer-enquiry-log' && (
-          <main className="flex-1">
-            <BuyerEnquiryLogScreen
-              onBack={() => handleNavigate('buyer-dashboard')}
-              onNavigateToChat={(supplierName) => handleOpenChat({ id: 'supp_custom', name: supplierName, location: 'All India', isVerified: true })}
-              onCallSupplier={(name) => handleCallSupplier(name)}
-              onWhatsAppSupplier={(name) => handleWhatsAppSupplier(name)}
-              onNavigateToExplore={() => handleNavigate('explore')}
-            />
-          </main>
-        )}
+        <ScreenRouter ctx={ctx} />
       </div>
 
       <EnquiryModal
@@ -1064,6 +712,12 @@ function NexoraShopApp() {
         initialProduct={chatInitialProduct}
       />
 
+      {/* Sourcing assistant launcher — floats above every screen. */}
+      <LiveChatWidget
+        onOpenRFQModal={() => handleNavigate('post-rfq')}
+        onOpenEnquiryModal={handleOpenEnquiry}
+      />
+
       <ProductCompareModal
         isOpen={isCompareModalOpen}
         onClose={() => setIsCompareModalOpen(false)}
@@ -1085,11 +739,13 @@ function NexoraShopApp() {
         rfq={targetQuoteRFQ}
       />
 
-      <DatabaseStatusModal
-        isOpen={isDatabaseModalOpen}
-        onClose={() => setIsDatabaseModalOpen(false)}
-        onNavigateToScreen={(screen) => handleNavigate(screen)}
-      />
+      <Suspense fallback={null}>
+        <DatabaseStatusModal
+          isOpen={isDatabaseModalOpen}
+          onClose={() => setIsDatabaseModalOpen(false)}
+          onNavigateToScreen={(screen) => handleNavigate(screen)}
+        />
+      </Suspense>
 
       {/* Shared Footer — Luxe edition on the homepage */}
       {currentScreen === 'explore' ? (

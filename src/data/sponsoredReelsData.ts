@@ -1,3 +1,4 @@
+import { readStorage, removeStorage, writeStorage } from '../lib/safeStorage';
 import { SponsoredVideoItem, VideoPlatform } from '../types';
 import { SPONSORED_PRODUCTS_DB } from './sponsoredProductsData';
 import { isSelfHostedMediaUrl } from '../lib/mediaConfig';
@@ -189,9 +190,9 @@ export function validateSponsoredVideo(video: SponsoredVideoItem): { isValid: bo
 
 export function getStoredSponsoredReels(): SponsoredVideoItem[] {
   try {
-    const raw = localStorage.getItem(REELS_STORAGE_KEY);
+    const raw = readStorage(REELS_STORAGE_KEY);
     if (!raw) {
-      localStorage.setItem(REELS_STORAGE_KEY, JSON.stringify(INITIAL_SPONSORED_REELS));
+      writeStorage(REELS_STORAGE_KEY, JSON.stringify(INITIAL_SPONSORED_REELS));
       return INITIAL_SPONSORED_REELS;
     }
     const parsed = JSON.parse(raw);
@@ -214,15 +215,15 @@ export function saveSponsoredReel(reel: SponsoredVideoItem): void {
   } else {
     updated = [reel, ...current];
   }
-  localStorage.setItem(REELS_STORAGE_KEY, JSON.stringify(updated));
+  writeStorage(REELS_STORAGE_KEY, JSON.stringify(updated));
   window.dispatchEvent(new CustomEvent('nexora_sponsored_reels_updated'));
 }
 
 export function getStoredSponsoredFullVideos(): SponsoredVideoItem[] {
   try {
-    const raw = localStorage.getItem(FULL_VIDEOS_STORAGE_KEY);
+    const raw = readStorage(FULL_VIDEOS_STORAGE_KEY);
     if (!raw) {
-      localStorage.setItem(FULL_VIDEOS_STORAGE_KEY, JSON.stringify(INITIAL_SPONSORED_FULL_VIDEOS));
+      writeStorage(FULL_VIDEOS_STORAGE_KEY, JSON.stringify(INITIAL_SPONSORED_FULL_VIDEOS));
       return INITIAL_SPONSORED_FULL_VIDEOS;
     }
     const parsed = JSON.parse(raw);
@@ -245,7 +246,7 @@ export function saveSponsoredFullVideo(video: SponsoredVideoItem): void {
   } else {
     updated = [video, ...current];
   }
-  localStorage.setItem(FULL_VIDEOS_STORAGE_KEY, JSON.stringify(updated));
+  writeStorage(FULL_VIDEOS_STORAGE_KEY, JSON.stringify(updated));
   window.dispatchEvent(new CustomEvent('nexora_sponsored_full_videos_updated'));
 }
 

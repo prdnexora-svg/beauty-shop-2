@@ -1,3 +1,4 @@
+import { readStorage, removeStorage, writeStorage } from '../lib/safeStorage';
 export interface ChatMessage {
   id: string;
   sender: 'buyer' | 'supplier';
@@ -71,9 +72,9 @@ const DEFAULT_THREADS: ChatThread[] = [
 
 export function getStoredChatThreads(): ChatThread[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = readStorage(STORAGE_KEY);
     if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_THREADS));
+      writeStorage(STORAGE_KEY, JSON.stringify(DEFAULT_THREADS));
       return DEFAULT_THREADS;
     }
     return JSON.parse(raw);
@@ -84,7 +85,7 @@ export function getStoredChatThreads(): ChatThread[] {
 
 export function saveChatThreads(threads: ChatThread[]) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(threads));
+    writeStorage(STORAGE_KEY, JSON.stringify(threads));
     window.dispatchEvent(new Event('nexora_chat_updated'));
   } catch (e) {
     console.error('Failed to save chat threads', e);

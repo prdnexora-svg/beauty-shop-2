@@ -1,3 +1,4 @@
+import { readStorage, removeStorage, writeStorage } from '../lib/safeStorage';
 export type AnalyticsEventType =
   | 'ad_impression'
   | 'video_open'
@@ -37,7 +38,7 @@ export function recordSponsoredAnalyticsEvent(
   }
 ): void {
   try {
-    const raw = localStorage.getItem(ANALYTICS_STORAGE_KEY);
+    const raw = readStorage(ANALYTICS_STORAGE_KEY);
     const existing: SponsoredAnalyticsEvent[] = raw ? JSON.parse(raw) : [];
     
     const newEvent: SponsoredAnalyticsEvent = {
@@ -49,7 +50,7 @@ export function recordSponsoredAnalyticsEvent(
 
     // Store up to 1000 latest events for Screen 25 analytics calculation
     const updated = [newEvent, ...existing].slice(0, 1000);
-    localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(updated));
+    writeStorage(ANALYTICS_STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent('nexora_analytics_event_recorded', { detail: newEvent }));
   } catch (err) {
     console.error('Failed to record analytics event', err);
@@ -58,7 +59,7 @@ export function recordSponsoredAnalyticsEvent(
 
 export function getStoredSponsoredAnalyticsEvents(): SponsoredAnalyticsEvent[] {
   try {
-    const raw = localStorage.getItem(ANALYTICS_STORAGE_KEY);
+    const raw = readStorage(ANALYTICS_STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];

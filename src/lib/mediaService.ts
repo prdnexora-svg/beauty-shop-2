@@ -99,34 +99,116 @@ export interface ListMediaOptions {
 // ROW MAPPING
 // ---------------------------------------------------------------------------
 
-type MediaRow = Record<string, any>;
+/**
+ * A row as PostgREST returns it for `public.media_assets`.
+ *
+ * Strictly keyed on purpose. The previous `Record<string, any>` meant every
+ * property read below was unchecked: a typo like `row.publicUrl` compiled
+ * happily and silently produced `undefined`, which the `?? null` fallback then
+ * turned into a plausible-looking empty asset. Now a wrong key is a compile
+ * error, and the enum-ish columns are narrowed by real guards instead of
+ * blind `as` casts.
+ *
+ * All fields are optional because a `select()` may legitimately omit columns.
+ */
+export interface MediaRow {
+  id?: string;
+  owner_id?: string;
+  bucket?: string;
+  path?: string;
+  public_url?: string | null;
+  media_kind?: string | null;
+  visibility?: string | null;
+  scope?: string | null;
+  entity_type?: string | null;
+  entity_id?: string | null;
+  mime_type?: string | null;
+  byte_size?: number | string | null;
+  original_name?: string | null;
+  width?: number | null;
+  height?: number | null;
+  duration_seconds?: number | string | null;
+  status?: string | null;
+  error_message?: string | null;
+  metadata?: Record<string, unknown> | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  deleted_at?: string | null;
+  replaced_by?: string | null;
+  replaced_at?: string | null;
+}
+
+/**
+ * The ONE boundary where untyped JSON becomes a MediaRow. Keeping the cast in
+ * a single audited place is what makes the rest of the module type-safe.
+ * Returns null when the value is not shaped like a media row at all, so a
+ * malformed payload is dropped rather than coerced into a fake asset.
+ */
+function toMediaRow(value: unknown): MediaRow | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const candidate = value as Record<string, unknown>;
+  if (typeof candidate.id !== 'string' || typeof candidate.path !== 'string') return null;
+  return value as MediaRow;
+}
+
+const MEDIA_KINDS: readonly MediaKind[] = ['image', 'video', 'document'];
+
+function toMediaKind(value: unknown): MediaKind {
+  return typeof value === 'string' && (MEDIA_KINDS as readonly string[]).includes(value)
+    ? (value as MediaKind)
+    : 'document';
+}
+
+function toVisibility(value: unknown): 'public' | 'private' {
+  return value === 'public' ? 'public' : 'private';
+}
+
+function toMediaScope(value: unknown): MediaScope {
+  return typeof value === 'string' && value in MEDIA_SCOPES ? (value as MediaScope) : 'general';
+}
+
+const MEDIA_STATUSES: readonly MediaAssetStatus[] = ['uploading', 'ready', 'failed', 'orphaned', 'deleted'];
+
+function toMediaStatus(value: unknown): MediaAssetStatus {
+  return typeof value === 'string' && (MEDIA_STATUSES as readonly string[]).includes(value)
+    ? (value as MediaAssetStatus)
+    : 'ready';
+}
+
+function toBucketId(value: unknown): MediaBucketId {
+  return typeof value === 'string' && value in MEDIA_BUCKETS ? (value as MediaBucketId) : 'documents';
+}
+
+/** Numeric columns can arrive as strings (numeric/bigint over JSON). */
+function toNumberOrNull(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
 
 function rowToAsset(row: MediaRow): MediaAsset {
   return {
-    id: row.id,
-    ownerId: row.owner_id,
-    bucket: row.bucket as MediaBucketId,
-    path: row.path,
+    id: row.id ?? '',
+    ownerId: row.owner_id ?? '',
+    bucket: toBucketId(row.bucket),
+    path: row.path ?? '',
     publicUrl: row.public_url ?? null,
-    mediaKind: row.media_kind as MediaKind,
-    visibility: row.visibility as 'public' | 'private',
-    scope: (row.scope || 'general') as MediaScope,
+    mediaKind: toMediaKind(row.media_kind),
+    visibility: toVisibility(row.visibility),
+    scope: toMediaScope(row.scope),
     entityType: row.entity_type ?? null,
     entityId: row.entity_id ?? null,
-    mimeType: row.mime_type,
-    byteSize: Number(row.byte_size || 0),
+    mimeType: row.mime_type ?? 'application/octet-stream',
+    byteSize: toNumberOrNull(row.byte_size) ?? 0,
     originalName: row.original_name ?? null,
-    width: row.width ?? null,
-    height: row.height ?? null,
-    durationSeconds:
-      row.duration_seconds === null || row.duration_seconds === undefined
-        ? null
-        : Number(row.duration_seconds),
-    status: row.status as MediaAssetStatus,
+    width: toNumberOrNull(row.width),
+    height: toNumberOrNull(row.height),
+    durationSeconds: toNumberOrNull(row.duration_seconds),
+    status: toMediaStatus(row.status),
     errorMessage: row.error_message ?? null,
     metadata: row.metadata ?? {},
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    createdAt: row.created_at ?? new Date().toISOString(),
+    updatedAt: row.updated_at ?? new Date().toISOString(),
     isLocal: false,
     localUrl: null,
   };
@@ -754,7 +836,9 @@ export async function uploadMedia(options: UploadOptions): Promise<UploadResult>
   }
 
   invalidateSignedUrl(bucketId, path);
-  return { ok: true, asset: rowToAsset(data) };
+  const row = toMediaRow(data);
+  if (!row) return { ok: false, error: 'Storage accepted the upload but the saved record could not be read back.' };
+  return { ok: true, asset: rowToAsset(row) };
 }
 
 /**
@@ -932,7 +1016,11 @@ export async function listMedia(options: ListMediaOptions = {}): Promise<MediaAs
     console.warn('[mediaService] listMedia failed:', error.message);
     return [];
   }
-  return (data || []).map(rowToAsset);
+  // Malformed rows are dropped rather than surfaced as half-empty assets.
+  return (data || [])
+    .map(toMediaRow)
+    .filter((row: MediaRow | null): row is MediaRow => row !== null)
+    .map(rowToAsset);
 }
 
 // ---------------------------------------------------------------------------

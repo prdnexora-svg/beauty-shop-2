@@ -1,3 +1,4 @@
+import { readStorage, removeStorage, writeStorage } from '../lib/safeStorage';
 import { SponsoredAdItem } from '../types';
 import { SPONSORED_PRODUCTS_DB } from './sponsoredProductsData';
 
@@ -240,9 +241,9 @@ const INITIAL_CAMPAIGNS: AdCampaignItem[] = [
 
 export function getStoredCampaigns(): AdCampaignItem[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = readStorage(STORAGE_KEY);
     if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_CAMPAIGNS));
+      writeStorage(STORAGE_KEY, JSON.stringify(INITIAL_CAMPAIGNS));
       return INITIAL_CAMPAIGNS;
     }
     const parsed: AdCampaignItem[] = JSON.parse(raw);
@@ -255,7 +256,7 @@ export function getStoredCampaigns(): AdCampaignItem[] {
 
 export function saveCampaignsToStore(campaigns: AdCampaignItem[]): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(campaigns));
+    writeStorage(STORAGE_KEY, JSON.stringify(campaigns));
     window.dispatchEvent(new Event('nexora_sponsored_campaigns_updated'));
   } catch (err) {
     console.error('Failed to save campaigns to localStorage:', err);
@@ -301,9 +302,9 @@ export function deleteCampaignFromStore(campaignId: string): AdCampaignItem[] {
 
 export function getAdAccountBalance(): number {
   try {
-    const val = localStorage.getItem(BALANCE_KEY);
+    const val = readStorage(BALANCE_KEY);
     if (val === null) {
-      localStorage.setItem(BALANCE_KEY, '41000'); // ₹41,000 (~$500)
+      writeStorage(BALANCE_KEY, '41000'); // ₹41,000 (~$500)
       return 41000;
     }
     return parseFloat(val) || 0;
@@ -314,7 +315,7 @@ export function getAdAccountBalance(): number {
 
 export function setAdAccountBalance(amount: number): number {
   try {
-    localStorage.setItem(BALANCE_KEY, amount.toString());
+    writeStorage(BALANCE_KEY, amount.toString());
     window.dispatchEvent(new Event('nexora_sponsored_campaigns_updated'));
   } catch {}
   return amount;

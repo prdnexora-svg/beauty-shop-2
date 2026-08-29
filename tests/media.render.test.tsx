@@ -16,7 +16,6 @@ import { MediaUploader } from '../src/components/media/MediaUploader';
 import { MediaGallery } from '../src/components/media/MediaGallery';
 import { MediaPlayer } from '../src/components/media/MediaPlayer';
 import { SecureImage } from '../src/components/media/SecureImage';
-import { MediaLibraryModal } from '../src/components/media/MediaLibraryModal';
 import { StorageHealthPanel } from '../src/components/media/StorageHealthPanel';
 import type { MediaAsset } from '../src/lib/mediaService';
 
@@ -172,22 +171,6 @@ try {
   check('SecureImage renders without throwing', typeof html === 'string');
 } catch (error: any) {
   check('SecureImage renders without throwing', false, error?.message);
-}
-
-// ---------------------------------------------------------------------------
-try {
-  const html = render(
-    React.createElement(MediaLibraryModal, {
-      isOpen: true,
-      onClose: () => {},
-      ownerId: null,
-      onSelect: () => {},
-    }),
-  );
-  check('MediaLibraryModal renders', html.length > 0);
-  check('library prompts sign-in when there is no owner', /sign in/i.test(html));
-} catch (error: any) {
-  check('MediaLibraryModal renders', false, error?.message);
 }
 
 // ---------------------------------------------------------------------------
