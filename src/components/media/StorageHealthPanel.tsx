@@ -212,6 +212,10 @@ export const StorageHealthPanel: React.FC = () => {
             <h4 className="text-[13px] font-black text-[#2A0E3F]">Self-test results</h4>
             <span className="text-[10px] font-bold text-[#7E6C96]">
               {report.passed} passed · {report.failed} failed
+              {(() => {
+                const skipped = report.steps.filter((s) => s.status === 'skipped').length;
+                return skipped > 0 ? ` · ${skipped} skipped` : '';
+              })()}
             </span>
           </div>
           <div className="divide-y divide-[#F4F0E9]">

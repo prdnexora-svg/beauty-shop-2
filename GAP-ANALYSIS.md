@@ -306,7 +306,7 @@ Then audit: `select proname, prosecdef, proconfig from pg_proc where proname in 
 
 | # | Issue | Evidence | Impact |
 | --- | --- | --- | --- |
-| 3.3a | **No React error boundary anywhere** | `grep` for `ErrorBoundary`/`componentDidCatch` → no matches; `main.tsx` mounts `<App/>` bare | Any render throw blanks the whole app to a white screen. |
+| 3.3a | **No React error boundary anywhere** | `grep` for `ErrorBoundary`/`componentDidCatch` → no matches; `main.tsx` mounts `<App/>` bare | Any render throw blanks the whole app to a white screen. The media surfaces specifically are now covered: `runStorageSelfTest` cannot reject and the panel catches a fatal, but a failure anywhere *else* in the tree still white-screens. |
 | 3.3b | **Chat insert errors swallowed** | `useChatSubscription.ts:159` `catch (err) { console.warn(...) }` | Users see messages that never persist and never arrive. Root cause of the "chat works in demo, dies in prod" class of bug. |
 | 3.3c | **Unguarded `JSON.parse` of `localStorage`** | `BuyerDashboard.tsx:428`, `SupplierOnboardingScreen.tsx:81`, `data/chatStore.ts:79`, `data/notifications.ts:130`, `data/sponsoredAnalyticsStore.ts:41,62`, `sponsoredCampaignsStore.ts:248`, `sponsoredReelsData.ts:197,228`, `db/database.ts:508` | One corrupt key throws during module init or render → white screen. `App.tsx:134` and `BuyerEnquiryLogScreen.tsx:46` get this right with `try/catch`; the other nine don't. |
 | 3.3d | **Duplicate chat hooks** | `useRealtimeMessages.ts` (167 lines) is a near-clone of `useChatSubscription.ts` with different naming (`status` vs `connectionState`, `sendMessage` vs `pushMessage`) and **zero importers** | Two divergent copies of the same logic; fixes applied to one silently miss the other. |
@@ -381,9 +381,10 @@ Then audit: `select proname, prosecdef, proconfig from pg_proc where proname in 
 **Verification commands that exist today:**
 ```bash
 npm run lint          # tsc --noEmit
-npm run test:media    # 69 unit + 22 component render assertions
-npm run verify:media  # migration/secret static scan + both suites (+ live probes when creds are set)
-npm run verify        # all three
+npm run test:media    # 69 unit + 22 render + 19 self-test assertions
+npm run verify:media  # migration/secret static scan + suites (+ live probes when creds are set)
+npm run verify:sql    # every migration executed against a real Postgres, 101 RLS checks
+npm run verify        # all of the above
 ```
 
 None of the above cover the business schema — that is the gap this report documents, and there is no automated check for any finding in §1 or §3.2 today.

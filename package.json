@@ -9,12 +9,13 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "test:media": "tsx tests/media.test.ts && tsx tests/media.render.test.tsx",
+    "test:media": "tsx tests/media.test.ts && tsx tests/media.render.test.tsx && tsx tests/media.selftest.test.ts",
     "verify:media": "node scripts/verify-media.mjs",
     "verify": "npm run lint && npm run test:media && npm run verify:media && npm run verify:sql",
     "test:media:unit": "tsx tests/media.test.ts",
     "test:media:render": "tsx tests/media.render.test.tsx",
-    "verify:sql": "node scripts/verify-sql.mjs"
+    "verify:sql": "node scripts/verify-sql.mjs",
+    "test:selftest": "tsx tests/media.selftest.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
@@ -32,6 +33,7 @@
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.25.0",
+    "fake-indexeddb": "^6.2.5",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",

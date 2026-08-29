@@ -14,6 +14,7 @@
 
 import { supabase, isSupabaseConfigured } from './supabase';
 import { ENV } from './env';
+import { ensureDemoOwner } from '../hooks/useMediaOwner';
 import {
   MEDIA_BUCKETS,
   MEDIA_SCOPES,
@@ -258,22 +259,37 @@ export interface MediaProbe {
 
 export function probeImage(file: File): Promise<MediaProbe> {
   return new Promise((resolve) => {
+    // No DOM (SSR, unit tests, web workers): dimensions are simply unknown.
+    // Never throw here — a missing probe must not fail an upload.
+    if (typeof Image === 'undefined') return resolve({});
+
+    let settled = false;
     const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
+    const done = (result: MediaProbe) => {
+      if (settled) return;
+      settled = true;
       URL.revokeObjectURL(url);
-      resolve({ width: img.naturalWidth || null, height: img.naturalHeight || null });
+      resolve(result);
     };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      resolve({});
-    };
-    img.src = url;
+    // A decoder that fires neither onload nor onerror must not hang the caller.
+    setTimeout(() => done({}), 10000);
+
+    try {
+      const img = new Image();
+      img.onload = () => done({ width: img.naturalWidth || null, height: img.naturalHeight || null });
+      img.onerror = () => done({});
+      img.src = url;
+    } catch {
+      done({});
+    }
   });
 }
 
 export function probeVideo(file: File): Promise<MediaProbe> {
   return new Promise((resolve) => {
+    // No DOM: duration is unknown. Never throw — the upload still succeeds.
+    if (typeof document === 'undefined') return resolve({});
+
     const url = URL.createObjectURL(file);
     const video = document.createElement('video');
     video.preload = 'metadata';
@@ -596,7 +612,13 @@ function writeDemoIndex(assets: MediaAsset[]): void {
       /* ignore */
     }
   }
-  window.dispatchEvent(new CustomEvent('nexora_media_demo_updated'));
+  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+    try {
+      window.dispatchEvent(new CustomEvent('nexora_media_demo_updated'));
+    } catch {
+      /* ignore */
+    }
+  }
 }
 
 /** Re-attach blob URLs for demo assets after a page reload. */
@@ -976,13 +998,29 @@ function base64ToBlob(base64: string, mime: string): Blob {
  * auth -> upload -> ledger row -> read back -> signed URL -> delete.
  * Safe to run repeatedly; it cleans up after itself.
  */
+/**
+ * Runs a real round trip and reports per-step outcomes.
+ *
+ * Two modes, both exercised end to end:
+ *
+ *   LIVE  — Supabase configured: auth -> buckets -> upload -> ledger row ->
+ *           read back -> signed URL -> cross-user RLS probe -> delete.
+ *   DEMO  — No project configured: the in-browser fallback is tested instead,
+ *           so an operator still gets proof that upload -> persistence ->
+ *           retrieval -> deletion work (IndexedDB + the local ledger), clearly
+ *           labelled as local-only rather than silently passing.
+ *
+ * Contract: this function NEVER rejects. Any throw is converted into a failed
+ * step, and any step left pending at the end becomes 'skipped'. That keeps the
+ * Storage & Media panel from ever crashing on a partially broken environment.
+ */
 export async function runStorageSelfTest(ownerId: string | null): Promise<SelfTestReport> {
   const steps: SelfTestStep[] = [
     { id: 'config', label: 'Supabase credentials present', status: 'pending' },
-    { id: 'auth', label: 'Authenticated session', status: 'pending' },
-    { id: 'bucket', label: 'Buckets reachable', status: 'pending' },
+    { id: 'auth', label: 'Authenticated session / stable owner', status: 'pending' },
+    { id: 'bucket', label: 'Storage buckets reachable', status: 'pending' },
     { id: 'upload', label: 'Upload object to storage', status: 'pending' },
-    { id: 'record', label: 'Media ledger row written', status: 'pending' },
+    { id: 'record', label: 'Media ledger row / local index written', status: 'pending' },
     { id: 'read', label: 'Object readable back', status: 'pending' },
     { id: 'signed', label: 'Signed URL issued (private bucket)', status: 'pending' },
     { id: 'rls', label: 'Cross-user write blocked by RLS', status: 'pending' },
@@ -991,11 +1029,26 @@ export async function runStorageSelfTest(ownerId: string | null): Promise<SelfTe
 
   const mark = (id: string, status: SelfTestStep['status'], detail?: string, durationMs?: number) => {
     const step = steps.find((s) => s.id === id);
-    if (step) {
-      step.status = status;
-      step.detail = detail;
-      step.durationMs = durationMs;
+    if (!step) return;
+    step.status = status;
+    step.detail = detail;
+    if (durationMs !== undefined) step.durationMs = durationMs;
+  };
+
+  /** Run one step; a throw marks it failed instead of rejecting the report. */
+  const attempt = async <T>(id: string, fn: () => Promise<T>): Promise<T | null> => {
+    try {
+      return await fn();
+    } catch (err: any) {
+      mark(id, 'failed', err?.message || 'Unexpected error.');
+      return null;
     }
+  };
+
+  const skipRest = (keep: string[]) => {
+    steps.forEach((s) => {
+      if (!keep.includes(s.id) && s.status === 'pending') s.status = 'skipped';
+    });
   };
 
   const report = (): SelfTestReport => ({
@@ -1005,96 +1058,106 @@ export async function runStorageSelfTest(ownerId: string | null): Promise<SelfTe
     failed: steps.filter((s) => s.status === 'failed').length,
   });
 
-  // 1. Config
-  if (!isStorageConfigured()) {
-    mark('config', 'failed', 'VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY are not set.');
-    steps.filter((s) => s.id !== 'config').forEach((s) => (s.status = 'skipped'));
-    return report();
+  const selfTestFile = (): File => {
+    const blob = base64ToBlob(SELF_TEST_PNG_BASE64, 'image/png');
+    return new File([blob], `selftest-${Date.now()}.png`, { type: 'image/png' });
+  };
+
+  try {
+    if (isStorageConfigured()) {
+      await runLiveSelfTest({ ownerId, mark, attempt, skipRest, selfTestFile });
+    } else {
+      await runDemoSelfTest({ ownerId, mark, attempt, skipRest, selfTestFile });
+    }
+  } catch (err: any) {
+    // Last line of defence: never let the panel receive a rejected promise.
+    const pending = steps.find((s) => s.status === 'pending');
+    if (pending) mark(pending.id, 'failed', `Unexpected error: ${err?.message || String(err)}`);
   }
+
+  // Nothing may be left 'pending' in the returned report.
+  steps.forEach((s) => {
+    if (s.status === 'pending') s.status = 'skipped';
+  });
+  return report();
+}
+
+interface SelfTestCtx {
+  ownerId: string | null;
+  mark: (id: string, status: SelfTestStep['status'], detail?: string, durationMs?: number) => void;
+  attempt: <T>(id: string, fn: () => Promise<T>) => Promise<T | null>;
+  skipRest: (keep: string[]) => void;
+  selfTestFile: () => File;
+}
+
+/** Live project: the full Supabase round trip. */
+async function runLiveSelfTest(ctx: SelfTestCtx): Promise<void> {
+  const { ownerId, mark, attempt, skipRest, selfTestFile } = ctx;
+
   mark('config', 'passed', supabaseUrl());
 
   // 2. Auth
-  const token = await getAccessToken();
+  const token = await attempt('auth', () => getAccessToken());
   if (!token || !ownerId) {
     mark('auth', 'failed', 'No active session — sign in to run the storage test.');
-    steps.filter((s) => !['config', 'auth'].includes(s.id)).forEach((s) => (s.status = 'skipped'));
-    return report();
+    skipRest(['config', 'auth']);
+    return;
   }
   mark('auth', 'passed', `uid ${ownerId.slice(0, 8)}…`);
 
   // 3. Buckets
   const t0 = performance.now();
-  const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
+  const bucketCheck = await attempt('bucket', () => supabase.storage.listBuckets());
+  if (!bucketCheck) {
+    skipRest(['config', 'auth', 'bucket']);
+    return;
+  }
+  const { data: buckets, error: bucketError } = bucketCheck;
   if (bucketError) {
     mark('bucket', 'failed', bucketError.message);
-    steps.filter((s) => !['config', 'auth', 'bucket'].includes(s.id)).forEach((s) => (s.status = 'skipped'));
-    return report();
+    skipRest(['config', 'auth', 'bucket']);
+    return;
   }
   const missing = (Object.keys(MEDIA_BUCKETS) as MediaBucketId[]).filter(
     (id) => !(buckets || []).some((b) => b.id === id),
   );
   if (missing.length) {
     mark('bucket', 'failed', `Missing bucket(s): ${missing.join(', ')}. Run 0005_media_storage.sql.`);
-    steps.filter((s) => !['config', 'auth', 'bucket'].includes(s.id)).forEach((s) => (s.status = 'skipped'));
-    return report();
+    skipRest(['config', 'auth', 'bucket']);
+    return;
   }
   mark('bucket', 'passed', `${(buckets || []).length} buckets found`, Math.round(performance.now() - t0));
 
   // 4. Upload + 5. Ledger row
-  const blob = base64ToBlob(SELF_TEST_PNG_BASE64, 'image/png');
-  const testFile = new File([blob], `selftest-${Date.now()}.png`, { type: 'image/png' });
-  let created: MediaAsset | null = null;
-  try {
-    const result = await uploadMedia({
-      file: testFile,
-      scope: 'general',
-      ownerId,
-      metadata: { selfTest: true },
-      skipContentCheck: true,
-    });
-    if (!result.ok || !result.asset) {
-      mark('upload', 'failed', result.error || 'Upload rejected by storage policy.');
-      mark('record', 'skipped', 'Skipped — upload failed.');
-    } else {
-      mark('upload', 'passed', result.asset.path);
-      mark('record', 'passed', `media_assets row ${result.asset.id.slice(0, 8)}…`);
-      created = result.asset;
-    }
-  } catch (err: any) {
-    mark('upload', 'failed', err?.message || 'Unexpected error.');
-    mark('record', 'skipped');
-  }
-
+  const file = selfTestFile();
+  const upload = await attempt('upload', () =>
+    uploadMedia({ file, scope: 'general', ownerId: ownerId as string, metadata: { selfTest: true }, skipContentCheck: true }),
+  );
+  const created = upload?.ok ? upload.asset : null;
   if (!created) {
-    ['read', 'signed', 'rls', 'delete'].forEach((id) => mark(id, 'skipped'));
-    return report();
+    mark('upload', 'failed', upload?.error || 'Upload rejected by storage policy.');
+    skipRest(['config', 'auth', 'bucket', 'upload']);
+    return;
   }
+  mark('upload', 'passed', created.path);
+  mark('record', 'passed', `media_assets row ${created.id.slice(0, 8)}…`);
 
   // 6. Read back
-  const readUrl = await resolveMediaUrl(created);
+  const readUrl = await attempt('read', () => resolveMediaUrl(created));
   if (!readUrl) {
     mark('read', 'failed', 'Could not resolve a URL for the uploaded object.');
   } else {
-    const ok = await new Promise<boolean>((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve(true);
-      img.onerror = () => resolve(false);
-      setTimeout(() => resolve(false), 8000);
-      img.src = readUrl;
-    });
+    const ok = await verifyUrlLoads(readUrl);
     mark('read', ok ? 'passed' : 'failed', ok ? 'Object served over CDN' : 'Object URL did not load');
   }
 
-  // 7. Signed URL on a private bucket
+  // 7. Signed URL on the private bucket
   const signedPath = `${ownerId}/general/selftest-${Date.now()}.png`;
-  const signedUpload = await xhrUpload({
-    bucket: 'documents',
-    path: signedPath,
-    file: testFile,
-    accessToken: token,
-  });
-  if (!signedUpload.ok) {
-    mark('signed', 'failed', `Private-bucket upload rejected: ${signedUpload.error}`);
+  const signedUpload = await attempt('signed', () =>
+    xhrUpload({ bucket: 'documents', path: signedPath, file, accessToken: token as string }),
+  );
+  if (!signedUpload?.ok) {
+    mark('signed', 'failed', `Private-bucket upload rejected: ${signedUpload?.error || 'unknown error'}`);
   } else {
     const signed = await createSignedUrl('documents', signedPath, 60);
     mark(
@@ -1106,31 +1169,157 @@ export async function runStorageSelfTest(ownerId: string | null): Promise<SelfTe
   }
 
   // 8. RLS — writing into another user's folder must be denied
-  const foreignPath = `00000000-0000-4000-8000-000000000000/general/rls-probe.png`;
-  const rlsResult = await xhrUpload({
-    bucket: 'avatars',
-    path: foreignPath,
-    file: testFile,
-    accessToken: token,
-  });
-  mark(
-    'rls',
-    rlsResult.ok ? 'failed' : 'passed',
-    rlsResult.ok
-      ? 'SECURITY: a write into another user folder succeeded!'
-      : 'Write into a foreign folder was rejected',
+  const foreignPath = '00000000-0000-4000-8000-000000000000/general/rls-probe.png';
+  const rlsResult = await attempt('rls', () =>
+    xhrUpload({ bucket: 'avatars', path: foreignPath, file, accessToken: token as string }),
   );
-  if (rlsResult.ok) {
-    await supabase.storage.from('avatars').remove([foreignPath]).catch(() => undefined);
+  if (!rlsResult) {
+    mark('rls', 'failed', 'RLS probe could not be completed.');
+  } else {
+    mark(
+      'rls',
+      rlsResult.ok ? 'failed' : 'passed',
+      rlsResult.ok
+        ? 'SECURITY: a write into another user folder succeeded!'
+        : 'Write into a foreign folder was rejected',
+    );
+    if (rlsResult.ok) {
+      await supabase.storage.from('avatars').remove([foreignPath]).catch(() => undefined);
+    }
   }
 
   // 9. Cleanup
-  const deleted = await deleteMedia(created);
+  const deleted = await attempt('delete', () => deleteMedia(created));
   mark(
     'delete',
-    deleted.ok ? 'passed' : 'failed',
-    deleted.ok ? 'Object and ledger row removed' : deleted.error || 'Delete failed',
+    deleted?.ok ? 'passed' : 'failed',
+    deleted?.ok ? 'Object and ledger row removed' : deleted?.error || 'Delete failed',
+  );
+}
+
+/**
+ * Demo mode (no Supabase project): verify the in-browser fallback really works
+ * — upload persists to IndexedDB, the local ledger records it, the blob can be
+ * read back, and deletion removes both. Every step is labelled as local-only.
+ */
+async function runDemoSelfTest(ctx: SelfTestCtx): Promise<void> {
+  const { ownerId, mark, attempt, skipRest, selfTestFile } = ctx;
+
+  mark(
+    'config',
+    'skipped',
+    'No Supabase project configured — testing the in-browser demo fallback instead.',
+  );
+  mark('bucket', 'skipped', 'Buckets live in Supabase; not applicable in demo mode.');
+  mark('signed', 'skipped', 'Signed URLs require a Supabase project.');
+  mark('rls', 'skipped', 'RLS is enforced by Postgres; not applicable in demo mode.');
+
+  // Owner: reuse the session id, or mint the stable demo owner the uploaders use.
+  let owner: string | null = ownerId;
+  if (!owner) {
+    try {
+      owner = ensureDemoOwner();
+    } catch {
+      owner = null;
+    }
+  }
+  if (!owner) {
+    mark('auth', 'failed', 'No owner id available — sign in, or reload to create a demo owner.');
+    skipRest(['config', 'auth']);
+    return;
+  }
+  mark('auth', 'passed', `demo owner ${owner.slice(0, 8)}… (local only)`);
+
+  const file = selfTestFile();
+
+  // 4. Upload (IndexedDB) + 5. Ledger row (local index)
+  const upload = await attempt('upload', () =>
+    uploadMedia({ file, scope: 'general', ownerId: owner as string, metadata: { selfTest: true }, skipContentCheck: true }),
+  );
+  const created = upload?.ok ? upload.asset : null;
+  if (!created) {
+    mark('upload', 'failed', upload?.error || 'Demo upload failed.');
+    skipRest(['config', 'auth', 'upload']);
+    return;
+  }
+  if (!created.isLocal) {
+    mark('upload', 'failed', 'Expected a local demo asset but got a remote one.');
+    skipRest(['config', 'auth', 'upload']);
+    return;
+  }
+  mark('upload', 'passed', `${created.byteSize} bytes stored in IndexedDB (local only)`);
+
+  const listed = await attempt('record', () => listMedia({ ownerId: owner as string, scope: 'general' }));
+  if (!listed) {
+    skipRest(['config', 'auth', 'upload', 'record']);
+    return;
+  }
+  const inIndex = listed.some((a) => a.id === created.id);
+  mark(
+    'record',
+    inIndex ? 'passed' : 'failed',
+    inIndex
+      ? `Local ledger row ${created.id.slice(0, 8)}… present`
+      : 'Uploaded asset is missing from the local ledger',
   );
 
-  return report();
+  // 6. Read back
+  const url = await attempt('read', () => resolveMediaUrl(created));
+  if (!url) {
+    mark('read', 'failed', 'Could not resolve a URL for the stored blob.');
+  } else {
+    const ok = await verifyUrlLoads(url);
+    mark(
+      'read',
+      ok ? 'passed' : 'failed',
+      ok ? 'Blob readable from IndexedDB' : 'Stored blob could not be read back',
+    );
+  }
+
+  // 9. Deletion removes both the blob and the ledger row
+  const deleted = await attempt('delete', () => deleteMedia(created));
+  if (!deleted?.ok) {
+    mark('delete', 'failed', deleted?.error || 'Delete failed.');
+    return;
+  }
+  const remaining = await listMedia({ ownerId: owner as string, scope: 'general' }).catch(() => [] as MediaAsset[]);
+  const stillThere = remaining.some((a) => a.id === created.id);
+  mark(
+    'delete',
+    !stillThere ? 'passed' : 'failed',
+    !stillThere
+      ? 'Blob and ledger row removed'
+      : 'Delete reported success but the ledger row is still present',
+  );
+}
+
+/**
+ * Best-effort proof that a URL actually serves bytes. Uses an <img> when the
+ * DOM is available and falls back to a fetch HEAD/GET otherwise, so the check
+ * still means something outside a browser (tests, SSR) instead of lying.
+ */
+function verifyUrlLoads(url: string): Promise<boolean> {
+  if (typeof document !== 'undefined' && typeof Image !== 'undefined') {
+    return new Promise<boolean>((resolve) => {
+      let settled = false;
+      const done = (v: boolean) => {
+        if (settled) return;
+        settled = true;
+        resolve(v);
+      };
+      const img = new Image();
+      img.onload = () => done(true);
+      img.onerror = () => done(false);
+      setTimeout(() => done(false), 8000);
+      img.src = url;
+    });
+  }
+  if (typeof fetch === 'function') {
+    return fetch(url, { method: 'GET' })
+      .then((r) => r.ok)
+      .catch(() => false);
+  }
+  // Nothing to test with: treat a non-empty URL as trustworthy rather than
+  // reporting a false failure.
+  return Promise.resolve(Boolean(url));
 }

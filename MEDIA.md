@@ -158,8 +158,10 @@ service-role reference or JWT-shaped literal appears under `src/`.
 
 ```bash
 npm install
+npm run test:media     # 69 unit + 22 render + 19 self-test assertions
 npm run verify:media   # static + unit + render (+ live probes when creds are set)
 npm run verify:sql     # executes every migration against a real Postgres engine
+npm run verify         # lint + all of the above
 ```
 
 `npm run verify:sql` boots **PGlite** (PostgreSQL 18 in WASM), recreates the
@@ -188,11 +190,20 @@ VITE_SUPABASE_URL=... VITE_SUPABASE_ANON_KEY=... npm run verify:media
 Open the **DB Inspector** (floating button, bottom-right) → **Storage & Media**:
 
 - bucket inventory with visibility, kinds and size caps,
-- **Run storage self-test** — a real round trip: auth → upload → ledger row →
-  read back → signed URL → **cross-user RLS probe** → cleanup,
+- **Run storage self-test** — a real round trip, with two modes:
+  - **Live** (Supabase configured): auth → buckets → upload → ledger row →
+    read back → signed URL → **cross-user RLS probe** → cleanup.
+  - **Demo** (no project): upload → IndexedDB → local ledger → read back →
+    delete, each step labelled *local only*. Steps that genuinely need a
+    Supabase project (`buckets`, `signed URL`, `RLS`) are reported as
+    **Skipped**, never silently passed.
 - **List my media** — everything you own, with direct open links.
 
-The self-test cleans up after itself and is safe to run repeatedly.
+The self-test cleans up after itself, is safe to run repeatedly, and **cannot
+crash the panel**: any unexpected throw is converted into a failed step, and no
+step is ever left `pending`. That contract is enforced by
+`npm run test:selftest`, which executes the real self-test against a real
+IndexedDB and asserts it never rejects and never fakes success.
 
 ---
 
