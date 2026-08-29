@@ -158,8 +158,22 @@ service-role reference or JWT-shaped literal appears under `src/`.
 
 ```bash
 npm install
-npm run verify:media
+npm run verify:media   # static + unit + render (+ live probes when creds are set)
+npm run verify:sql     # executes every migration against a real Postgres engine
 ```
+
+`npm run verify:sql` boots **PGlite** (PostgreSQL 18 in WASM), recreates the
+Supabase platform schemas that live outside the migrations folder (`auth`,
+`storage`, the `anon`/`authenticated` roles), applies every migration in order,
+and then enforces the storage RLS policies **behaviourally** — real `SET ROLE`,
+real JWT claims in `request.jwt.*`, real inserts/updates/deletes, real
+accept/deny outcomes. It also cross-checks `storage.buckets` against
+`mediaConfig.ts`. No network or live project required.
+
+Two substitutions are made for the offline engine and are reported in the
+output: `uuid-ossp` is not bundled with PGlite (stubbed with
+`gen_random_uuid()`), and the Supabase-managed schemas are recreated from
+`scripts/supabase-stub.mjs`. Neither affects DDL, constraint or policy logic.
 
 With credentials exported, the same command additionally probes the live
 project (table reachable, buckets present, anonymous upload blocked, private
