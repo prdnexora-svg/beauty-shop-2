@@ -10,7 +10,7 @@ import {
   Info,
   Download
 } from 'lucide-react';
-import { exportSupplierAuditVaultToCsv } from '../utils/exportCsv';
+import { exportSupplierAuditVaultToCsv } from '../../utils/exportCsv';
 
 interface SupplierVerificationScreenProps {
   onBack: () => void;

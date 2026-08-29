@@ -4,11 +4,11 @@ import {
   TrendingUp, BarChart3, Users, CheckCircle2, ChevronRight, Edit3, Trash2, Check, Upload, Award, RefreshCw,
   Eye, MousePointer, Play, Film, Send, ExternalLink, Activity, MessageSquare
 } from 'lucide-react';
-import { SponsoredAdManager } from './SponsoredAdManager';
-import { SupplierAnalyticsDashboard } from './SupplierAnalyticsDashboard';
-import { getStoredSponsoredAnalyticsEvents, SponsoredAnalyticsEvent } from '../data/sponsoredAnalyticsStore';
-import { getStoredChatThreads, supplierReplyMessage, ChatThread } from '../data/chatStore';
-import { CATEGORY_TAXONOMY, CATEGORIES_DATA, getSubcategoriesForCategoryName } from '../data/categories';
+import { SponsoredAdManager } from '../../components/SponsoredAdManager';
+import { SupplierAnalyticsDashboard } from '../../components/SupplierAnalyticsDashboard';
+import { getStoredSponsoredAnalyticsEvents, SponsoredAnalyticsEvent } from '../../data/sponsoredAnalyticsStore';
+import { getStoredChatThreads, supplierReplyMessage, ChatThread } from '../../data/chatStore';
+import { CATEGORY_TAXONOMY, CATEGORIES_DATA, getSubcategoriesForCategoryName } from '../../data/categories';
 
 // Mock initial listings
 const INITIAL_PRODUCTS = [

@@ -39,9 +39,9 @@ import {
   Globe,
   FileCheck
 } from 'lucide-react';
-import { getSellerProfile, getProductsForSeller, SellerProfileData } from '../data/sellerProfilesData';
-import { ProductDetailData } from '../types';
-import { VerifiedBadge } from './VerifiedBadge';
+import { getSellerProfile, getProductsForSeller, SellerProfileData } from '../../data/sellerProfilesData';
+import { ProductDetailData } from '../../types';
+import { VerifiedBadge } from '../../components/VerifiedBadge';
 
 interface SellerProfileScreenProps {
   sellerId?: string;

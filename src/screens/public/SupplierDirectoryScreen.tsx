@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { CATEGORY_TAXONOMY } from '../data/categories';
+import { CATEGORY_TAXONOMY } from '../../data/categories';
 import {
   Search,
   MapPin,
@@ -42,10 +42,10 @@ import {
   Check,
   FlaskConical
 } from 'lucide-react';
-import { VerifiedSupplier } from '../types';
-import { VERIFIED_SUPPLIERS } from '../data/mockData';
-import { fetchSuppliers } from '../services/supplierService';
-import { VerifiedBadge } from './VerifiedBadge';
+import { VerifiedSupplier } from '../../types';
+import { VERIFIED_SUPPLIERS } from '../../data/mockData';
+import { fetchSuppliers } from '../../services/supplierService';
+import { VerifiedBadge } from '../../components/VerifiedBadge';
 
 interface SupplierDirectoryScreenProps {
   isSupplierSaved?: (id: string) => boolean;
@@ -660,7 +660,9 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
           <div className="mb-6">
             <h3 className="text-[11px] font-bold text-[#2A0E3F] mb-3 uppercase tracking-widest text-[#7E6C96] flex justify-between items-center">
               <span>Compliance &amp; Certs</span>
-              <Info className="w-3.5 h-3.5 text-[#7E6C96] cursor-help" title="3rd-party audited compliance status" />
+              <Info className="w-3.5 h-3.5 text-[#7E6C96] cursor-help">
+                <title>3rd-party audited compliance status</title>
+              </Info>
             </h3>
             <div className="flex flex-col gap-2.5">
               {[

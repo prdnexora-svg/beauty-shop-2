@@ -50,12 +50,12 @@ import {
   Flame,
   ArrowUpRight
 } from 'lucide-react';
-import { BuyerEnquiry, BuyerRFQ, VerifiedSupplier } from '../types';
-import { BUYER_MOCK_ENQUIRIES, BUYER_MOCK_RFQS, VERIFIED_SUPPLIERS } from '../data/mockData';
-import { EditProfileModal, BuyerProfileData } from './EditProfileModal';
-import { FollowerNetworkModal } from './FollowerNetworkModal';
-import { NotificationCenter } from './NotificationCenter';
-import { useNotifications } from '../hooks/useNotifications';
+import { BuyerEnquiry, BuyerRFQ, VerifiedSupplier } from '../../types';
+import { BUYER_MOCK_ENQUIRIES, BUYER_MOCK_RFQS, VERIFIED_SUPPLIERS } from '../../data/mockData';
+import { EditProfileModal, BuyerProfileData } from '../../components/EditProfileModal';
+import { FollowerNetworkModal } from '../../components/FollowerNetworkModal';
+import { NotificationCenter } from '../../components/NotificationCenter';
+import { useNotifications } from '../../hooks/useNotifications';
 
 interface BuyerDashboardProps {
   isLoggedIn: boolean;

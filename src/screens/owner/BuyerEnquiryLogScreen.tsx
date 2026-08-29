@@ -22,8 +22,8 @@ import {
   ChevronRight,
   AlertCircle
 } from 'lucide-react';
-import { BuyerEnquiry } from '../types';
-import { BUYER_MOCK_ENQUIRIES } from '../data/mockData';
+import { BuyerEnquiry } from '../../types';
+import { BUYER_MOCK_ENQUIRIES } from '../../data/mockData';
 
 interface BuyerEnquiryLogScreenProps {
   onBack: () => void;
@@ -55,7 +55,9 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
   });
 
   // Message Replies simulation
-  const [conversations, setConversations] = useState<Record<string, Array<{ sender: 'buyer' | 'supplier'; text: string; time: string }>>>({
+  type ChatMessage = { sender: 'buyer' | 'supplier'; text: string; time: string };
+
+  const [conversations, setConversations] = useState<Record<string, ChatMessage[]>>({
     'enq-101': [
       { sender: 'buyer', text: 'Hi Aura Beauty Labs, we need a bulk quote for 200 units of Argan Repair Hair Serum. Do you offer custom private labeling for this batch?', time: '2026-08-14 10:30 AM' },
       { sender: 'supplier', text: 'Hello, thank you for reaching out! Yes, we absolutely offer private labeling for Argan Repair Hair Serum. For a 200-unit batch, we can proceed with our standard packaging and apply your custom branding/labels. We have sent the formal PDF quote and pricing tiers to your email. Please review and let us know if you want any formulation tweaks.', time: '2026-08-14 02:45 PM' }
@@ -139,7 +141,7 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
     
     // Add message
     const currentMessages = conversations[selectedEnquiryId] || [];
-    const updatedMessages = [
+    const updatedMessages: ChatMessage[] = [
       ...currentMessages,
       { sender: 'buyer', text: replyText, time: timestamp }
     ];
@@ -170,7 +172,7 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
     setTimeout(() => {
       const supplierReplyTimestamp = new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       const currentMessagesAfter = updatedMessages;
-      const finalMessages = [
+      const finalMessages: ChatMessage[] = [
         ...currentMessagesAfter,
         { sender: 'supplier', text: `Thank you for your response. Our beauty team has received your message regarding: "${replyText.substring(0, 30)}...". We are analyzing your request and will provide a commercial update within 12 hours.`, time: supplierReplyTimestamp }
       ];

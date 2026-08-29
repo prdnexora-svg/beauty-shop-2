@@ -172,7 +172,7 @@ export const SponsoredImageAds: React.FC<SponsoredImageAdsProps> = ({
 
     const customActive: SponsoredAdItem[] = customCampaigns
       .filter((c) => c.status === 'active')
-      .map((c) => ({
+      .map((c): SponsoredAdItem => ({
         id: c.id,
         advertiser_id: c.advertiser_id,
         seller_id: c.seller_id,

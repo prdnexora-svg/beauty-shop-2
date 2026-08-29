@@ -21,9 +21,9 @@ import {
   Truck,
   HelpCircle
 } from 'lucide-react';
-import { ProductDetailData } from '../types';
-import { SPONSORED_PRODUCTS_DB } from '../data/sponsoredProductsData';
-import { VerifiedBadge } from './VerifiedBadge';
+import { ProductDetailData } from '../../types';
+import { SPONSORED_PRODUCTS_DB } from '../../data/sponsoredProductsData';
+import { VerifiedBadge } from '../../components/VerifiedBadge';
 
 interface ProductDetailPageProps {
   productId: string;

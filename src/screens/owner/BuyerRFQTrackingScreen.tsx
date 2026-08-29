@@ -26,8 +26,8 @@ import {
   Save,
   Layers
 } from 'lucide-react';
-import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../data/categories';
-import { db } from '../db/database';
+import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../../data/categories';
+import { db } from '../../db/database';
 
 interface RFQTrackingScreenProps {
   onBack: () => void;

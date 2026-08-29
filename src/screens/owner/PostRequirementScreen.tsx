@@ -27,8 +27,8 @@ import {
   FolderTree,
   Filter
 } from 'lucide-react';
-import { db } from '../db/database';
-import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../data/categories';
+import { db } from '../../db/database';
+import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../../data/categories';
 
 interface PostRequirementScreenProps {
   onNavigateToExplore: () => void;

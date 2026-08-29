@@ -31,9 +31,9 @@ import {
   Phone,
   Star
 } from 'lucide-react';
-import { SearchProduct, RFQItem } from '../types';
-import { SEARCH_PRODUCTS, LIVE_RFQS } from '../data/mockData';
-import { CATEGORY_TAXONOMY } from '../data/categories';
+import { SearchProduct, RFQItem } from '../../types';
+import { SEARCH_PRODUCTS, LIVE_RFQS } from '../../data/mockData';
+import { CATEGORY_TAXONOMY } from '../../data/categories';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ProductListingScreenProps {

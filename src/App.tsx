@@ -1,45 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { TopNavBar } from './components/TopNavBar';
-import { Footer } from './components/Footer';
-import { MobileBottomNav } from './components/MobileBottomNav';
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+
 import { Breadcrumbs } from './components/Breadcrumbs';
-import { LuxeHeader } from './components/luxe/LuxeHeader';
-import { LuxeHero } from './components/luxe/LuxeHero';
-import { BuySmartCard } from './components/luxe/BuySmartCard';
-import { CategoryStrip } from './components/luxe/CategoryStrip';
-import { VerifiedSuppliers } from './components/luxe/VerifiedSuppliers';
-import { TrendingProducts } from './components/luxe/TrendingProducts';
-import { OemBanner } from './components/luxe/OemBanner';
-import { SupplierCta } from './components/luxe/SupplierCta';
-import { SourcingCities } from './components/luxe/SourcingCities';
-import { HowItWorks } from './components/luxe/HowItWorks';
-import { LuxeFooter } from './components/luxe/LuxeFooter';
-import { Reveal } from './components/luxe/Reveal';
-import { GoldDivider } from './components/luxe/GoldDivider';
-import { DirectoryHubScreen } from './components/DirectoryHubScreen';
-import { EnquiryModal } from './components/EnquiryModal';
-import { AuthModal } from './components/AuthModal';
-import { ProductListingScreen } from './components/ProductListingScreen';
-import { SearchFilterScreen } from './components/SearchFilterScreen';
-import { SupplierDirectoryScreen } from './components/SupplierDirectoryScreen';
-import { SupplierProfileScreen } from './components/SupplierProfileScreen';
-import { SellerProfileScreen } from './components/SellerProfileScreen';
-import { SupplierOnboardingScreen } from './components/SupplierOnboardingScreen';
-import { SupplierVerificationScreen } from './components/SupplierVerificationScreen';
-import { BrandDirectoryDetailScreen } from './components/BrandDirectoryDetailScreen';
-import { OemPrivateLabelHubScreen } from './components/OemPrivateLabelHubScreen';
-import { SupplierAdminPortal } from './components/SupplierAdminPortal';
-import { BuyerDashboard } from './components/BuyerDashboard';
-import { BuyerRFQTrackingScreen } from './components/BuyerRFQTrackingScreen';
-import { SampleRequestScreen } from './components/SampleRequestScreen';
-import { PostRequirementScreen } from './components/PostRequirementScreen';
-import { BuyerEnquiryLogScreen } from './components/BuyerEnquiryLogScreen';
-import { EditProfileModal, BuyerProfileData } from './components/EditProfileModal';
-import { ProductDetailPage } from './components/ProductDetailPage';
-import { ChatModalDrawer } from './components/ChatModalDrawer';
-import { BuyerOnboardingScreen } from './components/BuyerOnboardingScreen';
-import { DatabaseStatusModal } from './components/DatabaseStatusModal';
-import { getBuyerProfile, BUYER_PROFILES_DB } from './data/buyerProfilesData';
+import { MobileBottomNav } from './components/MobileBottomNav';
+import { SiteFooter } from './components/shell/SiteFooter';
+import { SiteHeader } from './components/shell/SiteHeader';
+import { ToastBanner } from './components/shell/ToastBanner';
+import { DatabaseInspectorFab } from './components/shell/DatabaseInspectorFab';
+import { FullPageLoader } from './components/shell/LoadingStates';
+import { ScreenRouter } from './screens/ScreenRouter';
+import { SCREEN_METADATA } from './screens/registry';
+import type {
+  BuyerDashboardTab,
+  ChatProductTarget,
+  ChatSupplierTarget,
+  ScreenContextValue,
+  ScreenId,
+  SearchParamsState,
+} from './screens/types';
+import type { BuyerProfileData } from './components/EditProfileModal';
+import { getBuyerProfile } from './data/buyerProfilesData';
 import {
   SupabaseProvider,
   useSupabase,
@@ -52,15 +31,112 @@ import {
   redirectToLogin,
   stripAuthCallbackParams,
 } from './lib/supabase';
-import {
-  CATEGORIES,
-  TRENDING_PRODUCTS,
-  VERIFIED_SUPPLIERS
-} from './data/mockData';
-import { RFQItem, DealProduct, TrendingProduct, VerifiedSupplier, SearchProduct } from './types';
-import { CheckCircle2, Database } from 'lucide-react';
+import { TRENDING_PRODUCTS, VERIFIED_SUPPLIERS } from './data/mockData';
 
-function NexoraShopApp() {
+// ---------------------------------------------------------------------------
+// Overlays are code-split too: they are only mounted once a user interacts, so
+// shipping them in the entry chunk is pure dead weight on first load.
+// ---------------------------------------------------------------------------
+const AuthModal = lazy(() =>
+  import('./components/AuthModal').then((m) => ({ default: m.AuthModal })),
+);
+const EnquiryModal = lazy(() =>
+  import('./components/EnquiryModal').then((m) => ({ default: m.EnquiryModal })),
+);
+const EditProfileModal = lazy(() =>
+  import('./components/EditProfileModal').then((m) => ({ default: m.EditProfileModal })),
+);
+const ChatModalDrawer = lazy(() =>
+  import('./components/ChatModalDrawer').then((m) => ({ default: m.ChatModalDrawer })),
+);
+const DatabaseStatusModal = lazy(() =>
+  import('./components/DatabaseStatusModal').then((m) => ({
+    default: m.DatabaseStatusModal,
+  })),
+);
+
+const DEFAULT_BUYER_PROFILE_ID = 'buyer_priya_001';
+
+/**
+ * Seed fixture used only if the buyer directory has no entry for the default
+ * profile. It predates the narrowed `BuyerProfileData` unions (e.g. it carries
+ * a numeric `followersCount`), so it is adapted at the single boundary below
+ * instead of weakening the shared type.
+ */
+const SEED_BUYER_PROFILE = {
+  id: DEFAULT_BUYER_PROFILE_ID,
+  fullName: 'Priya Sharma',
+  businessName: 'Radiant Beauty Solutions',
+  businessType: 'Salon / Spa Chain',
+  designation: 'Head of Procurement',
+  email: 'priya.procurement@radiantbeauty.in',
+  phone: '+91 98201 54321',
+  alternatePhone: '+91 22 2650 4321',
+  avatarUrl:
+  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
+  coverPhotoUrl:
+  'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1600&q=80',
+  gstin: '27AAACR1234F1Z5',
+  pancard: 'AAACR1234F',
+  address: 'Plot No. 42, Bandra-Kurla Complex',
+  city: 'Mumbai',
+  state: 'Maharashtra',
+  pincode: '400051',
+  annualProcurementBudget: '₹25 Lakhs - ₹1 Crore',
+  primaryCategories: ['Skincare & Serums', 'Haircare & Treatments'],
+  preferredDeliveryTimeline: '3 - 7 Days',
+  whatsappAlerts: true,
+  emailAlerts: true,
+  isGstVerified: true,
+  isBusinessVerified: true,
+  followersCount: 1481,
+  partnerCardNumber: 'NXP 807A 45DF 9875',
+  partnerTier: 'Gold',
+  sourcingDistrict: 'Mumbai Metro Region, MH',
+  responseSla: '99.8% SLA',
+  joinedDate: 'January 2024',
+} as const;
+
+function createInitialBuyerProfile(): BuyerProfileData {
+  const priyaDefault: BuyerProfileData =
+    getBuyerProfile(DEFAULT_BUYER_PROFILE_ID) ||
+    (SEED_BUYER_PROFILE as unknown as BuyerProfileData);
+
+  const stored = localStorage.getItem('nexora_buyer_profile');
+  if (stored) {
+    try {
+      return { ...priyaDefault, ...(JSON.parse(stored) as BuyerProfileData) };
+    } catch (e) {
+      // Corrupted payload — fall back to the seeded profile.
+    }
+  }
+  return priyaDefault;
+}
+
+/** Screens that may only be opened by a signed-in supplier account. */
+const SUPPLIER_ONLY_SCREENS: ScreenId[] = [
+  'supplier-portal',
+  'supplier-verification',
+  'onboarding',
+];
+
+/** Screens that may only be opened by a signed-in buyer account. */
+const BUYER_ONLY_SCREENS: ScreenId[] = [
+  'buyer-dashboard',
+  'buyer-profile',
+  'rfq-tracking',
+  'buyer-enquiry-log',
+  'post-rfq',
+  'sample-request',
+  'buyer-onboarding',
+];
+
+export interface NexoraShopAppProps {
+  /** Starting screen — defaults to the public landing page. */
+  initialScreen?: ScreenId;
+}
+
+function NexoraShopApp({ initialScreen = 'explore' }: NexoraShopAppProps) {
   const {
     isConfigured,
     authReady,
@@ -70,116 +146,68 @@ function NexoraShopApp() {
     signOut,
   } = useSupabase();
 
-  const [currentScreen, setCurrentScreen] = useState<'explore' | 'directory' | 'supplier-directory' | 'plp' | 'product-detail' | 'search-results' | 'brands' | 'oem-hub' | 'supplier-profile' | 'onboarding' | 'buyer-onboarding' | 'supplier-portal' | 'supplier-verification' | 'buyer-dashboard' | 'buyer-profile' | 'rfq-tracking' | 'sample-request' | 'post-rfq' | 'buyer-enquiry-log'>('explore');
+  const [currentScreen, setCurrentScreen] = useState<ScreenId>(initialScreen);
   const [selectedProductId, setSelectedProductId] = useState<string>('product_vitc_101');
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>('seller_aura_001');
-  const [selectedLocation, setSelectedLocation] = useState('All');
-  
+
   // Persistent Auth State (synced from the single Supabase auth session when a
   // real Supabase project is configured; local demo storage is only a fallback).
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
     if (isConfigured) return false;
-    const stored = localStorage.getItem('nexora_is_logged_in');
-    return stored === 'true';
+    return localStorage.getItem('nexora_is_logged_in') === 'true';
   });
 
   const [userRole, setUserRole] = useState<'buyer' | 'supplier' | null>(() => {
     if (isConfigured) return null;
     const stored = localStorage.getItem('nexora_user_role');
-    return (stored === 'buyer' || stored === 'supplier') ? stored : null;
+    return stored === 'buyer' || stored === 'supplier' ? stored : null;
   });
 
   // Persistent Buyer Profile State
-  const [buyerProfile, setBuyerProfile] = useState<BuyerProfileData>(() => {
-    const priyaDefault = getBuyerProfile('buyer_priya_001') || {
-      id: 'buyer_priya_001',
-      fullName: 'Priya Sharma',
-      businessName: 'Radiant Beauty Solutions',
-      businessType: 'Salon / Spa Chain',
-      designation: 'Head of Procurement',
-      email: 'priya.procurement@radiantbeauty.in',
-      phone: '+91 98201 54321',
-      alternatePhone: '+91 22 2650 4321',
-      avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
-      coverPhotoUrl: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1600&q=80',
-      gstin: '27AAACR1234F1Z5',
-      pancard: 'AAACR1234F',
-      address: 'Plot No. 42, Bandra-Kurla Complex',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      pincode: '400051',
-      annualProcurementBudget: '₹25 Lakhs - ₹1 Crore',
-      primaryCategories: ['Skincare & Serums', 'Haircare & Treatments'],
-      preferredDeliveryTimeline: '3 - 7 Days',
-      whatsappAlerts: true,
-      emailAlerts: true,
-      isGstVerified: true,
-      isBusinessVerified: true,
-      followersCount: 1481,
-      partnerCardNumber: 'NXP 807A 45DF 9875',
-      partnerTier: 'Gold',
-      sourcingDistrict: 'Mumbai Metro Region, MH',
-      responseSla: '99.8% SLA',
-      joinedDate: 'January 2024'
-    };
-
-    const stored = localStorage.getItem('nexora_buyer_profile');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        return {
-          ...priyaDefault,
-          ...parsed
-        };
-      } catch (e) {
-        // Fallback
-      }
-    }
-    return priyaDefault;
-  });
+  const [buyerProfile, setBuyerProfile] = useState<BuyerProfileData>(createInitialBuyerProfile);
 
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
-  const [buyerDashboardTab, setBuyerDashboardTab] = useState<'overview' | 'about' | 'rfqs' | 'saved' | 'social' | 'activity' | 'notifications'>('overview');
-  
+  const [buyerDashboardTab, setBuyerDashboardTab] = useState<BuyerDashboardTab>('overview');
+
   // Search parameters
-  const [searchParams, setSearchParams] = useState({
+  const [searchParams, setSearchParams] = useState<SearchParamsState>({
     query: '',
     category: 'All',
     location: 'All India',
-    tab: 'products' as 'products' | 'suppliers' | 'oem'
+    tab: 'products',
   });
-  
+
   // Modals state
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-
   const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
   const [targetEnquiryItem, setTargetEnquiryItem] = useState<any | null>(null);
-
-  const [isCallModalOpen, setIsCallModalOpen] = useState(false);
-  const [targetSupplierName, setTargetSupplierName] = useState('');
-
   const [chatModalOpen, setChatModalOpen] = useState(false);
-  const [chatInitialSupplier, setChatInitialSupplier] = useState<{ id: string; name: string; location: string; isVerified: boolean } | undefined>(undefined);
-  const [chatInitialProduct, setChatInitialProduct] = useState<{ title: string; image: string; price?: string; moq?: string } | undefined>(undefined);
-
-  // Phase 4 Database Inspector Modal State
+  const [chatInitialSupplier, setChatInitialSupplier] = useState<ChatSupplierTarget | undefined>(
+    undefined,
+  );
+  const [chatInitialProduct, setChatInitialProduct] = useState<ChatProductTarget | undefined>(
+    undefined,
+  );
   const [isDatabaseModalOpen, setIsDatabaseModalOpen] = useState(false);
 
-  const handleOpenChat = (supplier?: { id: string; name: string; location: string; isVerified: boolean }, product?: { title: string; image: string; price?: string; moq?: string }) => {
-    setChatInitialSupplier(supplier);
-    setChatInitialProduct(product);
-    setChatModalOpen(true);
-  };
-
-  // Interactive Toast Notification
+  // Interactive toast notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const triggerToast = (msg: string) => {
+  const triggerToast = useCallback((msg: string) => {
     setToastMessage(msg);
     setTimeout(() => {
       setToastMessage(null);
     }, 4000);
+  }, []);
+
+  const handleOpenChat = (
+    supplier?: ChatSupplierTarget,
+    product?: ChatProductTarget,
+  ) => {
+    setChatInitialSupplier(supplier);
+    setChatInitialProduct(product);
+    setChatModalOpen(true);
   };
 
   const handleSaveProfile = (updated: BuyerProfileData) => {
@@ -207,71 +235,71 @@ function NexoraShopApp() {
     localStorage.setItem('nexora_is_logged_in', 'true');
     localStorage.setItem('nexora_user_role', role);
     setIsAuthModalOpen(false);
-    
+
     if (isNewUser) {
-      const target = role === 'buyer' ? 'buyer-onboarding' : 'onboarding';
+      const target: ScreenId = role === 'buyer' ? 'buyer-onboarding' : 'onboarding';
       setCurrentScreen(target);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       triggerToast(`Welcome to Nexora Luxe! Let's set up your ${role} profile.`);
     } else {
-      const target = role === 'buyer' ? 'buyer-dashboard' : 'supplier-portal';
+      const target: ScreenId = role === 'buyer' ? 'buyer-dashboard' : 'supplier-portal';
       setCurrentScreen(target);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       triggerToast(`Welcome back! Logged in as ${role === 'buyer' ? 'Buyer' : 'Supplier'}.`);
     }
   };
 
-  // Handlers
-  const handleNavigate = (screen: any, params?: any) => {
-    // 1. Define restricted list
-    const supplierScreens = ['supplier-portal', 'supplier-verification', 'onboarding'];
-    const buyerScreens = ['buyer-dashboard', 'buyer-profile', 'rfq-tracking', 'buyer-enquiry-log', 'post-rfq', 'sample-request', 'buyer-onboarding'];
-
-    // 2. Perform Role Guard check
+  // -------------------------------------------------------------------------
+  // Routing (with role guards)
+  // -------------------------------------------------------------------------
+  const handleNavigate = (screen: ScreenId, params?: Record<string, unknown>) => {
     if (isLoggedIn) {
-      if (userRole === 'buyer' && supplierScreens.includes(screen)) {
+      if (userRole === 'buyer' && SUPPLIER_ONLY_SCREENS.includes(screen)) {
         triggerToast('Access Restricted: Buyer accounts cannot access the Supplier Portal.');
         setCurrentScreen('buyer-dashboard');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
-      if (userRole === 'supplier' && buyerScreens.includes(screen)) {
+      if (userRole === 'supplier' && BUYER_ONLY_SCREENS.includes(screen)) {
         triggerToast('Access Restricted: Supplier accounts cannot access the Buyer Workspace.');
         setCurrentScreen('supplier-portal');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
-    } else {
-      // If guest tries to access protected dashboard features, open login
-      const protectedScreens = [...supplierScreens, ...buyerScreens];
-      if (protectedScreens.includes(screen)) {
-        setAuthMode('login');
-        setIsAuthModalOpen(true);
-        triggerToast('Please sign in to access dashboard workspace features.');
-        return;
-      }
+    } else if ([...SUPPLIER_ONLY_SCREENS, ...BUYER_ONLY_SCREENS].includes(screen)) {
+      setAuthMode('login');
+      setIsAuthModalOpen(true);
+      triggerToast('Please sign in to access dashboard workspace features.');
+      return;
     }
 
     setCurrentScreen(screen);
+
     if ((screen === 'buyer-dashboard' || screen === 'buyer-profile') && params?.tab) {
-      setBuyerDashboardTab(params.tab);
+      setBuyerDashboardTab(params.tab as BuyerDashboardTab);
     }
+
     if (params) {
       if (params.productId) {
-        setSelectedProductId(params.productId);
+        setSelectedProductId(params.productId as string);
       }
       if (params.supplierId) {
-        setSelectedSupplierId(params.supplierId);
+        setSelectedSupplierId(params.supplierId as string);
       }
       if (params.buyerId || (screen === 'buyer-profile' && (params.memberData || params.buyerId))) {
-        const found = getBuyerProfile(params.buyerId || params.memberData?.profileId || params.memberData?.id || params.memberData?.name);
+        const found = getBuyerProfile(
+          (params.buyerId ||
+            (params.memberData as any)?.profileId ||
+            (params.memberData as any)?.id ||
+            (params.memberData as any)?.name) as string,
+        );
         if (found) {
           setBuyerProfile({ ...found });
         } else if (params.memberData) {
-          const m = params.memberData;
+          const m = params.memberData as any;
           const cleanName = m.name.replace(/\s*\(.*?\)\s*/g, '').trim();
           const bizName = m.name.match(/\((.*?)\)/)?.[1] || `${cleanName} Enterprises`;
-          setBuyerProfile(prev => ({
+          setBuyerProfile((prev) => ({
             ...prev,
             fullName: cleanName,
             businessName: bizName,
@@ -280,26 +308,19 @@ function NexoraShopApp() {
             city: m.city || prev.city,
             state: m.state || prev.state,
             isGstVerified: m.isGstVerified,
-            followersCount: m.followersCount || prev.followersCount
+            followersCount: m.followersCount || prev.followersCount,
           }));
         }
       }
-      setSearchParams((prev) => ({
-        ...prev,
-        ...params
-      }));
+      setSearchParams((prev) => ({ ...prev, ...params }));
     }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleOpenAuthModal = (mode: 'login' | 'register') => {
-    if (mode === 'register') {
-      setAuthMode('register');
-      setIsAuthModalOpen(true);
-    } else {
-      setAuthMode(mode);
-      setIsAuthModalOpen(true);
-    }
+    setAuthMode(mode);
+    setIsAuthModalOpen(true);
   };
 
   const handleOpenEnquiry = (item: any) => {
@@ -315,11 +336,10 @@ function NexoraShopApp() {
       return;
     }
 
-    const supplier = VERIFIED_SUPPLIERS.find(s => s.name === supplierName);
+    const supplier = VERIFIED_SUPPLIERS.find((s) => s.name === supplierName);
     const phone = supplier?.phone || '+919820155443';
     const cleanPhone = phone.replace(/[^0-9+]/g, '');
-    
-    // Direct native dialer trigger
+
     window.location.href = `tel:${cleanPhone}`;
     triggerToast(`Opening native dialer to contact ${supplierName}`);
   };
@@ -332,68 +352,61 @@ function NexoraShopApp() {
       return;
     }
 
-    const supplier = VERIFIED_SUPPLIERS.find(s => s.name === supplierName);
-    const whatsapp = supplier?.whatsapp || '919820155443'; // Default if not found
+    const supplier = VERIFIED_SUPPLIERS.find((s) => s.name === supplierName);
+    const whatsapp = supplier?.whatsapp || '919820155443';
     const nameToUse = supplierName || supplier?.name || 'Supplier';
-    const message = encodeURIComponent(`Hello ${nameToUse}, I found your business on Nexora Luxe and I am interested in your products. Can we discuss a potential enquiry?`);
-    
-    // Direct WhatsApp redirect
+    const message = encodeURIComponent(
+      `Hello ${nameToUse}, I found your business on Nexora Luxe and I am interested in your products. Can we discuss a potential enquiry?`,
+    );
+
     window.open(`https://wa.me/${whatsapp}?text=${message}`, '_blank');
     triggerToast(`Opening direct WhatsApp channel with ${nameToUse}`);
   };
 
-  const handleSearchSubmit = (params: any) => {
+  const handleSearchSubmit = (params: {
+    query?: string;
+    category?: string;
+    location?: string;
+    scope?: SearchParamsState['tab'];
+  }) => {
+    // Keep the original sentinel handling: only the explicit "any" placeholders
+    // collapse to defaults, everything else is passed through untouched.
     setSearchParams({
       query: params.query || '',
       category: params.category !== 'All Categories' ? params.category : 'All',
       location: params.location !== 'Any Location' ? params.location : 'All India',
-      tab: params.scope || 'products'
+      tab: params.scope || 'products',
     });
     setCurrentScreen('search-results');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleCategorySelect = (categoryName: string) => {
-    setSearchParams({
-      query: '',
-      category: categoryName,
-      location: 'All India',
-      tab: 'products'
-    });
-    setCurrentScreen('search-results');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleTagClick = (tag: string) => {
-    setSearchParams((prev) => ({
-      ...prev,
-      query: tag,
-      tab: 'products'
-    }));
-    setCurrentScreen('search-results');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Derive the Supabase user's role (stored in auth metadata at registration).
+  // -------------------------------------------------------------------------
+  // Supabase session sync (production mode only)
+  // -------------------------------------------------------------------------
   const supabaseRole = (user?.user_metadata?.role as 'buyer' | 'supplier') || null;
   const currentPathname = typeof window !== 'undefined' ? window.location.pathname : '/';
   const isAuthLoginPath = currentPathname === AUTH_LOGIN_PATH;
-  const isAuthCallbackPath = currentPathname === AUTH_CALLBACK_PATH || currentPathname.startsWith(AUTH_CALLBACK_PREFIX);
+  // `/auth/*` covers the PKCE callback, but the explicit `/auth/login` route is
+  // a terminal page, not a callback: treating it as one made the callback guard
+  // below swallow the login screen (and left `redirectToLogin()` — which
+  // self-guards on this path — with nothing to do), so an anonymous visitor saw
+  // a permanent "Redirecting to secure sign-in…" spinner instead of the form.
+  const isAuthCallbackPath =
+    currentPathname === AUTH_CALLBACK_PATH ||
+    (currentPathname.startsWith(AUTH_CALLBACK_PREFIX) && currentPathname !== AUTH_LOGIN_PATH);
   const isAuthRoute = isAuthPath(currentPathname);
   const authCallbackPresent = hasAuthCallbackParams();
   const authCallbackCode = getAuthCallbackCode();
 
-  // Always strip transient authorization parameters after the Supabase PKCE
-  // exchange has resolved (session present) or when we are already rendering a
-  // stable auth page, so `?code=...&state=...` never persists in the address bar.
+  // Strip transient authorization parameters once the PKCE exchange resolves.
   useEffect(() => {
     if (authCallbackCode && session?.user) {
       stripAuthCallbackParams();
     }
-  }, [authCallbackCode, session?.user?.id]);
+  }, [authCallbackCode, session?.user]);
 
-  // Keep the in-memory login flags in sync with the single Supabase auth
-  // listener whenever a real Supabase project is configured.
+  // Keep the in-memory login flags in sync with the Supabase auth listener.
   useEffect(() => {
     if (!isConfigured) return;
     if (!authReady) return;
@@ -411,7 +424,7 @@ function NexoraShopApp() {
     }
   }, [isConfigured, authReady, session?.user?.id, supabaseRole]);
 
-  // Demo / local mode fallback keeps the existing offline preview working.
+  // Demo / local mode fallback keeps the offline preview working.
   useEffect(() => {
     if (isConfigured) return;
     const stored = localStorage.getItem('nexora_is_logged_in');
@@ -420,10 +433,7 @@ function NexoraShopApp() {
     setUserRole(storedRole === 'buyer' || storedRole === 'supplier' ? storedRole : null);
   }, [isConfigured]);
 
-  // PKCE / OAuth callback handling: once a session exists on any /auth/*
-  // path, normalize the URL back to the app root to avoid repeat exchanges.
-  // This also covers authenticated users landing on /auth/login, preventing
-  // the login view from being re-rendered while already signed in (loop guard).
+  // Normalize /auth/* URLs back to the app root once a session exists.
   useEffect(() => {
     if (!session?.user || !isAuthRoute) return;
     window.history.replaceState({}, '', '/');
@@ -431,645 +441,251 @@ function NexoraShopApp() {
     stripAuthCallbackParams();
   }, [session?.user?.id, isAuthRoute]);
 
-  const protectedScreens = [
-    'buyer-dashboard', 'buyer-profile', 'rfq-tracking', 'buyer-enquiry-log',
-    'post-rfq', 'sample-request', 'buyer-onboarding',
-    'supplier-portal', 'supplier-verification', 'onboarding',
-  ];
-  const isProtectedScreen = protectedScreens.includes(currentScreen);
+  const isProtectedScreen = SCREEN_METADATA[currentScreen]?.group === 'owner';
 
-  // Never silently replace protected content with a public screen. A missing or
-  // invalid session on a protected screen always enters the explicit login
-  // route; redirectToLogin guards /auth/login and throttles repeated attempts.
+  // A missing session on an owner screen always enters the explicit login route.
   useEffect(() => {
     if (!isConfigured || !authReady || session?.user || !isProtectedScreen) return;
     redirectToLogin();
   }, [isConfigured, authReady, session?.user?.id, isProtectedScreen]);
 
-  // A callback route without a session after auth initialization represents an
-  // expired/invalid code (including Supabase ?error= callbacks). Clean the URL
-  // and move directly to login instead of leaving an actionable error screen.
+  // An owner callback route without a session means an expired/invalid code.
   useEffect(() => {
     if (!isConfigured || !authReady || session?.user || !isAuthCallbackPath) return;
     stripAuthCallbackParams();
     redirectToLogin();
   }, [isConfigured, authReady, session?.user?.id, isAuthCallbackPath]);
 
+  const screenContext: ScreenContextValue = useMemo(
+    () => ({
+      screen: currentScreen,
+      isLoggedIn,
+      userRole,
+      buyerProfile,
+      searchParams,
+      selectedProductId,
+      selectedSupplierId,
+      buyerDashboardTab,
+      navigate: handleNavigate,
+      navigateToExplore: () => handleNavigate('explore'),
+      onSearch: handleSearchSubmit,
+      openAuth: handleOpenAuthModal,
+      openEnquiry: handleOpenEnquiry,
+      openChat: handleOpenChat,
+      openEditProfile: () => setIsEditProfileOpen(true),
+      openQuickQuote: () => {
+        handleNavigate('post-rfq');
+        triggerToast('Requirement captured — complete the form to receive supplier quotes.');
+      },
+      callSupplier: handleCallSupplier,
+      whatsappSupplier: handleWhatsAppSupplier,
+      saveProfile: handleSaveProfile,
+      completeBuyerOnboarding: (data: Record<string, unknown>) => {
+        handleSaveProfile({
+          ...buyerProfile,
+          businessName: data.businessName,
+          businessType: data.buyerCategory,
+          designation: data.designation,
+          gstin: data.gstNumber,
+          annualProcurementBudget: data.annualBudget,
+          primaryCategories: data.primaryCategories,
+          city: String(data.location || '').split(',')[0] || '',
+          state: String(data.location || '').split(',')[1]?.trim() || '',
+        } as BuyerProfileData);
+        handleNavigate('buyer-dashboard');
+      },
+      completeSupplierOnboarding: () => {
+        triggerToast('Business listing created! Redirecting to Portal...');
+        handleNavigate('supplier-portal');
+      },
+      submitSampleRequest: (data: Record<string, unknown>) => {
+        // eslint-disable-next-line no-console
+        console.log('Sample Request Submitted:', data);
+        handleNavigate('buyer-dashboard');
+      },
+      notify: triggerToast,
+    }),
+    // The context intentionally closes over the latest render's state; the
+    // screen router re-renders with the shell on every state change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      currentScreen,
+      isLoggedIn,
+      userRole,
+      buyerProfile,
+      searchParams,
+      selectedProductId,
+      selectedSupplierId,
+      buyerDashboardTab,
+    ],
+  );
+
   if (isConfigured && !authReady) {
-    return (
-      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4 text-center">
-        <div className="space-y-3">
-          <div className="w-10 h-10 border-4 border-[#6B2D8C] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm font-bold text-[#5B4A6E]">Securing your Nexora session…</p>
-        </div>
-      </div>
-    );
+    return <FullPageLoader message="Securing your Nexora session…" />;
   }
 
-  // Keep callback and protected content covered while the corresponding effect
-  // completes its automatic redirect. This prevents an invalid callback error
-  // page or protected application content from flashing on screen.
+  // Callback/owner routes stay covered while the redirect effect completes.
   if (
-    isConfigured
-    && !session?.user
-    && (isAuthCallbackPath || (authReady && isProtectedScreen))
+    isConfigured &&
+    !session?.user &&
+    (isAuthCallbackPath || (authReady && isProtectedScreen))
   ) {
     return (
-      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4 text-center">
-        <div className="space-y-3">
-          <div className="w-10 h-10 border-4 border-[#6B2D8C] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm font-bold text-[#5B4A6E]">
-            {authCallbackPresent && !authReady ? 'Completing secure sign-in…' : 'Redirecting to secure sign-in…'}
-          </p>
-        </div>
-      </div>
+      <FullPageLoader
+        message={
+          authCallbackPresent && !authReady
+            ? 'Completing secure sign-in…'
+            : 'Redirecting to secure sign-in…'
+        }
+      />
     );
   }
 
-  // Explicit /auth/login route. This is also the redirect target for invalid or
-  // expired sessions. It renders in-page and normalizes to "/" on success.
+  // Explicit /auth/login route — also the redirect target for expired sessions.
   if (isConfigured && isAuthLoginPath) {
-    if (!authReady) {
-      return (
-        <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4 text-center">
-          <div className="w-10 h-10 border-4 border-[#6B2D8C] border-t-transparent rounded-full animate-spin mx-auto" />
-        </div>
-      );
-    }
-    if (session?.user) {
-      // Already authenticated: the effect below normalizes the URL back to "/".
-      return (
-        <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4 text-center">
-          <div className="w-10 h-10 border-4 border-[#6B2D8C] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm font-bold text-[#5B4A6E] mt-3">Redirecting to Nexora…</p>
-        </div>
-      );
+    if (!authReady || session?.user) {
+      return <FullPageLoader message="Redirecting to Nexora…" />;
     }
     return (
-      <AuthModal
-        isOpen
-        isFullPage
-        initialMode="login"
-        onClose={() => {
-          window.history.replaceState({}, '', '/');
-        }}
-        onSuccess={(role, isNewUser) => {
-          handleLoginSuccess(role, isNewUser);
-          window.history.replaceState({}, '', '/');
-        }}
-      />
+      <Suspense fallback={<FullPageLoader />}>
+        <AuthModal
+          isOpen
+          isFullPage
+          initialMode="login"
+          onClose={() => {
+            window.history.replaceState({}, '', '/');
+          }}
+          onSuccess={(role: 'buyer' | 'supplier', isNewUser?: boolean) => {
+            handleLoginSuccess(role, isNewUser);
+            window.history.replaceState({}, '', '/');
+          }}
+        />
+      </Suspense>
     );
   }
 
   return (
-      <div className="min-h-screen bg-[#FDFBF7] text-[#2A0E3F] flex flex-col font-sans selection:bg-[#E8D5F2] selection:text-[#3D1E4E] pb-16 md:pb-0">
-      
-      {/* Toast Banner */}
-      {toastMessage && (
-        <div className="fixed bottom-22 right-6 z-50 bg-[#2A0E3F] text-white px-4 py-3 rounded-xl shadow-xl border border-[#352B44] flex items-center gap-2.5 animate-in slide-in-from-bottom-5 duration-200">
-          <CheckCircle2 className="w-4 h-4 text-[#8236A0]" />
-          <span className="text-[13px] font-medium">{toastMessage}</span>
-        </div>
-      )}
+    <div className="min-h-screen bg-[#FDFBF7] text-[#2A0E3F] flex flex-col font-sans selection:bg-[#E8D5F2] selection:text-[#3D1E4E] pb-16 md:pb-0">
+      {toastMessage ? <ToastBanner message={toastMessage} /> : null}
 
-      {/* Shared Top Navigation Bar — Luxe header on the homepage */}
-      {currentScreen === 'explore' ? (
-        <LuxeHeader
-          currentScreen={currentScreen}
-          onNavigate={handleNavigate}
-          onOpenAuthModal={handleOpenAuthModal}
-          isLoggedIn={isLoggedIn}
-          userRole={userRole}
-          userProfile={buyerProfile}
-          onOpenChat={() => handleOpenChat()}
-        />
-      ) : (
-        <TopNavBar
-          currentScreen={currentScreen}
-          onNavigate={handleNavigate}
-          onOpenRFQModal={() => handleNavigate('post-rfq')}
-          onOpenAuthModal={handleOpenAuthModal}
-          isLoggedIn={isLoggedIn}
-          userRole={userRole}
-          userProfile={buyerProfile}
-          onOpenEditProfile={() => setIsEditProfileOpen(true)}
-          onLogout={handleLogout}
-        />
-      )}
+      <SiteHeader
+        currentScreen={currentScreen}
+        onNavigate={handleNavigate}
+        onOpenRFQ={() => handleNavigate('post-rfq')}
+        onOpenAuthModal={handleOpenAuthModal}
+        isLoggedIn={isLoggedIn}
+        userRole={userRole}
+        userProfile={buyerProfile}
+        onOpenEditProfile={() => setIsEditProfileOpen(true)}
+        onLogout={handleLogout}
+        onOpenChat={() => handleOpenChat()}
+      />
 
       {/* Main Content Area with Top Spacing to Clear the Fixed Header */}
       <div className="flex-1 flex flex-col pt-20">
-        <Breadcrumbs 
-          currentScreen={currentScreen} 
-          onNavigate={handleNavigate} 
+        <Breadcrumbs
+          currentScreen={currentScreen}
+          onNavigate={handleNavigate}
           params={{
-            productName: currentScreen === 'product-detail' ? TRENDING_PRODUCTS.find(p => p.id === selectedProductId)?.title : undefined,
-            supplierName: currentScreen === 'supplier-profile' ? VERIFIED_SUPPLIERS.find(s => s.id === (selectedSupplierId || searchParams.supplierId))?.name : undefined
+            productName:
+              currentScreen === 'product-detail'
+                ? TRENDING_PRODUCTS.find((p) => p.id === selectedProductId)?.title
+                : undefined,
+            supplierName:
+              currentScreen === 'supplier-profile'
+                ? VERIFIED_SUPPLIERS.find(
+                    (s) => s.id === (selectedSupplierId || searchParams.supplierId),
+                  )?.name
+                : undefined,
           }}
         />
-        {/* Screen 01: Homepage / Explore Hub — NEXORA LUXE purple-gold edition */}
-        {currentScreen === 'explore' && (
-          <main className="flex-1 -mt-20 bg-[linear-gradient(180deg,#FDFBF7_0%,#FAF6EF_45%,#F5EEF8_100%)]">
-            <LuxeHero
-              onSearch={(q, loc) => handleSearchSubmit({ query: q, location: loc })}
-              onTabChange={(scope) => {
-                if (scope === 'suppliers') {
-                  handleNavigate('supplier-directory');
-                } else if (scope === 'brands') {
-                  handleNavigate('brands');
-                } else if (scope === 'oem') {
-                  handleSearchSubmit({ query: 'OEM', location: 'All India' });
-                } else {
-                  handleNavigate('plp');
-                }
-              }}
-            />
 
-            <Reveal>
-            <BuySmartCard
-              onGetQuotes={() => {
-                handleNavigate('post-rfq');
-                triggerToast('Requirement captured — complete the form to receive supplier quotes.');
-              }}
-              onPostDetailed={() => handleNavigate('post-rfq')}
-            />
-
-            </Reveal>
-
-            <GoldDivider className="pt-14 md:pt-16" />
-
-            <Reveal>
-            <CategoryStrip
-              onCategoryClick={(label) => {
-                if (label === 'OEM/Private Label') {
-                  handleSearchSubmit({ query: 'OEM', location: 'All India' });
-                } else {
-                  handleSearchSubmit({ query: label, location: 'All India' });
-                }
-              }}
-            />
-
-            </Reveal>
-
-            <GoldDivider className="pt-14 md:pt-16" />
-
-            <Reveal>
-            <VerifiedSuppliers
-              onViewProfile={(id) => handleNavigate('supplier-profile', { supplierId: id })}
-              onSendEnquiry={(name) => {
-                handleOpenEnquiry({
-                  id: 'enq-' + Date.now(),
-                  title: 'Enquiry for ' + name,
-                  supplierName: name,
-                  type: 'supplier',
-                });
-              }}
-              onViewAll={() => handleNavigate('supplier-directory')}
-            />
-
-            </Reveal>
-
-            <GoldDivider className="pt-14 md:pt-16" />
-
-            <Reveal>
-            <TrendingProducts
-              onViewDetails={(id) => handleNavigate('product-detail', { productId: id })}
-              onSendEnquiry={(title, supplier) => {
-                handleOpenEnquiry({
-                  id: 'enq-' + Date.now(),
-                  title,
-                  supplierName: supplier,
-                  type: 'product',
-                });
-              }}
-              onViewAll={() => handleNavigate('plp')}
-            />
-
-            </Reveal>
-
-            <GoldDivider className="pt-14 md:pt-16" />
-
-            <Reveal direction="none">
-            <OemBanner
-              onExplore={() => handleNavigate('oem-hub')}
-              onPostRequirement={() => handleNavigate('post-rfq')}
-            />
-
-            </Reveal>
-
-            <Reveal>
-            <SupplierCta
-              onJoin={() => handleNavigate('onboarding')}
-              onLogin={() => handleOpenAuthModal('login')}
-            />
-
-            </Reveal>
-
-            <GoldDivider className="pt-14 md:pt-16" />
-
-            <Reveal>
-            <SourcingCities
-              onCityClick={(city) => handleSearchSubmit({ query: '', location: city })}
-            />
-
-            </Reveal>
-
-            <GoldDivider className="pt-14 md:pt-16" />
-
-            <Reveal>
-            <HowItWorks onPost={() => handleNavigate('post-rfq')} />
-            </Reveal>
-          </main>
-        )}
-
-        {/* Screen 03: Product Listing Page (PLP) */}
-        {currentScreen === 'plp' && (
-          <main className="flex-1">
-            <ProductListingScreen
-              isLoggedIn={isLoggedIn}
-              onOpenEnquiryModal={handleOpenEnquiry}
-              onOpenQuoteModal={() => {}}
-              onOpenRFQModal={() => handleNavigate('post-rfq')}
-              onNavigateToExplore={() => handleNavigate('explore')}
-              onNavigateToSearch={handleNavigate}
-              onNavigateToProductDetail={(productId) => handleNavigate('product-detail', { productId })}
-              onOpenProductComparison={() => {}}
-              onCallSupplier={handleCallSupplier}
-              onWhatsAppSupplier={handleWhatsAppSupplier}
-              onOpenAuth={() => handleOpenAuthModal('login')}
-            />
-          </main>
-        )}
-
-        {/* Screen 02: Global Search & Filter Results (Unified) */}
-        {currentScreen === 'search-results' && (
-          <main className="flex-1">
-            <SearchFilterScreen
-              initialQuery={searchParams.query}
-              initialCategory={searchParams.category}
-              initialLocation={searchParams.location}
-              onOpenEnquiryModal={handleOpenEnquiry}
-              onOpenQuoteModal={() => {}}
-              onOpenRFQModal={() => handleNavigate('post-rfq')}
-              onNavigateToExplore={() => handleNavigate('explore')}
-              onCallSupplier={handleCallSupplier}
-              onWhatsAppSupplier={handleWhatsAppSupplier}
-              onNavigate={handleNavigate}
-            />
-          </main>
-        )}
-
-        {/* Screen 04: Product Detail Page */}
-        {currentScreen === 'product-detail' && (
-          <main className="flex-1">
-            <ProductDetailPage
-              productId={selectedProductId}
-              onBack={() => handleNavigate('explore')}
-              onOpenEnquiryModal={(item) => {
-                handleOpenEnquiry({
-                  id: 'enq-' + Date.now(),
-                  title: item.name,
-                  supplierName: item.supplierName,
-                  type: 'product'
-                });
-              }}
-              onOpenRFQModal={() => handleNavigate('post-rfq')}
-              onNavigateToSampleRequest={() => handleNavigate('sample-request')}
-              onNavigateToSupplierProfile={(supplierId) => {
-                handleNavigate('supplier-profile', { supplierId });
-              }}
-              onCallSupplier={(name) => handleCallSupplier(name)}
-              onWhatsAppSupplier={(name) => handleWhatsAppSupplier(name)}
-              onOpenChat={handleOpenChat}
-            />
-          </main>
-        )}
-
-        {/* Screen 06: Directory Hub */}
-        {currentScreen === 'directory' && (
-          <main className="flex-1">
-            <DirectoryHubScreen
-              onNavigate={handleNavigate}
-              onOpenRFQModal={() => handleNavigate('post-rfq')}
-            />
-          </main>
-        )}
-
-        {/* Screen 06 List: Supplier Directory */}
-        {currentScreen === 'supplier-directory' && (
-          <main className="flex-1">
-            <SupplierDirectoryScreen
-              onOpenEnquiryModal={handleOpenEnquiry}
-              onOpenQuoteModal={() => {}}
-              onOpenRFQModal={() => handleNavigate('post-rfq')}
-              onNavigateToExplore={() => handleNavigate('explore')}
-              onNavigateToSupplierProfile={(supplierId) => handleNavigate('supplier-profile', { supplierId })}
-              onNavigateToProductDetail={(productId) => handleNavigate('product-detail', { productId })}
-              onCallSupplier={handleCallSupplier}
-              onWhatsAppSupplier={handleWhatsAppSupplier}
-            />
-          </main>
-        )}
-
-        {/* Screen 07: Dedicated Seller Profile / Mini-Website Page */}
-        {currentScreen === 'supplier-profile' && (
-          <main className="flex-1">
-            <SellerProfileScreen
-              sellerId={selectedSupplierId || searchParams.supplierId}
-              isLoggedIn={isLoggedIn}
-              onBack={() => handleNavigate('explore')}
-              onNavigateToProductDetail={(productId) => handleNavigate('product-detail', { productId })}
-              onOpenAuth={() => handleOpenAuthModal('login')}
-              onOpenEnquiryModal={handleOpenEnquiry}
-              onOpenQuoteModal={(suppName) => handleNavigate('post-rfq', { supplierName: suppName })}
-              onCallSupplier={(name) => handleCallSupplier(name)}
-              onWhatsAppSupplier={(name) => handleWhatsAppSupplier(name)}
-            />
-          </main>
-        )}
-
-        {/* Screen 08: Brand Directory */}
-        {currentScreen === 'brands' && (
-          <main className="flex-1">
-            <BrandDirectoryDetailScreen
-              onOpenEnquiryModal={(prodName, suppName) => {
-                handleOpenEnquiry({ name: prodName, supplierName: suppName });
-              }}
-              onOpenRFQModal={() => handleNavigate('post-rfq')}
-              onOpenFacilityTour={() => {}}
-              onNavigateToSuppliers={() => handleNavigate('supplier-directory')}
-              onNavigateToSupplierProfile={(supplierId) => handleNavigate('supplier-profile', { supplierId })}
-            />
-          </main>
-        )}
-
-        {/* Screen 09: OEM / Private Label Hub */}
-        {currentScreen === 'oem-hub' && (
-          <main className="flex-1">
-            <OemPrivateLabelHubScreen
-              onOpenRFQModal={() => handleNavigate('post-rfq')}
-              onOpenEnquiryModal={(prodName, suppName) => {
-                handleOpenEnquiry({ name: prodName, supplierName: suppName });
-              }}
-              onOpenFacilityTour={() => {}}
-              onNavigateToSuppliers={() => handleNavigate('supplier-directory')}
-              onNavigateToSupplierProfile={(supplierId) => handleNavigate('supplier-profile', { supplierId })}
-            />
-          </main>
-        )}
-
-        {/* Phase A: Buyer Onboarding Flow */}
-        {currentScreen === 'buyer-onboarding' && (
-          <main className="flex-1">
-            <BuyerOnboardingScreen
-              onComplete={(data) => {
-                handleSaveProfile({
-                  ...buyerProfile,
-                  businessName: data.businessName,
-                  businessType: data.buyerCategory,
-                  designation: data.designation,
-                  gstin: data.gstNumber,
-                  annualProcurementBudget: data.annualBudget,
-                  primaryCategories: data.primaryCategories,
-                  city: data.location.split(',')[0] || '',
-                  state: data.location.split(',')[1]?.trim() || '',
-                });
-                handleNavigate('buyer-dashboard');
-              }}
-              onNavigateToExplore={() => handleNavigate('explore')}
-            />
-          </main>
-        )}
-
-        {/* Phase B: Supplier Onboarding Flow */}
-        {currentScreen === 'onboarding' && (
-          <main className="flex-1">
-            <SupplierOnboardingScreen
-              authenticated={isLoggedIn && userRole === 'supplier'}
-              onComplete={() => {
-                triggerToast('Business listing created! Redirecting to Portal...');
-                handleNavigate('supplier-portal');
-              }}
-              onNavigateToExplore={() => handleNavigate('explore')}
-            />
-          </main>
-        )}
-
-        {/* Phase B: Supplier Admin Portal */}
-        {currentScreen === 'supplier-portal' && (
-          <main className="flex-1">
-            <SupplierAdminPortal 
-              onNavigateToProduct={(productId) => {
-                setSelectedProductId(productId);
-                handleNavigate('product-detail', { productId });
-              }}
-            />
-          </main>
-        )}
-
-        {/* Screen 24: Supplier Verification Center */}
-        {currentScreen === 'supplier-verification' && (
-          <main className="flex-1">
-            <SupplierVerificationScreen 
-              onBack={() => handleNavigate('supplier-portal')}
-            />
-          </main>
-        )}
-
-        {/* Screen 12: Buyer Dashboard */}
-        {currentScreen === 'buyer-dashboard' && (
-          <main className="flex-1">
-            <BuyerDashboard 
-              isLoggedIn={isLoggedIn}
-              onNavigate={handleNavigate}
-              onPostRFQ={() => handleNavigate('post-rfq')}
-              onCallSupplier={handleCallSupplier}
-              onWhatsAppSupplier={handleWhatsAppSupplier}
-              onOpenAuth={() => handleOpenAuthModal('login')}
-              buyerProfile={buyerProfile}
-              onSaveProfile={handleSaveProfile}
-              onOpenEditProfile={() => setIsEditProfileOpen(true)}
-              initialTab={buyerDashboardTab}
-              isProfileRoute={false}
-              currentScreen={currentScreen}
-            />
-          </main>
-        )}
-
-        {/* Specific /buyer/profile Route View */}
-        {currentScreen === 'buyer-profile' && (
-          <main className="flex-1">
-            <BuyerDashboard 
-              isLoggedIn={isLoggedIn}
-              onNavigate={handleNavigate}
-              onPostRFQ={() => handleNavigate('post-rfq')}
-              onCallSupplier={handleCallSupplier}
-              onWhatsAppSupplier={handleWhatsAppSupplier}
-              onOpenAuth={() => handleOpenAuthModal('login')}
-              buyerProfile={buyerProfile}
-              onSaveProfile={handleSaveProfile}
-              onOpenEditProfile={() => setIsEditProfileOpen(true)}
-              initialTab="activity"
-              isProfileRoute={true}
-              currentScreen={currentScreen}
-            />
-          </main>
-        )}
-
-        {/* Screen 13: Buyer RFQ Tracking & Quote Comparison */}
-        {currentScreen === 'rfq-tracking' && (
-          <main className="flex-1">
-            <BuyerRFQTrackingScreen
-              onBack={() => handleNavigate('buyer-dashboard')}
-              onNavigateToChat={(supplierIdOrName) => {
-                const supp = VERIFIED_SUPPLIERS.find(s => 
-                  s.name.toLowerCase().includes(supplierIdOrName.toLowerCase()) || 
-                  s.id === supplierIdOrName
-                );
-                handleOpenChat(
-                  {
-                    id: supp?.id || 'supp-rfq',
-                    name: supp?.name || supplierIdOrName,
-                    location: supp ? `${supp.city}${supp.state ? `, ${supp.state}` : ''}` : 'India',
-                    isVerified: supp ? supp.isVerified : true
-                  },
-                  { title: 'Vitamin C Brightening Serum (Bulk)', image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80', price: '₹195 / unit', moq: '2,000 Units' }
-                );
-              }}
-            />
-          </main>
-        )}
-
-        {/* Sample Request Screen */}
-        {currentScreen === 'sample-request' && (
-          <main className="flex-1">
-            <SampleRequestScreen 
-              onBack={() => handleNavigate('search-results')}
-              onSubmit={(data) => {
-                console.log('Sample Request Submitted:', data);
-                handleNavigate('buyer-dashboard');
-              }}
-            />
-          </main>
-        )}
-
-        {/* Screen 10: Post Requirement / Public RFQ Form */}
-        {currentScreen === 'post-rfq' && (
-          <main className="flex-1">
-            <PostRequirementScreen
-              onNavigateToExplore={() => handleNavigate('explore')}
-              onNavigateToRFQs={() => handleNavigate('rfq-tracking')}
-            />
-          </main>
-        )}
-
-        {/* Screen 14: Buyer Enquiry Log */}
-        {currentScreen === 'buyer-enquiry-log' && (
-          <main className="flex-1">
-            <BuyerEnquiryLogScreen
-              onBack={() => handleNavigate('buyer-dashboard')}
-              onNavigateToChat={(supplierName) => handleOpenChat({ id: 'supp_custom', name: supplierName, location: 'All India', isVerified: true })}
-              onCallSupplier={(name) => handleCallSupplier(name)}
-              onWhatsAppSupplier={(name) => handleWhatsAppSupplier(name)}
-              onNavigateToExplore={() => handleNavigate('explore')}
-            />
-          </main>
-        )}
+        <ScreenRouter ctx={screenContext} />
       </div>
 
-      <EnquiryModal
-        isOpen={isEnquiryModalOpen}
-        onClose={() => {
-          setIsEnquiryModalOpen(false);
-          setTargetEnquiryItem(null);
-        }}
-        targetItem={targetEnquiryItem}
-        buyerProfile={buyerProfile}
-        onCallSupplier={handleCallSupplier}
-        onWhatsAppSupplier={handleWhatsAppSupplier}
-        onNavigateToDashboard={() => {
-          setIsEnquiryModalOpen(false);
-          handleNavigate('buyer-enquiry-log');
-        }}
-      />
-
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onSuccess={handleLoginSuccess}
-        initialMode={authMode}
-      />
-
-      <EditProfileModal
-        isOpen={isEditProfileOpen}
-        onClose={() => setIsEditProfileOpen(false)}
-        initialData={buyerProfile}
-        onSave={handleSaveProfile}
-      />
-
-      <ChatModalDrawer
-        isOpen={chatModalOpen}
-        onClose={() => setChatModalOpen(false)}
-        initialSupplier={chatInitialSupplier}
-        initialProduct={chatInitialProduct}
-      />
-
-      <DatabaseStatusModal
-        isOpen={isDatabaseModalOpen}
-        onClose={() => setIsDatabaseModalOpen(false)}
-        onNavigateToScreen={(screen) => handleNavigate(screen)}
-      />
-
-      {/* Shared Footer — Luxe edition on the homepage */}
-      {currentScreen === 'explore' ? (
-        <LuxeFooter
-          onNavigate={handleNavigate}
-          onOpenRFQModal={() => handleNavigate('post-rfq')}
+      {/* Overlays — each lazily loaded behind its own Suspense boundary. */}
+      <Suspense fallback={null}>
+        <EnquiryModal
+          isOpen={isEnquiryModalOpen}
+          onClose={() => {
+            setIsEnquiryModalOpen(false);
+            setTargetEnquiryItem(null);
+          }}
+          targetItem={targetEnquiryItem}
+          buyerProfile={buyerProfile}
+          onCallSupplier={handleCallSupplier}
+          onWhatsAppSupplier={handleWhatsAppSupplier}
+          onNavigateToDashboard={() => {
+            setIsEnquiryModalOpen(false);
+            handleNavigate('buyer-enquiry-log');
+          }}
         />
-      ) : (
-        <Footer
-          onNavigate={handleNavigate}
-          onOpenAuthModal={handleOpenAuthModal}
-          onOpenRFQModal={() => handleNavigate('post-rfq')}
-        />
-      )}
+      </Suspense>
 
-      {/* Mobile Bottom Navigation */}
-      <MobileBottomNav 
+      <Suspense fallback={null}>
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          onSuccess={handleLoginSuccess}
+          initialMode={authMode}
+        />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <EditProfileModal
+          isOpen={isEditProfileOpen}
+          onClose={() => setIsEditProfileOpen(false)}
+          initialData={buyerProfile}
+          onSave={handleSaveProfile}
+        />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <ChatModalDrawer
+          isOpen={chatModalOpen}
+          onClose={() => setChatModalOpen(false)}
+          initialSupplier={chatInitialSupplier}
+          initialProduct={chatInitialProduct}
+        />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <DatabaseStatusModal
+          isOpen={isDatabaseModalOpen}
+          onClose={() => setIsDatabaseModalOpen(false)}
+          onNavigateToScreen={(screen: ScreenId) => handleNavigate(screen)}
+        />
+      </Suspense>
+
+      <SiteFooter
+        currentScreen={currentScreen}
+        onNavigate={handleNavigate}
+        onOpenRFQ={() => handleNavigate('post-rfq')}
+        onOpenAuthModal={() => handleOpenAuthModal('login')}
+      />
+
+      <MobileBottomNav
         currentScreen={currentScreen}
         onNavigate={handleNavigate}
         isLoggedIn={isLoggedIn}
         userRole={userRole}
-        onOpenAuth={handleOpenAuthModal}
+        onOpenAuth={() => handleOpenAuthModal('login')}
       />
 
-      {/* Floating Action Button (FAB) for Phase 4 Relational Database Inspector */}
-      <button
-        id="fab-db-inspector"
-        aria-label="Toggle Phase 4 Database Schema & Live Engine Inspector"
-        title={isLoggedIn && locationSyncStatus === 'synced'
-          ? 'Phase 4 Relational Database Inspector & Live Location Synced'
-          : 'Phase 4 Relational Database Inspector (8 Entities & Live Event Engine)'}
-        onClick={() => setIsDatabaseModalOpen(prev => !prev)}
-        className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 bg-[#2A0E3F] hover:bg-[#6B2D8C] text-white py-2.5 px-3.5 rounded-full shadow-xl flex items-center gap-2 text-xs font-bold transition-all transform hover:scale-105 cursor-pointer border border-white/20 group"
-      >
-        <div className="relative">
-          <Database className="w-4 h-4 text-[#F5EEF8] group-hover:text-white" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-        </div>
-        <span className="hidden sm:inline">DB Inspector</span>
-        <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-[10px] font-mono">8 Tables</span>
-      </button>
-
-      </div>
+      <DatabaseInspectorFab
+        isSynced={isLoggedIn && locationSyncStatus === 'synced'}
+        onToggle={() => setIsDatabaseModalOpen((prev) => !prev)}
+      />
+    </div>
   );
 }
 
-export function App() {
+export function App({ initialScreen }: NexoraShopAppProps = {}) {
   return (
     <SupabaseProvider>
-      <NexoraShopApp />
+      <NexoraShopApp initialScreen={initialScreen} />
     </SupabaseProvider>
   );
 }
+
 export default App;

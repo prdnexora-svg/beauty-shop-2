@@ -239,7 +239,9 @@ export const ChatModalDrawer: React.FC<ChatModalDrawerProps> = ({
                     <div className="flex items-center gap-1.5">
                       <h3 className="text-sm font-extrabold text-stone-900">{activeThread.supplierName}</h3>
                       {activeThread.isVerified && (
-                        <ShieldCheck className="w-4 h-4 text-[#6B2D8C]" title="Nexora Verified Supplier" />
+                        <ShieldCheck className="w-4 h-4 text-[#6B2D8C]">
+                          <title>Nexora Verified Supplier</title>
+                        </ShieldCheck>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">

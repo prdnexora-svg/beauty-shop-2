@@ -26,13 +26,13 @@ import {
   Bookmark,
   BookmarkCheck
 } from 'lucide-react';
-import { SearchProduct, SearchSupplier, OEMFormulation } from '../types';
-import { SEARCH_PRODUCTS, SEARCH_SUPPLIERS, SEARCH_OEM_FORMULATIONS } from '../data/mockData';
-import { CATEGORY_TAXONOMY, CATEGORY_TAXONOMY_LIST } from '../data/categories';
-import { ProductCompareModal } from './ProductCompareModal';
-import { SupplierComparisonModal } from './SupplierComparisonModal';
-import { FilterPanel } from './FilterPanel';
-import { VerifiedBadge } from './VerifiedBadge';
+import { SearchProduct, SearchSupplier, OEMFormulation, VerifiedSupplier } from '../../types';
+import { SEARCH_PRODUCTS, SEARCH_SUPPLIERS, SEARCH_OEM_FORMULATIONS } from '../../data/mockData';
+import { CATEGORY_TAXONOMY, CATEGORY_TAXONOMY_LIST } from '../../data/categories';
+import { ProductCompareModal } from '../../components/ProductCompareModal';
+import { SupplierComparisonModal } from '../../components/SupplierComparisonModal';
+import { FilterPanel } from '../../components/FilterPanel';
+import { VerifiedBadge } from '../../components/VerifiedBadge';
 
 interface SearchFilterScreenProps {
   initialQuery?: string;
@@ -1309,7 +1309,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                                 </label>
                                 <VerifiedBadge
                                   trustScore={sup.trustScore}
-                                  overallRating={sup.overallRating}
+                                  overallRating={(sup as SearchSupplier & { overallRating?: number }).overallRating}
                                   size="sm"
                                 />
                                 <span className="text-[11px] font-bold text-[#6B2D8C] bg-[#F5EEF8] px-2 py-0.5 rounded-full block">
@@ -1619,8 +1619,8 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
       <SupplierComparisonModal
         isOpen={isSupplierCompareModalOpen}
         onClose={() => setIsSupplierCompareModalOpen(false)}
-        selectedSuppliers={comparedSuppliers}
-        allSuppliers={SEARCH_SUPPLIERS}
+        selectedSuppliers={comparedSuppliers as unknown as VerifiedSupplier[]}
+        allSuppliers={SEARCH_SUPPLIERS as unknown as VerifiedSupplier[]}
         onAddSupplier={(s) => toggleSupplierCompare(s.id)}
         onRemoveSupplier={(id) => toggleSupplierCompare(id)}
         onClearAll={() => setComparedSupplierIds([])}

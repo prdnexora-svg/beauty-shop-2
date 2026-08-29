@@ -35,6 +35,17 @@ import {
 } from 'lucide-react';
 import { VerifiedSupplier, ComplianceReport } from '../types';
 
+/** Enquiry payload: a full supplier row, or the lighter product-level shape. */
+export interface VerifiedSupplierEnquiry
+  extends Partial<VerifiedSupplier> {
+  title?: string;
+  supplierName?: string;
+  image?: string;
+  priceRange?: string;
+  moq?: string;
+  category?: string;
+}
+
 interface VerifiedSuppliersSectionProps {
   suppliers: VerifiedSupplier[];
   isLoggedIn: boolean;
@@ -45,7 +56,7 @@ interface VerifiedSuppliersSectionProps {
   onToggleComparison?: (supplier: VerifiedSupplier) => void;
   onOpenComparisonModal?: () => void;
   onClearComparison?: () => void;
-  onOpenEnquiry: (supplier: VerifiedSupplier) => void;
+  onOpenEnquiry: (payload: VerifiedSupplierEnquiry) => void;
   onOpenMapModal?: (supplier: VerifiedSupplier) => void;
   onOpenFacilityTour?: (supplier: VerifiedSupplier) => void;
   onCallSupplier: (supplierName: string) => void;

@@ -142,8 +142,14 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
 
       // Pre-fill profile data if available
       if (buyerProfile) {
-        if (buyerProfile.contactName) setBuyerName(buyerProfile.contactName);
-        if (buyerProfile.companyName) setCompanyName(buyerProfile.companyName);
+        // Profiles restored from localStorage may still carry the legacy flat
+        // contact fields; they are optional at that storage boundary only.
+        const profile = buyerProfile as BuyerProfileData & {
+          contactName?: string;
+          companyName?: string;
+        };
+        if (profile.contactName) setBuyerName(profile.contactName);
+        if (profile.companyName) setCompanyName(profile.companyName);
         if (buyerProfile.phone) setMobileNumber(buyerProfile.phone.replace('+91', '').trim());
         if (buyerProfile.city) setCityLocation(`${buyerProfile.city}, ${buyerProfile.state || ''}`);
         if (buyerProfile.pincode) setPincode(buyerProfile.pincode);

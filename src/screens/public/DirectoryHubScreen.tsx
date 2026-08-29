@@ -5,7 +5,7 @@ import {
   FlaskConical, Package, Microscope, MessageSquare, Clock,
   CheckCircle2, Globe, TrendingUp
 } from 'lucide-react';
-import { VerifiedBadge } from './VerifiedBadge';
+import { VerifiedBadge } from '../../components/VerifiedBadge';
 
 interface DirectoryHubScreenProps {
   onNavigate: (screen: any, params?: any) => void;

@@ -10,6 +10,10 @@
       "DOM.Iterable"
     ],
     "skipLibCheck": true,
+    // Only ambient packages listed here are auto-included. React's own types
+    // are still resolved through explicit imports, but they are not forced on
+    // the whole program (see README "Typechecking").
+    "types": ["node", "vitest/globals"],
     "moduleResolution": "bundler",
     "isolatedModules": true,
     "moduleDetection": "force",

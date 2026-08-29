@@ -59,7 +59,7 @@ export const Reveal: React.FC<RevealProps> = ({
 
   return (
     <Tag
-      ref={ref as React.MutableRefObject<HTMLElement>}
+      ref={ref as React.Ref<any> /* polymorphic tag: div | li | span */}
       style={delay ? { transitionDelay: `${delay}ms` } : undefined}
       className={`reveal ${dirClass} ${visible ? 'reveal-visible' : ''} ${className}`}
     >

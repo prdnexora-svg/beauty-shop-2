@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { B2B_CATEGORIES } from '../data/categories';
+import { B2B_CATEGORIES } from '../../data/categories';
 import { 
   ShieldCheck, 
   ArrowRight, 
