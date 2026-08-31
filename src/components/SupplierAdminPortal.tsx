@@ -2,19 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { 
   Building2, Sparkles, ShieldCheck, Mail, ArrowRight, Settings, Plus, FileText, 
   TrendingUp, BarChart3, Users, CheckCircle2, ChevronRight, Edit3, Trash2, Check, Upload, Award, RefreshCw,
-  Eye, MousePointer, Play, Film, Send, ExternalLink, Activity, MessageSquare
+  Eye, MousePointer, Play, Film, Send, ExternalLink, Activity, MessageSquare, Package
 } from 'lucide-react';
 import { SponsoredAdManager } from './SponsoredAdManager';
 import { SupplierAnalyticsDashboard } from './SupplierAnalyticsDashboard';
 import { getStoredSponsoredAnalyticsEvents, SponsoredAnalyticsEvent } from '../data/sponsoredAnalyticsStore';
 import { getStoredChatThreads, supplierReplyMessage, ChatThread } from '../data/chatStore';
-import { CATEGORY_TAXONOMY, CATEGORIES_DATA, getSubcategoriesForCategoryName } from '../data/categories';
+import { ProductCreationWizard, CatalogProduct } from './ProductCreationWizard';
 
 // Mock initial listings
-const INITIAL_PRODUCTS = [
-  { id: 'sp1', name: 'Peptide Skin Barrier Repair Cream', price: '₹145 - ₹180', moq: '2,000 Units', category: 'Skincare', status: 'Active' },
-  { id: 'sp2', name: 'Clinical Vitamin C Infused Glow Serum', price: '₹190 - ₹220', moq: '3,000 Units', category: 'Skincare', status: 'Active' },
-  { id: 'sp3', name: 'Salicylic Acid Overnight Blemish Gel', price: '₹110 - ₹135', moq: '5,000 Units', category: 'Skincare', status: 'Draft' }
+const INITIAL_PRODUCTS: CatalogProduct[] = [
+  { id: 'sp1', name: 'Peptide Skin Barrier Repair Cream', price: '145', mrp: '180', category: 'Skincare', subcategory: 'Moisturizers & Creams', brand: 'Aura Beauty Labs', stockQty: 2000, unit: 'Pcs', taxRate: '18%', status: 'Active', tags: ['repair', 'barrier'], attributes: [{ label: 'Size', value: '50ml' }], images: [] },
+  { id: 'sp2', name: 'Clinical Vitamin C Infused Glow Serum', price: '190', mrp: '220', category: 'Skincare', subcategory: 'Serums & Treatments', brand: 'Aura Beauty Labs', stockQty: 3000, unit: 'Pcs', taxRate: '18%', status: 'Active', tags: ['vitamin-c', 'glow'], attributes: [{ label: 'Size', value: '30ml' }], images: [] },
+  { id: 'sp3', name: 'Salicylic Acid Overnight Blemish Gel', price: '110', mrp: '135', category: 'Skincare', subcategory: 'Serums & Treatments', brand: 'Aura Beauty Labs', stockQty: 5000, unit: 'Pcs', taxRate: '18%', status: 'Draft', tags: [], attributes: [], images: [] }
 ];
 
 // Mock public buyer requirements
@@ -72,12 +72,7 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
   const [isVerifying, setIsVerifying] = useState(false);
   
   // Product creation state (Screen 20)
-  const [products, setProducts] = useState(INITIAL_PRODUCTS);
-  const [newProdName, setNewProdName] = useState('');
-  const [newProdPrice, setNewProdPrice] = useState('');
-  const [newProdMoq, setNewProdMoq] = useState('');
-  const [newProdCat, setNewProdCat] = useState('Skincare');
-  const [newProdSubcat, setNewProdSubcat] = useState('Serums & Treatments');
+  const [products, setProducts] = useState<CatalogProduct[]>(INITIAL_PRODUCTS);
   const [showMobileToBuyers, setShowMobileToBuyers] = useState(true);
 
   // Quote form state (Screen 23)
@@ -95,28 +90,12 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
     }, 1200);
   };
 
-  const handleAddProduct = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newProdName || !newProdPrice || !newProdMoq) return;
+  const handlePublishProduct = (product: CatalogProduct) => {
+    setProducts((prev) => [product, ...prev]);
+  };
 
-    // Validate classification against CATEGORIES_DATA master taxonomy list
-    const validCatNode = CATEGORIES_DATA.find((c) => c.name === newProdCat);
-    const categoryName = validCatNode ? validCatNode.name : CATEGORIES_DATA[0].name;
-    const subcategoryName = newProdSubcat || (validCatNode ? validCatNode.subcategories[0] : '');
-
-    const newProduct = {
-      id: `sp-${Date.now()}`,
-      name: newProdName,
-      price: newProdPrice,
-      moq: newProdMoq,
-      category: `${categoryName} (${subcategoryName})`,
-      status: 'Active'
-    };
-
-    setProducts([newProduct, ...products]);
-    setNewProdName('');
-    setNewProdPrice('');
-    setNewProdMoq('');
+  const handleSaveDraftProduct = (product: CatalogProduct) => {
+    setProducts((prev) => [product, ...prev]);
   };
 
   const handleSendQuote = (e: React.FormEvent) => {
@@ -429,98 +408,55 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
         {activeTab === 'products' && (
           <div className="space-y-6">
             
-            {/* Create Product Form (Screen 20) */}
-            <div className="bg-white border border-[#E8DEEF] rounded-xl p-5 space-y-5">
-              <h3 className="font-black text-sm text-zinc-950">Add Formulation Private Label to Catalog</h3>
-              <form onSubmit={handleAddProduct} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 text-xs">
-                <div>
-                  <label className="block font-bold text-[#5B4A6E] uppercase tracking-wider mb-1.5">Category</label>
-                  <select
-                    value={newProdCat}
-                    onChange={(e) => {
-                      const selectedCat = e.target.value;
-                      setNewProdCat(selectedCat);
-                      const subcategories = getSubcategoriesForCategoryName(selectedCat);
-                      setNewProdSubcat(subcategories[0] || '');
-                    }}
-                    className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none p-2.5 rounded-lg font-medium cursor-pointer"
-                  >
-                    {CATEGORIES_DATA.map((catNode) => (
-                      <option key={catNode.id} value={catNode.name}>
-                        {catNode.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[#5B4A6E] uppercase tracking-wider mb-1.5">Subcategory</label>
-                  <select
-                    value={newProdSubcat}
-                    onChange={(e) => setNewProdSubcat(e.target.value)}
-                    className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none p-2.5 rounded-lg font-medium cursor-pointer"
-                  >
-                    {getSubcategoriesForCategoryName(newProdCat).map((sName) => (
-                      <option key={sName} value={sName}>
-                        {sName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[#5B4A6E] uppercase tracking-wider mb-1.5">Formulation Title</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Ceramide Eye Gel Base"
-                    value={newProdName}
-                    onChange={(e) => setNewProdName(e.target.value)}
-                    className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none p-2.5 rounded-lg"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[#5B4A6E] uppercase tracking-wider mb-1.5">Estimated Price (INR)</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. ₹120 - ₹150 / unit"
-                    value={newProdPrice}
-                    onChange={(e) => setNewProdPrice(e.target.value)}
-                    className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none p-2.5 rounded-lg"
-                  />
-                </div>
-
-                <div className="flex items-end">
-                  <button
-                    type="submit"
-                    className="w-full py-3 bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold uppercase tracking-wider rounded-lg shadow-sm transition-all cursor-pointer"
-                  >
-                    Publish to Catalog
-                  </button>
-                </div>
-              </form>
-            </div>
+            {/* Create Product Form (Screen 20) — simplified multi-step wizard */}
+            <ProductCreationWizard
+              onPublish={handlePublishProduct}
+              onSaveDraft={handleSaveDraftProduct}
+              onViewProductList={() => {
+                document.getElementById('catalog-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            />
 
             {/* Catalog list */}
-            <div className="bg-white border border-[#E8DEEF] rounded-xl overflow-hidden">
+            <div id="catalog-list" className="bg-white border border-[#E8DEEF] rounded-xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-[#E8DEEF] flex items-center justify-between">
+                <h3 className="font-black text-sm text-zinc-950">My Catalog</h3>
+                <span className="text-[11px] font-bold text-[#7E6C96]">{products.length} product{products.length !== 1 ? 's' : ''}</span>
+              </div>
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-[#E8DEEF] text-[#7E6C96] font-bold uppercase tracking-wider bg-zinc-50">
-                    <th className="p-4">Formulation Name</th>
-                    <th className="p-4">Est Price Unit</th>
-                    <th className="p-4">Minimum MOQ</th>
-                    <th className="p-4">Audit Status</th>
+                    <th className="p-4">Product Name</th>
+                    <th className="p-4">Price / Unit</th>
+                    <th className="p-4">Stock</th>
+                    <th className="p-4">Status</th>
                     <th className="p-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E8DEEF] text-[#5B4A6E]">
                   {products.map((p) => (
                     <tr key={p.id}>
-                      <td className="p-4 font-extrabold text-zinc-950">{p.name}</td>
-                      <td className="p-4">{p.price}</td>
-                      <td className="p-4">{p.moq}</td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          {p.images[0] ? (
+                            <img src={p.images[0]} alt={p.name} className="w-9 h-9 rounded-lg object-cover border border-[#E8DEEF]" />
+                          ) : (
+                            <div className="w-9 h-9 rounded-lg bg-[#F5EEF8] flex items-center justify-center">
+                              <Package className="w-4 h-4 text-[#6B2D8C]" />
+                            </div>
+                          )}
+                          <div>
+                            <span className="font-extrabold text-zinc-950 block">{p.name}</span>
+                            <span className="text-[10px] text-zinc-400">{p.category}{p.subcategory ? ` · ${p.subcategory}` : ''}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <span className="font-bold text-zinc-900">₹{p.price}</span>
+                        {p.mrp && <span className="text-[10px] text-zinc-400 line-through ml-1.5">₹{p.mrp}</span>}
+                        <span className="text-[10px] text-zinc-400 block">per {p.unit}</span>
+                      </td>
+                      <td className="p-4">{p.stockQty} {p.unit}</td>
                       <td className="p-4">
                         <span className={`px-2 py-0.5 rounded font-bold text-[9.5px] uppercase tracking-wider ${
                           p.status === 'Active'
@@ -531,12 +467,20 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
                         </span>
                       </td>
                       <td className="p-4 text-right">
-                        <button 
-                          onClick={() => setProducts(products.filter(item => item.id !== p.id))}
-                          className="text-red-500 hover:text-red-700 transition-colors"
-                        >
-                          Delete
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => onNavigateToProduct?.(p.id)}
+                            className="text-[#6B2D8C] hover:text-[#4A2560] font-bold inline-flex items-center gap-1"
+                          >
+                            <Eye className="w-3.5 h-3.5" /> View
+                          </button>
+                          <button 
+                            onClick={() => setProducts(products.filter(item => item.id !== p.id))}
+                            className="text-red-500 hover:text-red-700 transition-colors inline-flex items-center gap-1"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" /> Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
