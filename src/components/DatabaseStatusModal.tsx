@@ -26,11 +26,13 @@ import {
   Info,
   Cloud,
   Zap,
-  AlertCircle
+  AlertCircle,
+  Terminal
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from '../db/database';
 import { DatabaseState } from '../db/database';
+import { QueryBuilderPanel } from './QueryBuilderPanel';
 import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../data/categories';
 import { testSupabaseConnection, isSupabaseConfigured, getSupabaseConfigInfo, syncAllDataToSupabase } from '../lib/supabase';
 
@@ -261,7 +263,7 @@ export const DatabaseStatusModal: React.FC<DatabaseStatusModalProps> = ({
 }) => {
   const [dbState, setDbState] = useState<DatabaseState>(db.getRawState());
   const [activeTable, setActiveTable] = useState<keyof DatabaseState>('rfqs_enquiries');
-  const [activeTab, setActiveTab] = useState<'records' | 'schema' | 'simulator' | 'supabase'>('supabase');
+  const [activeTab, setActiveTab] = useState<'records' | 'schema' | 'simulator' | 'supabase' | 'query'>('supabase');
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -644,7 +646,7 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                 </span>
               </div>
               <p className="text-xs text-[#5B4A6E] font-medium mt-0.5">
-                8 Relational Entities • Foreign Key Indexing • Multi-Supplier Lead Distribution • Real-Time Event Bus
+                8 Relational Entities • Foreign Key Indexing • Multi-Supplier Lead Distribution • SQL Query Builder
               </p>
             </div>
           </div>
@@ -689,6 +691,19 @@ CREATE TABLE IF NOT EXISTS follow_ups (
               ) : (
                 <span className="w-2 h-2 rounded-full bg-gold-400" />
               )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab('query')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'query'
+                  ? 'bg-[#2A0E3F] text-white shadow-xs'
+                  : 'bg-[#FDFBF7] text-[#5B4A6E] hover:bg-[#F5EEF8] hover:text-[#6B2D8C] border border-[#E5D8EE]'
+              }`}
+            >
+              <Terminal className="w-3.5 h-3.5" />
+              <span>Query Builder</span>
+              <span className="px-1 py-0.5 rounded text-[8px] font-black uppercase bg-[#C9A961]/20 text-[#8A6A1F]">SQL</span>
             </button>
 
             <button
@@ -1281,6 +1296,16 @@ CREATE TABLE IF NOT EXISTS follow_ups (
                 </div>
               </div>
             )}
+
+            {/* TAB 5: INTERACTIVE SQL QUERY BUILDER
+                Rendered always (hidden via CSS when another tab is active) so an
+                authored query, its JOINs and its result set survive tab switching. */}
+            <QueryBuilderPanel
+              className={activeTab === 'query' ? 'flex-1 flex flex-col min-h-0' : 'hidden'}
+              dbState={dbState}
+              activeTable={activeTable}
+              onSelectTable={(table) => setActiveTable(table)}
+            />
 
           </main>
 
