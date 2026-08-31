@@ -21,14 +21,30 @@ import {
   DollarSign,
   FileSpreadsheet,
   Info,
-  Sliders,
   Award,
   Download,
   FolderTree,
   Filter
 } from 'lucide-react';
 import { db } from '../db/database';
-import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../data/categories';
+import { SearchableProductCombobox } from './SearchableProductCombobox';
+import type { ProductTemplate } from '../data/productTemplates';
+import { ProductTaxonomySelector } from './ProductTaxonomySelector';
+import {
+  createInitialTaxonomyState,
+  isTaxonomySelectionValid,
+  type TaxonomySelectionState
+} from './taxonomyFormHandler';
+import { FormulationBuilder } from './FormulationBuilder';
+import {
+  DEFAULT_FORMULATION,
+  QUANTITY_OPTIONS,
+  BENEFIT_OPTIONS,
+  buildFormulationBrief,
+  buildFormulationSummaryLine,
+  isFormulationValid,
+  type SimpleFormulationState
+} from './formulationPreferences';
 
 interface PostRequirementScreenProps {
   onNavigateToExplore: () => void;
@@ -46,16 +62,17 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
 
   // Step 1: Requirement Details
   const [requirementType, setRequirementType] = useState<'oem' | 'supply' | 'ingredients' | 'packaging'>('oem');
-  const [productName, setProductName] = useState('Vitamin C Brightening Serum (15% Ascorbic Acid)');
-  const [category, setCategory] = useState('Skincare');
-  const [subcategory, setSubcategory] = useState('Serums & Treatments');
-  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(['Serums & Treatments']);
+  const [productName, setProductName] = useState('My Custom Brightening Serum');
+  // Primary Category + Subcategory Multi-Select (Active Taxonomy Path)
+  const [taxonomy, setTaxonomy] = useState<TaxonomySelectionState>(
+    createInitialTaxonomyState('Skincare', ['Serums & Treatments'])
+  );
+  const [showTaxonomyError, setShowTaxonomyError] = useState(false);
   const [selectedVisualRefs, setSelectedVisualRefs] = useState<string[]>(['dropper', 'pump']);
-  
-  // Dynamic OEM / Formulation
-  const [formulaType, setFormulaType] = useState('Custom Formulation');
-  const [targetMOQ, setTargetMOQ] = useState('1,000 - 5,000');
-  const [selectedCompliance, setSelectedCompliance] = useState<string[]>(['Clean Beauty (Credo Standard)', 'Vegan', 'Cruelty-Free (Leaping Bunny)']);
+
+  // Dynamic OEM / Formulation — ultra-simple, zero-technical builder state
+  const [formulation, setFormulation] = useState<SimpleFormulationState>(DEFAULT_FORMULATION);
+  const [showFormulationError, setShowFormulationError] = useState(false);
   
   // Quantities & Commercials
   const [quantity, setQuantity] = useState('2500');
@@ -66,7 +83,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
   
   // Specifications
   const [details, setDetails] = useState(
-    'Seeking WHO-GMP certified OEM lab to manufacture 15% L-Ascorbic Acid Serum stabilized with 1% Ferulic Acid & Vitamin E. Fragrance-free, amber glass bottle with UV coating. Target shelf life 24 months.'
+    'Looking for a gentle, everyday-use custom product for my salon clients. Should feel light, absorb quickly, and suit all skin types.'
   );
   const [requireSamples, setRequireSamples] = useState<'yes' | 'no'>('yes');
   
@@ -113,7 +130,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
 
   const handleInsertTemplate = () => {
     setDetails(
-      'Formula Spec: 15% L-Ascorbic Acid + 1% Ferulic Acid + Hyaluronic Acid. Texture: Lightweight fast-absorbing water-gel. Packaging: 30ml Amber Glass Dropper Bottle with Matte Pink Collar. Compliance: Clean Beauty, Vegan, Micro-Biological Challenge Tested. Target Shelf Life: 24 Months.'
+      'Looking for a light, everyday product my clients can use morning and night. It should absorb quickly, layers well under makeup, and suit sensitive skin. Lab-tested samples appreciated before the full batch.'
     );
   };
 
@@ -134,11 +151,15 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
     setAttachments(attachments.filter((f) => f.id !== id));
   };
 
-  const toggleCompliance = (item: string) => {
-    if (selectedCompliance.includes(item)) {
-      setSelectedCompliance(selectedCompliance.filter((i) => i !== item));
-    } else {
-      setSelectedCompliance([...selectedCompliance, item]);
+  // Ultra-simple formulation builder: keep RFQ records in sync with the
+  // friendly picks (bottle count feeds the sourcing quantity field).
+  const handleFormulationChange = (next: SimpleFormulationState) => {
+    setFormulation(next);
+    setShowFormulationError(false);
+    const bottleCount = QUANTITY_OPTIONS.find((q) => q.id === next.quantity)?.bottles;
+    if (bottleCount) {
+      setQuantity(String(bottleCount));
+      setUnit('Units');
     }
   };
 
@@ -166,11 +187,48 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
     }
   };
 
+  // Taxonomy: Primary Category dropdown auto-clears subcategory pills on change;
+  // multi-select pills update the Active Taxonomy Path chips instantly.
+  const handleTaxonomyChange = (next: TaxonomySelectionState) => {
+    setTaxonomy(next);
+    setShowTaxonomyError(false);
+  };
+
+  // Searchable combobox: picking a popular product template auto-fills the
+  // requirement name AND selects its Primary Category + Subcategories
+  // (plus matching benefit cards in the simple formulation builder).
+  const handleSelectProductTemplate = (template: ProductTemplate) => {
+    setProductName(template.name);
+    setTaxonomy(createInitialTaxonomyState(template.category, template.subcategories));
+    setShowTaxonomyError(false);
+    if (requirementType === 'oem' && template.benefits?.length) {
+      const validBenefits = template.benefits.filter((id) =>
+        BENEFIT_OPTIONS.some((b) => b.id === id)
+      );
+      if (validBenefits.length > 0) {
+        setFormulation((prev) => ({ ...prev, benefits: validBenefits }));
+      }
+    }
+  };
+
   const handleStep1Next = () => {
     if (!productName.trim() || !quantity.trim()) {
       setErrorMessage('Please provide a product name and sourcing quantity.');
       return;
     }
+    if (!isTaxonomySelectionValid(taxonomy)) {
+      setShowTaxonomyError(true);
+      setErrorMessage('Please pick at least one subcategory for your primary category.');
+      window.scrollTo({ top: 320, behavior: 'smooth' });
+      return;
+    }
+    if (requirementType === 'oem' && !isFormulationValid(formulation)) {
+      setShowFormulationError(true);
+      setErrorMessage('Please pick at least one benefit card for your custom product — one tap is enough.');
+      window.scrollTo({ top: 320, behavior: 'smooth' });
+      return;
+    }
+    setShowFormulationError(false);
     setErrorMessage('');
     setCurrentStep(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -196,12 +254,14 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
         supplier_id: null,
         product_id: null,
         requirement_title: productName,
-        category: category,
+        category: taxonomy.primaryCategory,
         quantity_required: parseInt(quantity, 10) || 1000,
         quantity_unit: unit,
         target_budget: totalBudget ? parseFloat(totalBudget) : (parseFloat(targetUnitPrice) * (parseInt(quantity, 10) || 1000)),
         delivery_location: deliveryCity,
-        details: `${details}\n\nCompliance: ${selectedCompliance.join(', ')}\nPackaging: ${selectedVisualRefs.join(', ')}\nSupplier Notes: ${additionalSupplierNotes}`,
+        details: requirementType === 'oem'
+          ? `${details}\n\n${buildFormulationBrief(formulation)}\nPackaging: ${selectedVisualRefs.join(', ')}\nSupplier Notes: ${additionalSupplierNotes}`
+          : `${details}\n\nPackaging: ${selectedVisualRefs.join(', ')}\nSupplier Notes: ${additionalSupplierNotes}`,
         attachments: attachments.map(a => a.name),
         status: 'new',
         type: 'public_rfq',
@@ -582,148 +642,24 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                   <div className="space-y-2">
                     <label className="text-[13px] font-bold text-[#2A0E3F] flex items-center justify-between">
                       <span>Product Name / Specific Requirement <span className="text-[#E11D48]">*</span></span>
+                      <span className="text-[11px] font-semibold text-[#8B7FA3]">Search popular products as you type</span>
                     </label>
-                    <input
-                      type="text"
+                    <SearchableProductCombobox
                       value={productName}
-                      onChange={(e) => setProductName(e.target.value)}
-                      placeholder="e.g., Vitamin C Brightening Serum (15% Ascorbic Acid)"
-                      className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:ring-2 focus:ring-[#C9A961]/20 rounded-xl px-4 py-3.5 text-[14px] font-medium text-[#2A0E3F] outline-none transition-all"
+                      onChange={setProductName}
+                      onSelectTemplate={handleSelectProductTemplate}
                     />
+                    <p className="text-[11.5px] text-[#8B7FA3] font-medium">
+                      Pick a suggestion to auto-fill your category &amp; subcategories — or simply type your own product name.
+                    </p>
                   </div>
 
-                  {/* Selection Path Visual Feedback Banner */}
-                  <div className="bg-[#F5EEF8] border border-[#F0D5E3] rounded-2xl p-4 space-y-2 transition-all">
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <div className="flex items-center gap-2 text-[11.5px] font-extrabold text-[#5B4A6E] tracking-wider uppercase">
-                        <FolderTree className="w-4 h-4 text-[#6B2D8C]" />
-                        <span>Active Taxonomy Path</span>
-                      </div>
-                      {selectedSubcategories.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedSubcategories([]);
-                            setSubcategory('');
-                          }}
-                          className="text-[11px] font-bold text-[#6B2D8C] hover:underline cursor-pointer"
-                        >
-                          Clear Selection ({selectedSubcategories.length})
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2 flex-wrap text-[13px]">
-                      <span className="bg-white text-[#6B2D8C] font-extrabold px-3 py-1.5 rounded-lg border border-[#f0d5e3] shadow-2xs flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-[#6B2D8C]" />
-                        {category}
-                      </span>
-                      <ChevronRight className="w-4 h-4 text-[#6B2D8C]/60 shrink-0" />
-                      {selectedSubcategories.length > 0 ? (
-                        <div className="flex flex-wrap gap-1.5 items-center">
-                          {selectedSubcategories.map((subItem) => (
-                            <span
-                              key={subItem}
-                              className="bg-[#6B2D8C] text-white font-bold px-3 py-1 rounded-lg text-[12px] flex items-center gap-1.5 shadow-2xs"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                              {subItem}
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const updated = selectedSubcategories.filter(s => s !== subItem);
-                                  setSelectedSubcategories(updated);
-                                  setSubcategory(updated[0] || '');
-                                }}
-                                className="hover:bg-white/20 rounded-full p-0.5 transition-colors cursor-pointer"
-                              >
-                                <X className="w-3 h-3 text-white" />
-                              </button>
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-[#8B7FA3] text-[12.5px] italic font-medium">
-                          Select one or more subcategories below
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      {/* Category Selection */}
-                      <div className="space-y-2">
-                        <label className="text-[13px] font-bold text-[#2A0E3F] flex items-center justify-between">
-                          <span>Primary Category <span className="text-[#E11D48]">*</span></span>
-                          <span className="text-[11px] font-semibold text-[#8B7FA3]">Auto-clears subcategories on change</span>
-                        </label>
-                        <select
-                          value={category}
-                          onChange={(e) => {
-                            const newCategory = e.target.value;
-                            setCategory(newCategory);
-                            // Auto-clear subcategories on main category change
-                            setSelectedSubcategories([]);
-                            setSubcategory('');
-                          }}
-                          className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] rounded-xl px-4 py-3.5 text-[14px] font-medium text-[#2A0E3F] outline-none cursor-pointer transition-all"
-                        >
-                          {Object.keys(CATEGORY_TAXONOMY).map((catName) => (
-                            <option key={catName} value={catName}>
-                              {catName}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Subcategory Multi-Select */}
-                      <div className="space-y-2">
-                        <label className="text-[13px] font-bold text-[#2A0E3F] flex items-center justify-between">
-                          <span>Subcategory Multi-Select <span className="text-[#E11D48]">*</span></span>
-                          <span className="text-[11px] font-extrabold text-[#6B2D8C]">
-                            {selectedSubcategories.length} Selected
-                          </span>
-                        </label>
-
-                        {/* Interactive Pill Chips */}
-                        <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-3 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl">
-                          {getSubcategoriesForCategoryName(category).map((subItem) => {
-                            const isSelected = selectedSubcategories.includes(subItem);
-                            return (
-                              <button
-                                key={subItem}
-                                type="button"
-                                onClick={() => {
-                                  let updated: string[];
-                                  if (isSelected) {
-                                    updated = selectedSubcategories.filter(s => s !== subItem);
-                                  } else {
-                                    updated = [...selectedSubcategories, subItem];
-                                  }
-                                  setSelectedSubcategories(updated);
-                                  setSubcategory(updated[0] || '');
-                                }}
-                                className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                                  isSelected
-                                    ? 'bg-[#6B2D8C] text-white shadow-2xs border border-[#6B2D8C]'
-                                    : 'bg-white text-[#2A0E3F] border border-[#E8DEEF] hover:border-[#6B2D8C] hover:bg-[#F5EEF8]'
-                                }`}
-                              >
-                                {isSelected ? (
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-white shrink-0" />
-                                ) : (
-                                  <Plus className="w-3.5 h-3.5 text-[#8B7FA3] shrink-0" />
-                                )}
-                                <span>{subItem}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-
+                  {/* 2a. Primary Category + Subcategory Multi-Select (Active Taxonomy Path) */}
+                  <ProductTaxonomySelector
+                    value={taxonomy}
+                    onChange={handleTaxonomyChange}
+                    showValidationError={showTaxonomyError}
+                  >
                     {/* Visual Reference Thumbnails */}
                     <div className="space-y-2">
                       <label className="text-[13px] font-bold text-[#2A0E3F] flex items-center justify-between">
@@ -768,81 +704,16 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                         </label>
                       </div>
                     </div>
-                  </div>
+                  </ProductTaxonomySelector>
                 </section>
 
-                {/* 3. Dynamic OEM / Formulation Preferences */}
+                {/* 3. Dynamic OEM / Formulation Preferences — Ultra-Simple, Zero-Technical */}
                 {requirementType === 'oem' && (
-                  <section className="bg-[#F6F1FA] p-6 md:p-8 rounded-2xl border border-[#E8DEEF] space-y-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#F5EEF8] text-[#6B2D8C] flex items-center justify-center font-bold">
-                        <Sliders className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="text-base font-extrabold text-[#2A0E3F]">Formulation Preferences</h3>
-                        <p className="text-[12px] text-[#5B4A6E] font-medium">Specify active ingredient profiles and batch specs</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-[13px] font-bold text-[#2A0E3F]">Formula Type</label>
-                        <select
-                          value={formulaType}
-                          onChange={(e) => setFormulaType(e.target.value)}
-                          className="w-full bg-white border border-[#E8DEEF] focus:border-[#C9A961] rounded-xl px-4 py-3.5 text-[14px] font-medium text-[#2A0E3F] outline-none cursor-pointer"
-                        >
-                          <option value="Custom Formulation">Custom Formulation (R&amp;D From Scratch)</option>
-                          <option value="White Label / Private Label">White Label (Ready Stock Formula)</option>
-                          <option value="Semi-Custom (Base + Actives)">Semi-Custom (Base + Selected Actives)</option>
-                        </select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-[13px] font-bold text-[#2A0E3F]">Target MOQ Range</label>
-                        <select
-                          value={targetMOQ}
-                          onChange={(e) => setTargetMOQ(e.target.value)}
-                          className="w-full bg-white border border-[#E8DEEF] focus:border-[#C9A961] rounded-xl px-4 py-3.5 text-[14px] font-medium text-[#2A0E3F] outline-none cursor-pointer"
-                        >
-                          <option value="500 - 1,000">500 - 1,000 units</option>
-                          <option value="1,000 - 5,000">1,000 - 5,000 units</option>
-                          <option value="5,000 - 10,000">5,000 - 10,000 units</option>
-                          <option value="10,000+">10,000+ units</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 pt-2">
-                      <label className="text-[13px] font-bold text-[#2A0E3F]">Compliance &amp; Certifications Required</label>
-                      <div className="flex flex-wrap gap-3">
-                        {[
-                          'Clean Beauty (Credo Standard)',
-                          'Vegan',
-                          'Cruelty-Free (Leaping Bunny)',
-                          'ISO 22716',
-                          'WHO-GMP Certified'
-                        ].map((item) => {
-                          const isChecked = selectedCompliance.includes(item);
-                          return (
-                            <button
-                              key={item}
-                              type="button"
-                              onClick={() => toggleCompliance(item)}
-                              className={`px-3.5 py-2 rounded-xl text-[12.5px] font-bold border transition-all flex items-center gap-2 cursor-pointer ${
-                                isChecked
-                                  ? 'bg-[#6B2D8C] border-[#6B2D8C] text-white shadow-xs'
-                                  : 'bg-white border-[#E8DEEF] text-[#5B4A6E] hover:border-[#6B2D8C]'
-                              }`}
-                            >
-                              {isChecked && <Check className="w-3.5 h-3.5" />}
-                              <span>{item}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </section>
+                  <FormulationBuilder
+                    value={formulation}
+                    onChange={handleFormulationChange}
+                    showValidationError={showFormulationError}
+                  />
                 )}
 
                 <hr className="border-[#F4F0E9]" />
@@ -955,7 +826,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                     rows={5}
                     value={details}
                     onChange={(e) => setDetails(e.target.value)}
-                    placeholder="Describe your exact formulation needs, key active ingredients, texture preferences, fragrance profiles, and any specific packaging compatibility requirements..."
+                    placeholder="Anything else you'd like to tell manufacturers? (optional) — e.g., who will use it, the feel you want, or packaging you love..."
                     className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:ring-2 focus:ring-[#C9A961]/20 rounded-2xl p-4 text-[13.5px] font-medium text-[#2A0E3F] outline-none resize-y"
                   />
 
@@ -1286,11 +1157,11 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                         <div className="flex items-center gap-1.5 flex-wrap text-[13px]">
                           <span className="bg-white text-[#2A0E3F] font-bold px-3 py-1 rounded-lg border border-[#E8DEEF] shadow-2xs flex items-center gap-1.5">
                             <Sparkles className="w-3.5 h-3.5 text-[#6B2D8C]" />
-                            {category}
+                            {taxonomy.primaryCategory}
                           </span>
                           <ChevronRight className="w-4 h-4 text-[#6B2D8C]/60 shrink-0" />
-                          {selectedSubcategories.length > 0 ? (
-                            selectedSubcategories.map((subItem) => (
+                          {taxonomy.selectedSubcategories.length > 0 ? (
+                            taxonomy.selectedSubcategories.map((subItem) => (
                               <span key={subItem} className="bg-[#6B2D8C] text-white font-bold px-3 py-1 rounded-lg text-[12px] shadow-2xs flex items-center gap-1">
                                 <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                                 {subItem}
@@ -1299,11 +1170,21 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                           ) : (
                             <span className="bg-[#6B2D8C] text-white font-bold px-3 py-1 rounded-lg text-[12px] shadow-2xs flex items-center gap-1">
                               <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                              {subcategory || 'General'}
+                              {taxonomy.subcategory || 'General'}
                             </span>
                           )}
                         </div>
                       </div>
+
+                      {/* Ultra-simple custom product summary (plain language, zero jargon) */}
+                      {requirementType === 'oem' && (
+                        <div className="bg-gradient-to-r from-[#F5EEF8] to-[#FDFBF7] border border-[#E8D5F2] rounded-xl px-4 py-3 mb-5 flex items-center gap-3 relative z-10">
+                          <Sparkles className="w-5 h-5 text-[#6B2D8C] shrink-0" />
+                          <p className="text-[13px] font-extrabold text-[#6B2D8C] leading-snug">
+                            {buildFormulationSummaryLine(formulation)}
+                          </p>
+                        </div>
+                      )}
 
                       <div className="flex flex-col md:flex-row gap-6 relative z-10">
                         {/* Product Image Card */}
@@ -1317,7 +1198,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                             <div className="absolute inset-0 bg-black/10"></div>
                           </div>
                           <p className="text-[12px] font-bold text-center mt-2.5 text-[#5B4A6E] truncate">
-                            {category} - {selectedSubcategories.length > 0 ? selectedSubcategories.join(', ') : subcategory || 'All Subcategories'}
+                            {taxonomy.primaryCategory} - {taxonomy.selectedSubcategories.length > 0 ? taxonomy.selectedSubcategories.join(', ') : taxonomy.subcategory || 'All Subcategories'}
                           </p>
                         </div>
 
@@ -1414,12 +1295,17 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                             {cert}
                           </span>
                         ))}
-                        {selectedCompliance.map((item) => (
-                          <span key={item} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e2bdc7]/30 text-[#5a3f47] font-bold text-[12px] rounded-full border border-[#e2bdc7]">
-                            <Check className="w-3 h-3 text-emerald-600" />
-                            {item}
-                          </span>
-                        ))}
+                        {requirementType === 'oem' &&
+                          formulation.benefits.map((id) => {
+                            const benefit = BENEFIT_OPTIONS.find((b) => b.id === id);
+                            if (!benefit) return null;
+                            return (
+                              <span key={id} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e2bdc7]/30 text-[#5a3f47] font-bold text-[12px] rounded-full border border-[#e2bdc7]">
+                                <Check className="w-3 h-3 text-emerald-600" />
+                                {benefit.label}
+                              </span>
+                            );
+                          })}
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 font-bold text-[12px] rounded-full border border-emerald-200">
                           <Clock className="w-3 h-3" />
                           SLA: {preferredResponseTime}
