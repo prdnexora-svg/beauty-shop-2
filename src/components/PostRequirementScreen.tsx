@@ -27,6 +27,8 @@ import {
   Filter
 } from 'lucide-react';
 import { db } from '../db/database';
+import { SearchableProductCombobox } from './SearchableProductCombobox';
+import type { ProductTemplate } from '../data/productTemplates';
 import { ProductTaxonomySelector } from './ProductTaxonomySelector';
 import {
   createInitialTaxonomyState,
@@ -190,6 +192,23 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
   const handleTaxonomyChange = (next: TaxonomySelectionState) => {
     setTaxonomy(next);
     setShowTaxonomyError(false);
+  };
+
+  // Searchable combobox: picking a popular product template auto-fills the
+  // requirement name AND selects its Primary Category + Subcategories
+  // (plus matching benefit cards in the simple formulation builder).
+  const handleSelectProductTemplate = (template: ProductTemplate) => {
+    setProductName(template.name);
+    setTaxonomy(createInitialTaxonomyState(template.category, template.subcategories));
+    setShowTaxonomyError(false);
+    if (requirementType === 'oem' && template.benefits?.length) {
+      const validBenefits = template.benefits.filter((id) =>
+        BENEFIT_OPTIONS.some((b) => b.id === id)
+      );
+      if (validBenefits.length > 0) {
+        setFormulation((prev) => ({ ...prev, benefits: validBenefits }));
+      }
+    }
   };
 
   const handleStep1Next = () => {
@@ -623,14 +642,16 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                   <div className="space-y-2">
                     <label className="text-[13px] font-bold text-[#2A0E3F] flex items-center justify-between">
                       <span>Product Name / Specific Requirement <span className="text-[#E11D48]">*</span></span>
+                      <span className="text-[11px] font-semibold text-[#8B7FA3]">Search popular products as you type</span>
                     </label>
-                    <input
-                      type="text"
+                    <SearchableProductCombobox
                       value={productName}
-                      onChange={(e) => setProductName(e.target.value)}
-                      placeholder="e.g., My Salon's Glow Serum"
-                      className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:ring-2 focus:ring-[#C9A961]/20 rounded-xl px-4 py-3.5 text-[14px] font-medium text-[#2A0E3F] outline-none transition-all"
+                      onChange={setProductName}
+                      onSelectTemplate={handleSelectProductTemplate}
                     />
+                    <p className="text-[11.5px] text-[#8B7FA3] font-medium">
+                      Pick a suggestion to auto-fill your category &amp; subcategories — or simply type your own product name.
+                    </p>
                   </div>
 
                   {/* 2a. Primary Category + Subcategory Multi-Select (Active Taxonomy Path) */}
