@@ -27,7 +27,12 @@ import {
   Filter
 } from 'lucide-react';
 import { db } from '../db/database';
-import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../data/categories';
+import { ProductTaxonomySelector } from './ProductTaxonomySelector';
+import {
+  createInitialTaxonomyState,
+  isTaxonomySelectionValid,
+  type TaxonomySelectionState
+} from './taxonomyFormHandler';
 import { FormulationBuilder } from './FormulationBuilder';
 import {
   DEFAULT_FORMULATION,
@@ -56,9 +61,11 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
   // Step 1: Requirement Details
   const [requirementType, setRequirementType] = useState<'oem' | 'supply' | 'ingredients' | 'packaging'>('oem');
   const [productName, setProductName] = useState('My Custom Brightening Serum');
-  const [category, setCategory] = useState('Skincare');
-  const [subcategory, setSubcategory] = useState('Serums & Treatments');
-  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(['Serums & Treatments']);
+  // Primary Category + Subcategory Multi-Select (Active Taxonomy Path)
+  const [taxonomy, setTaxonomy] = useState<TaxonomySelectionState>(
+    createInitialTaxonomyState('Skincare', ['Serums & Treatments'])
+  );
+  const [showTaxonomyError, setShowTaxonomyError] = useState(false);
   const [selectedVisualRefs, setSelectedVisualRefs] = useState<string[]>(['dropper', 'pump']);
 
   // Dynamic OEM / Formulation — ultra-simple, zero-technical builder state
@@ -178,9 +185,22 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
     }
   };
 
+  // Taxonomy: Primary Category dropdown auto-clears subcategory pills on change;
+  // multi-select pills update the Active Taxonomy Path chips instantly.
+  const handleTaxonomyChange = (next: TaxonomySelectionState) => {
+    setTaxonomy(next);
+    setShowTaxonomyError(false);
+  };
+
   const handleStep1Next = () => {
     if (!productName.trim() || !quantity.trim()) {
       setErrorMessage('Please provide a product name and sourcing quantity.');
+      return;
+    }
+    if (!isTaxonomySelectionValid(taxonomy)) {
+      setShowTaxonomyError(true);
+      setErrorMessage('Please pick at least one subcategory for your primary category.');
+      window.scrollTo({ top: 320, behavior: 'smooth' });
       return;
     }
     if (requirementType === 'oem' && !isFormulationValid(formulation)) {
@@ -215,7 +235,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
         supplier_id: null,
         product_id: null,
         requirement_title: productName,
-        category: category,
+        category: taxonomy.primaryCategory,
         quantity_required: parseInt(quantity, 10) || 1000,
         quantity_unit: unit,
         target_budget: totalBudget ? parseFloat(totalBudget) : (parseFloat(targetUnitPrice) * (parseInt(quantity, 10) || 1000)),
@@ -613,138 +633,12 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                     />
                   </div>
 
-                  {/* Selection Path Visual Feedback Banner */}
-                  <div className="bg-[#F5EEF8] border border-[#F0D5E3] rounded-2xl p-4 space-y-2 transition-all">
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <div className="flex items-center gap-2 text-[11.5px] font-extrabold text-[#5B4A6E] tracking-wider uppercase">
-                        <FolderTree className="w-4 h-4 text-[#6B2D8C]" />
-                        <span>Active Taxonomy Path</span>
-                      </div>
-                      {selectedSubcategories.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedSubcategories([]);
-                            setSubcategory('');
-                          }}
-                          className="text-[11px] font-bold text-[#6B2D8C] hover:underline cursor-pointer"
-                        >
-                          Clear Selection ({selectedSubcategories.length})
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2 flex-wrap text-[13px]">
-                      <span className="bg-white text-[#6B2D8C] font-extrabold px-3 py-1.5 rounded-lg border border-[#f0d5e3] shadow-2xs flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-[#6B2D8C]" />
-                        {category}
-                      </span>
-                      <ChevronRight className="w-4 h-4 text-[#6B2D8C]/60 shrink-0" />
-                      {selectedSubcategories.length > 0 ? (
-                        <div className="flex flex-wrap gap-1.5 items-center">
-                          {selectedSubcategories.map((subItem) => (
-                            <span
-                              key={subItem}
-                              className="bg-[#6B2D8C] text-white font-bold px-3 py-1 rounded-lg text-[12px] flex items-center gap-1.5 shadow-2xs"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                              {subItem}
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const updated = selectedSubcategories.filter(s => s !== subItem);
-                                  setSelectedSubcategories(updated);
-                                  setSubcategory(updated[0] || '');
-                                }}
-                                className="hover:bg-white/20 rounded-full p-0.5 transition-colors cursor-pointer"
-                              >
-                                <X className="w-3 h-3 text-white" />
-                              </button>
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-[#8B7FA3] text-[12.5px] italic font-medium">
-                          Select one or more subcategories below
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      {/* Category Selection */}
-                      <div className="space-y-2">
-                        <label className="text-[13px] font-bold text-[#2A0E3F] flex items-center justify-between">
-                          <span>Primary Category <span className="text-[#E11D48]">*</span></span>
-                          <span className="text-[11px] font-semibold text-[#8B7FA3]">Auto-clears subcategories on change</span>
-                        </label>
-                        <select
-                          value={category}
-                          onChange={(e) => {
-                            const newCategory = e.target.value;
-                            setCategory(newCategory);
-                            // Auto-clear subcategories on main category change
-                            setSelectedSubcategories([]);
-                            setSubcategory('');
-                          }}
-                          className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] rounded-xl px-4 py-3.5 text-[14px] font-medium text-[#2A0E3F] outline-none cursor-pointer transition-all"
-                        >
-                          {Object.keys(CATEGORY_TAXONOMY).map((catName) => (
-                            <option key={catName} value={catName}>
-                              {catName}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Subcategory Multi-Select */}
-                      <div className="space-y-2">
-                        <label className="text-[13px] font-bold text-[#2A0E3F] flex items-center justify-between">
-                          <span>Subcategory Multi-Select <span className="text-[#E11D48]">*</span></span>
-                          <span className="text-[11px] font-extrabold text-[#6B2D8C]">
-                            {selectedSubcategories.length} Selected
-                          </span>
-                        </label>
-
-                        {/* Interactive Pill Chips */}
-                        <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-3 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl">
-                          {getSubcategoriesForCategoryName(category).map((subItem) => {
-                            const isSelected = selectedSubcategories.includes(subItem);
-                            return (
-                              <button
-                                key={subItem}
-                                type="button"
-                                onClick={() => {
-                                  let updated: string[];
-                                  if (isSelected) {
-                                    updated = selectedSubcategories.filter(s => s !== subItem);
-                                  } else {
-                                    updated = [...selectedSubcategories, subItem];
-                                  }
-                                  setSelectedSubcategories(updated);
-                                  setSubcategory(updated[0] || '');
-                                }}
-                                className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                                  isSelected
-                                    ? 'bg-[#6B2D8C] text-white shadow-2xs border border-[#6B2D8C]'
-                                    : 'bg-white text-[#2A0E3F] border border-[#E8DEEF] hover:border-[#6B2D8C] hover:bg-[#F5EEF8]'
-                                }`}
-                              >
-                                {isSelected ? (
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-white shrink-0" />
-                                ) : (
-                                  <Plus className="w-3.5 h-3.5 text-[#8B7FA3] shrink-0" />
-                                )}
-                                <span>{subItem}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-
+                  {/* 2a. Primary Category + Subcategory Multi-Select (Active Taxonomy Path) */}
+                  <ProductTaxonomySelector
+                    value={taxonomy}
+                    onChange={handleTaxonomyChange}
+                    showValidationError={showTaxonomyError}
+                  >
                     {/* Visual Reference Thumbnails */}
                     <div className="space-y-2">
                       <label className="text-[13px] font-bold text-[#2A0E3F] flex items-center justify-between">
@@ -789,7 +683,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                         </label>
                       </div>
                     </div>
-                  </div>
+                  </ProductTaxonomySelector>
                 </section>
 
                 {/* 3. Dynamic OEM / Formulation Preferences — Ultra-Simple, Zero-Technical */}
@@ -1242,11 +1136,11 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                         <div className="flex items-center gap-1.5 flex-wrap text-[13px]">
                           <span className="bg-white text-[#2A0E3F] font-bold px-3 py-1 rounded-lg border border-[#E8DEEF] shadow-2xs flex items-center gap-1.5">
                             <Sparkles className="w-3.5 h-3.5 text-[#6B2D8C]" />
-                            {category}
+                            {taxonomy.primaryCategory}
                           </span>
                           <ChevronRight className="w-4 h-4 text-[#6B2D8C]/60 shrink-0" />
-                          {selectedSubcategories.length > 0 ? (
-                            selectedSubcategories.map((subItem) => (
+                          {taxonomy.selectedSubcategories.length > 0 ? (
+                            taxonomy.selectedSubcategories.map((subItem) => (
                               <span key={subItem} className="bg-[#6B2D8C] text-white font-bold px-3 py-1 rounded-lg text-[12px] shadow-2xs flex items-center gap-1">
                                 <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                                 {subItem}
@@ -1255,7 +1149,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                           ) : (
                             <span className="bg-[#6B2D8C] text-white font-bold px-3 py-1 rounded-lg text-[12px] shadow-2xs flex items-center gap-1">
                               <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                              {subcategory || 'General'}
+                              {taxonomy.subcategory || 'General'}
                             </span>
                           )}
                         </div>
@@ -1283,7 +1177,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                             <div className="absolute inset-0 bg-black/10"></div>
                           </div>
                           <p className="text-[12px] font-bold text-center mt-2.5 text-[#5B4A6E] truncate">
-                            {category} - {selectedSubcategories.length > 0 ? selectedSubcategories.join(', ') : subcategory || 'All Subcategories'}
+                            {taxonomy.primaryCategory} - {taxonomy.selectedSubcategories.length > 0 ? taxonomy.selectedSubcategories.join(', ') : taxonomy.subcategory || 'All Subcategories'}
                           </p>
                         </div>
 
