@@ -21,7 +21,6 @@ import {
   DollarSign,
   FileSpreadsheet,
   Info,
-  Sliders,
   Award,
   Download,
   FolderTree,
@@ -29,6 +28,16 @@ import {
 } from 'lucide-react';
 import { db } from '../db/database';
 import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../data/categories';
+import { FormulationBuilder } from './FormulationBuilder';
+import {
+  DEFAULT_FORMULATION,
+  QUANTITY_OPTIONS,
+  BENEFIT_OPTIONS,
+  buildFormulationBrief,
+  buildFormulationSummaryLine,
+  isFormulationValid,
+  type SimpleFormulationState
+} from './formulationPreferences';
 
 interface PostRequirementScreenProps {
   onNavigateToExplore: () => void;
@@ -46,16 +55,15 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
 
   // Step 1: Requirement Details
   const [requirementType, setRequirementType] = useState<'oem' | 'supply' | 'ingredients' | 'packaging'>('oem');
-  const [productName, setProductName] = useState('Vitamin C Brightening Serum (15% Ascorbic Acid)');
+  const [productName, setProductName] = useState('My Custom Brightening Serum');
   const [category, setCategory] = useState('Skincare');
   const [subcategory, setSubcategory] = useState('Serums & Treatments');
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(['Serums & Treatments']);
   const [selectedVisualRefs, setSelectedVisualRefs] = useState<string[]>(['dropper', 'pump']);
-  
-  // Dynamic OEM / Formulation
-  const [formulaType, setFormulaType] = useState('Custom Formulation');
-  const [targetMOQ, setTargetMOQ] = useState('1,000 - 5,000');
-  const [selectedCompliance, setSelectedCompliance] = useState<string[]>(['Clean Beauty (Credo Standard)', 'Vegan', 'Cruelty-Free (Leaping Bunny)']);
+
+  // Dynamic OEM / Formulation — ultra-simple, zero-technical builder state
+  const [formulation, setFormulation] = useState<SimpleFormulationState>(DEFAULT_FORMULATION);
+  const [showFormulationError, setShowFormulationError] = useState(false);
   
   // Quantities & Commercials
   const [quantity, setQuantity] = useState('2500');
@@ -66,7 +74,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
   
   // Specifications
   const [details, setDetails] = useState(
-    'Seeking WHO-GMP certified OEM lab to manufacture 15% L-Ascorbic Acid Serum stabilized with 1% Ferulic Acid & Vitamin E. Fragrance-free, amber glass bottle with UV coating. Target shelf life 24 months.'
+    'Looking for a gentle, everyday-use custom product for my salon clients. Should feel light, absorb quickly, and suit all skin types.'
   );
   const [requireSamples, setRequireSamples] = useState<'yes' | 'no'>('yes');
   
@@ -113,7 +121,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
 
   const handleInsertTemplate = () => {
     setDetails(
-      'Formula Spec: 15% L-Ascorbic Acid + 1% Ferulic Acid + Hyaluronic Acid. Texture: Lightweight fast-absorbing water-gel. Packaging: 30ml Amber Glass Dropper Bottle with Matte Pink Collar. Compliance: Clean Beauty, Vegan, Micro-Biological Challenge Tested. Target Shelf Life: 24 Months.'
+      'Looking for a light, everyday product my clients can use morning and night. It should absorb quickly, layers well under makeup, and suit sensitive skin. Lab-tested samples appreciated before the full batch.'
     );
   };
 
@@ -134,11 +142,15 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
     setAttachments(attachments.filter((f) => f.id !== id));
   };
 
-  const toggleCompliance = (item: string) => {
-    if (selectedCompliance.includes(item)) {
-      setSelectedCompliance(selectedCompliance.filter((i) => i !== item));
-    } else {
-      setSelectedCompliance([...selectedCompliance, item]);
+  // Ultra-simple formulation builder: keep RFQ records in sync with the
+  // friendly picks (bottle count feeds the sourcing quantity field).
+  const handleFormulationChange = (next: SimpleFormulationState) => {
+    setFormulation(next);
+    setShowFormulationError(false);
+    const bottleCount = QUANTITY_OPTIONS.find((q) => q.id === next.quantity)?.bottles;
+    if (bottleCount) {
+      setQuantity(String(bottleCount));
+      setUnit('Units');
     }
   };
 
@@ -171,6 +183,13 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
       setErrorMessage('Please provide a product name and sourcing quantity.');
       return;
     }
+    if (requirementType === 'oem' && !isFormulationValid(formulation)) {
+      setShowFormulationError(true);
+      setErrorMessage('Please pick at least one benefit card for your custom product — one tap is enough.');
+      window.scrollTo({ top: 320, behavior: 'smooth' });
+      return;
+    }
+    setShowFormulationError(false);
     setErrorMessage('');
     setCurrentStep(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -201,7 +220,9 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
         quantity_unit: unit,
         target_budget: totalBudget ? parseFloat(totalBudget) : (parseFloat(targetUnitPrice) * (parseInt(quantity, 10) || 1000)),
         delivery_location: deliveryCity,
-        details: `${details}\n\nCompliance: ${selectedCompliance.join(', ')}\nPackaging: ${selectedVisualRefs.join(', ')}\nSupplier Notes: ${additionalSupplierNotes}`,
+        details: requirementType === 'oem'
+          ? `${details}\n\n${buildFormulationBrief(formulation)}\nPackaging: ${selectedVisualRefs.join(', ')}\nSupplier Notes: ${additionalSupplierNotes}`
+          : `${details}\n\nPackaging: ${selectedVisualRefs.join(', ')}\nSupplier Notes: ${additionalSupplierNotes}`,
         attachments: attachments.map(a => a.name),
         status: 'new',
         type: 'public_rfq',
@@ -587,7 +608,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                       type="text"
                       value={productName}
                       onChange={(e) => setProductName(e.target.value)}
-                      placeholder="e.g., Vitamin C Brightening Serum (15% Ascorbic Acid)"
+                      placeholder="e.g., My Salon's Glow Serum"
                       className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:ring-2 focus:ring-[#C9A961]/20 rounded-xl px-4 py-3.5 text-[14px] font-medium text-[#2A0E3F] outline-none transition-all"
                     />
                   </div>
@@ -771,78 +792,13 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                   </div>
                 </section>
 
-                {/* 3. Dynamic OEM / Formulation Preferences */}
+                {/* 3. Dynamic OEM / Formulation Preferences — Ultra-Simple, Zero-Technical */}
                 {requirementType === 'oem' && (
-                  <section className="bg-[#F6F1FA] p-6 md:p-8 rounded-2xl border border-[#E8DEEF] space-y-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#F5EEF8] text-[#6B2D8C] flex items-center justify-center font-bold">
-                        <Sliders className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="text-base font-extrabold text-[#2A0E3F]">Formulation Preferences</h3>
-                        <p className="text-[12px] text-[#5B4A6E] font-medium">Specify active ingredient profiles and batch specs</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-[13px] font-bold text-[#2A0E3F]">Formula Type</label>
-                        <select
-                          value={formulaType}
-                          onChange={(e) => setFormulaType(e.target.value)}
-                          className="w-full bg-white border border-[#E8DEEF] focus:border-[#C9A961] rounded-xl px-4 py-3.5 text-[14px] font-medium text-[#2A0E3F] outline-none cursor-pointer"
-                        >
-                          <option value="Custom Formulation">Custom Formulation (R&amp;D From Scratch)</option>
-                          <option value="White Label / Private Label">White Label (Ready Stock Formula)</option>
-                          <option value="Semi-Custom (Base + Actives)">Semi-Custom (Base + Selected Actives)</option>
-                        </select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-[13px] font-bold text-[#2A0E3F]">Target MOQ Range</label>
-                        <select
-                          value={targetMOQ}
-                          onChange={(e) => setTargetMOQ(e.target.value)}
-                          className="w-full bg-white border border-[#E8DEEF] focus:border-[#C9A961] rounded-xl px-4 py-3.5 text-[14px] font-medium text-[#2A0E3F] outline-none cursor-pointer"
-                        >
-                          <option value="500 - 1,000">500 - 1,000 units</option>
-                          <option value="1,000 - 5,000">1,000 - 5,000 units</option>
-                          <option value="5,000 - 10,000">5,000 - 10,000 units</option>
-                          <option value="10,000+">10,000+ units</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 pt-2">
-                      <label className="text-[13px] font-bold text-[#2A0E3F]">Compliance &amp; Certifications Required</label>
-                      <div className="flex flex-wrap gap-3">
-                        {[
-                          'Clean Beauty (Credo Standard)',
-                          'Vegan',
-                          'Cruelty-Free (Leaping Bunny)',
-                          'ISO 22716',
-                          'WHO-GMP Certified'
-                        ].map((item) => {
-                          const isChecked = selectedCompliance.includes(item);
-                          return (
-                            <button
-                              key={item}
-                              type="button"
-                              onClick={() => toggleCompliance(item)}
-                              className={`px-3.5 py-2 rounded-xl text-[12.5px] font-bold border transition-all flex items-center gap-2 cursor-pointer ${
-                                isChecked
-                                  ? 'bg-[#6B2D8C] border-[#6B2D8C] text-white shadow-xs'
-                                  : 'bg-white border-[#E8DEEF] text-[#5B4A6E] hover:border-[#6B2D8C]'
-                              }`}
-                            >
-                              {isChecked && <Check className="w-3.5 h-3.5" />}
-                              <span>{item}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </section>
+                  <FormulationBuilder
+                    value={formulation}
+                    onChange={handleFormulationChange}
+                    showValidationError={showFormulationError}
+                  />
                 )}
 
                 <hr className="border-[#F4F0E9]" />
@@ -955,7 +911,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                     rows={5}
                     value={details}
                     onChange={(e) => setDetails(e.target.value)}
-                    placeholder="Describe your exact formulation needs, key active ingredients, texture preferences, fragrance profiles, and any specific packaging compatibility requirements..."
+                    placeholder="Anything else you'd like to tell manufacturers? (optional) — e.g., who will use it, the feel you want, or packaging you love..."
                     className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:ring-2 focus:ring-[#C9A961]/20 rounded-2xl p-4 text-[13.5px] font-medium text-[#2A0E3F] outline-none resize-y"
                   />
 
@@ -1305,6 +1261,16 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                         </div>
                       </div>
 
+                      {/* Ultra-simple custom product summary (plain language, zero jargon) */}
+                      {requirementType === 'oem' && (
+                        <div className="bg-gradient-to-r from-[#F5EEF8] to-[#FDFBF7] border border-[#E8D5F2] rounded-xl px-4 py-3 mb-5 flex items-center gap-3 relative z-10">
+                          <Sparkles className="w-5 h-5 text-[#6B2D8C] shrink-0" />
+                          <p className="text-[13px] font-extrabold text-[#6B2D8C] leading-snug">
+                            {buildFormulationSummaryLine(formulation)}
+                          </p>
+                        </div>
+                      )}
+
                       <div className="flex flex-col md:flex-row gap-6 relative z-10">
                         {/* Product Image Card */}
                         <div className="w-full md:w-1/3 bg-[#FDFBF7] rounded-xl p-2.5 border border-[#E8DEEF] shadow-3xs shrink-0 flex flex-col justify-between">
@@ -1414,12 +1380,17 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                             {cert}
                           </span>
                         ))}
-                        {selectedCompliance.map((item) => (
-                          <span key={item} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e2bdc7]/30 text-[#5a3f47] font-bold text-[12px] rounded-full border border-[#e2bdc7]">
-                            <Check className="w-3 h-3 text-emerald-600" />
-                            {item}
-                          </span>
-                        ))}
+                        {requirementType === 'oem' &&
+                          formulation.benefits.map((id) => {
+                            const benefit = BENEFIT_OPTIONS.find((b) => b.id === id);
+                            if (!benefit) return null;
+                            return (
+                              <span key={id} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e2bdc7]/30 text-[#5a3f47] font-bold text-[12px] rounded-full border border-[#e2bdc7]">
+                                <Check className="w-3 h-3 text-emerald-600" />
+                                {benefit.label}
+                              </span>
+                            );
+                          })}
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 font-bold text-[12px] rounded-full border border-emerald-200">
                           <Clock className="w-3 h-3" />
                           SLA: {preferredResponseTime}

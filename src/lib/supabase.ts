@@ -446,6 +446,5 @@ export const parseAuthIdentifier = (raw: string) => {
 };
 export const phoneOtpAllowed = () => false;
 export const toE164Phone = (raw: string) => ({ value: raw, ok: false, error: 'Phone not supported' });
-export type AuthFailureKind = 'invalid_email' | 'credentials' | 'rate_limited' | 'network' | 'unknown';
 export type OtpChannel = 'email' | 'sms' | 'whatsapp';
 export type PhoneCapability = 'disabled' | 'unknown' | 'available' | 'unavailable';
