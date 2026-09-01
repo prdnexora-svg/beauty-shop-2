@@ -633,9 +633,14 @@ class RelationalDatabase {
 
   public getUserByEmailOrPhone(identifier: string): DBUser | undefined {
     const clean = identifier.trim().toLowerCase();
-    return this.state.users.find(
-      (u) => u.email.toLowerCase() === clean || u.phone.replace(/\s+/g, '') === clean.replace(/\s+/g, '')
-    );
+    const cleanCompact = clean.replace(/\s+/g, '');
+    return this.state.users.find((u) => {
+      if (u.email.toLowerCase() === clean) return true;
+      // phone is nullable since migration 0006 — never match a phone-less
+      // account, and never dereference a missing value.
+      if (!u.phone) return false;
+      return u.phone.replace(/\s+/g, '') === cleanCompact;
+    });
   }
 
   public getUserById(id: string): DBUser | undefined {

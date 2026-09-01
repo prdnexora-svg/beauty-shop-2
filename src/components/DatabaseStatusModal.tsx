@@ -108,12 +108,12 @@ interface ColumnDef {
 const TABLE_SCHEMAS: Record<keyof DatabaseState, { title: string; description: string; columns: ColumnDef[] }> = {
   users: {
     title: 'users',
-    description: 'System credentials, email/phone hash, RBAC roles (buyer, supplier, admin)',
+    description: 'Mirror of auth.users (populated by the on_auth_user_created trigger). Email + RBAC roles; credentials stay in auth.users.',
     columns: [
       { name: 'id', type: 'UUID', isPk: true, description: 'Primary Key, unique user identifier' },
       { name: 'email', type: 'VARCHAR(255)', description: 'Unique user email address' },
-      { name: 'phone', type: 'VARCHAR(20)', description: 'E.164 verified mobile phone number' },
-      { name: 'password_hash', type: 'VARCHAR(255)', description: 'Encrypted password credential' },
+      { name: 'phone', type: 'VARCHAR(20) NULL', description: 'Optional E.164 mobile number. NULL for email/password & OAuth signups' },
+      { name: 'password_hash', type: 'VARCHAR(255) NULL', description: 'Deprecated — credentials are owned by auth.users (bcrypt). Always NULL' },
       { name: 'role', type: 'VARCHAR(32)', description: 'Enum: buyer | supplier | admin | guest' },
       { name: 'created_at', type: 'TIMESTAMP', description: 'Account creation timestamp' },
       { name: 'updated_at', type: 'TIMESTAMP', description: 'Last profile modification' }
@@ -323,12 +323,18 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   email VARCHAR(255) UNIQUE NOT NULL,
-  phone VARCHAR(50) UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  role VARCHAR(20) NOT NULL CHECK (role IN ('buyer', 'supplier', 'admin')),
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  phone VARCHAR(20) UNIQUE,          -- nullable: no phone collected at signup
+  password_hash VARCHAR(255),        -- nullable: credentials live in auth.users
+  role VARCHAR(32) NOT NULL CHECK (role IN ('buyer', 'supplier', 'admin', 'guest')),
+  created_at TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'UTC'),
+  updated_at TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'UTC')
 );
+
+-- Auto-create the public.users mirror row on every auth.users INSERT.
+-- SECURITY DEFINER: RLS needs auth.uid() = id, unsatisfiable at signup time.
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_auth_user();
 
 -- 2. PROFILES_BUYER
 CREATE TABLE IF NOT EXISTS profiles_buyer (

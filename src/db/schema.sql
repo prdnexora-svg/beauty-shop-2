@@ -9,12 +9,70 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   email VARCHAR(255) UNIQUE NOT NULL,
-  phone VARCHAR(50) UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  role VARCHAR(20) NOT NULL CHECK (role IN ('buyer', 'supplier', 'admin')),
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  -- Optional: email + password is the only supported credential pair.
+  -- NULL for every email/password and OAuth signup. UNIQUE still permits
+  -- multiple NULLs in Postgres.
+  phone VARCHAR(20) UNIQUE,
+  -- Deprecated. Credentials are owned by auth.users (GoTrue/bcrypt) and are
+  -- never mirrored here; always NULL for trigger-created rows.
+  password_hash VARCHAR(255),
+  role VARCHAR(32) NOT NULL CHECK (role IN ('buyer', 'supplier', 'admin', 'guest')),
+  created_at TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'UTC'),
+  updated_at TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'UTC')
 );
+
+CREATE INDEX IF NOT EXISTS users_role_idx ON users(role);
+
+-- ----------------------------------------------------------------------------
+-- 1a. AUTH MIRROR TRIGGER
+-- ----------------------------------------------------------------------------
+-- Every auth.users row automatically gets a matching public.users row.
+-- SECURITY DEFINER is required: the RLS policy needs auth.uid() = id, which is
+-- not satisfied at the instant the auth row is created.
+-- Canonical definition lives in migrations/0006; kept here so a fresh install
+-- from schema.sql alone is functionally identical.
+CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  resolved_role TEXT;
+BEGIN
+  resolved_role := COALESCE(NEW.raw_user_meta_data ->> 'role', 'buyer');
+  IF resolved_role NOT IN ('buyer', 'supplier') THEN
+    resolved_role := 'buyer';
+  END IF;
+
+  INSERT INTO public.users (id, email, phone, password_hash, role, created_at, updated_at)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.email, ''),
+    NULLIF(btrim(COALESCE(NEW.phone, '')), ''),
+    NULL,
+    resolved_role,
+    COALESCE(NEW.created_at AT TIME ZONE 'UTC', NOW() AT TIME ZONE 'UTC'),
+    NOW() AT TIME ZONE 'UTC'
+  )
+  ON CONFLICT (id) DO UPDATE
+    SET email      = EXCLUDED.email,
+        phone      = COALESCE(EXCLUDED.phone, public.users.phone),
+        updated_at = NOW() AT TIME ZONE 'UTC';
+
+  RETURN NEW;
+EXCEPTION
+  WHEN OTHERS THEN
+    RAISE WARNING 'handle_new_auth_user failed for %: %', NEW.id, SQLERRM;
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_auth_user();
 
 -- 2. PROFILES_BUYER TABLE
 CREATE TABLE IF NOT EXISTS profiles_buyer (

@@ -5,13 +5,17 @@
 export type UserRole = 'guest' | 'buyer' | 'supplier' | 'admin';
 
 export interface DBUser {
-  id: string; // UUID Primary Key
-  email: string;
-  phone: string;
-  password_hash: string;
-  role: UserRole;
-  created_at: string;
-  updated_at: string;
+  id: string; // UUID  - PRIMARY KEY, unique user identifier
+  email: string; // VARCHAR(255)  - unique user email address
+  // VARCHAR(20) NULLABLE - optional E.164 mobile number. NULL for every
+  // email/password and OAuth signup; phone is not collected at registration.
+  phone?: string | null;
+  // VARCHAR(255) NULLABLE - deprecated. Credentials are owned by auth.users
+  // (GoTrue/bcrypt) and are never mirrored into this table.
+  password_hash?: string | null;
+  role: UserRole; // VARCHAR(32)   - buyer | supplier | admin | guest
+  created_at: string; // TIMESTAMP     - account creation timestamp
+  updated_at: string; // TIMESTAMP     - last profile modification
 }
 
 export type BuyerBusinessType = 'Salon' | 'Spa' | 'Retailer' | 'Distributor' | 'Brand Owner' | 'Cosmetic Clinic' | 'E-commerce Brand';

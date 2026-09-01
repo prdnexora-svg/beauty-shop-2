@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, CheckCircle2, ArrowRight, Building2, ShoppingBag, Mail, Lock, Eye, EyeOff, AlertCircle, Info } from 'lucide-react';
-import { useSupabase } from '../lib/supabase';
+import { useSupabase, MIN_PASSWORD_LENGTH, EMAIL_REGEX } from '../lib/supabase';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -9,8 +9,6 @@ interface AuthModalProps {
   initialMode?: 'login' | 'register';
   isFullPage?: boolean;
 }
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
@@ -33,6 +31,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [businessName, setBusinessName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [verified, setVerified] = useState(false);
+  // The role the SERVER confirmed for this account. On sign-in this can differ
+  // from the `role` toggle, and the server value must win when routing.
+  const [resolvedRole, setResolvedRole] = useState<'buyer' | 'supplier' | null>(null);
+  const [wasRegistration, setWasRegistration] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -50,8 +52,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setErrorMessage('Please enter a valid Gmail / Email address. Example: name@gmail.com');
       return false;
     }
-    if (password.length < 6) {
-      setErrorMessage('Password must be at least 6 characters.');
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setErrorMessage(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
       return false;
     }
     if (mode === 'register' && !businessName.trim()) {
@@ -67,7 +69,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
     if (isConfigured) {
       try {
-        await signInWithGoogle();
+        // Pass the selected role so it survives the provider redirect.
+        const { error, failure } = await signInWithGoogle(role);
+        if (error || failure) {
+          setErrorMessage(failure?.message || error?.message || 'Google sign-in failed. Please try again.');
+          setIsGoogleLoading(false);
+        }
+        // On success the browser navigates away; leave the spinner running.
       } catch (err: any) {
         setErrorMessage(err?.message || 'Google sign-in failed. Please try again.');
         setIsGoogleLoading(false);
@@ -88,6 +96,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       }));
       localStorage.setItem('nexora_is_logged_in', 'true');
       localStorage.setItem('nexora_user_role', role);
+      localStorage.removeItem('nexora_guest_mode');
+      setResolvedRole(role);
+      setWasRegistration(false);
       setVerified(true);
     }, 900);
   };
@@ -121,18 +132,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         }));
         localStorage.setItem('nexora_is_logged_in', 'true');
         localStorage.setItem('nexora_user_role', role);
+        localStorage.removeItem('nexora_guest_mode');
+        setResolvedRole(role);
+        setWasRegistration(mode === 'register');
         setVerified(true);
         return;
       }
 
       if (mode === 'register') {
-        const { error, needsEmailConfirmation, failure } = await signUpWithEmailPassword(
+        const { error, needsEmailConfirmation, failure, role: serverRole } = await signUpWithEmailPassword(
           email.trim().toLowerCase(),
           password,
           role,
         );
-        if (error) {
-          setErrorMessage(failure?.message || error.message || 'Registration failed. Please try again.');
+        if (error || failure) {
+          setErrorMessage(failure?.message || error?.message || 'Registration failed. Please try again.');
+          // A duplicate email is actionable: drop the user straight into sign-in.
+          if (failure?.kind === 'duplicate_email') {
+            setMode('login');
+            setPassword('');
+          }
           return;
         }
         if (needsEmailConfirmation) {
@@ -140,28 +159,46 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           setInfoMessage('Registration successful! Please check your Gmail inbox to confirm your account, then sign in.');
           return;
         }
+        setResolvedRole(serverRole ?? role);
+        setWasRegistration(true);
         setVerified(true);
         return;
       }
 
-      const { error, failure } = await signInWithEmailPassword(email.trim().toLowerCase(), password);
-      if (error) {
-        setErrorMessage(failure?.message || error.message || 'Sign in failed. Please check your email and password.');
+      const { error, failure, role: serverRole } = await signInWithEmailPassword(email.trim().toLowerCase(), password);
+      if (error || failure) {
+        setErrorMessage(failure?.message || error?.message || 'Sign in failed. Please check your email and password.');
         return;
       }
+      // Route by the account's real role, not the toggle the user happened to
+      // leave selected — a supplier signing in with "Buyer" active must still
+      // land in the Supplier portal.
+      const effectiveRole = serverRole ?? role;
+      if (serverRole && serverRole !== role) {
+        setRole(serverRole);
+        setInfoMessage(`Signed in as a ${serverRole === 'buyer' ? 'Buyer' : 'Supplier'} account.`);
+      }
+      setResolvedRole(effectiveRole);
+      setWasRegistration(false);
       setVerified(true);
+    } catch (err: any) {
+      // Guarantees the button never sticks on "Please wait..." after a crash.
+      setErrorMessage(err?.message || 'Unexpected error. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleReset = () => {
-    const isNew = mode === 'register';
+    const isNew = wasRegistration;
+    const finalRole = resolvedRole ?? role;
     setVerified(false);
     setEmail('');
     setPassword('');
     setBusinessName('');
-    onSuccess(role, isNew);
+    setResolvedRole(null);
+    setWasRegistration(false);
+    onSuccess(finalRole, isNew);
     onClose();
   };
 
@@ -326,7 +363,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => { setPassword(e.target.value); if (errorMessage) resetMessages(); }}
-                  placeholder={mode === 'login' ? 'Enter your password' : 'Create a password (min 6 chars)'}
+                  placeholder={mode === 'login' ? 'Enter your password' : `Create a password (min ${MIN_PASSWORD_LENGTH} chars)`}
                   autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                   className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-xl pl-9 pr-10 py-2.5 text-[13px] text-[#2A0E3F] focus:outline-none transition-colors"
                   required
@@ -341,7 +378,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </button>
               </div>
               {mode === 'register' && (
-                <p className="mt-1.5 text-[11px] text-[#7E6C96]">Use at least 6 characters. No mobile, no OTP needed.</p>
+                <p className="mt-1.5 text-[11px] text-[#7E6C96]">Use at least {MIN_PASSWORD_LENGTH} characters. No mobile, no OTP needed.</p>
               )}
             </div>
 

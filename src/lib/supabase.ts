@@ -16,8 +16,16 @@ export const AUTH_CALLBACK_PREFIX = '/auth/';
 const AUTH_REDIRECT_THROTTLE_MS = 3000;
 let lastAuthRedirectAt = 0;
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mock-nexora-project.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vY2stbmV4b3JhLXByb2plY3QiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTcwMDA0MDAwMCwiZXhwIjoyMDE1NjE2MDAwfQ.mock_key_nexora';
+// `import.meta.env` is injected by Vite and is undefined under plain Node
+// (unit tests), so every read goes through this guard.
+function readEnv(key: string): string {
+  const env = (import.meta as any)?.env;
+  const value = env ? env[key] : undefined;
+  return typeof value === 'string' ? value : '';
+}
+
+const supabaseUrl = readEnv('VITE_SUPABASE_URL') || 'https://mock-nexora-project.supabase.co';
+const supabaseAnonKey = readEnv('VITE_SUPABASE_ANON_KEY') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vY2stbmV4b3JhLXByb2plY3QiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTcwMDA0MDAwMCwiZXhwIjoyMDE1NjE2MDAwfQ.mock_key_nexora';
 
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
@@ -35,8 +43,8 @@ export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKe
 });
 
 export function isSupabaseConfigured(): boolean {
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const url = readEnv('VITE_SUPABASE_URL');
+  const key = readEnv('VITE_SUPABASE_ANON_KEY');
   return Boolean(
     url &&
     key &&
@@ -50,11 +58,11 @@ export function isSupabaseConfigured(): boolean {
 
 export function getSupabaseConfigInfo() {
   return {
-    url: import.meta.env.VITE_SUPABASE_URL || '',
+    url: readEnv('VITE_SUPABASE_URL'),
     storageKey: SUPABASE_STORAGE_KEY,
     isConfigured: isSupabaseConfigured(),
-    anonKeyTruncated: import.meta.env.VITE_SUPABASE_ANON_KEY
-      ? `${import.meta.env.VITE_SUPABASE_ANON_KEY.slice(0, 10)}...${import.meta.env.VITE_SUPABASE_ANON_KEY.slice(-6)}`
+    anonKeyTruncated: readEnv('VITE_SUPABASE_ANON_KEY')
+      ? `${readEnv('VITE_SUPABASE_ANON_KEY').slice(0, 10)}...${readEnv('VITE_SUPABASE_ANON_KEY').slice(-6)}`
       : 'Not set'
   };
 }
@@ -102,11 +110,10 @@ export async function syncAllDataToSupabase(state: DatabaseState): Promise<{ suc
   const errors: string[] = [];
   let syncedCount = 0;
   try {
-    if (state.users?.length) {
-      const { error } = await supabase.from('users').upsert(state.users);
-      if (error) errors.push(`users: ${error.message}`);
-      else syncedCount += state.users.length;
-    }
+    // `users` is deliberately NOT synced. It is a mirror of auth.users owned by
+    // the on_auth_user_created trigger (migration 0006), and the local seed ids
+    // ('usr-buyer-priya', ...) are not UUIDs and have no auth.users parent — an
+    // upsert would fail the UUID cast and the new FK, or create orphan rows.
     if (state.profiles_buyer?.length) {
       const { error } = await supabase.from('profiles_buyer').upsert(state.profiles_buyer);
       if (error) errors.push(`profiles_buyer: ${error.message}`);
@@ -201,7 +208,15 @@ function isAuthenticationInvalidatingError(error: unknown): boolean {
 }
 
 // Simple AuthFailure for UI compatibility
-export type AuthFailureKind = 'invalid_email' | 'credentials' | 'rate_limited' | 'network' | 'unknown';
+export type AuthFailureKind =
+  | 'invalid_email'
+  | 'credentials'
+  | 'duplicate_email'
+  | 'weak_password'
+  | 'email_not_confirmed'
+  | 'rate_limited'
+  | 'network'
+  | 'unknown';
 export interface AuthFailure {
   kind: AuthFailureKind;
   title: string;
@@ -209,18 +224,78 @@ export interface AuthFailure {
   hint?: string;
 }
 
+export type AuthRole = 'buyer' | 'supplier';
+
+/**
+ * Single source of truth for credential validation, shared by the AuthModal and
+ * authApi so the two paths cannot drift apart (they previously disagreed: 6 vs 8).
+ */
+export const MIN_PASSWORD_LENGTH = 6;
+export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Role chosen before a redirect-based OAuth handshake. Google never carries our
+// app role through the provider, so it is stashed here and re-applied once the
+// PKCE callback resolves into a session.
+const PENDING_ROLE_KEY = 'nexora_pending_role';
+
+export function setPendingAuthRole(role: AuthRole): void {
+  if (typeof window === 'undefined') return;
+  try { window.localStorage.setItem(PENDING_ROLE_KEY, role); } catch { /* storage disabled */ }
+}
+
+export function readPendingAuthRole(): AuthRole | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const value = window.localStorage.getItem(PENDING_ROLE_KEY);
+    return value === 'buyer' || value === 'supplier' ? value : null;
+  } catch { return null; }
+}
+
+export function clearPendingAuthRole(): void {
+  if (typeof window === 'undefined') return;
+  try { window.localStorage.removeItem(PENDING_ROLE_KEY); } catch { /* storage disabled */ }
+}
+
+/** Single source of truth for a signed-in user's app role. */
+export function resolveUserRole(user: User | null | undefined): AuthRole | null {
+  const raw = (user?.user_metadata?.role ?? user?.app_metadata?.role) as string | undefined;
+  return raw === 'buyer' || raw === 'supplier' ? raw : null;
+}
+
 function classifySimpleError(error: any): AuthFailure {
   const msg = (error?.message || '').toLowerCase();
-  if (msg.includes('invalid login credentials') || msg.includes('incorrect password') || msg.includes('invalid')) {
+  const code = (error?.code || '').toLowerCase();
+  if (code === 'user_already_exists' || msg.includes('already registered') || msg.includes('already been registered') || msg.includes('user already exists')) {
+    return {
+      kind: 'duplicate_email',
+      title: 'Email already registered',
+      message: 'An account with this email already exists. Please sign in instead.',
+      hint: 'Switch to the Sign In tab, or reset your password if you have forgotten it.',
+    };
+  }
+  if (code === 'weak_password' || msg.includes('password should be') || msg.includes('password is too weak')) {
+    return { kind: 'weak_password', title: 'Password too weak', message: error?.message || 'Please choose a longer password (at least 6 characters).' };
+  }
+  if (code === 'email_not_confirmed' || msg.includes('email not confirmed')) {
+    return {
+      kind: 'email_not_confirmed',
+      title: 'Email not confirmed',
+      message: 'Please open the confirmation link we emailed you, then sign in again.',
+    };
+  }
+  if (msg.includes('invalid login credentials') || msg.includes('incorrect password')) {
     return { kind: 'credentials', title: 'Incorrect email or password', message: 'Please check your Gmail ID and password and try again.' };
   }
-  if (msg.includes('rate limit') || msg.includes('too many requests')) {
+  if (msg.includes('rate limit') || msg.includes('too many requests') || code === 'over_request_rate_limit') {
     return { kind: 'rate_limited', title: 'Too many attempts', message: 'Please wait a minute before trying again.' };
   }
-  if (msg.includes('network') || msg.includes('fetch')) {
-    return { kind: 'network', title: 'Network error', message: 'Could not reach server. Check internet connection.' };
+  if (msg.includes('invalid email') || msg.includes('unable to validate email')) {
+    return { kind: 'invalid_email', title: 'Invalid email', message: 'Please enter a valid Gmail / Email address.' };
   }
-  return { kind: 'unknown', title: 'Sign in failed', message: error?.message || 'Please try again.' };
+  if (msg.includes('network') || msg.includes('failed to fetch') || msg.includes('fetch')) {
+    return { kind: 'network', title: 'Network error', message: 'Could not reach the server. Check your internet connection and try again.' };
+  }
+  return { kind: 'unknown', title: 'Something went wrong', message: error?.message || 'Please try again.' };
 }
 
 // Context types - simplified, no phone/OTP
@@ -237,9 +312,9 @@ export interface SupabaseContextType {
   locationSyncStatus: LocationSyncStatus;
   testConnection: () => Promise<{ connected: boolean; message: string; details?: any; latencyMs?: number }>;
   syncData: (state: DatabaseState) => Promise<{ success: boolean; syncedCount: number; errors: string[] }>;
-  signInWithEmailPassword: (email: string, password: string) => Promise<{ error?: Error | null; failure?: AuthFailure | null }>;
-  signUpWithEmailPassword: (email: string, password: string, role: 'buyer' | 'supplier') => Promise<{ error?: Error | null; needsEmailConfirmation?: boolean; failure?: AuthFailure | null }>;
-  signInWithGoogle: () => Promise<void>;
+  signInWithEmailPassword: (email: string, password: string) => Promise<{ error?: Error | null; failure?: AuthFailure | null; role?: AuthRole | null }>;
+  signUpWithEmailPassword: (email: string, password: string, role: AuthRole) => Promise<{ error?: Error | null; needsEmailConfirmation?: boolean; failure?: AuthFailure | null; role?: AuthRole | null }>;
+  signInWithGoogle: (role: AuthRole) => Promise<{ error?: Error | null; failure?: AuthFailure | null }>;
   signOut: (opts?: { redirectToLogin?: boolean }) => Promise<void>;
   // Deprecated stubs for backward compatibility (no-op, always disabled)
   signInWithOtp?: any;
@@ -260,9 +335,9 @@ const defaultContext: SupabaseContextType = {
   locationSyncStatus: 'idle',
   testConnection: testSupabaseConnection,
   syncData: syncAllDataToSupabase,
-  signInWithEmailPassword: async () => ({ error: null, failure: null }),
-  signUpWithEmailPassword: async () => ({ error: null, needsEmailConfirmation: false, failure: null }),
-  signInWithGoogle: async () => {},
+  signInWithEmailPassword: async () => ({ error: null, failure: null, role: null }),
+  signUpWithEmailPassword: async () => ({ error: null, needsEmailConfirmation: false, failure: null, role: null }),
+  signInWithGoogle: async () => ({ error: null, failure: null }),
   signOut: async () => {},
   signInWithOtp: async () => ({ error: new Error('OTP login is disabled. Use email + password.'), failure: null, channel: 'email', target: '', skipped: true }),
   verifyOtp: async () => ({ error: new Error('OTP disabled'), failure: null }),
@@ -358,6 +433,32 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
   }, [isConfigured]);
 
+  // Google OAuth cannot carry our app role through the provider redirect, so a
+  // role selected before the handshake is written into user_metadata as soon as
+  // the resulting session appears (only when the account has no role yet).
+  useEffect(() => {
+    if (!isConfigured) return;
+    const authUser = session?.user;
+    if (!authUser) return;
+    const pending = readPendingAuthRole();
+    if (!pending) return;
+    if (resolveUserRole(authUser)) {
+      clearPendingAuthRole();
+      return;
+    }
+    let cancelled = false;
+    supabase.auth.updateUser({ data: { role: pending } })
+      .then(({ data, error }) => {
+        if (cancelled || error) return;
+        clearPendingAuthRole();
+        if (data?.user) {
+          setSession((prev) => (prev ? { ...prev, user: data.user } : prev));
+        }
+      })
+      .catch(() => { /* retried on next session change */ });
+    return () => { cancelled = true; };
+  }, [isConfigured, session?.user?.id]);
+
   const value = useMemo<SupabaseContextType>(() => ({
     supabase,
     isConfigured,
@@ -369,38 +470,81 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     locationSyncStatus,
     testConnection: testSupabaseConnection,
     syncData: syncAllDataToSupabase,
+    // Any thrown error (network failure, CORS, DNS) is converted into a returned
+    // failure so the caller can always clear its loading state.
     signInWithEmailPassword: async (email, password) => {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      return {
-        error: error as Error | null,
-        failure: error ? classifySimpleError(error) : null,
-      };
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          return { error: error as Error, failure: classifySimpleError(error), role: null };
+        }
+        // Legacy accounts created before role metadata existed default to buyer
+        // so the app never lands on a null-role dead end.
+        let role = resolveUserRole(data.user);
+        if (!role) {
+          role = 'buyer';
+          const { data: updated } = await supabase.auth.updateUser({ data: { role } });
+          role = resolveUserRole(updated?.user) ?? role;
+        }
+        return { error: null, failure: null, role };
+      } catch (err: any) {
+        return { error: err as Error, failure: classifySimpleError(err), role: null };
+      }
     },
     signUpWithEmailPassword: async (email, password, role) => {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { role },
-          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined,
-        },
-      });
-      return {
-        error: error as Error | null,
-        needsEmailConfirmation: Boolean(data?.user && !data.session),
-        failure: error ? classifySimpleError(error) : null,
-      };
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { role },
+            emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}${AUTH_CALLBACK_PATH}` : undefined,
+          },
+        });
+        if (error) {
+          return { error: error as Error, needsEmailConfirmation: false, failure: classifySimpleError(error), role: null };
+        }
+        // With email confirmation enabled Supabase does NOT error on a duplicate
+        // signup; it returns an obfuscated user with an empty identities array.
+        // Without this check the UI would report success for an existing account.
+        if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+          const failure = classifySimpleError({ code: 'user_already_exists' });
+          return { error: new Error(failure.message), needsEmailConfirmation: false, failure, role: null };
+        }
+        return {
+          error: null,
+          needsEmailConfirmation: Boolean(data?.user && !data.session),
+          failure: null,
+          role: resolveUserRole(data?.user) ?? role,
+        };
+      } catch (err: any) {
+        return { error: err as Error, needsEmailConfirmation: false, failure: classifySimpleError(err), role: null };
+      }
     },
-    signInWithGoogle: async () => {
-      await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined,
-          queryParams: { access_type: 'offline', prompt: 'consent' },
-        },
-      });
+    signInWithGoogle: async (role) => {
+      try {
+        // Persist the selected role across the provider redirect; the callback
+        // writes it into user_metadata once the session exists.
+        setPendingAuthRole(role);
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: typeof window !== 'undefined' ? `${window.location.origin}${AUTH_CALLBACK_PATH}` : undefined,
+            queryParams: { access_type: 'offline', prompt: 'consent' },
+          },
+        });
+        if (error) {
+          clearPendingAuthRole();
+          return { error: error as Error, failure: classifySimpleError(error) };
+        }
+        return { error: null, failure: null };
+      } catch (err: any) {
+        clearPendingAuthRole();
+        return { error: err as Error, failure: classifySimpleError(err) };
+      }
     },
     signOut: async (opts) => {
+      clearPendingAuthRole();
       if (!isConfigured) {
         localStorage.removeItem('nexora_user_session');
         localStorage.setItem('nexora_is_logged_in', 'false');
@@ -412,10 +556,13 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
       try {
         await supabase.auth.signOut();
+      } catch {
+        /* Local state is cleared regardless of a network failure. */
       } finally {
         setSession(null);
         setAuthenticationStatus('unauthenticated');
         setAuthReady(true);
+        if (opts?.redirectToLogin) redirectToLogin();
       }
     },
     // Stubs for backward compat

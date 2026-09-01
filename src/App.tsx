@@ -54,7 +54,17 @@ import {
   isAuthPath,
   redirectToLogin,
   stripAuthCallbackParams,
+  resolveUserRole,
 } from './lib/supabase';
+import {
+  evaluateAccess,
+  toViewer,
+  canAccess,
+  getAccessLevel,
+  HOME_SCREEN,
+  type ScreenId,
+} from './lib/roleAccess';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import {
   CATEGORIES,
   TRENDING_PRODUCTS,
@@ -91,6 +101,9 @@ function NexoraShopApp() {
     const stored = localStorage.getItem('nexora_user_role');
     return (stored === 'buyer' || stored === 'supplier') ? stored : null;
   });
+
+  // The single identity every access decision is made against.
+  const viewer = toViewer(isLoggedIn, userRole);
 
   // Persistent Buyer Profile State
   const [buyerProfile, setBuyerProfile] = useState<BuyerProfileData>(() => {
@@ -263,33 +276,26 @@ function NexoraShopApp() {
 
   // Handlers
   const handleNavigate = (screen: any, params?: any) => {
-    // 1. Define restricted list
-    const supplierScreens = ['supplier-portal', 'supplier-verification', 'onboarding'];
-    const buyerScreens = ['buyer-dashboard', 'buyer-profile', 'rfq-tracking', 'buyer-enquiry-log', 'post-rfq', 'sample-request', 'buyer-onboarding'];
+    // Layer 1 of the guard: intercept the click path. Every rule comes from
+    // the shared policy in lib/roleAccess so this can never disagree with the
+    // render-time ProtectedRoute check or with the nav-bar filtering.
+    const decision = evaluateAccess(screen, viewer);
 
-    // 2. Perform Role Guard check
-    if (isLoggedIn) {
-      if (userRole === 'buyer' && supplierScreens.includes(screen)) {
-        triggerToast('Access Restricted: Buyer accounts cannot access the Supplier Portal.');
-        setCurrentScreen('buyer-dashboard');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-      if (userRole === 'supplier' && buyerScreens.includes(screen)) {
-        triggerToast('Access Restricted: Supplier accounts cannot access the Buyer Workspace.');
-        setCurrentScreen('supplier-portal');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-    } else {
-      // If guest tries to access protected dashboard features, open login
-      const protectedScreens = [...supplierScreens, ...buyerScreens];
-      if (protectedScreens.includes(screen)) {
+    if (!decision.allowed) {
+      if (decision.reason === 'unauthenticated') {
+        // Guests get the sign-in modal rather than a dead end.
         setAuthMode('login');
         setIsAuthModalOpen(true);
-        triggerToast('Please sign in to access dashboard workspace features.');
+        triggerToast(decision.message || 'Please sign in to continue.');
         return;
       }
+
+      triggerToast(decision.message || 'Access restricted.');
+      if (decision.redirectTo && decision.redirectTo !== currentScreen) {
+        setCurrentScreen(decision.redirectTo);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      return;
     }
 
     setCurrentScreen(screen);
@@ -430,7 +436,27 @@ function NexoraShopApp() {
   };
 
   // Derive the Supabase user's role (stored in auth metadata at registration).
-  const supabaseRole = (user?.user_metadata?.role as 'buyer' | 'supplier') || null;
+  const supabaseRole = resolveUserRole(user);
+
+  // Layer 3: state-level eviction. If the viewer is ever sitting on a screen
+  // their role may not see — after a refresh restores a screen, after signing
+  // out, or after the role resolves from Supabase metadata — move them to
+  // their own workspace. handleNavigate covers clicks and ProtectedRoute
+  // covers rendering; this covers state changing underneath a static screen.
+  useEffect(() => {
+    // Wait for auth to settle, or a supplier would be bounced during the
+    // frame where their role has not yet resolved.
+    if (isConfigured && !authReady) return;
+    if (canAccess(currentScreen, viewer)) return;
+
+    const decision = evaluateAccess(currentScreen, viewer);
+    const target = decision.redirectTo ?? HOME_SCREEN[viewer];
+    if (target !== currentScreen) {
+      setCurrentScreen(target);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentScreen, viewer, isConfigured, authReady]);
+
   const currentPathname = typeof window !== 'undefined' ? window.location.pathname : '/';
   const isAuthLoginPath = currentPathname === AUTH_LOGIN_PATH;
   const isAuthCallbackPath = currentPathname !== AUTH_LOGIN_PATH
@@ -454,11 +480,17 @@ function NexoraShopApp() {
     if (!isConfigured) return;
     if (!authReady) return;
     if (session?.user) {
-      const role = supabaseRole || 'buyer';
+      // Prefer the server role. If metadata has not resolved yet, fall back to
+      // the last known role rather than forcing 'buyer', which would otherwise
+      // bounce a supplier out of their portal for a frame after every refresh.
+      const stored = localStorage.getItem('nexora_user_role');
+      const cached = stored === 'buyer' || stored === 'supplier' ? stored : null;
+      const role = supabaseRole || cached || 'buyer';
       setIsLoggedIn(true);
       setUserRole(role);
       localStorage.setItem('nexora_is_logged_in', 'true');
-      if (role) localStorage.setItem('nexora_user_role', role);
+      localStorage.setItem('nexora_user_role', role);
+      localStorage.removeItem('nexora_guest_mode');
     } else {
       setIsLoggedIn(false);
       setUserRole(null);
@@ -487,12 +519,9 @@ function NexoraShopApp() {
     stripAuthCallbackParams();
   }, [session?.user?.id, isAuthRoute]);
 
-  const protectedScreens = [
-    'buyer-dashboard', 'buyer-profile', 'rfq-tracking', 'buyer-enquiry-log',
-    'post-rfq', 'sample-request', 'buyer-onboarding',
-    'supplier-portal', 'supplier-verification', 'onboarding',
-  ];
-  const isProtectedScreen = protectedScreens.includes(currentScreen);
+  // Derived from the shared policy rather than a second hardcoded list, so a
+  // new protected screen cannot be added in one place and forgotten here.
+  const isProtectedScreen = getAccessLevel(currentScreen) !== 'public';
 
   // Never silently replace protected content with a public screen. A missing or
   // invalid session on a protected screen always enters the explicit login
@@ -881,160 +910,250 @@ function NexoraShopApp() {
 
         {/* Phase A: Buyer Onboarding Flow */}
         {currentScreen === 'buyer-onboarding' && (
-          <main className="flex-1">
-            <BuyerOnboardingScreen
-              onComplete={(data) => {
-                handleSaveProfile({
-                  ...buyerProfile,
-                  businessName: data.businessName,
-                  businessType: data.buyerCategory,
-                  designation: data.designation,
-                  gstin: data.gstNumber,
-                  annualProcurementBudget: data.annualBudget,
-                  primaryCategories: data.primaryCategories,
-                  city: data.location.split(',')[0] || '',
-                  state: data.location.split(',')[1]?.trim() || '',
-                });
-                handleNavigate('buyer-dashboard');
-              }}
-              onNavigateToExplore={() => handleNavigate('explore')}
-            />
-          </main>
+          <ProtectedRoute
+            screen="buyer-onboarding"
+            viewer={viewer}
+            authReady={!isConfigured || authReady}
+            onRedirect={(s) => handleNavigate(s)}
+            onDenied={triggerToast}
+            onSignIn={() => handleOpenAuthModal('login')}
+          >
+            <main className="flex-1">
+              <BuyerOnboardingScreen
+                onComplete={(data) => {
+                  handleSaveProfile({
+                    ...buyerProfile,
+                    businessName: data.businessName,
+                    businessType: data.buyerCategory,
+                    designation: data.designation,
+                    gstin: data.gstNumber,
+                    annualProcurementBudget: data.annualBudget,
+                    primaryCategories: data.primaryCategories,
+                    city: data.location.split(',')[0] || '',
+                    state: data.location.split(',')[1]?.trim() || '',
+                  });
+                  handleNavigate('buyer-dashboard');
+                }}
+                onNavigateToExplore={() => handleNavigate('explore')}
+              />
+            </main>
+          </ProtectedRoute>
         )}
 
         {/* Phase B: Supplier Onboarding Flow */}
         {currentScreen === 'onboarding' && (
-          <main className="flex-1">
-            <SupplierOnboardingScreen
-              authenticated={isLoggedIn && userRole === 'supplier'}
-              onComplete={() => {
-                triggerToast('Business listing created! Redirecting to Portal...');
-                handleNavigate('supplier-portal');
-              }}
-              onNavigateToExplore={() => handleNavigate('explore')}
-            />
-          </main>
+          <ProtectedRoute
+            screen="onboarding"
+            viewer={viewer}
+            authReady={!isConfigured || authReady}
+            onRedirect={(s) => handleNavigate(s)}
+            onDenied={triggerToast}
+            onSignIn={() => handleOpenAuthModal('login')}
+          >
+            <main className="flex-1">
+              <SupplierOnboardingScreen
+                authenticated={isLoggedIn && userRole === 'supplier'}
+                onComplete={() => {
+                  triggerToast('Business listing created! Redirecting to Portal...');
+                  handleNavigate('supplier-portal');
+                }}
+                onNavigateToExplore={() => handleNavigate('explore')}
+              />
+            </main>
+          </ProtectedRoute>
         )}
 
         {/* Phase B: Supplier Admin Portal */}
         {currentScreen === 'supplier-portal' && (
-          <main className="flex-1">
-            <SupplierAdminPortal 
-              onNavigateToProduct={(productId) => {
-                setSelectedProductId(productId);
-                handleNavigate('product-detail', { productId });
-              }}
-            />
-          </main>
+          <ProtectedRoute
+            screen="supplier-portal"
+            viewer={viewer}
+            authReady={!isConfigured || authReady}
+            onRedirect={(s) => handleNavigate(s)}
+            onDenied={triggerToast}
+            onSignIn={() => handleOpenAuthModal('login')}
+          >
+            <main className="flex-1">
+              <SupplierAdminPortal 
+                onNavigateToProduct={(productId) => {
+                  setSelectedProductId(productId);
+                  handleNavigate('product-detail', { productId });
+                }}
+              />
+            </main>
+          </ProtectedRoute>
         )}
 
         {/* Screen 24: Supplier Verification Center */}
         {currentScreen === 'supplier-verification' && (
-          <main className="flex-1">
-            <SupplierVerificationScreen 
-              onBack={() => handleNavigate('supplier-portal')}
-            />
-          </main>
+          <ProtectedRoute
+            screen="supplier-verification"
+            viewer={viewer}
+            authReady={!isConfigured || authReady}
+            onRedirect={(s) => handleNavigate(s)}
+            onDenied={triggerToast}
+            onSignIn={() => handleOpenAuthModal('login')}
+          >
+            <main className="flex-1">
+              <SupplierVerificationScreen 
+                onBack={() => handleNavigate('supplier-portal')}
+              />
+            </main>
+          </ProtectedRoute>
         )}
 
         {/* Screen 12: Buyer Dashboard */}
         {currentScreen === 'buyer-dashboard' && (
-          <main className="flex-1">
-            <BuyerDashboard 
-              isLoggedIn={isLoggedIn}
-              onNavigate={handleNavigate}
-              onPostRFQ={() => handleNavigate('post-rfq')}
-              onCallSupplier={handleCallSupplier}
-              onWhatsAppSupplier={handleWhatsAppSupplier}
-              onOpenAuth={() => handleOpenAuthModal('login')}
-              buyerProfile={buyerProfile}
-              onSaveProfile={handleSaveProfile}
-              onOpenEditProfile={() => setIsEditProfileOpen(true)}
-              initialTab={buyerDashboardTab}
-              isProfileRoute={false}
-              currentScreen={currentScreen}
-            />
-          </main>
+          <ProtectedRoute
+            screen="buyer-dashboard"
+            viewer={viewer}
+            authReady={!isConfigured || authReady}
+            onRedirect={(s) => handleNavigate(s)}
+            onDenied={triggerToast}
+            onSignIn={() => handleOpenAuthModal('login')}
+          >
+            <main className="flex-1">
+              <BuyerDashboard 
+                isLoggedIn={isLoggedIn}
+                onNavigate={handleNavigate}
+                onPostRFQ={() => handleNavigate('post-rfq')}
+                onCallSupplier={handleCallSupplier}
+                onWhatsAppSupplier={handleWhatsAppSupplier}
+                onOpenAuth={() => handleOpenAuthModal('login')}
+                buyerProfile={buyerProfile}
+                onSaveProfile={handleSaveProfile}
+                onOpenEditProfile={() => setIsEditProfileOpen(true)}
+                initialTab={buyerDashboardTab}
+                isProfileRoute={false}
+                currentScreen={currentScreen}
+              />
+            </main>
+          </ProtectedRoute>
         )}
 
         {/* Specific /buyer/profile Route View */}
         {currentScreen === 'buyer-profile' && (
-          <main className="flex-1">
-            <BuyerDashboard 
-              isLoggedIn={isLoggedIn}
-              onNavigate={handleNavigate}
-              onPostRFQ={() => handleNavigate('post-rfq')}
-              onCallSupplier={handleCallSupplier}
-              onWhatsAppSupplier={handleWhatsAppSupplier}
-              onOpenAuth={() => handleOpenAuthModal('login')}
-              buyerProfile={buyerProfile}
-              onSaveProfile={handleSaveProfile}
-              onOpenEditProfile={() => setIsEditProfileOpen(true)}
-              initialTab="activity"
-              isProfileRoute={true}
-              currentScreen={currentScreen}
-            />
-          </main>
+          <ProtectedRoute
+            screen="buyer-profile"
+            viewer={viewer}
+            authReady={!isConfigured || authReady}
+            onRedirect={(s) => handleNavigate(s)}
+            onDenied={triggerToast}
+            onSignIn={() => handleOpenAuthModal('login')}
+          >
+            <main className="flex-1">
+              <BuyerDashboard 
+                isLoggedIn={isLoggedIn}
+                onNavigate={handleNavigate}
+                onPostRFQ={() => handleNavigate('post-rfq')}
+                onCallSupplier={handleCallSupplier}
+                onWhatsAppSupplier={handleWhatsAppSupplier}
+                onOpenAuth={() => handleOpenAuthModal('login')}
+                buyerProfile={buyerProfile}
+                onSaveProfile={handleSaveProfile}
+                onOpenEditProfile={() => setIsEditProfileOpen(true)}
+                initialTab="activity"
+                isProfileRoute={true}
+                currentScreen={currentScreen}
+              />
+            </main>
+          </ProtectedRoute>
         )}
 
         {/* Screen 13: Buyer RFQ Tracking & Quote Comparison */}
         {currentScreen === 'rfq-tracking' && (
-          <main className="flex-1">
-            <BuyerRFQTrackingScreen
-              onBack={() => handleNavigate('buyer-dashboard')}
-              onNavigateToChat={(supplierIdOrName) => {
-                const supp = VERIFIED_SUPPLIERS.find(s => 
-                  s.name.toLowerCase().includes(supplierIdOrName.toLowerCase()) || 
-                  s.id === supplierIdOrName
-                );
-                handleOpenChat(
-                  {
-                    id: supp?.id || 'supp-rfq',
-                    name: supp?.name || supplierIdOrName,
-                    location: supp ? `${supp.city}${supp.state ? `, ${supp.state}` : ''}` : 'India',
-                    isVerified: supp ? supp.isVerified : true
-                  },
-                  { title: 'Vitamin C Brightening Serum (Bulk)', image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80', price: '₹195 / unit', moq: '2,000 Units' }
-                );
-              }}
-            />
-          </main>
+          <ProtectedRoute
+            screen="rfq-tracking"
+            viewer={viewer}
+            authReady={!isConfigured || authReady}
+            onRedirect={(s) => handleNavigate(s)}
+            onDenied={triggerToast}
+            onSignIn={() => handleOpenAuthModal('login')}
+          >
+            <main className="flex-1">
+              <BuyerRFQTrackingScreen
+                onBack={() => handleNavigate('buyer-dashboard')}
+                onNavigateToChat={(supplierIdOrName) => {
+                  const supp = VERIFIED_SUPPLIERS.find(s => 
+                    s.name.toLowerCase().includes(supplierIdOrName.toLowerCase()) || 
+                    s.id === supplierIdOrName
+                  );
+                  handleOpenChat(
+                    {
+                      id: supp?.id || 'supp-rfq',
+                      name: supp?.name || supplierIdOrName,
+                      location: supp ? `${supp.city}${supp.state ? `, ${supp.state}` : ''}` : 'India',
+                      isVerified: supp ? supp.isVerified : true
+                    },
+                    { title: 'Vitamin C Brightening Serum (Bulk)', image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80', price: '₹195 / unit', moq: '2,000 Units' }
+                  );
+                }}
+              />
+            </main>
+          </ProtectedRoute>
         )}
 
         {/* Sample Request Screen */}
         {currentScreen === 'sample-request' && (
-          <main className="flex-1">
-            <SampleRequestScreen 
-              onBack={() => handleNavigate('search-results')}
-              onSubmit={(data) => {
-                console.log('Sample Request Submitted:', data);
-                handleNavigate('buyer-dashboard');
-              }}
-            />
-          </main>
+          <ProtectedRoute
+            screen="sample-request"
+            viewer={viewer}
+            authReady={!isConfigured || authReady}
+            onRedirect={(s) => handleNavigate(s)}
+            onDenied={triggerToast}
+            onSignIn={() => handleOpenAuthModal('login')}
+          >
+            <main className="flex-1">
+              <SampleRequestScreen 
+                onBack={() => handleNavigate('search-results')}
+                onSubmit={(data) => {
+                  console.log('Sample Request Submitted:', data);
+                  handleNavigate('buyer-dashboard');
+                }}
+              />
+            </main>
+          </ProtectedRoute>
         )}
 
         {/* Screen 10: Post Requirement / Public RFQ Form */}
         {currentScreen === 'post-rfq' && (
-          <main className="flex-1">
-            <PostRequirementScreen
-              onNavigateToExplore={() => handleNavigate('explore')}
-              onNavigateToRFQs={() => handleNavigate('rfq-tracking')}
-            />
-          </main>
+          <ProtectedRoute
+            screen="post-rfq"
+            viewer={viewer}
+            authReady={!isConfigured || authReady}
+            onRedirect={(s) => handleNavigate(s)}
+            onDenied={triggerToast}
+            onSignIn={() => handleOpenAuthModal('login')}
+          >
+            <main className="flex-1">
+              <PostRequirementScreen
+                onNavigateToExplore={() => handleNavigate('explore')}
+                onNavigateToRFQs={() => handleNavigate('rfq-tracking')}
+              />
+            </main>
+          </ProtectedRoute>
         )}
 
         {/* Screen 14: Buyer Enquiry Log */}
         {currentScreen === 'buyer-enquiry-log' && (
-          <main className="flex-1">
-            <BuyerEnquiryLogScreen
-              onBack={() => handleNavigate('buyer-dashboard')}
-              onNavigateToChat={(supplierName) => handleOpenChat({ id: 'supp_custom', name: supplierName, location: 'All India', isVerified: true })}
-              onCallSupplier={(name) => handleCallSupplier(name)}
-              onWhatsAppSupplier={(name) => handleWhatsAppSupplier(name)}
-              onNavigateToExplore={() => handleNavigate('explore')}
-            />
-          </main>
+          <ProtectedRoute
+            screen="buyer-enquiry-log"
+            viewer={viewer}
+            authReady={!isConfigured || authReady}
+            onRedirect={(s) => handleNavigate(s)}
+            onDenied={triggerToast}
+            onSignIn={() => handleOpenAuthModal('login')}
+          >
+            <main className="flex-1">
+              <BuyerEnquiryLogScreen
+                onBack={() => handleNavigate('buyer-dashboard')}
+                onNavigateToChat={(supplierName) => handleOpenChat({ id: 'supp_custom', name: supplierName, location: 'All India', isVerified: true })}
+                onCallSupplier={(name) => handleCallSupplier(name)}
+                onWhatsAppSupplier={(name) => handleWhatsAppSupplier(name)}
+                onNavigateToExplore={() => handleNavigate('explore')}
+              />
+            </main>
+          </ProtectedRoute>
         )}
       </div>
 
@@ -1107,12 +1226,16 @@ function NexoraShopApp() {
         <LuxeFooter
           onNavigate={handleNavigate}
           onOpenRFQModal={() => handleNavigate('post-rfq')}
+          isLoggedIn={isLoggedIn}
+          userRole={userRole}
         />
       ) : (
         <Footer
           onNavigate={handleNavigate}
           onOpenAuthModal={handleOpenAuthModal}
           onOpenRFQModal={() => handleNavigate('post-rfq')}
+          isLoggedIn={isLoggedIn}
+          userRole={userRole}
         />
       )}
 
