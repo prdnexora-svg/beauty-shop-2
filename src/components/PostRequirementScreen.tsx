@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ChevronRight,
   FileText,
@@ -18,7 +18,8 @@ import {
   Building2,
   MapPin,
   Clock,
-  DollarSign,
+  IndianRupee,
+  Eye,
   FileSpreadsheet,
   Info,
   Award,
@@ -45,6 +46,68 @@ import {
   isFormulationValid,
   type SimpleFormulationState
 } from './formulationPreferences';
+
+/* ════════════════════════════════════════════════════════════════════════════
+   UPLOADS + CURRENCY PRIMITIVES
+   All file uploads (visual references & attachments) share one shape so the
+   same thumbnail / lightbox pipeline handles both.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+export interface UploadedFile {
+  id: string;
+  name: string;
+  /** Human readable size, e.g. "2.4 MB" */
+  sizeLabel: string;
+  sizeBytes: number;
+  mimeType: string;
+  kind: 'image' | 'pdf' | 'document';
+  /** Object URL for user uploads, remote URL for seeded demo files. */
+  previewUrl?: string;
+}
+
+export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
+export const MAX_VISUAL_REFS = 3;
+
+export const PRESET_VISUAL_REFS = [
+  { id: 'dropper', label: 'Dropper', img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=300&q=80' },
+  { id: 'pump', label: 'Pump Bottle', img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=300&q=80' },
+  { id: 'jar', label: 'Glass Jar', img: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=300&q=80' }
+];
+
+/** ₹ 2,50,000 (Indian grouping, no forced decimals). */
+const inrFormatter = new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2
+});
+
+export const formatINR = (value: number): string =>
+  Number.isFinite(value) ? inrFormatter.format(value).replace('₹', '₹ ') : '₹ 0';
+
+export const formatNumberIN = (value: number): string =>
+  Number.isFinite(value) ? value.toLocaleString('en-IN', { maximumFractionDigits: 2 }) : '0';
+
+export const formatBytes = (bytes: number): string => {
+  if (!bytes || bytes < 0) return '0 KB';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+export const resolveFileKind = (mimeType: string, name: string): UploadedFile['kind'] => {
+  if (mimeType.startsWith('image/')) return 'image';
+  if (mimeType === 'application/pdf' || name.toLowerCase().endsWith('.pdf')) return 'pdf';
+  return 'document';
+};
+
+/** FileList → File[] (keeps TS happy across browsers & drag-drop payloads). */
+const filesFromFileList = (list: FileList | null | undefined): File[] =>
+  list ? Array.from(list) : [];
+
+export const isSupportedImage = (file: File): boolean =>
+  ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type) ||
+  /\.(jpe?g|png|webp)$/i.test(file.name);
 
 interface PostRequirementScreenProps {
   onNavigateToExplore: () => void;
@@ -74,12 +137,13 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
   const [formulation, setFormulation] = useState<SimpleFormulationState>(DEFAULT_FORMULATION);
   const [showFormulationError, setShowFormulationError] = useState(false);
   
-  // Quantities & Commercials
+  // Quantities & Commercials (all monetary values are INR — ₹)
   const [quantity, setQuantity] = useState('2500');
   const [unit, setUnit] = useState('Units');
   const [frequency, setFrequency] = useState<'one-time' | 'recurring'>('one-time');
-  const [targetUnitPrice, setTargetUnitPrice] = useState('3.50');
-  const [totalBudget, setTotalBudget] = useState('8750');
+  const [targetUnitPrice, setTargetUnitPrice] = useState('290');
+  /** null = auto-calculated (quantity × unit price). A string = manual override. */
+  const [budgetOverride, setBudgetOverride] = useState<string | null>(null);
   
   // Specifications
   const [details, setDetails] = useState(
@@ -87,11 +151,36 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
   );
   const [requireSamples, setRequireSamples] = useState<'yes' | 'no'>('yes');
   
-  // Uploaded Files
-  const [attachments, setAttachments] = useState<Array<{ id: string; name: string; size: string; type: string }>>([
-    { id: '1', name: 'brand_formulation_brief.pdf', size: '2.4 MB', type: 'pdf' },
-    { id: '2', name: 'reference_bottle_packaging.jpg', size: '1.1 MB', type: 'image' }
+  // Uploaded Files (Attachments + custom visual references)
+  const [attachments, setAttachments] = useState<UploadedFile[]>([
+    {
+      id: 'seed-brief',
+      name: 'brand_formulation_brief.pdf',
+      sizeLabel: '2.4 MB',
+      sizeBytes: 2.4 * 1024 * 1024,
+      mimeType: 'application/pdf',
+      kind: 'pdf'
+    },
+    {
+      id: 'seed-reference',
+      name: 'reference_bottle_packaging.jpg',
+      sizeLabel: '1.1 MB',
+      sizeBytes: 1.1 * 1024 * 1024,
+      mimeType: 'image/jpeg',
+      kind: 'image',
+      previewUrl: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=500&q=80'
+    }
   ]);
+  /** Images uploaded from the device via the "+ Add Own" visual-reference card. */
+  const [customVisualRefs, setCustomVisualRefs] = useState<UploadedFile[]>([]);
+  /** File currently open in the fullscreen lightbox (attachments & visual refs). */
+  const [previewFile, setPreviewFile] = useState<UploadedFile | null>(null);
+  const [isDraggingFiles, setIsDraggingFiles] = useState(false);
+  const [visualRefNotice, setVisualRefNotice] = useState('');
+  const [attachmentNotice, setAttachmentNotice] = useState('');
+
+  /** Every object URL we mint, so nothing leaks when the screen unmounts. */
+  const objectUrlsRef = useRef<Set<string>>(new Set());
 
   // Step 2: Supplier Preferences
   const [preferredSupplierTypes, setPreferredSupplierTypes] = useState<string[]>(['Manufacturer / OEM', 'Brand Owner']);
@@ -134,22 +223,176 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
     );
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const newFile = {
-        id: Date.now().toString(),
-        name: file.name,
-        size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-        type: file.type.includes('image') ? 'image' : 'pdf'
-      };
-      setAttachments([...attachments, newFile]);
+  /* ── Derived commercial values (INR) ─────────────────────────────────── */
+  const quantityNumber = Number.parseFloat(quantity) || 0;
+  const unitPriceNumber = Number.parseFloat(targetUnitPrice) || 0;
+  const computedBudget = quantityNumber * unitPriceNumber;
+  const effectiveBudget = budgetOverride !== null ? Number.parseFloat(budgetOverride) || 0 : computedBudget;
+  const isBudgetOverridden = budgetOverride !== null;
+
+  /* ── Upload pipeline (shared by visual references & attachments) ──────── */
+
+  // Revoke every object URL we created when the screen unmounts.
+  useEffect(() => {
+    const urls = objectUrlsRef.current;
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url));
+      urls.clear();
+    };
+  }, []);
+
+  const buildUploadedFile = (file: File): UploadedFile => {
+    const previewUrl = URL.createObjectURL(file);
+    objectUrlsRef.current.add(previewUrl);
+    return {
+      id: `${Date.now().toString()}-${Math.random().toString(36).slice(2, 8)}`,
+      name: file.name,
+      sizeLabel: formatBytes(file.size),
+      sizeBytes: file.size,
+      mimeType: file.type,
+      kind: resolveFileKind(file.type, file.name),
+      previewUrl
+    };
+  };
+
+  const releasePreviewUrl = (file?: UploadedFile) => {
+    if (file?.previewUrl?.startsWith('blob:')) {
+      URL.revokeObjectURL(file.previewUrl);
+      objectUrlsRef.current.delete(file.previewUrl);
     }
   };
 
-  const handleRemoveFile = (id: string) => {
-    setAttachments(attachments.filter((f) => f.id !== id));
+  /* ── Visual references: "+ Add Own" upload, toggle & remove ───────────── */
+
+  const handleVisualRefUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = filesFromFileList(e.target.files);
+    e.target.value = ''; // allow re-picking the same file
+    if (!files.length) return;
+
+    const accepted: UploadedFile[] = [];
+    const rejected: string[] = [];
+
+    files.forEach((file) => {
+      if (!isSupportedImage(file)) {
+        rejected.push(`${file.name} — JPG, PNG or WEBP only`);
+        return;
+      }
+      if (file.size > MAX_UPLOAD_BYTES) {
+        rejected.push(`${file.name} — larger than 10 MB`);
+        return;
+      }
+      accepted.push(buildUploadedFile(file));
+    });
+
+    if (accepted.length) {
+      setCustomVisualRefs((prev) => [...prev, ...accepted]);
+      // Auto-select freshly uploaded tiles until the 3-reference cap is hit.
+      setSelectedVisualRefs((prev) => {
+        const next = [...prev];
+        accepted.forEach((file) => {
+          if (next.length < MAX_VISUAL_REFS && !next.includes(file.id)) next.push(file.id);
+        });
+        return next;
+      });
+    }
+
+    setVisualRefNotice(
+      rejected.length
+        ? rejected.join(' · ')
+        : accepted.length
+          ? `${accepted.length} reference image${accepted.length > 1 ? 's' : ''} added.`
+          : ''
+    );
   };
+
+  const toggleVisualRef = (id: string) => {
+    setVisualRefNotice('');
+    if (selectedVisualRefs.includes(id)) {
+      setSelectedVisualRefs(selectedVisualRefs.filter((refId) => refId !== id));
+      return;
+    }
+    if (selectedVisualRefs.length >= MAX_VISUAL_REFS) {
+      setVisualRefNotice(`You can select up to ${MAX_VISUAL_REFS} references — deselect one to add another.`);
+      return;
+    }
+    setSelectedVisualRefs([...selectedVisualRefs, id]);
+  };
+
+  const handleRemoveVisualRef = (id: string) => {
+    const target = customVisualRefs.find((file) => file.id === id);
+    releasePreviewUrl(target);
+    setCustomVisualRefs((prev) => prev.filter((file) => file.id !== id));
+    setSelectedVisualRefs((prev) => prev.filter((refId) => refId !== id));
+    setPreviewFile((prev) => (prev?.id === id ? null : prev));
+    setVisualRefNotice('');
+  };
+
+  /* ── Attachments: picker + drag & drop, preview & remove ──────────────── */
+
+  const addAttachments = (files: File[]) => {
+    if (!files.length) return;
+
+    const accepted: UploadedFile[] = [];
+    const rejected: string[] = [];
+
+    files.forEach((file) => {
+      if (file.size > MAX_UPLOAD_BYTES) {
+        rejected.push(`${file.name} — larger than 10 MB`);
+        return;
+      }
+      accepted.push(buildUploadedFile(file));
+    });
+
+    if (accepted.length) setAttachments((prev) => [...prev, ...accepted]);
+    setAttachmentNotice(rejected.length ? rejected.join(' · ') : '');
+  };
+
+  const handleAttachmentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    addAttachments(filesFromFileList(e.target.files));
+    e.target.value = '';
+  };
+
+  const handleAttachmentDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDraggingFiles(false);
+    addAttachments(filesFromFileList(e.dataTransfer?.files));
+  };
+
+  const handleRemoveAttachment = (id: string) => {
+    const target = attachments.find((file) => file.id === id);
+    releasePreviewUrl(target);
+    setAttachments((prev) => prev.filter((file) => file.id !== id));
+    setPreviewFile((prev) => (prev?.id === id ? null : prev));
+    setAttachmentNotice('');
+  };
+
+  /* ── Quantity / unit price keep the budget in sync ────────────────────── */
+
+  const handleQuantityChange = (value: string) => {
+    setQuantity(value);
+    setBudgetOverride(null); // fall back to auto-calculated budget
+  };
+
+  const handleUnitPriceChange = (value: string) => {
+    setTargetUnitPrice(value);
+    setBudgetOverride(null);
+  };
+
+  const closePreview = useCallback(() => setPreviewFile(null), []);
+
+  /* ── Visual references: presets + user uploads, as one list ───────────── */
+  const visualRefOptions = [
+    ...PRESET_VISUAL_REFS.map((ref) => ({ ...ref, isCustom: false as const })),
+    ...customVisualRefs.map((file) => ({
+      id: file.id,
+      label: file.name.replace(/\.[^.]+$/, ''),
+      img: file.previewUrl ?? '',
+      isCustom: true as const
+    }))
+  ];
+  const selectedVisualLabels = visualRefOptions
+    .filter((ref) => selectedVisualRefs.includes(ref.id))
+    .map((ref) => ref.label);
 
   // Ultra-simple formulation builder: keep RFQ records in sync with the
   // friendly picks (bottle count feeds the sourcing quantity field).
@@ -160,6 +403,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
     if (bottleCount) {
       setQuantity(String(bottleCount));
       setUnit('Units');
+      setBudgetOverride(null);
     }
   };
 
@@ -257,11 +501,11 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
         category: taxonomy.primaryCategory,
         quantity_required: parseInt(quantity, 10) || 1000,
         quantity_unit: unit,
-        target_budget: totalBudget ? parseFloat(totalBudget) : (parseFloat(targetUnitPrice) * (parseInt(quantity, 10) || 1000)),
+        target_budget: Math.round(effectiveBudget),
         delivery_location: deliveryCity,
         details: requirementType === 'oem'
-          ? `${details}\n\n${buildFormulationBrief(formulation)}\nPackaging: ${selectedVisualRefs.join(', ')}\nSupplier Notes: ${additionalSupplierNotes}`
-          : `${details}\n\nPackaging: ${selectedVisualRefs.join(', ')}\nSupplier Notes: ${additionalSupplierNotes}`,
+          ? `${details}\n\n${buildFormulationBrief(formulation)}\nPackaging: ${selectedVisualLabels.join(', ') || 'Not specified'}\nSupplier Notes: ${additionalSupplierNotes}`
+          : `${details}\n\nPackaging: ${selectedVisualLabels.join(', ') || 'Not specified'}\nSupplier Notes: ${additionalSupplierNotes}`,
         attachments: attachments.map(a => a.name),
         status: 'new',
         type: 'public_rfq',
@@ -660,49 +904,119 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                     onChange={handleTaxonomyChange}
                     showValidationError={showTaxonomyError}
                   >
-                    {/* Visual Reference Thumbnails */}
+                    {/* Visual Reference Thumbnails — presets + user uploads */}
                     <div className="space-y-2">
-                      <label className="text-[13px] font-bold text-[#2A0E3F] flex items-center justify-between">
+                      <label className="text-[13px] font-bold text-[#2A0E3F] flex items-center justify-between gap-2">
                         <span>Visual References (Style / Texture)</span>
-                        <span className="text-[11px] text-[#5B4A6E] font-medium uppercase tracking-wider">Select up to 3</span>
+                        <span
+                          className={`text-[11px] font-medium uppercase tracking-wider ${
+                            selectedVisualRefs.length >= MAX_VISUAL_REFS ? 'text-[#6B2D8C]' : 'text-[#5B4A6E]'
+                          }`}
+                        >
+                          {selectedVisualRefs.length} / {MAX_VISUAL_REFS} selected
+                        </span>
                       </label>
 
-                      <div className="flex gap-3 overflow-x-auto pb-2">
-                        {[
-                          { id: 'dropper', label: 'Dropper', img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=300&q=80' },
-                          { id: 'pump', label: 'Pump Bottle', img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=300&q=80' },
-                          { id: 'jar', label: 'Glass Jar', img: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=300&q=80' }
-                        ].map((ref) => {
+                      <div className="grid grid-cols-[repeat(auto-fill,minmax(96px,1fr))] gap-3">
+                        {visualRefOptions.map((ref) => {
                           const isSelected = selectedVisualRefs.includes(ref.id);
+                          const uploadedFile = ref.isCustom ? customVisualRefs.find((f) => f.id === ref.id) : undefined;
                           return (
                             <div
                               key={ref.id}
-                              onClick={() => {
-                                if (isSelected) {
-                                  setSelectedVisualRefs(selectedVisualRefs.filter((r) => r !== ref.id));
-                                } else {
-                                  setSelectedVisualRefs([...selectedVisualRefs, ref.id]);
+                              role="checkbox"
+                              aria-checked={isSelected}
+                              aria-label={ref.label}
+                              tabIndex={0}
+                              onClick={() => toggleVisualRef(ref.id)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  toggleVisualRef(ref.id);
                                 }
                               }}
-                              className={`w-24 h-24 rounded-2xl overflow-hidden border-2 cursor-pointer shrink-0 relative transition-all ${
-                                isSelected ? 'border-[#6B2D8C] ring-2 ring-[#F5EEF8]' : 'border-[#E8DEEF]'
+                              title={ref.label}
+                              className={`group relative aspect-square rounded-2xl overflow-hidden border-2 cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A961] ${
+                                isSelected
+                                  ? 'border-[#6B2D8C] ring-2 ring-[#F5EEF8]'
+                                  : 'border-[#E8DEEF] hover:border-[#C9A961]'
                               }`}
                             >
-                              <img src={ref.img} alt={ref.label} className="w-full h-full object-cover" />
+                              {ref.img ? (
+                                <img src={ref.img} alt={ref.label} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full bg-[#F4F0E9] flex items-center justify-center text-[#7E6C96]">
+                                  <FileText className="w-6 h-6" />
+                                </div>
+                              )}
                               <div className="absolute inset-0 bg-black/20"></div>
+
                               <span className="absolute bottom-1.5 left-1.5 right-1.5 text-[10px] font-bold text-white bg-black/60 px-1.5 py-0.5 rounded text-center truncate">
                                 {ref.label}
                               </span>
+
+                              {/* Selected check */}
+                              {isSelected && (
+                                <span className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-[#6B2D8C] text-white flex items-center justify-center shadow-2xs">
+                                  <Check className="w-3 h-3" />
+                                </span>
+                              )}
+
+                              {/* Uploaded images: preview + remove */}
+                              {ref.isCustom && (
+                                <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    aria-label={`Preview ${ref.label}`}
+                                    title="Preview image"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (uploadedFile) setPreviewFile(uploadedFile);
+                                    }}
+                                    className="w-5 h-5 rounded-full bg-black/60 hover:bg-[#6B2D8C] text-white flex items-center justify-center transition-colors cursor-pointer"
+                                  >
+                                    <Eye className="w-3 h-3" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    aria-label={`Remove ${ref.label}`}
+                                    title="Remove image"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRemoveVisualRef(ref.id);
+                                    }}
+                                    className="w-5 h-5 rounded-full bg-black/60 hover:bg-[#E11D48] text-white flex items-center justify-center transition-colors cursor-pointer"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           );
                         })}
 
-                        <label className="w-24 h-24 rounded-2xl border-2 border-dashed border-[#E8DEEF] bg-[#FDFBF7] hover:bg-[#F4F0E9] flex flex-col items-center justify-center text-[#5B4A6E] cursor-pointer shrink-0 transition-colors">
+                        {/* + Add Own — opens the native file picker (JPG / PNG / WEBP) */}
+                        <label className="relative aspect-square rounded-2xl border-2 border-dashed border-[#E8DEEF] bg-[#FDFBF7] hover:bg-[#F4F0E9] hover:border-[#6B2D8C] flex flex-col items-center justify-center gap-1 text-[#5B4A6E] cursor-pointer transition-colors">
                           <Plus className="w-5 h-5 text-[#6B2D8C]" />
-                          <span className="text-[10px] font-bold mt-1">Add Own</span>
-                          <input type="file" onChange={handleFileUpload} className="hidden" />
+                          <span className="text-[10px] font-bold">Add Own</span>
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            multiple
+                            onChange={handleVisualRefUpload}
+                            className="hidden"
+                          />
                         </label>
                       </div>
+
+                      <p className="text-[11px] text-[#7E6C96] font-medium">
+                        Tap a tile to select it, or upload your own JPG / PNG reference images (max 10 MB each).
+                      </p>
+                      {visualRefNotice && (
+                        <p className={`text-[11px] font-bold ${visualRefNotice.includes('—') ? 'text-[#E11D48]' : 'text-[#6B2D8C]'}`}>
+                          {visualRefNotice}
+                        </p>
+                      )}
                     </div>
                   </ProductTaxonomySelector>
                 </section>
@@ -730,8 +1044,9 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                       <div className="flex gap-2">
                         <input
                           type="number"
+                          min="1"
                           value={quantity}
-                          onChange={(e) => setQuantity(e.target.value)}
+                          onChange={(e) => handleQuantityChange(e.target.value)}
                           placeholder="e.g., 2500"
                           className="flex-1 bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] rounded-xl px-4 py-3.5 text-[14px] font-bold text-[#2A0E3F] outline-none"
                         />
@@ -778,32 +1093,72 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-[13px] font-bold text-[#2A0E3F]">Target Unit Price (USD)</label>
+                      <label className="text-[13px] font-bold text-[#2A0E3F]">Target Unit Price (INR)</label>
                       <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7E6C96] font-bold">$</span>
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7E6C96] font-bold">₹</span>
                         <input
                           type="number"
-                          step="0.10"
+                          min="0"
+                          step="1"
                           value={targetUnitPrice}
-                          onChange={(e) => setTargetUnitPrice(e.target.value)}
-                          placeholder="e.g. 3.50"
-                          className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] rounded-xl pl-8 pr-4 py-3.5 text-[14px] font-bold text-[#2A0E3F] outline-none"
+                          onChange={(e) => handleUnitPriceChange(e.target.value)}
+                          placeholder="e.g. 290"
+                          className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] rounded-xl pl-8 pr-16 py-3.5 text-[14px] font-bold text-[#2A0E3F] outline-none"
                         />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-bold text-[#7E6C96] whitespace-nowrap">
+                          / {unit}
+                        </span>
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[13px] font-bold text-[#2A0E3F]">Total Estimated Budget (USD)</label>
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7E6C96] font-bold">$</span>
-                        <input
-                          type="number"
-                          value={totalBudget}
-                          onChange={(e) => setTotalBudget(e.target.value)}
-                          placeholder="e.g. 8750"
-                          className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] rounded-xl pl-8 pr-4 py-3.5 text-[14px] font-bold text-[#2A0E3F] outline-none"
-                        />
-                      </div>
+                      <label className="text-[13px] font-bold text-[#2A0E3F] flex items-center justify-between gap-2">
+                        <span>Total Estimated Budget (INR)</span>
+                        <span
+                          className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                            isBudgetOverridden ? 'text-[#6B2D8C] bg-[#EDD9F5]' : 'text-[#5B4A6E] bg-[#F5EEF8]'
+                          }`}
+                        >
+                          {isBudgetOverridden ? 'Manual' : 'Auto-calculated'}
+                        </span>
+                      </label>
+
+                      {isBudgetOverridden ? (
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7E6C96] font-bold">₹</span>
+                          <input
+                            type="number"
+                            min="0"
+                            value={budgetOverride}
+                            onChange={(e) => setBudgetOverride(e.target.value)}
+                            placeholder="e.g. 725000"
+                            className="w-full bg-[#FDFBF7] border border-[#C9A961] rounded-xl pl-8 pr-20 py-3.5 text-[14px] font-bold text-[#2A0E3F] outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setBudgetOverride(null)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] font-bold text-[#6B2D8C] hover:text-[#4A2560] px-3 py-1.5 rounded-lg hover:bg-[#F5EEF8] transition-colors cursor-pointer"
+                          >
+                            Auto
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between gap-3 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl pl-4 pr-2 py-2.5 min-h-[54px]">
+                          <div className="min-w-0">
+                            <p className="text-[18px] font-extrabold text-[#2A0E3F] truncate">{formatINR(effectiveBudget)}</p>
+                            <p className="text-[10.5px] text-[#7E6C96] font-medium truncate">
+                              {formatNumberIN(quantityNumber)} {unit} × {formatINR(unitPriceNumber)}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setBudgetOverride(String(Math.round(computedBudget)))}
+                            className="shrink-0 text-[11px] font-bold text-[#6B2D8C] px-3 py-2 rounded-lg hover:bg-[#F5EEF8] transition-colors cursor-pointer"
+                          >
+                            Edit
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </section>
@@ -864,44 +1219,121 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
 
                 {/* 6. Attachments Section */}
                 <section className="space-y-4">
-                  <h3 className="text-[14px] font-bold text-[#2A0E3F]">Attachments (Optional)</h3>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                    <h3 className="text-[14px] font-bold text-[#2A0E3F]">Attachments (Optional)</h3>
+                    <span className="text-[11px] text-[#5B4A6E] font-medium">
+                      {attachments.length} file{attachments.length === 1 ? '' : 's'} attached
+                    </span>
+                  </div>
 
-                  <div className="border-2 border-dashed border-[#E8DEEF] hover:border-[#6B2D8C] rounded-2xl p-8 text-center bg-[#FDFBF7] transition-all cursor-pointer group">
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDraggingFiles(true);
+                    }}
+                    onDragLeave={(e) => {
+                      e.preventDefault();
+                      setIsDraggingFiles(false);
+                    }}
+                    onDrop={handleAttachmentDrop}
+                    className={`border-2 border-dashed rounded-2xl p-8 text-center bg-[#FDFBF7] transition-all cursor-pointer group ${
+                      isDraggingFiles ? 'border-[#6B2D8C] bg-[#F5EEF8]/60' : 'border-[#E8DEEF] hover:border-[#6B2D8C]'
+                    }`}
+                  >
                     <label className="cursor-pointer block">
                       <div className="w-14 h-14 rounded-full bg-[#F5EEF8] text-[#6B2D8C] flex items-center justify-center mx-auto mb-3 group-hover:scale-105 transition-transform">
                         <Upload className="w-7 h-7" />
                       </div>
-                      <p className="text-[14px] font-bold text-[#2A0E3F]">Click to upload or drag and drop</p>
-                      <p className="text-[12px] text-[#5B4A6E] font-medium mt-1">
-                        Upload spec sheets, benchmark product photos, or brand guidelines (PDF, JPG, PNG up to 10MB)
+                      <p className="text-[14px] font-bold text-[#2A0E3F]">
+                        {isDraggingFiles ? 'Drop your files to attach them' : 'Click to upload or drag and drop'}
                       </p>
-                      <input type="file" onChange={handleFileUpload} className="hidden" />
+                      <p className="text-[12px] text-[#5B4A6E] font-medium mt-1">
+                        Upload spec sheets, benchmark product photos, or brand guidelines (PDF, DOC, JPG, PNG, WEBP up to 10MB)
+                      </p>
+                      <input
+                        type="file"
+                        multiple
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,image/*,application/pdf"
+                        onChange={handleAttachmentUpload}
+                        className="hidden"
+                      />
                     </label>
                   </div>
 
-                  {/* Attachment Preview Cards */}
+                  {attachmentNotice && (
+                    <p className="text-[11.5px] font-bold text-[#E11D48]">{attachmentNotice}</p>
+                  )}
+
+                  {/* Attachment Preview Cards — real thumbnails for images, icon + size for docs */}
                   {attachments.length > 0 && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      {attachments.map((file) => (
-                        <div key={file.id} className="bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl p-3 flex items-center justify-between">
-                          <div className="flex items-center gap-2.5 truncate">
-                            <div className="w-8 h-8 rounded-lg bg-[#F5EEF8] text-[#6B2D8C] flex items-center justify-center shrink-0">
-                              <FileText className="w-4 h-4" />
-                            </div>
-                            <div className="truncate">
-                              <p className="text-[12px] font-bold text-[#2A0E3F] truncate">{file.name}</p>
-                              <p className="text-[10px] text-[#7E6C96] font-medium">{file.size}</p>
+                      {attachments.map((file) => {
+                        const isImage = file.kind === 'image';
+                        return (
+                          <div
+                            key={file.id}
+                            className="group bg-white border border-[#E8DEEF] hover:border-[#6B2D8C]/40 rounded-xl overflow-hidden transition-all shadow-2xs"
+                          >
+                            {/* Thumbnail / document placeholder — click opens the lightbox */}
+                            <button
+                              type="button"
+                              onClick={() => setPreviewFile(file)}
+                              aria-label={`Preview ${file.name}`}
+                              className="relative block w-full h-28 bg-[#F4F0E9] overflow-hidden cursor-pointer"
+                            >
+                              {isImage && file.previewUrl ? (
+                                <img src={file.previewUrl} alt={file.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex flex-col items-center justify-center gap-1.5 text-[#6B2D8C]">
+                                  <FileText className="w-8 h-8" />
+                                  <span className="text-[10px] font-extrabold uppercase tracking-wider">
+                                    {file.kind === 'pdf' ? 'PDF' : file.name.split('.').pop()?.toUpperCase() || 'DOC'}
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Hover overlay with preview affordance */}
+                              <span className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                                <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 text-[#2A0E3F] rounded-full w-9 h-9 flex items-center justify-center shadow-md">
+                                  <Eye className="w-4 h-4" />
+                                </span>
+                              </span>
+                            </button>
+
+                            <div className="p-3 flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="text-[12px] font-bold text-[#2A0E3F] truncate" title={file.name}>
+                                  {file.name}
+                                </p>
+                                <p className="text-[10px] text-[#7E6C96] font-medium">
+                                  {file.sizeLabel}
+                                  {isImage ? ' · Image' : ' · Document'}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-0.5 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => setPreviewFile(file)}
+                                  title="Preview file"
+                                  aria-label={`Preview ${file.name}`}
+                                  className="text-[#7E6C96] hover:text-[#6B2D8C] hover:bg-[#F5EEF8] p-1.5 rounded-md transition-colors cursor-pointer"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveAttachment(file.id)}
+                                  title="Remove file"
+                                  aria-label={`Remove ${file.name}`}
+                                  className="text-[#7E6C96] hover:text-[#E11D48] hover:bg-rose-50 p-1.5 rounded-md transition-colors cursor-pointer"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveFile(file.id)}
-                            className="text-[#7E6C96] hover:text-[#E11D48] p-1 rounded-md transition-colors cursor-pointer"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </section>
@@ -1227,9 +1659,22 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                               <span className="text-[10.5px] font-extrabold uppercase tracking-wider">Target Unit Price</span>
                             </div>
                             <div className="flex items-baseline gap-1 mt-1">
-                              <p className="text-[15px] font-extrabold text-[#2A0E3F]">${targetUnitPrice || '3.50'}</p>
+                              <p className="text-[15px] font-extrabold text-[#2A0E3F]">{formatINR(unitPriceNumber)}</p>
                               <span className="text-[11px] font-bold text-[#6B2D8C] bg-[#EDE0F5] px-2 py-0.5 rounded-md ml-1.5">
-                                USD / Unit
+                                INR / Unit
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="bg-[#FDFBF7] p-4 rounded-xl border border-[#E8DEEF] flex flex-col justify-center">
+                            <div className="flex items-center gap-1.5 mb-1 text-[#5B4A6E]">
+                              <IndianRupee className="w-4 h-4 text-[#6B2D8C]" />
+                              <span className="text-[10.5px] font-extrabold uppercase tracking-wider">Total Estimated Budget</span>
+                            </div>
+                            <div className="flex items-baseline gap-1 mt-1">
+                              <p className="text-[15px] font-extrabold text-[#2A0E3F]">{formatINR(effectiveBudget)}</p>
+                              <span className="text-[11px] font-bold text-[#6B2D8C] bg-[#F5EEF8] px-2 py-0.5 rounded-md ml-1.5">
+                                {isBudgetOverridden ? 'Manual budget' : 'Auto-calculated'}
                               </span>
                             </div>
                           </div>
@@ -1715,7 +2160,123 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
           </form>
         )}
 
+        {/* Fullscreen file preview lightbox — attachments & uploaded visual references */}
+        <FilePreviewLightbox file={previewFile} onClose={closePreview} />
+
       </main>
+    </div>
+  );
+};
+
+/* ════════════════════════════════════════════════════════════════════════════
+   FILE PREVIEW LIGHTBOX
+   Fullscreen, centered preview for uploaded attachments and custom visual
+   references: real image for JPG/PNG/WEBP, inline PDF viewer, graceful
+   fallback card for other document types.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+interface FilePreviewLightboxProps {
+  file: UploadedFile | null;
+  onClose: () => void;
+}
+
+const FilePreviewLightbox: React.FC<FilePreviewLightboxProps> = ({ file, onClose }) => {
+  useEffect(() => {
+    if (!file) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [file, onClose]);
+
+  if (!file) return null;
+
+  const isImage = file.kind === 'image';
+  const canRender = isImage || file.kind === 'pdf';
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Preview of ${file.name}`}
+      onClick={onClose}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 sm:p-6"
+    >
+      {/* Close button */}
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close preview"
+        title="Close (Esc)"
+        className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center border border-white/20 transition-colors cursor-pointer"
+      >
+        <X className="w-5 h-5" />
+      </button>
+
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-5xl max-h-[92vh] flex flex-col gap-3"
+      >
+        {/* Header: name, size, open/download */}
+        <div className="flex items-center justify-between gap-3 text-white px-1">
+          <div className="min-w-0">
+            <p className="text-[13.5px] font-bold truncate">{file.name}</p>
+            <p className="text-[11px] text-white/60 font-medium truncate">
+              {file.sizeLabel} · {isImage ? 'Image' : file.kind === 'pdf' ? 'PDF Document' : 'Document'}
+            </p>
+          </div>
+
+          {file.previewUrl && (
+            <a
+              href={file.previewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              download={file.name}
+              className="shrink-0 inline-flex items-center gap-1.5 text-[12px] font-bold text-white/90 bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-2 rounded-lg transition-colors"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Open file</span>
+            </a>
+          )}
+        </div>
+
+        {/* Preview surface */}
+        <div className="flex-1 min-h-0 flex items-center justify-center bg-black/40 rounded-2xl border border-white/10 overflow-hidden">
+          {isImage && file.previewUrl ? (
+            <img
+              src={file.previewUrl}
+              alt={file.name}
+              className="max-h-[72vh] max-w-full object-contain"
+            />
+          ) : file.kind === 'pdf' && file.previewUrl ? (
+            <iframe src={file.previewUrl} title={file.name} className="w-full h-[72vh] bg-white" />
+          ) : (
+            <div className="flex flex-col items-center gap-3 text-white/70 p-10 text-center">
+              <FileText className="w-12 h-12" />
+              <p className="text-[13px] font-bold">Preview isn’t available for this file type</p>
+              <p className="text-[12px] text-white/50 break-all max-w-md">{file.name}</p>
+              {!canRender && (
+                <p className="text-[11.5px] text-white/40">
+                  The file is still attached to your RFQ and will be shared with matching suppliers.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        <p className="text-center text-[11px] text-white/40 font-medium">
+          Click anywhere outside the preview or press Esc to close
+        </p>
+      </div>
     </div>
   );
 };
