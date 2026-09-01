@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../data/categories';
 import {
   X,
   CheckCircle2,
@@ -14,6 +13,12 @@ import {
   Building2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { ProductTaxonomySelector } from './ProductTaxonomySelector';
+import {
+  createInitialTaxonomyState,
+  isTaxonomySelectionValid,
+  type TaxonomySelectionState
+} from './taxonomyFormHandler';
 
 interface RFQModalProps {
   isOpen: boolean;
@@ -22,8 +27,9 @@ interface RFQModalProps {
 
 export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
   const [submitted, setSubmitted] = useState(false);
-  const [category, setCategory] = useState('Skincare');
-  const [subcategory, setSubcategory] = useState('Serums & Treatments');
+  const [taxonomy, setTaxonomy] = useState<TaxonomySelectionState>(
+    createInitialTaxonomyState('Skincare', ['Serums & Treatments'])
+  );
   const [productName, setProductName] = useState('');
   const [quantity, setQuantity] = useState('');
   const [unit, setUnit] = useState('Units');
@@ -45,12 +51,17 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
       setErrorMessage('Please fill in product name, required quantity, and your contact phone.');
       return;
     }
+    if (!isTaxonomySelectionValid(taxonomy)) {
+      setErrorMessage('Please pick at least one subcategory so suppliers can match your request.');
+      return;
+    }
     setErrorMessage('');
     setSubmitted(true);
   };
 
   const handleReset = () => {
     setSubmitted(false);
+    setTaxonomy(createInitialTaxonomyState('Skincare', ['Serums & Treatments']));
     setProductName('');
     setQuantity('');
     setCity('');
@@ -96,7 +107,7 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Modal Content with AnimatePresence */}
-        <div className="p-6 relative">
+        <div className="p-6 relative max-h-[calc(100vh-8rem)] overflow-y-auto">
           <AnimatePresence mode="wait">
             {submitted ? (
               <motion.div
@@ -228,46 +239,11 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
                   </div>
                 )}
 
-                {/* Category & Subcategory Row */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[12px] font-bold text-[#2A0E3F] mb-1">
-                      Category <span className="text-[#6B2D8C]">*</span>
-                    </label>
-                    <select
-                      value={category}
-                      onChange={(e) => {
-                        const newCat = e.target.value;
-                        setCategory(newCat);
-                        const subs = getSubcategoriesForCategoryName(newCat);
-                        if (subs.length > 0) setSubcategory(subs[0]);
-                      }}
-                      className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-lg px-3 py-2 text-[12.5px] text-[#2A0E3F] focus:outline-none cursor-pointer"
-                    >
-                      {Object.keys(CATEGORY_TAXONOMY).map((catName) => (
-                        <option key={catName} value={catName}>
-                          {catName}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[12px] font-bold text-[#2A0E3F] mb-1">
-                      Subcategory <span className="text-[#6B2D8C]">*</span>
-                    </label>
-                    <select
-                      value={subcategory}
-                      onChange={(e) => setSubcategory(e.target.value)}
-                      className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-lg px-3 py-2 text-[12.5px] text-[#2A0E3F] focus:outline-none cursor-pointer"
-                    >
-                      {getSubcategoriesForCategoryName(category).map((subItem) => (
-                        <option key={subItem} value={subItem}>
-                          {subItem}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                {/* Category & Subcategory (dynamic, multi-select, searchable) */}
+                <ProductTaxonomySelector
+                  value={taxonomy}
+                  onChange={(next) => setTaxonomy(next)}
+                />
 
                 {/* Product / Formulation Title */}
                 <div>

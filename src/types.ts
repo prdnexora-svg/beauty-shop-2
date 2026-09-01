@@ -101,6 +101,16 @@ export interface VerifiedSupplier {
   isGmpCertified?: boolean;
   isFdaRegistered?: boolean;
   categories: string[];
+  /** Directory lifecycle status: active | pending_verification | rejected | suspended */
+  status?: string;
+  /** Legacy/relational onboarding status: business_pending | catalog_pending | review | approved | rejected */
+  onboardingStatus?: string;
+  /** Explicit flag used by directory queries for freshly onboarded suppliers. */
+  isVerifiedSupplier?: boolean;
+  /** Brand/company story or manufacturing capabilities shown on public listing. */
+  about?: string;
+  /** Public logo / cover image from the database row. */
+  logoUrl?: string;
   specialties?: string[];
   phone: string;
   whatsapp: string;

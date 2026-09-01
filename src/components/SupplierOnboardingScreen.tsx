@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { B2B_CATEGORIES } from '../data/categories';
+import { publishSupplierProfile } from '../services/supplierService';
 import { 
   ShieldCheck, 
   ArrowRight, 
@@ -25,12 +26,19 @@ interface SupplierOnboardingScreenProps {
   onNavigateToExplore: () => void;
   /** Authentication is completed by AuthModal before this screen is mounted. */
   authenticated?: boolean;
+  /** Supabase/UUID user id (optional in local demo mode). */
+  userId?: string | null;
+  userEmail?: string | null;
+  userRole?: 'buyer' | 'supplier' | null;
 }
 
 export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> = ({
   onComplete,
   onNavigateToExplore,
-  authenticated = false
+  authenticated = false,
+  userId,
+  userEmail,
+  userRole
 }) => {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(authenticated ? 2 : 1);
   
@@ -51,6 +59,8 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
   const [isGstVerifying, setIsGstVerifying] = useState(false);
   const [gstVerified, setGstVerified] = useState(false);
   const [showSaveToast, setShowSaveToast] = useState(false);
+  const [publishToast, setPublishToast] = useState<string | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   // Draft Persistence Logic
   const saveDraft = () => {
@@ -92,10 +102,11 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
     }
   }, []);
 
-  // Clear draft on completion
-  const handleFinalComplete = () => {
-    localStorage.removeItem('nexora_onboarding_draft');
-    onComplete();
+  // Clear draft on completion, after final auto-publish to the directory.
+  const handleFinalComplete = async () => {
+    setIsPublishing(true);
+    await handlePublishSupplier(true);
+    setIsPublishing(false);
   };
 
   // All India States and Union Territories Data
@@ -201,6 +212,63 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
     setProducts(products.map(p => p.id === id ? { ...p, [field]: value } : p));
   };
 
+  /**
+   * Auto-publisher: after the Company Profile is filled (and again on the
+   * final Review step), create/update the supplier profile so the public
+   * Supplier/Brand Directory shows it instantly as "Pending Verification".
+   */
+  const handlePublishSupplier = async (finalize = false) => {
+    setIsPublishing(true);
+    const categories = [...new Set(
+      products.map((p) => p.category?.trim()).filter(Boolean) as string[]
+    )];
+    const subcategories = [...new Set(
+      products.map((p) => p.subCategory?.trim()).filter(Boolean) as string[]
+    )];
+
+    const localSupplierId = (() => {
+      const existing = localStorage.getItem('nexora_supplier_user_id');
+      if (existing) return existing;
+      const id = `local-supplier-${Date.now()}`;
+      localStorage.setItem('nexora_supplier_user_id', id);
+      return id;
+    })();
+
+    const result = await publishSupplierProfile({
+      userId: userId || localSupplierId,
+      userEmail,
+      companyName: businessName || `${supplierType || 'Beauty'} Supplier`,
+      businessType: supplierType || 'Manufacturer',
+      gstNumber: gstin,
+      brandName: businessName,
+      about: `${businessName || ''} — ${supplierType || 'B2B Beauty Supplier'} based in ${location || 'India'}.`,
+      city: selectedDistrict || location?.split(',')[0]?.trim() || 'Mumbai',
+      state: selectedState || location?.split(',')[1]?.trim() || 'Maharashtra',
+      address: `${selectedDistrict || ''}, ${selectedState || ''}, ${pincode || ''}`.replace(/^,\s*|,\s*$/g, '') || location,
+      pincode,
+      phone: mobile ? `+91 ${mobile.replace(/\D/g, '')}` : undefined,
+      whatsapp: mobile ? `+91 ${mobile.replace(/\D/g, '')}` : undefined,
+      categories: categories.length > 0 ? categories : [supplierType || 'Manufacturer'],
+      subcategories,
+      yearEstablished: String(new Date().getFullYear()),
+      isGstVerified: gstVerified
+    }, { status: 'pending_verification', isGstVerified: gstVerified });
+
+    setIsPublishing(false);
+
+    if (result.ok) {
+      if (finalize) {
+        localStorage.removeItem('nexora_onboarding_draft');
+        onComplete();
+      } else {
+        setPublishToast('Supplier profile published to the directory as Pending Verification.');
+        setTimeout(() => setPublishToast(null), 3500);
+      }
+    } else {
+      alert(result.error || 'Could not publish your supplier profile. Please try again.');
+    }
+  };
+
   const handleVerifyOtp = () => {
     setIsVerifying(true);
     
@@ -226,11 +294,16 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
     }, 1200);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    // After Business Details are complete, publish immediately so the new
+    // supplier/brand is visible in the public directory right away.
+    if (step === 2) {
+      await handlePublishSupplier(false);
+    }
     if (step < 4) {
       setStep((prev) => (prev + 1) as any);
     } else {
-      onComplete();
+      await handlePublishSupplier(true);
     }
   };
 
@@ -776,6 +849,14 @@ export const SupplierOnboardingScreen: React.FC<SupplierOnboardingScreenProps> =
                 <CheckCircle2 className="w-4 h-4" />
               </div>
               <span>Progress saved as draft</span>
+            </div>
+          )}
+          {publishToast && (
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-white border border-[#E8DEEF] text-[#2A0E3F] px-6 py-3 rounded-2xl text-[13px] font-bold shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center gap-3 animate-in slide-in-from-bottom-4 duration-300 z-50">
+              <div className="w-6 h-6 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+              <span>{publishToast}</span>
             </div>
           )}
 
