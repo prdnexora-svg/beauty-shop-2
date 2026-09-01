@@ -783,6 +783,7 @@ function NexoraShopApp() {
             <ProductDetailPage
               productId={selectedProductId}
               onBack={() => handleNavigate('explore')}
+              onNavigateToProduct={(productId) => handleNavigate('product-detail', { productId })}
               onOpenEnquiryModal={(item) => {
                 handleOpenEnquiry({
                   id: 'enq-' + Date.now(),

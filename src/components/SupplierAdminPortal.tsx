@@ -11,6 +11,7 @@ import { getStoredChatThreads, supplierReplyMessage, ChatThread } from '../data/
 import { ProductCreationWizard, CatalogProduct } from './ProductCreationWizard';
 import { db } from '../db/database';
 import { PopulatedRFQEnquiry } from '../db/types';
+import { addNotification } from '../data/notifications';
 
 // Demo tenant: in production this comes from the authenticated supplier session
 // and every db read below is scoped by RLS to the supplier's own rows.
@@ -182,6 +183,27 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
         if (rfq.status === 'new') {
           db.updateRFQStatus(rfq.id, 'responded');
         }
+        // Notify the buyer through the existing notification center
+        addNotification({
+          type: 'quote_update',
+          title: `New Sourcing Quote Received (₹${unitPrice.toLocaleString('en-IN')}/unit)`,
+          description: `Aura Beauty Labs submitted a commercial quote for "${rfq.requirement_title}" — lead time ${quoteLeadTime}. Review and compare it under My RFQs & Quotes.`,
+          priority: 'high',
+          targetScreen: 'rfq-tracking',
+          targetParams: { rfqId: rfq.id },
+          sender: {
+            name: 'Aura Beauty Labs',
+            isVerified: true,
+            location: 'Mumbai, MH'
+          },
+          metadata: {
+            rfqId: rfq.id,
+            price: `₹${unitPrice.toLocaleString('en-IN')} / unit`,
+            quantity: `${qty.toLocaleString('en-IN')} ${rfq.quantity_unit}`,
+            supplierName: 'Aura Beauty Labs',
+            productName: rfq.requirement_title
+          }
+        });
       } catch (err) {
         console.warn('[SupplierPortal] Quote persistence error handled gracefully', err);
       }

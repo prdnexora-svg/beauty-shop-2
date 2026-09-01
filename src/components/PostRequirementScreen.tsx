@@ -28,6 +28,7 @@ import {
   Filter
 } from 'lucide-react';
 import { db } from '../db/database';
+import { addNotification } from '../data/notifications';
 import { SearchableProductCombobox } from './SearchableProductCombobox';
 import type { ProductTemplate } from '../data/productTemplates';
 import { ProductTaxonomySelector } from './ProductTaxonomySelector';
@@ -493,7 +494,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
     
     try {
       // Phase 4 Relational Database Write: Public RFQ with Multi-Supplier Lead Distribution
-      db.createRFQEnquiry({
+      const createdRfq = db.createRFQEnquiry({
         buyer_id: 'buyer-prof-priya',
         supplier_id: null,
         product_id: null,
@@ -510,6 +511,22 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
         status: 'new',
         type: 'public_rfq',
         send_to_similar_suppliers: true
+      });
+
+      // Confirm publication through the existing notification center
+      const matchedCount = createdRfq.matched_supplier_ids?.length || 0;
+      addNotification({
+        type: 'rfq_response',
+        title: `Requirement published — ${matchedCount > 0 ? `${matchedCount} verified suppliers matched` : 'supplier matching in progress'}`,
+        description: `"${productName}" (${quantity || '1000'} ${unit}) is now live on the RFQ marketplace. Quotes will appear under My RFQs & Quotes.`,
+        priority: 'medium',
+        targetScreen: 'rfq-tracking',
+        targetParams: { rfqId: createdRfq.id },
+        metadata: {
+          rfqId: createdRfq.id,
+          quantity: `${quantity || '1000'} ${unit}`,
+          productName
+        }
       });
     } catch (err) {
       console.warn('[PostRequirementScreen] DB write error handled gracefully', err);
