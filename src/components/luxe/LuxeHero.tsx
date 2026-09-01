@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Search, MapPin, ChevronDown } from 'lucide-react';
+import React, { useMemo, useRef, useState } from 'react';
+import { Search, MapPin, ChevronDown, TrendingUp, Store, Tag } from 'lucide-react';
 import heroSerum from '../../assets/images/luxe/hero-serum.jpg';
 import heroBrushes from '../../assets/images/luxe/hero-brushes.jpg';
 import { Sparkles } from './Sparkles';
 import { LUXE_QUICK_TABS } from './LuxeHeader';
+import { CATEGORIES, TRENDING_PRODUCTS, VERIFIED_SUPPLIERS } from '../../data/mockData';
 
 const CITIES = [
   'All India',
@@ -27,9 +28,37 @@ interface LuxeHeroProps {
 export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => {
   const [query, setQuery] = useState('');
   const [location, setLocation] = useState('All India');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const blurTimer = useRef<number | null>(null);
+
+  // Lightweight search suggestions across products, categories & suppliers
+  const suggestions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (q.length < 2) return [];
+    const products = TRENDING_PRODUCTS
+      .filter((p) => p.title.toLowerCase().includes(q))
+      .slice(0, 4)
+      .map((p) => ({ type: 'product' as const, label: p.title }));
+    const categories = CATEGORIES
+      .filter((c) => c.name.toLowerCase().includes(q))
+      .slice(0, 3)
+      .map((c) => ({ type: 'category' as const, label: c.name }));
+    const suppliers = VERIFIED_SUPPLIERS
+      .filter((s) => s.name.toLowerCase().includes(q))
+      .slice(0, 3)
+      .map((s) => ({ type: 'supplier' as const, label: s.name }));
+    return [...products, ...categories, ...suppliers].slice(0, 8);
+  }, [query]);
+
+  const pickSuggestion = (label: string) => {
+    setQuery(label);
+    setShowSuggestions(false);
+    onSearch(label, location);
+  };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    setShowSuggestions(false);
     onSearch(query.trim(), location);
   };
 
@@ -83,14 +112,48 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
               onSubmit={submit}
               className="mt-8 glass-card rounded-2xl p-2 flex flex-col sm:flex-row items-stretch gap-2"
             >
-              <div className="flex items-center flex-1 min-w-0 pl-3.5">
+              <div className="relative flex items-center flex-1 min-w-0 pl-3.5">
                 <Search className="w-[18px] h-[18px] text-white/70 shrink-0" />
                 <input
                   value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => {
+                    blurTimer.current = window.setTimeout(() => setShowSuggestions(false), 150);
+                  }}
                   placeholder="Search products, suppliers, brands..."
                   className="w-full bg-transparent outline-none px-3 py-3 text-[14px] text-white placeholder:text-white/60"
+                  role="combobox"
+                  aria-expanded={showSuggestions && suggestions.length > 0}
+                  aria-autocomplete="list"
+                  aria-label="Search products, suppliers and brands"
                 />
+
+                {/* Search suggestions dropdown */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-30 bg-white border border-[#E8DEEF] rounded-2xl shadow-xl overflow-hidden py-1.5 text-left">
+                    {suggestions.map((s, idx) => (
+                      <button
+                        key={`${s.type}-${s.label}-${idx}`}
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => pickSuggestion(s.label)}
+                        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-[#2A0E3F] hover:bg-[#F5EEF8] transition-colors text-left"
+                      >
+                        {s.type === 'product' && <TrendingUp className="w-3.5 h-3.5 text-[#6B2D8C] shrink-0" />}
+                        {s.type === 'category' && <Tag className="w-3.5 h-3.5 text-[#C9A961] shrink-0" />}
+                        {s.type === 'supplier' && <Store className="w-3.5 h-3.5 text-[#5B4A6E] shrink-0" />}
+                        <span className="truncate font-medium">{s.label}</span>
+                        <span className="ml-auto text-[10px] uppercase font-bold tracking-wider text-[#8A7A94]">
+                          {s.type}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="hidden sm:block w-px bg-white/25 my-2" />

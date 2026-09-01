@@ -33,6 +33,7 @@ import { ProductCompareModal } from './ProductCompareModal';
 import { SupplierComparisonModal } from './SupplierComparisonModal';
 import { FilterPanel } from './FilterPanel';
 import { VerifiedBadge } from './VerifiedBadge';
+import { getSavedProductIds, toggleSavedProduct } from '../data/savedStore';
 
 interface SearchFilterScreenProps {
   initialQuery?: string;
@@ -90,7 +91,12 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
   const [isBusinessVerifiedOnly, setIsBusinessVerifiedOnly] = useState(false);
   const [isExportReadyOnly, setIsExportReadyOnly] = useState(false);
   const [maxPrice, setMaxPrice] = useState<number>(5000);
-  const [favorites, setFavorites] = useState<Record<string, boolean>>({});
+  // Saved products persist across sessions via the shared saved-items store
+  const [favorites, setFavorites] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    getSavedProductIds().forEach((id) => { initial[id] = true; });
+    return initial;
+  });
 
   // Category & Subcategory Data from CATEGORY_TAXONOMY
   const CATEGORIES = useMemo(() => {
@@ -323,7 +329,8 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
   };
 
   const toggleFavorite = (id: string) => {
-    setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
+    const nowSaved = toggleSavedProduct(id);
+    setFavorites((prev) => ({ ...prev, [id]: nowSaved }));
   };
 
   const toggleCompare = (id: string) => {

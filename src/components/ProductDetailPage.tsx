@@ -19,7 +19,8 @@ import {
   Layers,
   FlaskConical,
   Truck,
-  HelpCircle
+  HelpCircle,
+  IndianRupee
 } from 'lucide-react';
 import { ProductDetailData } from '../types';
 import { SPONSORED_PRODUCTS_DB } from '../data/sponsoredProductsData';
@@ -268,10 +269,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
               {/* Conversion CTAs */}
               <div className="space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <button
                     onClick={() => onOpenEnquiryModal({ name: product.title, supplierName: product.supplierName })}
                     className="w-full py-3.5 px-3 rounded-xl bg-[#6B2D8C] text-white font-extrabold text-xs sm:text-sm hover:bg-[#4A2560] transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-1.5"
+                  >
+                    <IndianRupee className="w-4 h-4" />
+                    Get Best Price
+                  </button>
+
+                  <button
+                    onClick={() => onOpenEnquiryModal({ name: product.title, supplierName: product.supplierName })}
+                    className="w-full py-3.5 px-3 rounded-xl bg-white border-2 border-[#6B2D8C] text-[#6B2D8C] font-extrabold text-xs sm:text-sm hover:bg-[#F5EEF8] transition-all flex items-center justify-center gap-1.5"
                   >
                     <Send className="w-4 h-4" />
                     Enquiry

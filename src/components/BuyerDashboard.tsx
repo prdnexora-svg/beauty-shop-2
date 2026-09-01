@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   ClipboardList, 
   MessageSquare, 
-  Bookmark, 
+  Bookmark,
+  BookmarkCheck, 
   Users, 
   Plus, 
   Search, 
@@ -52,6 +53,7 @@ import {
 } from 'lucide-react';
 import { BuyerEnquiry, BuyerRFQ, VerifiedSupplier } from '../types';
 import { BUYER_MOCK_ENQUIRIES, BUYER_MOCK_RFQS, VERIFIED_SUPPLIERS } from '../data/mockData';
+import { getSavedSupplierIds, subscribeSavedStore, toggleSavedSupplier } from '../data/savedStore';
 import { EditProfileModal, BuyerProfileData } from './EditProfileModal';
 import { FollowerNetworkModal } from './FollowerNetworkModal';
 import { NotificationCenter } from './NotificationCenter';
@@ -165,6 +167,16 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   });
 
   const buyerProfile = propBuyerProfile || localBuyerProfile;
+
+  // --- Persistent Saved Suppliers shortlist (shared with search screens) ---
+  const [savedSupplierIds, setSavedSupplierIds] = useState<string[]>(() => getSavedSupplierIds());
+  useEffect(() => {
+    const unsubscribe = subscribeSavedStore(() => setSavedSupplierIds(getSavedSupplierIds()));
+    return unsubscribe;
+  }, []);
+  const savedSupplierList = VERIFIED_SUPPLIERS.filter((s) => savedSupplierIds.includes(s.id));
+  const showingSuggestedSuppliers = savedSupplierList.length === 0;
+  const savedTabSuppliers = showingSuggestedSuppliers ? VERIFIED_SUPPLIERS.slice(0, 3) : savedSupplierList;
 
   // --- Dynamic Follow & Live Tracking System ---
   const [buyerFollowed, setBuyerFollowed] = useState<boolean>(() => {
@@ -1598,11 +1610,15 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
             <div className="space-y-6 max-w-5xl mx-auto animate-in fade-in-50 duration-200">
               <div>
                 <h2 className="text-xl font-black text-[#2A0E3F]">Saved Suppliers & Products</h2>
-                <p className="text-xs text-[#5B4A6E] mt-0.5">Your shortlisted B2B manufacturing partners and catalog items</p>
+                <p className="text-xs text-[#5B4A6E] mt-0.5">
+                  {showingSuggestedSuppliers
+                    ? 'No suppliers saved yet — here are verified partners suggested for you. Use the bookmark icon on any supplier card to build your shortlist.'
+                    : `Your shortlisted B2B manufacturing partners (${savedSupplierList.length} saved)`}
+                </p>
               </div>
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {VERIFIED_SUPPLIERS.slice(0, 3).map((sup) => (
+                {savedTabSuppliers.map((sup) => (
                   <div key={sup.id} className="bg-white border border-[#E8DEEF] rounded-2xl p-6 shadow-xs hover:shadow-md transition-all space-y-4">
                     <div className="flex items-start justify-between">
                       <div className="w-12 h-12 rounded-xl bg-[#F5EEF8] text-[#6B2D8C] font-bold flex items-center justify-center text-lg">
@@ -1651,6 +1667,15 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                           </>
                         )}
                       </button>
+                      {!showingSuggestedSuppliers && (
+                        <button
+                          onClick={() => toggleSavedSupplier(sup.id)}
+                          title="Remove from Saved Suppliers"
+                          className="py-2 px-2.5 rounded-xl border border-[#E8DEEF] text-[#6B2D8C] hover:bg-[#F5EEF8] transition-all cursor-pointer"
+                        >
+                          <BookmarkCheck className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
