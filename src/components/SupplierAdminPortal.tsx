@@ -96,6 +96,7 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
   
   // Product creation state (Screen 20) — persisted so the catalog survives reloads
   const [products, setProducts] = useState<CatalogProduct[]>(loadStoredCatalog);
+  const [editingProduct, setEditingProduct] = useState<CatalogProduct | null>(null);
   const [showMobileToBuyers, setShowMobileToBuyers] = useState(true);
 
   useEffect(() => {
@@ -144,12 +145,21 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
     }, 1200);
   };
 
-  const handlePublishProduct = (product: CatalogProduct) => {
-    setProducts((prev) => [product, ...prev]);
+  const upsertProduct = (product: CatalogProduct) => {
+    setProducts((prev) => {
+      const exists = prev.some((p) => p.id === product.id);
+      return exists ? prev.map((p) => (p.id === product.id ? product : p)) : [product, ...prev];
+    });
+    setEditingProduct(null);
   };
 
-  const handleSaveDraftProduct = (product: CatalogProduct) => {
-    setProducts((prev) => [product, ...prev]);
+  const handlePublishProduct = (product: CatalogProduct) => upsertProduct(product);
+  const handleSaveDraftProduct = (product: CatalogProduct) => upsertProduct(product);
+
+  const handleToggleProductStatus = (id: string) => {
+    setProducts((prev) => prev.map((p) =>
+      p.id === id ? { ...p, status: p.status === 'Active' ? 'Draft' : 'Active' } : p
+    ));
   };
 
   const handleSendQuote = (e: React.FormEvent) => {
@@ -517,6 +527,8 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
             <ProductCreationWizard
               onPublish={handlePublishProduct}
               onSaveDraft={handleSaveDraftProduct}
+              editingProduct={editingProduct}
+              onCancelEdit={() => setEditingProduct(null)}
               onViewProductList={() => {
                 document.getElementById('catalog-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
@@ -578,6 +590,24 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
                             className="text-[#6B2D8C] hover:text-[#4A2560] font-bold inline-flex items-center gap-1"
                           >
                             <Eye className="w-3.5 h-3.5" /> View
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingProduct(p);
+                              document.querySelector('.wizard-scroll-anchor, #catalog-list')?.previousElementSibling?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className="text-zinc-600 hover:text-zinc-900 font-bold inline-flex items-center gap-1"
+                            title="Edit this listing in the wizard above"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" /> Edit
+                          </button>
+                          <button
+                            onClick={() => handleToggleProductStatus(p.id)}
+                            className={`font-bold inline-flex items-center gap-1 ${p.status === 'Active' ? 'text-amber-600 hover:text-amber-800' : 'text-emerald-600 hover:text-emerald-800'}`}
+                            title={p.status === 'Active' ? 'Deactivate (move to Draft — hidden from buyers)' : 'Activate (publish to buyers)'}
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" /> {p.status === 'Active' ? 'Deactivate' : 'Activate'}
                           </button>
                           <button 
                             onClick={() => setProducts(products.filter(item => item.id !== p.id))}

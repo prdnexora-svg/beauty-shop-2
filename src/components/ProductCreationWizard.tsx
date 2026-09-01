@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Check, ChevronLeft, ChevronRight, UploadCloud, X, ImagePlus, Trash2,
   Package, Tag, Info, Sparkles, CheckCircle2, ListPlus, Eye, Save,
@@ -27,6 +27,7 @@ export interface CatalogProduct {
   tags: string[];
   attributes: ProductAttribute[];
   images: string[];
+  videoUrl?: string;
   status: 'Active' | 'Draft';
 }
 
@@ -34,6 +35,9 @@ interface ProductCreationWizardProps {
   onPublish: (product: CatalogProduct) => void;
   onSaveDraft: (product: CatalogProduct) => void;
   onViewProductList: () => void;
+  /** When set, the wizard prefills and updates this listing instead of creating a new one. */
+  editingProduct?: CatalogProduct | null;
+  onCancelEdit?: () => void;
 }
 
 const UNITS = ['Pcs', 'Kg', 'Pack', 'Carton', 'Liter', 'Dozen', 'Gram', 'ml'];
@@ -55,6 +59,7 @@ const EMPTY_FORM = {
   tags: '',
   attributes: [{ label: 'Size', value: '' }, { label: 'Color', value: '' }] as ProductAttribute[],
   images: [] as string[],
+  videoUrl: '',
 };
 
 type FormState = typeof EMPTY_FORM;
@@ -67,6 +72,8 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
   onPublish,
   onSaveDraft,
   onViewProductList,
+  editingProduct = null,
+  onCancelEdit,
 }) => {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
@@ -75,6 +82,34 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
   const [success, setSuccess] = useState<'publish' | 'draft' | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Edit mode: prefill the wizard with the listing being edited
+  useEffect(() => {
+    if (!editingProduct) return;
+    setForm({
+      name: editingProduct.name,
+      category: editingProduct.category,
+      subcategory: editingProduct.subcategory || '',
+      brand: editingProduct.brand || '',
+      description: editingProduct.description || '',
+      price: editingProduct.price,
+      mrp: editingProduct.mrp || '',
+      stockQty: editingProduct.stockQty,
+      unit: editingProduct.unit,
+      taxRate: editingProduct.taxRate,
+      sku: editingProduct.sku || '',
+      tags: editingProduct.tags.join(', '),
+      attributes: editingProduct.attributes.length > 0
+        ? editingProduct.attributes
+        : [{ label: 'Size', value: '' }, { label: 'Color', value: '' }],
+      images: editingProduct.images,
+      videoUrl: editingProduct.videoUrl || '',
+    });
+    setErrors({});
+    setTouched({});
+    setSuccess(null);
+    setStep(0);
+  }, [editingProduct?.id]);
 
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -149,7 +184,7 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
   };
 
   const buildProduct = (status: 'Active' | 'Draft'): CatalogProduct => ({
-    id: `sp-${Date.now()}`,
+    id: editingProduct ? editingProduct.id : `sp-${Date.now()}`,
     name: form.name.trim(),
     price: form.price.trim(),
     mrp: form.mrp.trim() || undefined,
@@ -167,6 +202,7 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
       .filter(Boolean),
     attributes: form.attributes.filter((a) => a.value.trim()),
     images: form.images,
+    videoUrl: form.videoUrl.trim() || undefined,
     status,
   });
 
@@ -221,11 +257,22 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
           <div>
             <h3 className="font-black text-base text-zinc-950 flex items-center gap-2">
               <Package className="w-5 h-5 text-[#6B2D8C]" />
-              Add New Product
+              {editingProduct ? `Edit Product — ${editingProduct.name}` : 'Add New Product'}
             </h3>
             <p className="text-xs text-[#5B4A6E] mt-1">
-              Just 3 required fields — fill the rest whenever you're ready.
+              {editingProduct
+                ? 'Update any field, then re-publish or save as draft.'
+                : "Just 3 required fields — fill the rest whenever you're ready."}
             </p>
+            {editingProduct && onCancelEdit && (
+              <button
+                type="button"
+                onClick={() => { onCancelEdit(); setForm(EMPTY_FORM); setErrors({}); setTouched({}); setStep(0); }}
+                className="mt-1.5 text-[11px] font-bold text-[#6B2D8C] hover:underline"
+              >
+                Cancel editing — switch back to Add New Product
+              </button>
+            )}
           </div>
           <div className="shrink-0 text-right">
             <div className="flex items-center gap-2 justify-end">
@@ -543,6 +590,21 @@ export const ProductCreationWizard: React.FC<ProductCreationWizardProps> = ({
                 </p>
               </div>
             )}
+
+            <div>
+              {label('Product Video URL', true)}
+              <input
+                value={form.videoUrl}
+                onChange={(e) => update('videoUrl', e.target.value)}
+                placeholder="e.g. https://youtube.com/watch?v=... (demo, walkthrough or facility video)"
+                className={`${inputBase} border-[#E8DEEF] focus:border-[#C9A961]`}
+                type="url"
+                inputMode="url"
+              />
+              <p className="text-[11px] text-zinc-400 mt-1.5">
+                Optional — a YouTube/Instagram product video shows on your listing and boosts buyer trust.
+              </p>
+            </div>
           </div>
         )}
 

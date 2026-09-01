@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   ShieldCheck,
   Star,
@@ -40,6 +40,7 @@ import {
   FileCheck
 } from 'lucide-react';
 import { getSellerProfile, getProductsForSeller, SellerProfileData } from '../data/sellerProfilesData';
+import { getReviewsForSeller, addSellerReview, getAggregateRating, subscribeSellerReviews, SellerReview } from '../data/reviewsStore';
 import { ProductDetailData } from '../types';
 import { VerifiedBadge } from './VerifiedBadge';
 
@@ -70,8 +71,61 @@ export const SellerProfileScreen: React.FC<SellerProfileScreenProps> = ({
   const profile: SellerProfileData = getSellerProfile(sellerId);
   const sellerProducts: ProductDetailData[] = getProductsForSeller(profile.id);
 
+  // --- Buyer Reviews & Ratings (persistent store) ---
+  const [sellerReviews, setSellerReviews] = useState<SellerReview[]>(() => getReviewsForSeller(profile.id));
+  useEffect(() => {
+    setSellerReviews(getReviewsForSeller(profile.id));
+    const unsubscribe = subscribeSellerReviews(() => setSellerReviews(getReviewsForSeller(profile.id)));
+    return unsubscribe;
+  }, [profile.id]);
+  const aggregateRating = getAggregateRating(profile.id, profile.overallRating, profile.totalReviewsCount);
+
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewHoverRating, setReviewHoverRating] = useState(0);
+  const [reviewTitle, setReviewTitle] = useState('');
+  const [reviewText, setReviewText] = useState('');
+  const [reviewerName, setReviewerName] = useState('');
+  const [reviewerCompany, setReviewerCompany] = useState('');
+  const [reviewErrors, setReviewErrors] = useState<Record<string, string>>({});
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+
+  const handleOpenReviewModal = () => {
+    if (!isLoggedIn) {
+      onOpenAuth?.();
+      return;
+    }
+    setReviewSubmitted(false);
+    setIsReviewModalOpen(true);
+  };
+
+  const handleSubmitReview = (e: React.FormEvent) => {
+    e.preventDefault();
+    const errs: Record<string, string> = {};
+    if (reviewRating < 1) errs.rating = 'Please select a star rating.';
+    if (!reviewTitle.trim()) errs.title = 'Please add a short review headline.';
+    if (reviewText.trim().length < 20) errs.text = 'Please describe your sourcing experience (min 20 characters).';
+    if (!reviewerName.trim()) errs.name = 'Your name is required.';
+    setReviewErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+
+    addSellerReview({
+      sellerId: profile.id,
+      rating: reviewRating,
+      title: reviewTitle.trim(),
+      text: reviewText.trim(),
+      reviewerName: reviewerName.trim(),
+      reviewerCompany: reviewerCompany.trim() || undefined,
+      isVerifiedBuyer: true
+    });
+    setReviewSubmitted(true);
+    setReviewRating(0);
+    setReviewTitle('');
+    setReviewText('');
+  };
+
   // Tab State
-  const [activeTab, setActiveTab] = useState<'about' | 'products' | 'oem' | 'contact'>('about');
+  const [activeTab, setActiveTab] = useState<'about' | 'products' | 'oem' | 'reviews' | 'contact'>('about');
 
   // Product Filter & Sort State
   const [productSearch, setProductSearch] = useState('');
@@ -426,8 +480,8 @@ export const SellerProfileScreen: React.FC<SellerProfileScreenProps> = ({
                 <Star className="w-4 h-4 fill-gold-400" />
                 <span className="text-xs font-bold text-stone-300">Buyer Rating</span>
               </div>
-              <p className="text-lg font-extrabold text-white">{profile.overallRating} / 5.0</p>
-              <p className="text-[11px] text-stone-400">Based on {profile.totalReviewsCount} reviews</p>
+              <p className="text-lg font-extrabold text-white">{aggregateRating.average} / 5.0</p>
+              <p className="text-[11px] text-stone-400">Based on {aggregateRating.count} reviews</p>
             </div>
 
             <div className="bg-white/5 rounded-xl p-3.5 border border-white/10">
@@ -489,6 +543,18 @@ export const SellerProfileScreen: React.FC<SellerProfileScreenProps> = ({
           >
             <FlaskConical className="w-4 h-4" />
             <span>OEM &amp; Private Label</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('reviews')}
+            className={`flex items-center gap-2 px-5 py-3 text-xs md:text-sm font-bold border-b-2 transition-all whitespace-nowrap ${
+              activeTab === 'reviews'
+                ? 'border-[#6B2D8C] text-[#6B2D8C] bg-[#F5EEF8]/40'
+                : 'border-transparent text-[#5B4A6E] hover:text-[#2A0E3F] hover:bg-white'
+            }`}
+          >
+            <Star className="w-4 h-4" />
+            <span>Buyer Reviews ({aggregateRating.count})</span>
           </button>
 
           <button
@@ -908,6 +974,93 @@ export const SellerProfileScreen: React.FC<SellerProfileScreenProps> = ({
         )}
 
         {/* TAB 4: DIRECT RFQ & CONTACT */}
+        {/* TAB: BUYER REVIEWS & RATINGS */}
+        {activeTab === 'reviews' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Summary Column */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl p-6 md:p-8 border border-[#F5EEF8] shadow-xs text-center">
+                <p className="text-[11px] uppercase font-bold text-[#6B2D8C] tracking-wider mb-2">Overall Buyer Rating</p>
+                <p className="text-5xl font-black text-[#2A0E3F]">{aggregateRating.average}</p>
+                <div className="flex items-center justify-center gap-1 mt-2">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Star
+                      key={i}
+                      className={`w-5 h-5 ${i <= Math.round(aggregateRating.average) ? 'text-[#C9A961] fill-[#C9A961]' : 'text-[#E8DEEF]'}`}
+                    />
+                  ))}
+                </div>
+                <p className="text-xs text-[#5B4A6E] mt-2">Based on {aggregateRating.count} verified B2B reviews</p>
+
+                <button
+                  onClick={handleOpenReviewModal}
+                  className="mt-5 w-full py-3 rounded-xl bg-[#6B2D8C] text-white font-extrabold text-sm hover:bg-[#4A2560] transition-all shadow-md flex items-center justify-center gap-2"
+                >
+                  <Star className="w-4 h-4" />
+                  Write a Review
+                </button>
+                {!isLoggedIn && (
+                  <p className="text-[11px] text-[#5B4A6E] mt-2">Sign in as a buyer to review this supplier.</p>
+                )}
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 border border-[#F5EEF8] shadow-xs space-y-3">
+                <h4 className="text-sm font-extrabold text-[#2A0E3F] flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  Review Integrity
+                </h4>
+                <p className="text-xs text-[#5B4A6E] leading-relaxed">
+                  Reviews are accepted only from signed-in Nexora buyers. Ratings feed directly into this supplier's
+                  marketplace trust score and search ranking.
+                </p>
+              </div>
+            </div>
+
+            {/* Review List Column */}
+            <div className="lg:col-span-2 space-y-4">
+              {sellerReviews.length === 0 && (
+                <div className="bg-white rounded-2xl p-10 border border-[#F5EEF8] shadow-xs text-center space-y-2">
+                  <Star className="w-8 h-8 text-[#D9C3E8] mx-auto" />
+                  <p className="text-sm font-extrabold text-[#2A0E3F]">No written reviews on Nexora yet</p>
+                  <p className="text-xs text-[#5B4A6E]">Be the first buyer to review this supplier's sourcing experience.</p>
+                </div>
+              )}
+              {sellerReviews.map((rev) => (
+                <div key={rev.id} className="bg-white rounded-2xl p-6 border border-[#F5EEF8] shadow-xs space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-1 mb-1.5">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                          <Star
+                            key={i}
+                            className={`w-3.5 h-3.5 ${i <= rev.rating ? 'text-[#C9A961] fill-[#C9A961]' : 'text-[#E8DEEF]'}`}
+                          />
+                        ))}
+                      </div>
+                      <h4 className="text-sm font-extrabold text-[#2A0E3F]">{rev.title}</h4>
+                    </div>
+                    {rev.isVerifiedBuyer && (
+                      <span className="shrink-0 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Verified Buyer
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-[#5B4A6E] leading-relaxed">{rev.text}</p>
+                  <div className="pt-3 border-t border-[#F5EEF8] flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <span className="font-bold text-[#2A0E3F]">
+                      {rev.reviewerName}
+                      {rev.reviewerCompany && <span className="font-semibold text-[#5B4A6E]"> · {rev.reviewerCompany}</span>}
+                    </span>
+                    <span className="text-[#7E6C96]">
+                      {new Date(rev.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {activeTab === 'contact' && (
           <div className="max-w-3xl mx-auto bg-white rounded-2xl p-6 md:p-8 border border-[#F5EEF8] shadow-xs">
             <h3 className="text-lg font-extrabold text-[#2A0E3F] mb-1">
@@ -990,6 +1143,135 @@ export const SellerProfileScreen: React.FC<SellerProfileScreenProps> = ({
           </div>
         )}
       </section>
+
+      {/* Write a Review Modal */}
+      {isReviewModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 relative border border-[#F5EEF8] shadow-2xl max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setIsReviewModalOpen(false)}
+              className="absolute top-4 right-4 text-[#5B4A6E] hover:text-[#2A0E3F] p-1"
+              aria-label="Close review form"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {reviewSubmitted ? (
+              <div className="text-center py-8 space-y-3">
+                <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-7 h-7 text-emerald-600" />
+                </div>
+                <h4 className="text-base font-extrabold text-[#2A0E3F]">Review published — thank you!</h4>
+                <p className="text-xs text-[#5B4A6E] max-w-xs mx-auto">
+                  Your verified buyer review is now live on {profile.name}'s profile and
+                  counts toward their marketplace trust score.
+                </p>
+                <button
+                  onClick={() => setIsReviewModalOpen(false)}
+                  className="mt-2 px-6 py-2.5 bg-[#2A0E3F] text-white font-bold text-xs rounded-xl hover:bg-black transition-all"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="p-2.5 rounded-xl bg-[#F5EEF8] text-[#6B2D8C]">
+                    <Star className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-extrabold text-[#2A0E3F]">Write a Buyer Review</h4>
+                    <p className="text-xs text-[#5B4A6E]">Share your sourcing experience with {profile.name}</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSubmitReview} className="space-y-4 text-xs">
+                  <div>
+                    <label className="block font-bold text-[#5B4A6E] uppercase tracking-wider mb-1.5">Your Rating</label>
+                    <div className="flex items-center gap-1.5">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setReviewRating(i)}
+                          onMouseEnter={() => setReviewHoverRating(i)}
+                          onMouseLeave={() => setReviewHoverRating(0)}
+                          aria-label={`Rate ${i} star${i > 1 ? 's' : ''}`}
+                          className="p-0.5"
+                        >
+                          <Star
+                            className={`w-7 h-7 transition-colors ${
+                              i <= (reviewHoverRating || reviewRating)
+                                ? 'text-[#C9A961] fill-[#C9A961]'
+                                : 'text-[#E8DEEF]'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    {reviewErrors.rating && <p className="text-red-600 font-semibold mt-1">{reviewErrors.rating}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#5B4A6E] uppercase tracking-wider mb-1.5">Review Headline</label>
+                    <input
+                      type="text"
+                      value={reviewTitle}
+                      onChange={(e) => setReviewTitle(e.target.value)}
+                      placeholder="e.g. Reliable bulk supplier with excellent COA documentation"
+                      className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none px-3.5 py-2.5 rounded-lg text-[#2A0E3F]"
+                    />
+                    {reviewErrors.title && <p className="text-red-600 font-semibold mt-1">{reviewErrors.title}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#5B4A6E] uppercase tracking-wider mb-1.5">Your Experience</label>
+                    <textarea
+                      value={reviewText}
+                      onChange={(e) => setReviewText(e.target.value)}
+                      rows={4}
+                      placeholder="Product quality, communication, lead times, packaging, documentation..."
+                      className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none px-3.5 py-2.5 rounded-lg text-[#2A0E3F] resize-none"
+                    />
+                    {reviewErrors.text && <p className="text-red-600 font-semibold mt-1">{reviewErrors.text}</p>}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-bold text-[#5B4A6E] uppercase tracking-wider mb-1.5">Your Name</label>
+                      <input
+                        type="text"
+                        value={reviewerName}
+                        onChange={(e) => setReviewerName(e.target.value)}
+                        placeholder="Full name"
+                        className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none px-3.5 py-2.5 rounded-lg text-[#2A0E3F]"
+                      />
+                      {reviewErrors.name && <p className="text-red-600 font-semibold mt-1">{reviewErrors.name}</p>}
+                    </div>
+                    <div>
+                      <label className="block font-bold text-[#5B4A6E] uppercase tracking-wider mb-1.5">Company (optional)</label>
+                      <input
+                        type="text"
+                        value={reviewerCompany}
+                        onChange={(e) => setReviewerCompany(e.target.value)}
+                        placeholder="Business name, city"
+                        className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none px-3.5 py-2.5 rounded-lg text-[#2A0E3F]"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3.5 bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold uppercase tracking-wider rounded-xl shadow-sm transition-all"
+                  >
+                    Publish Verified Review
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Certificate Lightbox Preview Modal */}
       {selectedCertForPreview && (
