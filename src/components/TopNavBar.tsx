@@ -22,6 +22,7 @@ import {
 import { BuyerProfileData } from './EditProfileModal';
 import { NotificationCenter } from './NotificationCenter';
 import { useNotifications } from '../hooks/useNotifications';
+import { navItemsFor, canPostRequirement, toViewer, accountScreenFor } from '../lib/roleAccess';
 
 interface TopNavBarProps {
   currentScreen: any;
@@ -54,13 +55,12 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
 
   const { unreadCount } = useNotifications();
 
-  const navItems = [
-    { id: 'explore', label: 'Explore' },
-    { id: 'plp', label: 'Products' },
-    { id: 'supplier-directory', label: 'Suppliers Directory' },
-    { id: 'brands', label: 'Brand Directory' },
-    { id: 'oem-hub', label: 'OEM / Private Label' },
-  ];
+  // Navigation is derived from the shared access policy, so a link can never
+  // point at a screen the route guard would reject.
+  const viewer = toViewer(isLoggedIn, userRole);
+  const isSupplier = viewer === 'supplier';
+  const navItems = navItemsFor(viewer);
+  const showRfqCta = canPostRequirement(viewer);
 
   // Close dropdowns on click outside
   useEffect(() => {
@@ -119,11 +119,11 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
         {/* Desktop Navigation Links */}
         <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
           {navItems.map((item) => {
-            const isActive = currentScreen === item.id || (item.id === 'supplier-directory' && currentScreen === 'directory');
+            const isActive = currentScreen === item.screen || (item.id === 'supplier-directory' && currentScreen === 'directory');
             return (
               <button
                 key={item.id}
-                onClick={() => handleNavClick(item.id)}
+                onClick={() => handleNavClick(item.screen)}
                 className={`text-[14px] py-1.5 transition-all cursor-pointer relative font-medium ${
                   isActive
                     ? 'text-[#6B2D8C] font-bold'
@@ -142,19 +142,23 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
         {/* Actions & Interactive User Profile */}
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="hidden sm:flex items-center gap-2 text-[#2A0E3F]">
-            <button 
-              aria-label="Supplier Portal & Ad Campaigns"
-              title="Supplier Admin Portal & Sponsored Ad Manager"
-              onClick={() => handleNavClick('supplier-portal')}
-              className={`px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-[13px] font-bold ${
-                currentScreen === 'supplier-portal' 
-                  ? 'bg-[#6B2D8C] text-white shadow-sm' 
-                  : 'bg-[#F5EEF8] hover:bg-[#E8D5F2] text-[#6B2D8C] border border-[#E8D5F2]'
-              }`}
-            >
-              <Sparkles className="w-4 h-4 text-[#6B2D8C]" />
-              <span className="hidden md:inline">Supplier Portal & Ads</span>
-            </button>
+            {/* Supplier-only entry point. Hidden entirely from buyers and
+                guests so the UI never advertises a route the guard blocks. */}
+            {isSupplier && (
+              <button 
+                aria-label="Supplier Portal & Ad Campaigns"
+                title="Supplier Admin Portal & Sponsored Ad Manager"
+                onClick={() => handleNavClick('supplier-portal')}
+                className={`px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-[13px] font-bold ${
+                  currentScreen === 'supplier-portal' 
+                    ? 'bg-[#6B2D8C] text-white shadow-sm' 
+                    : 'bg-[#F5EEF8] hover:bg-[#E8D5F2] text-[#6B2D8C] border border-[#E8D5F2]'
+                }`}
+              >
+                <Sparkles className="w-4 h-4 text-[#6B2D8C]" />
+                <span className="hidden md:inline">Supplier Portal & Ads</span>
+              </button>
+            )}
 
             {/* Notification Bell Center */}
             <div className="relative" ref={notifRef}>
@@ -267,11 +271,10 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                       <button
                         onClick={() => {
                           setProfileDropdownOpen(false);
-                          if (userRole === 'supplier') {
-                            handleNavClick('supplier-profile', { supplierId: 'seller_aura_001' });
-                          } else {
-                            handleNavClick('buyer-profile');
-                          }
+                          // Suppliers manage their public listing from inside
+                          // the portal; the standalone supplier-profile page is
+                          // a buyer-facing marketplace view.
+                          handleNavClick(isSupplier ? 'supplier-portal' : 'buyer-profile');
                         }}
                         className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#F5EEF8] text-xs font-bold text-[#2A0E3F] hover:text-[#6B2D8C] flex items-center gap-2.5 transition-colors cursor-pointer"
                       >
@@ -290,27 +293,31 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                         <span>Edit Profile & Business Details</span>
                       </button>
 
-                      <button
-                        onClick={() => {
-                          setProfileDropdownOpen(false);
-                          handleNavClick('supplier-portal');
-                        }}
-                        className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#F5EEF8] text-xs font-bold text-[#6B2D8C] flex items-center gap-2.5 transition-colors cursor-pointer"
-                      >
-                        <Sparkles className="w-4 h-4 text-[#6B2D8C]" />
-                        <span>Supplier Portal & Ad Campaigns</span>
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setProfileDropdownOpen(false);
-                          handleNavClick('buyer-dashboard');
-                        }}
-                        className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#F5EEF8] text-xs font-semibold text-[#5B4A6E] hover:text-[#2A0E3F] flex items-center gap-2.5 transition-colors cursor-pointer"
-                      >
-                        <Briefcase className="w-4 h-4 text-[#7E6C96]" />
-                        <span>Buyer RFQ & Sourcing Dashboard</span>
-                      </button>
+                      {/* Workspace link is role-exclusive: a buyer never sees
+                          the supplier portal entry, and vice versa. */}
+                      {isSupplier ? (
+                        <button
+                          onClick={() => {
+                            setProfileDropdownOpen(false);
+                            handleNavClick('supplier-portal');
+                          }}
+                          className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#F5EEF8] text-xs font-bold text-[#6B2D8C] flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <Sparkles className="w-4 h-4 text-[#6B2D8C]" />
+                          <span>Supplier Portal & Ad Campaigns</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setProfileDropdownOpen(false);
+                            handleNavClick('buyer-dashboard');
+                          }}
+                          className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#F5EEF8] text-xs font-semibold text-[#5B4A6E] hover:text-[#2A0E3F] flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <Briefcase className="w-4 h-4 text-[#7E6C96]" />
+                          <span>Buyer RFQ & Sourcing Dashboard</span>
+                        </button>
+                      )}
 
                       <button
                         onClick={() => {
@@ -352,13 +359,16 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             )}
           </div>
           
-          <button
-            onClick={onOpenRFQModal}
-            className="bg-[#6B2D8C] hover:bg-[#A00057] active:scale-[0.98] text-white text-[13px] font-bold px-4 sm:px-5 py-2.5 rounded-xl transition-all duration-200 shadow-sm shadow-[#6B2D8C]/25 cursor-pointer flex items-center gap-1.5"
-          >
-            <PlusCircle className="w-4 h-4 shrink-0" />
-            <span className="whitespace-nowrap">Post Requirement</span>
-          </button>
+          {/* Buyers raise requirements; suppliers respond to them. */}
+          {showRfqCta && (
+            <button
+              onClick={onOpenRFQModal}
+              className="bg-[#6B2D8C] hover:bg-[#A00057] active:scale-[0.98] text-white text-[13px] font-bold px-4 sm:px-5 py-2.5 rounded-xl transition-all duration-200 shadow-sm shadow-[#6B2D8C]/25 cursor-pointer flex items-center gap-1.5"
+            >
+              <PlusCircle className="w-4 h-4 shrink-0" />
+              <span className="whitespace-nowrap">Post Requirement</span>
+            </button>
+          )}
 
           {/* Mobile Menu Button */}
           <button 
@@ -376,11 +386,11 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
         <div className="lg:hidden border-t border-[#E5D8EE] bg-[#FFFDFC] shadow-xl px-4 py-4 animate-in slide-in-from-top-2 duration-200">
           <div className="flex flex-col gap-1.5">
             {navItems.map((item) => {
-              const isActive = currentScreen === item.id || (item.id === 'supplier-directory' && currentScreen === 'directory');
+              const isActive = currentScreen === item.screen || (item.id === 'supplier-directory' && currentScreen === 'directory');
               return (
                 <button
                   key={item.id}
-                  onClick={() => handleNavClick(item.id)}
+                  onClick={() => handleNavClick(item.screen)}
                   className={`text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold transition-colors flex items-center justify-between ${
                     isActive
                       ? 'bg-[#F5EEF8] text-[#6B2D8C]'
@@ -418,7 +428,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                   <button
                     onClick={() => {
                       setMobileMenuOpen(false);
-                      onNavigate('buyer-dashboard', { tab: 'notifications' });
+                      onNavigate(accountScreenFor(viewer), isSupplier ? undefined : { tab: 'notifications' });
                     }}
                     className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#2A0E3F] hover:bg-[#F5EEF8] flex items-center justify-between"
                   >
@@ -433,11 +443,11 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                     )}
                   </button>
                   <button
-                    onClick={() => handleNavClick('buyer-dashboard')}
+                    onClick={() => handleNavClick(accountScreenFor(viewer))}
                     className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#4E3D63] hover:bg-[#F5EEF8] flex items-center gap-2"
                   >
                     <Mail className="w-4 h-4 text-[#6B2D8C]" />
-                    <span>Buyer Workspace & Enquiries</span>
+                    <span>{isSupplier ? 'Supplier Admin Portal' : 'Buyer Workspace & Enquiries'}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -452,13 +462,6 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                 </>
               ) : (
                 <>
-                  <button
-                    onClick={() => handleNavClick('buyer-dashboard')}
-                    className="text-left px-3.5 py-2.5 rounded-xl text-[14px] font-semibold text-[#4E3D63] hover:bg-[#F5EEF8] flex items-center gap-2"
-                  >
-                    <Mail className="w-4 h-4 text-[#6B2D8C]" />
-                    <span>Buyer Workspace & Enquiries</span>
-                  </button>
                   <button
                     onClick={() => {
                       setMobileMenuOpen(false);

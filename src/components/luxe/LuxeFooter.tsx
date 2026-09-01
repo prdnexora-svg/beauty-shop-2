@@ -1,10 +1,13 @@
 import React from 'react';
 import { Facebook, Instagram, Linkedin, Youtube, ShieldCheck, MapPin, ChevronRight } from 'lucide-react';
 import { LuxeLogo } from './LuxeLogo';
+import { toViewer, canAccess, type AppRole } from '../../lib/roleAccess';
 
 interface LuxeFooterProps {
   onNavigate: (screen: any, params?: any) => void;
   onOpenRFQModal: () => void;
+  isLoggedIn?: boolean;
+  userRole?: AppRole | null;
 }
 
 const COLUMNS: { title: string; links: { label: string; action: 'screen' | 'rfq'; screen?: string }[] }[] = [
@@ -52,9 +55,24 @@ const COLUMNS: { title: string; links: { label: string; action: 'screen' | 'rfq'
 
 const SOCIALS = [Facebook, Instagram, Linkedin, Youtube];
 
-export const LuxeFooter: React.FC<LuxeFooterProps> = ({ onNavigate, onOpenRFQModal }) => {
+export const LuxeFooter: React.FC<LuxeFooterProps> = ({ onNavigate, onOpenRFQModal, isLoggedIn = false, userRole = null }) => {
+  const viewer = toViewer(isLoggedIn, userRole);
   const handle = (l: { action: 'screen' | 'rfq'; screen?: string }) =>
     l.action === 'screen' && l.screen ? onNavigate(l.screen) : onOpenRFQModal();
+
+  // Drop links the current role could not follow, then drop any column left
+  // empty. 'Join as Supplier' stays visible to signed-out visitors as a
+  // marketing entry point even though the screen itself is gated.
+  const columns = COLUMNS
+    .map((col) => ({
+      ...col,
+      links: col.links.filter((l) => {
+        if (l.action !== 'screen' || !l.screen) return viewer !== 'supplier';
+        if (l.screen === 'onboarding' && !isLoggedIn) return true;
+        return canAccess(l.screen, viewer);
+      }),
+    }))
+    .filter((col) => col.links.length > 0);
 
   return (
     <footer className="relative overflow-hidden bg-gradient-to-b from-purple-900 to-purple-950 text-white mt-4">
@@ -95,7 +113,7 @@ export const LuxeFooter: React.FC<LuxeFooterProps> = ({ onNavigate, onOpenRFQMod
           </div>
 
           {/* Link columns */}
-          {COLUMNS.map((col) => (
+          {columns.map((col) => (
             <div key={col.title}>
               <h4 className="text-[11.5px] font-bold tracking-[0.22em] uppercase text-[#EFD9A0] mb-4">{col.title}</h4>
               <ul className="space-y-2.5">
