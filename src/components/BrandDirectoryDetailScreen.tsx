@@ -123,7 +123,11 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
 
     fetchSuppliers({
       searchQuery,
-      category: selectedCategory === 'All' ? 'All' : selectedCategory,
+      // Fetch the full database-backed supplier set; brand tabs use the custom
+      // brand-category labels (e.g. "Cosmetics") which are then filtered from
+      // the live rows below. The `/suppliers` page uses the exact `.eq(...)`
+      // database filter in supplierService.
+      category: 'All',
       sortBy: serviceSort,
       verifiedOnly: false,
       limit: 100
