@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, 
   Search, 
@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { BuyerEnquiry } from '../types';
 import { BUYER_MOCK_ENQUIRIES } from '../data/mockData';
+import { db } from '../db/database';
 
 interface BuyerEnquiryLogScreenProps {
   onBack: () => void;
@@ -53,6 +54,44 @@ export const BuyerEnquiryLogScreen: React.FC<BuyerEnquiryLogScreenProps> = ({
   const [selectedEnquiryId, setSelectedEnquiryId] = useState<string | null>(() => {
     return BUYER_MOCK_ENQUIRIES.length > 0 ? BUYER_MOCK_ENQUIRIES[0].id : null;
   });
+
+  // Merge live enquiries from the relational store (submitted via the Enquiry
+  // modal / product pages) into the log, so the buyer sees every real enquiry
+  // alongside its current status — including "Quoted" once a supplier bids.
+  useEffect(() => {
+    const syncFromDb = () => {
+      try {
+        const liveRows = db.getRFQsAndEnquiries({ type: 'direct_enquiry' });
+        if (liveRows.length === 0) return;
+        setEnquiries((prev) => {
+          const mapped: BuyerEnquiry[] = liveRows.map((row) => ({
+            id: row.id,
+            productName: row.requirement_title.replace(/^[^:]+:\s*/, ''),
+            supplierName: row.supplier?.company_name || 'Matched Verified Suppliers',
+            date: new Date(row.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+            status: (row.quotes_count || 0) > 0
+              ? 'Quoted'
+              : row.status === 'closed'
+                ? 'Closed'
+                : row.status === 'new'
+                  ? 'Pending'
+                  : 'Responded',
+            subject: row.requirement_title,
+            lastMessage: row.details
+          }));
+          const mappedIds = new Set(mapped.map((m) => m.id));
+          const merged = [...mapped, ...prev.filter((p) => !mappedIds.has(p.id))];
+          localStorage.setItem('nexora_buyer_enquiries', JSON.stringify(merged));
+          return merged;
+        });
+      } catch (e) {
+        // Relational store unavailable — keep the locally stored log.
+      }
+    };
+    syncFromDb();
+    const unsubscribe = db.subscribe(() => syncFromDb());
+    return () => { unsubscribe(); };
+  }, []);
 
   // Message Replies simulation
   const [conversations, setConversations] = useState<Record<string, Array<{ sender: 'buyer' | 'supplier'; text: string; time: string }>>>({

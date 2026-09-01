@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from '../db/database';
+import { addNotification } from '../data/notifications';
 import { BuyerProfileData } from './EditProfileModal';
 
 export type EnquiryIntent = 'Wholesale Purchase' | 'OEM / Private Label' | 'Sample Request' | 'Distributorship Enquiry';
@@ -277,7 +278,7 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
       const categoryName = targetItem?.category || 'Skincare & Serums';
 
       // 1. Write to Phase 4 Relational Database
-      db.createRFQEnquiry({
+      const createdEnquiry = db.createRFQEnquiry({
         buyer_id: buyerProfile ? 'buyer-prof-priya' : 'usr_guest_procure',
         supplier_id: primarySupplierId,
         product_id: productId,
@@ -312,6 +313,22 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({
       }
 
       setDispatchedSuppliers(matched);
+
+      // 3. Confirm dispatch through the existing notification center
+      const matchedCount = createdEnquiry.matched_supplier_ids?.length || matched.length;
+      addNotification({
+        type: 'rfq_response',
+        title: `Enquiry dispatched to ${matchedCount} verified supplier${matchedCount > 1 ? 's' : ''}`,
+        description: `Your ${intent.toLowerCase()} enquiry for "${productName}" (${quantity} ${unit}) is now with matched suppliers. Responses will appear in your Enquiry Log.`,
+        priority: 'medium',
+        targetScreen: 'buyer-enquiry-log',
+        targetParams: { enquiryId: createdEnquiry.id },
+        metadata: {
+          rfqId: createdEnquiry.id,
+          quantity: `${quantity} ${unit}`,
+          productName
+        }
+      });
     } catch (err) {
       console.warn('[EnquiryModal] DB write error handled gracefully', err);
     }

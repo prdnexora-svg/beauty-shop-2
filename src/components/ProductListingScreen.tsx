@@ -34,6 +34,7 @@ import {
 import { SearchProduct, RFQItem } from '../types';
 import { SEARCH_PRODUCTS, LIVE_RFQS } from '../data/mockData';
 import { CATEGORY_TAXONOMY } from '../data/categories';
+import { getSavedProductIds, toggleSavedProduct } from '../data/savedStore';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ProductListingScreenProps {
@@ -100,7 +101,12 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
   });
 
   // Active Interactive States
-  const [favorites, setFavorites] = useState<Record<string, boolean>>({});
+  // Saved products persist across sessions via the shared saved-items store
+  const [favorites, setFavorites] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    getSavedProductIds().forEach((id) => { initial[id] = true; });
+    return initial;
+  });
   const [comparedProductIds, setComparedProductIds] = useState<string[]>(['sp-1']);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [mobileFilterOpen, setMobileFilterOpen] = useState<boolean>(false);
@@ -117,11 +123,12 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
     );
   };
 
-  // Toggle Favorite
+  // Toggle Favorite (persisted)
   const toggleFavorite = (productId: string) => {
+    const nowSaved = toggleSavedProduct(productId);
     setFavorites((prev) => ({
       ...prev,
-      [productId]: !prev[productId]
+      [productId]: nowSaved
     }));
   };
 

@@ -9,26 +9,49 @@ import { SupplierAnalyticsDashboard } from './SupplierAnalyticsDashboard';
 import { getStoredSponsoredAnalyticsEvents, SponsoredAnalyticsEvent } from '../data/sponsoredAnalyticsStore';
 import { getStoredChatThreads, supplierReplyMessage, ChatThread } from '../data/chatStore';
 import { ProductCreationWizard, CatalogProduct } from './ProductCreationWizard';
+import { db } from '../db/database';
+import { PopulatedRFQEnquiry } from '../db/types';
+import { addNotification } from '../data/notifications';
 
-// Mock initial listings
+// Demo tenant: in production this comes from the authenticated supplier session
+// and every db read below is scoped by RLS to the supplier's own rows.
+const PORTAL_SUPPLIER_ID = 'supp-aura-labs';
+
+const CATALOG_STORAGE_KEY = 'nexora_supplier_catalog_v1';
+
+// Initial seed listings (used only until the supplier saves their own catalog)
 const INITIAL_PRODUCTS: CatalogProduct[] = [
   { id: 'sp1', name: 'Peptide Skin Barrier Repair Cream', price: '145', mrp: '180', category: 'Skincare', subcategory: 'Moisturizers & Creams', brand: 'Aura Beauty Labs', stockQty: 2000, unit: 'Pcs', taxRate: '18%', status: 'Active', tags: ['repair', 'barrier'], attributes: [{ label: 'Size', value: '50ml' }], images: [] },
   { id: 'sp2', name: 'Clinical Vitamin C Infused Glow Serum', price: '190', mrp: '220', category: 'Skincare', subcategory: 'Serums & Treatments', brand: 'Aura Beauty Labs', stockQty: 3000, unit: 'Pcs', taxRate: '18%', status: 'Active', tags: ['vitamin-c', 'glow'], attributes: [{ label: 'Size', value: '30ml' }], images: [] },
   { id: 'sp3', name: 'Salicylic Acid Overnight Blemish Gel', price: '110', mrp: '135', category: 'Skincare', subcategory: 'Serums & Treatments', brand: 'Aura Beauty Labs', stockQty: 5000, unit: 'Pcs', taxRate: '18%', status: 'Draft', tags: [], attributes: [], images: [] }
 ];
 
-// Mock public buyer requirements
-const MOCK_RFQ_MARKETPLACE = [
-  { id: 'RFQ-99512', title: 'Aerosol Cold-Sprayed Hair Dry Shampoo', qty: '5,000 Spray Bottles', location: 'Mumbai, MH', urgency: 'Immediate (Next 7 days)', date: 'Just now' },
-  { id: 'RFQ-99508', title: 'Organic Rosemary Scalp Cleansing Base', qty: '2,000 Liters (Bulk)', location: 'Bengaluru, KA', urgency: 'Standard (30 days)', date: '1 hour ago' },
-  { id: 'RFQ-99488', title: '30ml Premium Glass Dropper Assemblies', qty: '25,000 Sets', location: 'Delhi NCR', urgency: 'Urgent', date: 'Yesterday' }
-];
+function loadStoredCatalog(): CatalogProduct[] {
+  try {
+    const raw = localStorage.getItem(CATALOG_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {
+    // Corrupt storage — fall back to seed catalog.
+  }
+  return INITIAL_PRODUCTS;
+}
 
-// Mock incoming buyer leads / enquiries
-const MOCK_ENQUIRIES = [
-  { id: 'ENQ-8110', buyer: 'Aura Cosmetics Ltd', product: 'Clinical Vitamin C Infused Glow Serum', qty: '3,000 Units', message: 'Do you offer customized biological enzyme suspensions for stable formulations?', date: 'Just now', status: 'Unread' },
-  { id: 'ENQ-8105', buyer: 'GreenBeauty Startups', product: 'Peptide Skin Barrier Repair Cream', qty: '10,000 Units', message: 'Looking for 100% biodegradable squeeze tubes. Can we schedule a consulting call?', date: 'Yesterday', status: 'Responded' }
-];
+/** Compact relative-time label for lead cards, e.g. "Just now" / "3 hours ago". */
+function timeAgoLabel(iso: string): string {
+  const then = new Date(iso).getTime();
+  if (isNaN(then)) return iso;
+  const diffMin = Math.floor((Date.now() - then) / 60000);
+  if (diffMin < 2) return 'Just now';
+  if (diffMin < 60) return `${diffMin} min ago`;
+  const diffHrs = Math.floor(diffMin / 60);
+  if (diffHrs < 24) return `${diffHrs} hour${diffHrs > 1 ? 's' : ''} ago`;
+  const diffDays = Math.floor(diffHrs / 24);
+  if (diffDays === 1) return 'Yesterday';
+  return `${diffDays} days ago`;
+}
 
 interface SupplierAdminPortalProps {
   onNavigateToProduct?: (productId: string) => void;
@@ -71,15 +94,47 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
   const [gstVerified, setGstVerified] = useState(true);
   const [isVerifying, setIsVerifying] = useState(false);
   
-  // Product creation state (Screen 20)
-  const [products, setProducts] = useState<CatalogProduct[]>(INITIAL_PRODUCTS);
+  // Product creation state (Screen 20) — persisted so the catalog survives reloads
+  const [products, setProducts] = useState<CatalogProduct[]>(loadStoredCatalog);
+  const [editingProduct, setEditingProduct] = useState<CatalogProduct | null>(null);
   const [showMobileToBuyers, setShowMobileToBuyers] = useState(true);
 
-  // Quote form state (Screen 23)
-  const [selectedRfq, setSelectedRfq] = useState<typeof MOCK_RFQ_MARKETPLACE[0] | null>(null);
+  useEffect(() => {
+    try {
+      localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(products));
+    } catch {
+      // Storage unavailable — catalog remains in-memory for this session.
+    }
+  }, [products]);
+
+  // Live buyer leads & public sourcing requirements from the relational store.
+  // Direct enquiries land here the moment a buyer submits the Enquiry modal;
+  // public RFQs arrive from the Post Requirement screen.
+  const [liveEnquiries, setLiveEnquiries] = useState<PopulatedRFQEnquiry[]>([]);
+  const [liveRfqs, setLiveRfqs] = useState<PopulatedRFQEnquiry[]>([]);
+
+  useEffect(() => {
+    const loadLeads = () => {
+      const all = db.getRFQsAndEnquiries();
+      const sorted = [...all].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+      setLiveEnquiries(sorted.filter((r) => r.type === 'direct_enquiry'));
+      setLiveRfqs(sorted.filter((r) => r.type === 'public_rfq'));
+    };
+    loadLeads();
+    const unsubscribe = db.subscribe(() => loadLeads());
+    window.addEventListener('nexora-db-change', loadLeads);
+    return () => {
+      unsubscribe();
+      window.removeEventListener('nexora-db-change', loadLeads);
+    };
+  }, []);
+
+  // Quote form state (Screen 23) — now bound to a real RFQ/enquiry row
+  const [selectedRfq, setSelectedRfq] = useState<PopulatedRFQEnquiry | null>(null);
   const [quotePrice, setQuotePrice] = useState('');
   const [quoteLeadTime, setQuoteLeadTime] = useState('');
   const [quoteSubmitted, setQuoteSubmitted] = useState(false);
+  const [quoteSentToast, setQuoteSentToast] = useState<string | null>(null);
 
   const handleVerifyGst = () => {
     if (!supplierGst.trim()) return;
@@ -90,25 +145,85 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
     }, 1200);
   };
 
-  const handlePublishProduct = (product: CatalogProduct) => {
-    setProducts((prev) => [product, ...prev]);
+  const upsertProduct = (product: CatalogProduct) => {
+    setProducts((prev) => {
+      const exists = prev.some((p) => p.id === product.id);
+      return exists ? prev.map((p) => (p.id === product.id ? product : p)) : [product, ...prev];
+    });
+    setEditingProduct(null);
   };
 
-  const handleSaveDraftProduct = (product: CatalogProduct) => {
-    setProducts((prev) => [product, ...prev]);
+  const handlePublishProduct = (product: CatalogProduct) => upsertProduct(product);
+  const handleSaveDraftProduct = (product: CatalogProduct) => upsertProduct(product);
+
+  const handleToggleProductStatus = (id: string) => {
+    setProducts((prev) => prev.map((p) =>
+      p.id === id ? { ...p, status: p.status === 'Active' ? 'Draft' : 'Active' } : p
+    ));
   };
 
   const handleSendQuote = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!quotePrice || !quoteLeadTime) return;
+    if (!quotePrice || !quoteLeadTime || !selectedRfq) return;
     setQuoteSubmitted(true);
+
+    const rfq = selectedRfq;
+    const unitPrice = parseFloat(quotePrice.replace(/[^0-9.]/g, '')) || 0;
+    const qty = rfq.quantity_required || 1;
+    const validity = new Date();
+    validity.setDate(validity.getDate() + 14);
+
     setTimeout(() => {
+      try {
+        // Persist the commercial quote so the buyer sees it instantly in
+        // "My RFQs & Quotes" (BuyerRFQTrackingScreen reads the same store).
+        db.createQuote({
+          rfq_id: rfq.id,
+          supplier_id: PORTAL_SUPPLIER_ID,
+          unit_price: unitPrice,
+          total_price: unitPrice * qty,
+          moq_offered: qty,
+          lead_time: quoteLeadTime,
+          validity_date: validity.toISOString(),
+          terms_and_conditions: 'Standard Nexora Luxe B2B supply terms. 50% advance, balance on dispatch. GST extra as applicable.',
+          status: 'submitted',
+          sample_available: true,
+          notes: `Quoted ${quotePrice} per unit against "${rfq.requirement_title}".`
+        });
+        if (rfq.status === 'new') {
+          db.updateRFQStatus(rfq.id, 'responded');
+        }
+        // Notify the buyer through the existing notification center
+        addNotification({
+          type: 'quote_update',
+          title: `New Sourcing Quote Received (₹${unitPrice.toLocaleString('en-IN')}/unit)`,
+          description: `Aura Beauty Labs submitted a commercial quote for "${rfq.requirement_title}" — lead time ${quoteLeadTime}. Review and compare it under My RFQs & Quotes.`,
+          priority: 'high',
+          targetScreen: 'rfq-tracking',
+          targetParams: { rfqId: rfq.id },
+          sender: {
+            name: 'Aura Beauty Labs',
+            isVerified: true,
+            location: 'Mumbai, MH'
+          },
+          metadata: {
+            rfqId: rfq.id,
+            price: `₹${unitPrice.toLocaleString('en-IN')} / unit`,
+            quantity: `${qty.toLocaleString('en-IN')} ${rfq.quantity_unit}`,
+            supplierName: 'Aura Beauty Labs',
+            productName: rfq.requirement_title
+          }
+        });
+      } catch (err) {
+        console.warn('[SupplierPortal] Quote persistence error handled gracefully', err);
+      }
       setQuoteSubmitted(false);
       setSelectedRfq(null);
       setQuotePrice('');
       setQuoteLeadTime('');
-      alert('Your formal commercial quote has been securely sent to the buyer. You will receive notifications upon response.');
-    }, 1500);
+      setQuoteSentToast('Commercial quote sent — the buyer can now review it under “My RFQs & Quotes”.');
+      setTimeout(() => setQuoteSentToast(null), 4000);
+    }, 900);
   };
 
   return (
@@ -179,7 +294,7 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
             }`}
           >
             <Mail className="w-4.5 h-4.5" />
-            <span>Buyer Enquiries ({MOCK_ENQUIRIES.length})</span>
+            <span>Buyer Enquiries ({liveEnquiries.length})</span>
           </button>
 
           <button
@@ -189,7 +304,7 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
             }`}
           >
             <FileText className="w-4.5 h-4.5" />
-            <span>RFQ Marketplace ({MOCK_RFQ_MARKETPLACE.length})</span>
+            <span>RFQ Marketplace ({liveRfqs.length})</span>
           </button>
 
           <button
@@ -352,7 +467,7 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
               </div>
               <div className="p-4.5 bg-white border border-[#E8DEEF] rounded-xl space-y-1.5 text-center md:text-left">
                 <span className="text-[10px] text-[#7E6C96] uppercase font-bold tracking-wider">Active Buyer Leads</span>
-                <span className="text-2xl font-black text-[#6B2D8C] block">12</span>
+                <span className="text-2xl font-black text-[#6B2D8C] block">{liveEnquiries.length + liveRfqs.length}</span>
               </div>
               <div className="p-4.5 bg-white border border-[#E8DEEF] rounded-xl space-y-1.5 text-center md:text-left">
                 <span className="text-[10px] text-[#7E6C96] uppercase font-bold tracking-wider">Response Speed</span>
@@ -412,6 +527,8 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
             <ProductCreationWizard
               onPublish={handlePublishProduct}
               onSaveDraft={handleSaveDraftProduct}
+              editingProduct={editingProduct}
+              onCancelEdit={() => setEditingProduct(null)}
               onViewProductList={() => {
                 document.getElementById('catalog-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
@@ -474,6 +591,24 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
                           >
                             <Eye className="w-3.5 h-3.5" /> View
                           </button>
+                          <button
+                            onClick={() => {
+                              setEditingProduct(p);
+                              document.querySelector('.wizard-scroll-anchor, #catalog-list')?.previousElementSibling?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className="text-zinc-600 hover:text-zinc-900 font-bold inline-flex items-center gap-1"
+                            title="Edit this listing in the wizard above"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" /> Edit
+                          </button>
+                          <button
+                            onClick={() => handleToggleProductStatus(p.id)}
+                            className={`font-bold inline-flex items-center gap-1 ${p.status === 'Active' ? 'text-amber-600 hover:text-amber-800' : 'text-emerald-600 hover:text-emerald-800'}`}
+                            title={p.status === 'Active' ? 'Deactivate (move to Draft — hidden from buyers)' : 'Activate (publish to buyers)'}
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" /> {p.status === 'Active' ? 'Deactivate' : 'Activate'}
+                          </button>
                           <button 
                             onClick={() => setProducts(products.filter(item => item.id !== p.id))}
                             className="text-red-500 hover:text-red-700 transition-colors inline-flex items-center gap-1"
@@ -517,37 +652,58 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
         {activeTab === 'enquiries' && (
           <div className="space-y-4">
             <h3 className="font-black text-sm text-zinc-950">Active Buyer Sourcing Enquiries</h3>
-            {MOCK_ENQUIRIES.map((enq) => (
+            {liveEnquiries.length === 0 && (
+              <div className="bg-white border border-[#E8DEEF] rounded-xl p-8 text-center space-y-2">
+                <Mail className="w-8 h-8 text-[#D9C3E8] mx-auto" />
+                <p className="text-sm font-extrabold text-zinc-900">No buyer enquiries yet</p>
+                <p className="text-xs text-[#5B4A6E]">New leads will appear here the moment a buyer sends an enquiry on one of your listings.</p>
+              </div>
+            )}
+            {liveEnquiries.map((enq) => {
+              const buyerName = enq.buyer?.company_name || enq.buyer?.contact_name || 'Verified Nexora Buyer';
+              const hasQuoted = (enq.quotes_count || 0) > 0;
+              const statusLabel = hasQuoted ? 'Quoted' : enq.status === 'new' ? 'Unread' : 'Responded';
+              return (
               <div key={enq.id} className="bg-white border border-[#E8DEEF] rounded-xl p-5 space-y-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[10px] text-zinc-400 font-mono block">Enquiry REF: {enq.id}</span>
-                    <h4 className="font-extrabold text-sm text-zinc-950 mt-0.5">{enq.buyer}</h4>
+                    <span className="text-[10px] text-zinc-400 font-mono block">Enquiry REF: {enq.id} · {timeAgoLabel(enq.created_at)}</span>
+                    <h4 className="font-extrabold text-sm text-zinc-950 mt-0.5">{buyerName}</h4>
                   </div>
                   <span className={`text-[9.5px] px-2 py-0.5 rounded font-bold uppercase ${
-                    enq.status === 'Unread'
+                    statusLabel === 'Unread'
                       ? 'bg-[#F5EEF8] text-[#6B2D8C] border border-[#D9C3E8]'
-                      : 'bg-zinc-100 text-zinc-600'
+                      : statusLabel === 'Quoted'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-zinc-100 text-zinc-600'
                   }`}>
-                    {enq.status}
+                    {statusLabel}
                   </span>
                 </div>
 
                 <div className="bg-[#FDFBF7] p-3 rounded-lg border border-[#E8DEEF] text-xs">
-                  <p className="font-semibold text-zinc-800 mb-1">Product: {enq.product} (Target: {enq.qty})</p>
-                  <p className="italic">"{enq.message}"</p>
+                  <p className="font-semibold text-zinc-800 mb-1">
+                    {enq.requirement_title} (Target: {enq.quantity_required.toLocaleString('en-IN')} {enq.quantity_unit}) · {enq.delivery_location}
+                  </p>
+                  <p className="italic">"{enq.details}"</p>
                 </div>
 
                 <div className="flex justify-end gap-2 text-xs">
-                  <button className="border border-[#E8DEEF] hover:border-zinc-400 text-zinc-800 font-bold px-3 py-2 rounded-lg cursor-pointer">
+                  <button
+                    onClick={() => setActiveTab('chat-hub')}
+                    className="border border-[#E8DEEF] hover:border-zinc-400 text-zinc-800 font-bold px-3 py-2 rounded-lg cursor-pointer"
+                  >
                     Chat with Buyer
                   </button>
-                  <button className="bg-[#6B2D8C] text-white font-extrabold px-3 py-2 rounded-lg hover:bg-[#4A2560] transition-colors cursor-pointer">
-                    Draft Proposal Bid
+                  <button
+                    onClick={() => setSelectedRfq(enq)}
+                    className="bg-[#6B2D8C] text-white font-extrabold px-3 py-2 rounded-lg hover:bg-[#4A2560] transition-colors cursor-pointer"
+                  >
+                    {hasQuoted ? 'Send Revised Quote' : 'Draft Proposal Bid'}
                   </button>
                 </div>
               </div>
-            ))}
+            );})}
           </div>
         )}
 
@@ -560,23 +716,33 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {MOCK_RFQ_MARKETPLACE.map((rfq) => (
+              {liveRfqs.length === 0 && (
+                <div className="md:col-span-2 bg-white border border-[#E8DEEF] rounded-xl p-8 text-center space-y-2">
+                  <FileText className="w-8 h-8 text-[#D9C3E8] mx-auto" />
+                  <p className="text-sm font-extrabold text-zinc-900">No open sourcing requirements right now</p>
+                  <p className="text-xs text-[#5B4A6E]">Public buyer requirements posted via “Post Requirement” appear here in real time.</p>
+                </div>
+              )}
+              {liveRfqs.map((rfq) => (
                 <div key={rfq.id} className="bg-white border border-[#E8DEEF] rounded-xl p-5 flex flex-col justify-between space-y-4">
                   <div className="space-y-2">
                     <div className="flex justify-between text-[10px] font-mono text-zinc-400">
                       <span>Lead ID: {rfq.id}</span>
-                      <span>Published: {rfq.date}</span>
+                      <span>Published: {timeAgoLabel(rfq.created_at)}</span>
                     </div>
-                    <h4 className="font-extrabold text-sm text-zinc-950">{rfq.title}</h4>
+                    <h4 className="font-extrabold text-sm text-zinc-950">{rfq.requirement_title}</h4>
                     <div className="flex flex-wrap gap-2 text-[11px] text-[#5B4A6E]">
-                      <span>Target Volume: <span className="font-bold text-zinc-900">{rfq.qty}</span></span>
+                      <span>Target Volume: <span className="font-bold text-zinc-900">{rfq.quantity_required.toLocaleString('en-IN')} {rfq.quantity_unit}</span></span>
                       <span>•</span>
-                      <span>Destination: <span className="font-semibold text-zinc-800">{rfq.location}</span></span>
+                      <span>Destination: <span className="font-semibold text-zinc-800">{rfq.delivery_location}</span></span>
                     </div>
                   </div>
 
                   <div className="pt-3 border-t border-[#E8DEEF] flex justify-between items-center text-xs">
-                    <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-bold uppercase">{rfq.urgency}</span>
+                    <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-bold uppercase">
+                      {rfq.status === 'new' ? 'Open for bids' : rfq.status}
+                      {(rfq.quotes_count || 0) > 0 ? ` · ${rfq.quotes_count} quote${(rfq.quotes_count || 0) > 1 ? 's' : ''}` : ''}
+                    </span>
                     <button
                       onClick={() => setSelectedRfq(rfq)}
                       className="bg-[#6B2D8C] text-white font-extrabold px-3 py-2 rounded-lg hover:bg-[#4A2560] transition-colors cursor-pointer"
@@ -587,65 +753,6 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
                 </div>
               ))}
             </div>
-
-            {/* Custom Quote Submission form overlay (Screen 23) */}
-            {selectedRfq && (
-              <div className="fixed inset-0 bg-zinc-950/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-                <div className="bg-white border border-[#E8DEEF] rounded-2xl w-full max-w-md p-6 relative shadow-2xl text-xs space-y-6">
-                  
-                  <div className="flex justify-between items-center pb-3 border-b border-[#E8DEEF]">
-                    <div>
-                      <span className="text-[9px] text-zinc-400 font-mono block">RFQ: {selectedRfq.id}</span>
-                      <h3 className="font-black text-sm text-zinc-900">Send Commercial Quote Proposal</h3>
-                    </div>
-                    <button onClick={() => setSelectedRfq(null)} className="text-zinc-400 hover:text-zinc-600 font-bold">
-                      Close
-                    </button>
-                  </div>
-
-                  <form onSubmit={handleSendQuote} className="space-y-4 text-xs">
-                    <div>
-                      <span className="block text-[#7E6C96] font-bold uppercase mb-1">Target Requirement</span>
-                      <span className="text-sm font-bold text-zinc-950 block">{selectedRfq.title}</span>
-                      <span className="text-[#5B4A6E] block mt-0.5">Target volume requested: {selectedRfq.qty}</span>
-                    </div>
-
-                    <div>
-                      <label className="block font-bold text-[#5B4A6E] uppercase tracking-wider mb-1.5">Proposed Price (per unit / Liter)</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. ₹135 / Unit"
-                        value={quotePrice}
-                        onChange={(e) => setQuotePrice(e.target.value)}
-                        className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none p-2.5 rounded-lg font-mono text-zinc-900"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold text-[#5B4A6E] uppercase tracking-wider mb-1.5">Production Lead-time</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. 15 business days"
-                        value={quoteLeadTime}
-                        onChange={(e) => setQuoteLeadTime(e.target.value)}
-                        className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none p-2.5 rounded-lg"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={quoteSubmitted}
-                      className="w-full py-3.5 bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold uppercase tracking-wider rounded-lg shadow-sm transition-all"
-                    >
-                      {quoteSubmitted ? 'Transmitting quote securely...' : 'Submit Commercial Bid'}
-                    </button>
-                  </form>
-
-                </div>
-              </div>
-            )}
 
           </div>
         )}
@@ -728,6 +835,76 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
         )}
 
       </div>
+
+      {/* Quote-sent confirmation toast (matches global toast styling) */}
+      {quoteSentToast && (
+        <div className="fixed bottom-22 right-6 z-50 bg-[#2A0E3F] text-white px-4 py-3 rounded-xl shadow-xl border border-[#352B44] flex items-center gap-2.5 animate-in slide-in-from-bottom-5 duration-200">
+          <CheckCircle2 className="w-4 h-4 text-[#8236A0]" />
+          <span className="text-[13px] font-medium">{quoteSentToast}</span>
+        </div>
+      )}
+
+      {/* Custom Quote Submission form overlay (Screen 23) — shared by the
+          Enquiry Inbox and the public RFQ marketplace */}
+      {selectedRfq && (
+        <div className="fixed inset-0 bg-zinc-950/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-[#E8DEEF] rounded-2xl w-full max-w-md p-6 relative shadow-2xl text-xs space-y-6">
+
+            <div className="flex justify-between items-center pb-3 border-b border-[#E8DEEF]">
+              <div>
+                <span className="text-[9px] text-zinc-400 font-mono block">RFQ: {selectedRfq.id}</span>
+                <h3 className="font-black text-sm text-zinc-900">Send Commercial Quote Proposal</h3>
+              </div>
+              <button onClick={() => setSelectedRfq(null)} className="text-zinc-400 hover:text-zinc-600 font-bold">
+                Close
+              </button>
+            </div>
+
+            <form onSubmit={handleSendQuote} className="space-y-4 text-xs">
+              <div>
+                <span className="block text-[#7E6C96] font-bold uppercase mb-1">Target Requirement</span>
+                <span className="text-sm font-bold text-zinc-950 block">{selectedRfq.requirement_title}</span>
+                <span className="text-[#5B4A6E] block mt-0.5">
+                  Target volume requested: {selectedRfq.quantity_required.toLocaleString('en-IN')} {selectedRfq.quantity_unit}
+                </span>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#5B4A6E] uppercase tracking-wider mb-1.5">Proposed Price (per unit / Liter)</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. ₹135 / Unit"
+                  value={quotePrice}
+                  onChange={(e) => setQuotePrice(e.target.value)}
+                  className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none p-2.5 rounded-lg font-mono text-zinc-900"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#5B4A6E] uppercase tracking-wider mb-1.5">Production Lead-time</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. 15 business days"
+                  value={quoteLeadTime}
+                  onChange={(e) => setQuoteLeadTime(e.target.value)}
+                  className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none p-2.5 rounded-lg"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={quoteSubmitted}
+                className="w-full py-3.5 bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold uppercase tracking-wider rounded-lg shadow-sm transition-all"
+              >
+                {quoteSubmitted ? 'Transmitting quote securely...' : 'Submit Commercial Bid'}
+              </button>
+            </form>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );

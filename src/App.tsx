@@ -42,6 +42,7 @@ import { ChatModalDrawer } from './components/ChatModalDrawer';
 import { BuyerOnboardingScreen } from './components/BuyerOnboardingScreen';
 import { DatabaseStatusModal } from './components/DatabaseStatusModal';
 import { getBuyerProfile, BUYER_PROFILES_DB } from './data/buyerProfilesData';
+import { isSupplierSaved as isSupplierSavedInStore, toggleSavedSupplier } from './data/savedStore';
 import {
   SupabaseProvider,
   useSupabase,
@@ -413,6 +414,21 @@ function NexoraShopApp() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Saved suppliers — persisted shortlist shared with the buyer dashboard.
+  const [savedSuppliersVersion, setSavedSuppliersVersion] = useState(0);
+  const handleToggleSaveSupplier = (supplierId: string, supplierName?: string) => {
+    const nowSaved = toggleSavedSupplier(supplierId);
+    setSavedSuppliersVersion((v) => v + 1);
+    triggerToast(nowSaved
+      ? `${supplierName || 'Supplier'} added to your Saved Suppliers shortlist.`
+      : `${supplierName || 'Supplier'} removed from Saved Suppliers.`);
+  };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const isSupplierSavedCheck = (supplierId: string) => {
+    void savedSuppliersVersion; // re-evaluate on toggle
+    return isSupplierSavedInStore(supplierId);
+  };
+
   // Derive the Supabase user's role (stored in auth metadata at registration).
   const supabaseRole = (user?.user_metadata?.role as 'buyer' | 'supplier') || null;
   const currentPathname = typeof window !== 'undefined' ? window.location.pathname : '/';
@@ -755,6 +771,8 @@ function NexoraShopApp() {
               onCallSupplier={handleCallSupplier}
               onWhatsAppSupplier={handleWhatsAppSupplier}
               onNavigate={handleNavigate}
+              isSupplierSaved={isSupplierSavedCheck}
+              onToggleSaveSupplier={handleToggleSaveSupplier}
             />
           </main>
         )}
@@ -765,6 +783,7 @@ function NexoraShopApp() {
             <ProductDetailPage
               productId={selectedProductId}
               onBack={() => handleNavigate('explore')}
+              onNavigateToProduct={(productId) => handleNavigate('product-detail', { productId })}
               onOpenEnquiryModal={(item) => {
                 handleOpenEnquiry({
                   id: 'enq-' + Date.now(),
@@ -807,6 +826,8 @@ function NexoraShopApp() {
               onNavigateToProductDetail={(productId) => handleNavigate('product-detail', { productId })}
               onCallSupplier={handleCallSupplier}
               onWhatsAppSupplier={handleWhatsAppSupplier}
+              isSupplierSaved={isSupplierSavedCheck}
+              onToggleSaveSupplier={handleToggleSaveSupplier}
             />
           </main>
         )}

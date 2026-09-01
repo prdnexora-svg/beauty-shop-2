@@ -19,7 +19,8 @@ import {
   Layers,
   FlaskConical,
   Truck,
-  HelpCircle
+  HelpCircle,
+  IndianRupee
 } from 'lucide-react';
 import { ProductDetailData } from '../types';
 import { SPONSORED_PRODUCTS_DB } from '../data/sponsoredProductsData';
@@ -32,6 +33,7 @@ interface ProductDetailPageProps {
   onOpenRFQModal: () => void;
   onNavigateToSampleRequest?: () => void;
   onNavigateToSupplierProfile?: (supplierId: string) => void;
+  onNavigateToProduct?: (productId: string) => void;
   onCallSupplier: (name: string, phone: string) => void;
   onWhatsAppSupplier: (name: string, whatsapp: string) => void;
   onOpenChat?: (
@@ -47,6 +49,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   onOpenRFQModal,
   onNavigateToSampleRequest,
   onNavigateToSupplierProfile,
+  onNavigateToProduct,
   onCallSupplier,
   onWhatsAppSupplier,
   onOpenChat,
@@ -56,6 +59,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<'specs' | 'formulation' | 'packaging' | 'compliance'>('specs');
+
+  // Related products: same category first, then remaining catalog (max 4)
+  const relatedProducts = React.useMemo(() => {
+    if (!product) return [];
+    const all = Object.values(SPONSORED_PRODUCTS_DB).filter((p) => p.id !== product.id);
+    const sameCategory = all.filter((p) => p.category === product.category);
+    const rest = all.filter((p) => p.category !== product.category);
+    return [...sameCategory, ...rest].slice(0, 4);
+  }, [product?.id]);
 
   // Fallback state if product ID is invalid or removed
   if (!product) {
@@ -268,10 +280,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
               {/* Conversion CTAs */}
               <div className="space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <button
                     onClick={() => onOpenEnquiryModal({ name: product.title, supplierName: product.supplierName })}
                     className="w-full py-3.5 px-3 rounded-xl bg-[#6B2D8C] text-white font-extrabold text-xs sm:text-sm hover:bg-[#4A2560] transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-1.5"
+                  >
+                    <IndianRupee className="w-4 h-4" />
+                    Get Best Price
+                  </button>
+
+                  <button
+                    onClick={() => onOpenEnquiryModal({ name: product.title, supplierName: product.supplierName })}
+                    className="w-full py-3.5 px-3 rounded-xl bg-white border-2 border-[#6B2D8C] text-[#6B2D8C] font-extrabold text-xs sm:text-sm hover:bg-[#F5EEF8] transition-all flex items-center justify-center gap-1.5"
                   >
                     <Send className="w-4 h-4" />
                     Enquiry
@@ -449,6 +469,58 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Related Products — same-category sponsored listings */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-10 space-y-4">
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-[11px] uppercase font-bold text-[#6B2D8C] tracking-wider">You may also source</p>
+                <h2 className="text-lg md:text-xl font-black text-[#2A0E3F]">Related Products</h2>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {relatedProducts.map((rel) => (
+                <div key={rel.id} className="bg-white border border-[#E8DEEF] rounded-2xl overflow-hidden group hover:shadow-md transition-all flex flex-col">
+                  <button
+                    onClick={() => onNavigateToProduct?.(rel.id)}
+                    className="aspect-square bg-gray-50 overflow-hidden cursor-pointer"
+                    aria-label={`View ${rel.title}`}
+                  >
+                    <img
+                      src={rel.images[0]}
+                      alt={rel.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </button>
+                  <div className="p-4 space-y-2 flex-1 flex flex-col">
+                    <span className="text-[10px] uppercase font-bold text-[#7E6C96] tracking-wider">{rel.category}</span>
+                    <h3 className="text-sm font-extrabold text-[#2A0E3F] leading-snug line-clamp-2">{rel.title}</h3>
+                    <div className="flex items-baseline justify-between text-xs mt-auto pt-2">
+                      <span className="font-black text-[#6B2D8C]">{rel.priceRange}</span>
+                      <span className="text-[#5B4A6E] font-semibold">MOQ: {rel.moq}</span>
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <button
+                        onClick={() => onNavigateToProduct?.(rel.id)}
+                        className="flex-1 py-2 rounded-xl bg-white border border-[#6B2D8C] text-[#6B2D8C] font-bold text-xs hover:bg-[#F5EEF8] transition-colors"
+                      >
+                        View Details
+                      </button>
+                      <button
+                        onClick={() => onOpenEnquiryModal({ name: rel.title, supplierName: rel.supplierName })}
+                        className="flex-1 py-2 rounded-xl bg-[#6B2D8C] text-white font-bold text-xs hover:bg-[#4A2560] transition-colors"
+                      >
+                        Get Best Price
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
