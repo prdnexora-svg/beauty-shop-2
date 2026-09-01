@@ -3,7 +3,7 @@
 // ============================================================================
 
 import { db } from './database';
-import { supabase } from '../lib/supabase';
+import { supabase, MIN_PASSWORD_LENGTH, EMAIL_REGEX } from '../lib/supabase';
 import {
   DBUser,
   DBProfileBuyer,
@@ -20,12 +20,19 @@ import {
 } from './types';
 
 function mapSupabaseUser(user: { id: string; email?: string | null; phone?: string | null; created_at?: string; updated_at?: string; user_metadata?: { role?: UserRole } }): DBUser {
-  const role = (user.user_metadata?.role as UserRole) || 'buyer';
+  const rawRole = user.user_metadata?.role;
+  // Mirror the server-side validation in migration 0006: metadata is
+  // client-writable, so anything other than a real signup role becomes 'buyer'
+  // rather than being trusted (an 'admin' hint must never be honoured here).
+  const role: UserRole = rawRole === 'buyer' || rawRole === 'supplier' ? rawRole : 'buyer';
   return {
     id: user.id,
     email: user.email || '',
-    phone: user.phone || '',
-    password_hash: 'managed-by-supabase-auth', // Never persist or expose a password locally.
+    // Nullable since 0006. Phone is not collected at signup; normalise the
+    // empty string to null so it matches what public.users actually stores.
+    phone: user.phone?.trim() ? user.phone.trim() : null,
+    // Credentials live only in auth.users; never mirror or fabricate one.
+    password_hash: null,
     role,
     created_at: user.created_at || new Date().toISOString(),
     updated_at: user.updated_at || new Date().toISOString(),
@@ -94,18 +101,26 @@ export const authApi = {
     contactName?: string;
     password?: string;
   }): Promise<{ success: boolean; session?: AuthSession; error?: string }> {
-    const isEmail = data.emailOrPhone.includes('@');
-    if (!isEmail) {
-      return { success: false, error: 'Business email is required for registration.' };
+    const email = data.emailOrPhone.trim().toLowerCase();
+    if (!EMAIL_REGEX.test(email)) {
+      return { success: false, error: 'A valid business email is required for registration.' };
     }
 
-    const password = data.password && data.password.length >= 8
-      ? data.password
-      : `Nexora${Date.now()}`;
+    // Never invent a password. The previous `Nexora${Date.now()}` fallback
+    // produced accounts nobody could sign into and whose password was
+    // guessable within a known time window.
+    if (!data.password || data.password.length < MIN_PASSWORD_LENGTH) {
+      return {
+        success: false,
+        error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
+      };
+    }
 
+    // No phone is sent: the column is nullable as of migration 0006 and the
+    // auth trigger mirrors the row into public.users without one.
     const { data: authData, error } = await supabase.auth.signUp({
-      email: data.emailOrPhone,
-      password,
+      email,
+      password: data.password,
       options: {
         data: { role: data.role, business_name: data.businessName },
         emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined,
@@ -117,6 +132,15 @@ export const authApi = {
     }
     if (!authData.user) {
       return { success: false, error: 'Registration could not create a user.' };
+    }
+    // With email confirmation enabled Supabase returns 200 and an obfuscated
+    // user with an empty identities array instead of an error for an already
+    // registered address. Without this the caller reports a false success.
+    if (Array.isArray(authData.user.identities) && authData.user.identities.length === 0) {
+      return {
+        success: false,
+        error: 'An account with this email already exists. Please sign in instead.',
+      };
     }
 
     const user = mapSupabaseUser(authData.user);

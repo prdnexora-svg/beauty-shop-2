@@ -7,8 +7,12 @@ export type UserRole = 'guest' | 'buyer' | 'supplier' | 'admin';
 export interface DBUser {
   id: string; // UUID  - PRIMARY KEY, unique user identifier
   email: string; // VARCHAR(255)  - unique user email address
-  phone: string; // VARCHAR(20)   - E.164 verified mobile phone number
-  password_hash: string; // VARCHAR(255)  - encrypted password credential
+  // VARCHAR(20) NULLABLE - optional E.164 mobile number. NULL for every
+  // email/password and OAuth signup; phone is not collected at registration.
+  phone?: string | null;
+  // VARCHAR(255) NULLABLE - deprecated. Credentials are owned by auth.users
+  // (GoTrue/bcrypt) and are never mirrored into this table.
+  password_hash?: string | null;
   role: UserRole; // VARCHAR(32)   - buyer | supplier | admin | guest
   created_at: string; // TIMESTAMP     - account creation timestamp
   updated_at: string; // TIMESTAMP     - last profile modification

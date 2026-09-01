@@ -110,11 +110,10 @@ export async function syncAllDataToSupabase(state: DatabaseState): Promise<{ suc
   const errors: string[] = [];
   let syncedCount = 0;
   try {
-    if (state.users?.length) {
-      const { error } = await supabase.from('users').upsert(state.users);
-      if (error) errors.push(`users: ${error.message}`);
-      else syncedCount += state.users.length;
-    }
+    // `users` is deliberately NOT synced. It is a mirror of auth.users owned by
+    // the on_auth_user_created trigger (migration 0006), and the local seed ids
+    // ('usr-buyer-priya', ...) are not UUIDs and have no auth.users parent — an
+    // upsert would fail the UUID cast and the new FK, or create orphan rows.
     if (state.profiles_buyer?.length) {
       const { error } = await supabase.from('profiles_buyer').upsert(state.profiles_buyer);
       if (error) errors.push(`profiles_buyer: ${error.message}`);
@@ -226,6 +225,13 @@ export interface AuthFailure {
 }
 
 export type AuthRole = 'buyer' | 'supplier';
+
+/**
+ * Single source of truth for credential validation, shared by the AuthModal and
+ * authApi so the two paths cannot drift apart (they previously disagreed: 6 vs 8).
+ */
+export const MIN_PASSWORD_LENGTH = 6;
+export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Role chosen before a redirect-based OAuth handshake. Google never carries our
 // app role through the provider, so it is stashed here and re-applied once the

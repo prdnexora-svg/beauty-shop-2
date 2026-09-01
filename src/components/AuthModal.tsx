@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, CheckCircle2, ArrowRight, Building2, ShoppingBag, Mail, Lock, Eye, EyeOff, AlertCircle, Info } from 'lucide-react';
-import { useSupabase } from '../lib/supabase';
+import { useSupabase, MIN_PASSWORD_LENGTH, EMAIL_REGEX } from '../lib/supabase';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -9,8 +9,6 @@ interface AuthModalProps {
   initialMode?: 'login' | 'register';
   isFullPage?: boolean;
 }
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
@@ -54,8 +52,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setErrorMessage('Please enter a valid Gmail / Email address. Example: name@gmail.com');
       return false;
     }
-    if (password.length < 6) {
-      setErrorMessage('Password must be at least 6 characters.');
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setErrorMessage(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
       return false;
     }
     if (mode === 'register' && !businessName.trim()) {
@@ -365,7 +363,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => { setPassword(e.target.value); if (errorMessage) resetMessages(); }}
-                  placeholder={mode === 'login' ? 'Enter your password' : 'Create a password (min 6 chars)'}
+                  placeholder={mode === 'login' ? 'Enter your password' : `Create a password (min ${MIN_PASSWORD_LENGTH} chars)`}
                   autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                   className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-xl pl-9 pr-10 py-2.5 text-[13px] text-[#2A0E3F] focus:outline-none transition-colors"
                   required
@@ -380,7 +378,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </button>
               </div>
               {mode === 'register' && (
-                <p className="mt-1.5 text-[11px] text-[#7E6C96]">Use at least 6 characters. No mobile, no OTP needed.</p>
+                <p className="mt-1.5 text-[11px] text-[#7E6C96]">Use at least {MIN_PASSWORD_LENGTH} characters. No mobile, no OTP needed.</p>
               )}
             </div>
 

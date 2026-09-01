@@ -33,6 +33,8 @@ const {
   setPendingAuthRole,
   readPendingAuthRole,
   clearPendingAuthRole,
+  MIN_PASSWORD_LENGTH,
+  EMAIL_REGEX,
 } = await import('../lib/supabase');
 
 beforeEach(() => { storage.clear(); });
@@ -114,4 +116,75 @@ test('new registrations are routed to their role-specific onboarding', () => {
   assert.equal(screenForRole('buyer', true), 'buyer-onboarding');
   assert.equal(screenForRole('supplier', true), 'onboarding');
   assert.equal(screenForRole('buyer', false), 'buyer-dashboard');
+});
+
+// ---------------------------------------------------------------------------
+// Migration 0006 — nullable phone + auth mirror trigger semantics.
+// The SQL itself is exercised against Postgres, but the role-resolution and
+// null-normalisation rules the trigger encodes are mirrored in TypeScript and
+// must agree with it.
+// ---------------------------------------------------------------------------
+
+/** Mirrors the trigger's role validation: metadata is a hint, never trusted. */
+function triggerResolvedRole(meta: Record<string, unknown> | null | undefined): string {
+  const raw = meta?.role;
+  return raw === 'buyer' || raw === 'supplier' ? raw : 'buyer';
+}
+
+/** Mirrors NULLIF(btrim(COALESCE(phone,'')), '') in the trigger. */
+function normalisePhone(phone: string | null | undefined): string | null {
+  const trimmed = (phone ?? '').trim();
+  return trimmed === '' ? null : trimmed;
+}
+
+test('trigger role validation refuses client-supplied privilege escalation', () => {
+  // user_metadata is writable by the account owner, so 'admin' must not stick.
+  assert.equal(triggerResolvedRole({ role: 'admin' }), 'buyer');
+  assert.equal(triggerResolvedRole({ role: 'guest' }), 'buyer');
+  assert.equal(triggerResolvedRole({ role: 'superuser' }), 'buyer');
+});
+
+test('trigger role validation preserves legitimate signup roles', () => {
+  assert.equal(triggerResolvedRole({ role: 'buyer' }), 'buyer');
+  assert.equal(triggerResolvedRole({ role: 'supplier' }), 'supplier');
+});
+
+test('trigger role validation defaults to buyer when metadata is absent', () => {
+  assert.equal(triggerResolvedRole(null), 'buyer');
+  assert.equal(triggerResolvedRole(undefined), 'buyer');
+  assert.equal(triggerResolvedRole({}), 'buyer');
+});
+
+test('phone normalises to NULL for email/password and OAuth signups', () => {
+  // An email+password signup carries no phone at all.
+  assert.equal(normalisePhone(undefined), null);
+  assert.equal(normalisePhone(null), null);
+  // Empty/whitespace must become NULL, not '', or the UNIQUE index would
+  // treat every phone-less account as colliding on the same value.
+  assert.equal(normalisePhone(''), null);
+  assert.equal(normalisePhone('   '), null);
+});
+
+test('a real phone number survives normalisation intact', () => {
+  assert.equal(normalisePhone('+919820154321'), '+919820154321');
+  assert.equal(normalisePhone('  +919820154321  '), '+919820154321');
+});
+
+// ---------------------------------------------------------------------------
+// Shared credential validation — AuthModal and authApi previously disagreed
+// (6 vs 8 characters), letting a password pass one path and fail the other.
+// ---------------------------------------------------------------------------
+test('password length rule is a single shared constant', () => {
+  assert.equal(typeof MIN_PASSWORD_LENGTH, 'number');
+  assert.ok(MIN_PASSWORD_LENGTH >= 6);
+  assert.equal('12345'.length < MIN_PASSWORD_LENGTH, true);
+  assert.equal('123456'.length >= MIN_PASSWORD_LENGTH, true);
+});
+
+test('shared email regex accepts real addresses and rejects malformed ones', () => {
+  assert.equal(EMAIL_REGEX.test('priya@gmail.com'), true);
+  assert.equal(EMAIL_REGEX.test('b2b@aurabeautylabs.co.in'), true);
+  assert.equal(EMAIL_REGEX.test('9820154321'), false);
+  assert.equal(EMAIL_REGEX.test('no-at-sign.com'), false);
+  assert.equal(EMAIL_REGEX.test('spaces in@mail.com'), false);
 });

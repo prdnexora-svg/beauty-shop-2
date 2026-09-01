@@ -29,7 +29,13 @@ callback, and a set-new-password form calling `supabase.auth.updateUser({ passwo
 (Supabase links default to 24h), there is no way to request another.
 `supabase.auth.resend({ type: 'signup', email })` is never called.
 
-## 3. Profile rows are never created 🔴
+## 3. Profile rows are never created 🔴 — ⚠️ PARTIALLY RESOLVED (0006)
+
+> **Update (migration 0006):** `public.users` is now populated automatically by
+> the `on_auth_user_created` trigger, with an `on_auth_user_updated` companion
+> and a backfill for pre-existing accounts. **`profiles_buyer` / `profiles_supplier`
+> stubs are still NOT created** — that half of this gap remains open.
+
 
 This is the largest structural gap. Registration writes to `auth.users` and
 nothing else:
@@ -53,7 +59,13 @@ mirrors id/email/role into `public.users` and creates the role-appropriate
 profile stub. Doing it client-side is not viable — the `users_self_access`
 RLS policy has no INSERT path that runs before the session exists.
 
-## 4. `users` table has no INSERT policy 🟠
+## 4. `users` table has no INSERT policy 🟠 — ✅ RESOLVED (0006)
+
+> **Update:** inserts are now the trigger's job (`SECURITY DEFINER`, bypasses
+> RLS). The `FOR ALL` policy was split into `users_self_select` and
+> `users_self_update`, the latter pinning `role` via a `SECURITY DEFINER`
+> helper so a client cannot self-promote.
+
 
 `0002_rls_policies.sql` defines `users_self_access FOR ALL USING (auth.uid() = id)`.
 `FOR ALL` includes INSERT, and the `WITH CHECK` requires `auth.uid() = id` —
@@ -69,13 +81,12 @@ This reinforces #3: the trigger must be `SECURITY DEFINER` to bypass RLS.
 
 It has diverged badly and will mislead the next developer:
 
-- `register()` **invents a password** when none is supplied:
-  `` `Nexora${Date.now()}` `` — an unrecoverable account, guessable within a
-  known time window.
-- It enforces a **min length of 8**; the live modal enforces 6. No shared constant.
+- ~~`register()` **invents a password** when none is supplied~~ — ✅ fixed in
+  0006 pass: it now rejects a missing/short password instead of fabricating one.
+- ~~It enforces a **min length of 8**; the live modal enforces 6.~~ — ✅ fixed:
+  both import the shared `MIN_PASSWORD_LENGTH`.
 - It passes `business_name` into `user_metadata` — the live path silently drops it.
-- It lacks the empty-`identities` duplicate check, so it still has bug #1 from
-  the previous audit.
+- ~~It lacks the empty-`identities` duplicate check~~ — ✅ fixed in the 0006 pass.
 - `switchRole()` lets a **client rewrite its own role** via `updateUser({ data: { role } })`.
   `user_metadata` is user-writable in Supabase; if this were ever wired up, any
   buyer could self-promote to supplier from the browser console.
@@ -140,7 +151,12 @@ hardcoded and none of these variables are read anywhere.
 feature, plus `signInWithOtp` / `verifyOtp` / `phoneOtpCapability` stubs typed
 as `any` on the context.
 
-## 11. `phone` is NOT NULL but never collected 🔴
+## 11. `phone` is NOT NULL but never collected 🔴 — ✅ RESOLVED (0006)
+
+> **Update:** `phone` and `password_hash` are both nullable; empty strings are
+> normalised to NULL so the UNIQUE index does not collide across phone-less
+> accounts. `DBUser.phone` is now `string | null`.
+
 
 `schema.sql` declares `phone VARCHAR(20) UNIQUE NOT NULL`. The registration
 form collects **email and password only**. The moment the trigger from #3 is
@@ -150,7 +166,11 @@ added, every insert will fail the NOT NULL constraint.
 created. This directly contradicts the "no mobile number" product decision the
 rest of the auth flow was rewritten around.
 
-## 12. `syncAllDataToSupabase` would corrupt `users` 🟠
+## 12. `syncAllDataToSupabase` would corrupt `users` 🟠 — ✅ RESOLVED
+
+> **Update:** `users` is excluded from the sync; the table is owned by the
+> auth trigger.
+
 
 It upserts `state.users` — seed rows whose ids are `'usr-buyer-priya'`,
 `'usr-supp-aura'`. These are **not UUIDs** and will fail the `UUID` column type,
@@ -169,7 +189,9 @@ No test harness for React components exists (no jsdom, no testing-library).
 ## 14. Smaller items 🟡
 
 - **Password strength**: only `length >= 6`. No complexity rule, no breach
-  check, no strength meter, and no shared constant between the two validators.
+  check, no strength meter. *(The 6-vs-8 drift between the two validators is
+  resolved — both now import `MIN_PASSWORD_LENGTH` / `EMAIL_REGEX` from
+  `src/lib/supabase.ts`.)*
 - **No rate limiting / lockout** client-side; relies entirely on Supabase
   defaults. `rate_limited` is classified but never proactively surfaced.
 - **`businessName` collected and discarded** — required by validation, sent
@@ -190,13 +212,20 @@ No test harness for React components exists (no jsdom, no testing-library).
 
 | # | Item | Why first |
 |---|------|-----------|
-| 1 | `phone` nullable (#11) | Blocks #3; one-line migration |
-| 2 | `auth.users` trigger → `public.users` + profile stub (#3, #4) | Unblocks every FK and the supplier onboarding workflow |
+| ~~1~~ | ~~`phone` nullable (#11)~~ | ✅ done — migration 0006 |
+| ~~2a~~ | ~~`auth.users` trigger → `public.users` (#3, #4)~~ | ✅ done — migration 0006 |
+| **2b** | **`profiles_buyer` / `profiles_supplier` stub creation (#3)** | **Still open.** FKs from RFQs/quotes resolve to `users`, but role profiles are still absent |
 | 3 | Password reset (#1) | Users are currently lockable-out with no recovery |
-| 4 | Delete or neuter `authApi` (#5) | Removes the invented-password and self-promote hazards |
+| 4 | Delete or neuter `authApi` (#5) | Hazards defused, but the orphaned duplicate implementation remains |
 | 5 | Role-gate `SupplierAdminPortal` (#6) + move role authority server-side (#5a) | Closes the privilege boundary |
 | 6 | Resend confirmation (#2) | Completes the signup happy path |
-| 7 | Dead-code sweep (#8, #9, #10, #12) | Cheap; prevents future confusion |
+| 7 | Dead-code sweep (#8, #9, #10) | Cheap; prevents future confusion |
 
-Items 1–2 are a single migration and should land together. Nothing in this list
-is a regression from the previous fix pass — these are pre-existing gaps.
+Items 1 and 2a landed together in `0006_make_phone_nullable_and_add_auth_trigger.sql`.
+Nothing in this list is a regression from a fix pass — these are pre-existing gaps.
+
+> **Verification caveat:** no PostgreSQL instance is available in this sandbox,
+> so migration 0006 has been checked structurally (balanced `$$`, `BEGIN`/`END`,
+> parentheses) and its role/phone-normalisation rules are mirrored by unit
+> tests — but it has **not been executed against a live database**. Run it on a
+> Supabase branch before production.
