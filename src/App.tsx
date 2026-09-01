@@ -54,6 +54,7 @@ import {
   isAuthPath,
   redirectToLogin,
   stripAuthCallbackParams,
+  resolveUserRole,
 } from './lib/supabase';
 import {
   CATEGORIES,
@@ -430,7 +431,7 @@ function NexoraShopApp() {
   };
 
   // Derive the Supabase user's role (stored in auth metadata at registration).
-  const supabaseRole = (user?.user_metadata?.role as 'buyer' | 'supplier') || null;
+  const supabaseRole = resolveUserRole(user);
   const currentPathname = typeof window !== 'undefined' ? window.location.pathname : '/';
   const isAuthLoginPath = currentPathname === AUTH_LOGIN_PATH;
   const isAuthCallbackPath = currentPathname !== AUTH_LOGIN_PATH
@@ -454,11 +455,17 @@ function NexoraShopApp() {
     if (!isConfigured) return;
     if (!authReady) return;
     if (session?.user) {
-      const role = supabaseRole || 'buyer';
+      // Prefer the server role. If metadata has not resolved yet, fall back to
+      // the last known role rather than forcing 'buyer', which would otherwise
+      // bounce a supplier out of their portal for a frame after every refresh.
+      const stored = localStorage.getItem('nexora_user_role');
+      const cached = stored === 'buyer' || stored === 'supplier' ? stored : null;
+      const role = supabaseRole || cached || 'buyer';
       setIsLoggedIn(true);
       setUserRole(role);
       localStorage.setItem('nexora_is_logged_in', 'true');
-      if (role) localStorage.setItem('nexora_user_role', role);
+      localStorage.setItem('nexora_user_role', role);
+      localStorage.removeItem('nexora_guest_mode');
     } else {
       setIsLoggedIn(false);
       setUserRole(null);

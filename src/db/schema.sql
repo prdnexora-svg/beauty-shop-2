@@ -9,12 +9,14 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   email VARCHAR(255) UNIQUE NOT NULL,
-  phone VARCHAR(50) UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  role VARCHAR(20) NOT NULL CHECK (role IN ('buyer', 'supplier', 'admin')),
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  phone VARCHAR(20) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role VARCHAR(32) NOT NULL CHECK (role IN ('buyer', 'supplier', 'admin', 'guest')),
+  created_at TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'UTC'),
+  updated_at TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'UTC')
 );
+
+CREATE INDEX IF NOT EXISTS users_role_idx ON users(role);
 
 -- 2. PROFILES_BUYER TABLE
 CREATE TABLE IF NOT EXISTS profiles_buyer (

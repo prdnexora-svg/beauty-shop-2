@@ -5,13 +5,13 @@
 export type UserRole = 'guest' | 'buyer' | 'supplier' | 'admin';
 
 export interface DBUser {
-  id: string; // UUID Primary Key
-  email: string;
-  phone: string;
-  password_hash: string;
-  role: UserRole;
-  created_at: string;
-  updated_at: string;
+  id: string; // UUID  - PRIMARY KEY, unique user identifier
+  email: string; // VARCHAR(255)  - unique user email address
+  phone: string; // VARCHAR(20)   - E.164 verified mobile phone number
+  password_hash: string; // VARCHAR(255)  - encrypted password credential
+  role: UserRole; // VARCHAR(32)   - buyer | supplier | admin | guest
+  created_at: string; // TIMESTAMP     - account creation timestamp
+  updated_at: string; // TIMESTAMP     - last profile modification
 }
 
 export type BuyerBusinessType = 'Salon' | 'Spa' | 'Retailer' | 'Distributor' | 'Brand Owner' | 'Cosmetic Clinic' | 'E-commerce Brand';

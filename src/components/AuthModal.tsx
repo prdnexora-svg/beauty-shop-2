@@ -33,6 +33,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [businessName, setBusinessName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [verified, setVerified] = useState(false);
+  // The role the SERVER confirmed for this account. On sign-in this can differ
+  // from the `role` toggle, and the server value must win when routing.
+  const [resolvedRole, setResolvedRole] = useState<'buyer' | 'supplier' | null>(null);
+  const [wasRegistration, setWasRegistration] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -67,7 +71,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
     if (isConfigured) {
       try {
-        await signInWithGoogle();
+        // Pass the selected role so it survives the provider redirect.
+        const { error, failure } = await signInWithGoogle(role);
+        if (error || failure) {
+          setErrorMessage(failure?.message || error?.message || 'Google sign-in failed. Please try again.');
+          setIsGoogleLoading(false);
+        }
+        // On success the browser navigates away; leave the spinner running.
       } catch (err: any) {
         setErrorMessage(err?.message || 'Google sign-in failed. Please try again.');
         setIsGoogleLoading(false);
@@ -88,6 +98,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       }));
       localStorage.setItem('nexora_is_logged_in', 'true');
       localStorage.setItem('nexora_user_role', role);
+      localStorage.removeItem('nexora_guest_mode');
+      setResolvedRole(role);
+      setWasRegistration(false);
       setVerified(true);
     }, 900);
   };
@@ -121,18 +134,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         }));
         localStorage.setItem('nexora_is_logged_in', 'true');
         localStorage.setItem('nexora_user_role', role);
+        localStorage.removeItem('nexora_guest_mode');
+        setResolvedRole(role);
+        setWasRegistration(mode === 'register');
         setVerified(true);
         return;
       }
 
       if (mode === 'register') {
-        const { error, needsEmailConfirmation, failure } = await signUpWithEmailPassword(
+        const { error, needsEmailConfirmation, failure, role: serverRole } = await signUpWithEmailPassword(
           email.trim().toLowerCase(),
           password,
           role,
         );
-        if (error) {
-          setErrorMessage(failure?.message || error.message || 'Registration failed. Please try again.');
+        if (error || failure) {
+          setErrorMessage(failure?.message || error?.message || 'Registration failed. Please try again.');
+          // A duplicate email is actionable: drop the user straight into sign-in.
+          if (failure?.kind === 'duplicate_email') {
+            setMode('login');
+            setPassword('');
+          }
           return;
         }
         if (needsEmailConfirmation) {
@@ -140,28 +161,46 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           setInfoMessage('Registration successful! Please check your Gmail inbox to confirm your account, then sign in.');
           return;
         }
+        setResolvedRole(serverRole ?? role);
+        setWasRegistration(true);
         setVerified(true);
         return;
       }
 
-      const { error, failure } = await signInWithEmailPassword(email.trim().toLowerCase(), password);
-      if (error) {
-        setErrorMessage(failure?.message || error.message || 'Sign in failed. Please check your email and password.');
+      const { error, failure, role: serverRole } = await signInWithEmailPassword(email.trim().toLowerCase(), password);
+      if (error || failure) {
+        setErrorMessage(failure?.message || error?.message || 'Sign in failed. Please check your email and password.');
         return;
       }
+      // Route by the account's real role, not the toggle the user happened to
+      // leave selected — a supplier signing in with "Buyer" active must still
+      // land in the Supplier portal.
+      const effectiveRole = serverRole ?? role;
+      if (serverRole && serverRole !== role) {
+        setRole(serverRole);
+        setInfoMessage(`Signed in as a ${serverRole === 'buyer' ? 'Buyer' : 'Supplier'} account.`);
+      }
+      setResolvedRole(effectiveRole);
+      setWasRegistration(false);
       setVerified(true);
+    } catch (err: any) {
+      // Guarantees the button never sticks on "Please wait..." after a crash.
+      setErrorMessage(err?.message || 'Unexpected error. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleReset = () => {
-    const isNew = mode === 'register';
+    const isNew = wasRegistration;
+    const finalRole = resolvedRole ?? role;
     setVerified(false);
     setEmail('');
     setPassword('');
     setBusinessName('');
-    onSuccess(role, isNew);
+    setResolvedRole(null);
+    setWasRegistration(false);
+    onSuccess(finalRole, isNew);
     onClose();
   };
 
