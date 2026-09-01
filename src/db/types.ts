@@ -68,6 +68,16 @@ export interface DBProfileSupplier {
   is_verified: boolean;
   is_gst_verified: boolean;
   is_iso_certified: boolean;
+  /** Directory lifecycle status: active | pending_verification | rejected | suspended */
+  status?: string;
+  /** Public directory flag for freshly onboarded suppliers. */
+  is_verified_supplier?: boolean;
+  /** Denormalized primary category used by server-side `.eq('category', ...)` filters. */
+  category?: string;
+  /** Denormalized subcategory used by subcategory filters. */
+  subcategory?: string;
+  brand_name?: string;
+  about?: string;
   onboarding_status: SupplierOnboardingStatus;
   reviewed_at: string | null;
   approved_at: string | null;

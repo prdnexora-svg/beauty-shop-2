@@ -43,7 +43,6 @@ import {
   FlaskConical
 } from 'lucide-react';
 import { VerifiedSupplier } from '../types';
-import { VERIFIED_SUPPLIERS } from '../data/mockData';
 import { fetchSuppliers } from '../services/supplierService';
 import { VerifiedBadge } from './VerifiedBadge';
 
@@ -80,7 +79,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 }) => {
   // Search & Top Filters State
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCity, setSelectedCity] = useState('Mumbai, Maharashtra');
+  const [selectedCity, setSelectedCity] = useState('');
   const [distanceRadius, setDistanceRadius] = useState('+250 km');
 
   // Business Type Pill Tab
@@ -122,26 +121,35 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
   // Mobile Filter Drawer State
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
-  // Service Supplier State
-  const [remoteSuppliers, setRemoteSuppliers] = useState<VerifiedSupplier[]>(VERIFIED_SUPPLIERS);
+  // Service Supplier State — starts empty; only database rows are used.
+  const [remoteSuppliers, setRemoteSuppliers] = useState<VerifiedSupplier[]>([]);
   const [isLoadingSuppliers, setIsLoadingSuppliers] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
     setIsLoadingSuppliers(true);
 
+    const serviceSort =
+      sortBy === 'Rating' ? 'rating' :
+      sortBy === 'Year Established' ? 'years_established' :
+      sortBy === 'Employee Count' ? 'response_time' : 'relevance';
+
     fetchSuppliers({
       searchQuery,
       businessType: activeBusinessType,
       category: selectedCategory || 'All',
+      subcategory: selectedSubcategory || '',
+      city: selectedCity || '',
       verifiedOnly: quickFilters.verifiedOnly,
+      sortBy: serviceSort,
       limit: 50
     }).then(res => {
-      if (isMounted && res.data && res.data.length > 0) {
-        setRemoteSuppliers(res.data);
+      if (isMounted) {
+        setRemoteSuppliers(res.data || []);
       }
     }).catch(err => {
-      console.warn('Supplier service error, falling back to mock dataset:', err);
+      console.warn('Supplier service error:', err);
+      if (isMounted) setRemoteSuppliers([]);
     }).finally(() => {
       if (isMounted) setIsLoadingSuppliers(false);
     });
@@ -149,7 +157,16 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
     return () => {
       isMounted = false;
     };
-  }, [searchQuery, activeBusinessType, selectedCategory, quickFilters.verifiedOnly]);
+  }, [
+    searchQuery,
+    activeBusinessType,
+    selectedCategory,
+    selectedSubcategory,
+    selectedCity,
+    sortBy,
+    quickFilters.verifiedOnly,
+    quickFilters.oemPrivateLabel
+  ]);
 
   // Phone Reveal State (per supplier ID)
   const [revealedPhones, setRevealedPhones] = useState<{ [key: string]: boolean }>({});
@@ -161,8 +178,8 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
   // Assets Dropdown Open State (per supplier ID)
   const [openAssetsId, setOpenAssetsId] = useState<string | null>(null);
 
-  // Comparison Selection State
-  const [selectedComparisonIds, setSelectedComparisonIds] = useState<string[]>(['sup-1', 'sup-2']);
+  // Comparison Selection State — starts empty; real DB rows get added on click.
+  const [selectedComparisonIds, setSelectedComparisonIds] = useState<string[]>([]);
 
   // Toast State
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -236,7 +253,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
     setSearchQuery('');
     setActiveBusinessType('All');
     setBusinessTypeFilters([]);
-    setSelectedCategory('Haircare');
+    setSelectedCategory('');
     setSelectedSubcategory('');
     setMoqValue(5000);
     setCapacityFilter('Any Capacity');
@@ -390,8 +407,8 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
   }, [remoteSuppliers, searchQuery, selectedCity, activeBusinessType, businessTypeFilters, selectedCategory, quickFilters, complianceFilters, sortBy]);
 
   const selectedSuppliersObjects = useMemo(() => {
-    return VERIFIED_SUPPLIERS.filter((s) => selectedComparisonIds.includes(s.id));
-  }, [selectedComparisonIds]);
+    return remoteSuppliers.filter((s) => selectedComparisonIds.includes(s.id));
+  }, [remoteSuppliers, selectedComparisonIds]);
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#2A0E3F] font-sans">
@@ -693,26 +710,26 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
             {/* Primary Business Type Tabs */}
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
               {[
-                { label: 'All Suppliers', key: 'All', count: VERIFIED_SUPPLIERS.length },
+                { label: 'All Suppliers', key: 'All', count: remoteSuppliers.length },
                 {
                   label: 'Verified Manufacturers',
                   key: 'Manufacturers',
-                  count: VERIFIED_SUPPLIERS.filter((s) => s.type.toLowerCase().includes('manufacturer') || s.type.toLowerCase().includes('formulator')).length
+                  count: remoteSuppliers.filter((s) => s.type.toLowerCase().includes('manufacturer') || s.type.toLowerCase().includes('formulator')).length
                 },
                 {
                   label: 'Wholesalers & Stockists',
                   key: 'Wholesalers',
-                  count: VERIFIED_SUPPLIERS.filter((s) => s.type.toLowerCase().includes('wholesaler') || s.type.toLowerCase().includes('stockist')).length
+                  count: remoteSuppliers.filter((s) => s.type.toLowerCase().includes('wholesaler') || s.type.toLowerCase().includes('stockist')).length
                 },
                 {
                   label: 'National Distributors',
                   key: 'Distributors',
-                  count: VERIFIED_SUPPLIERS.filter((s) => s.type.toLowerCase().includes('distributor')).length
+                  count: remoteSuppliers.filter((s) => s.type.toLowerCase().includes('distributor')).length
                 },
                 {
                   label: 'OEM / Private Label',
                   key: 'OEM / Private Label',
-                  count: VERIFIED_SUPPLIERS.filter((s) => s.type.toLowerCase().includes('oem') || s.type.toLowerCase().includes('private label') || s.type.toLowerCase().includes('formulator')).length
+                  count: remoteSuppliers.filter((s) => s.type.toLowerCase().includes('oem') || s.type.toLowerCase().includes('private label') || s.type.toLowerCase().includes('formulator')).length
                 }
               ].map((typeTab) => {
                 const isActive = activeBusinessType === typeTab.key;
@@ -811,12 +828,12 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
               <div>
                 <h1 className="text-xl font-bold tracking-tight text-[#2A0E3F] flex items-center gap-2.5 flex-wrap">
                   <span>
-                    {filteredSuppliers.length} Verified Suppliers
+                    {filteredSuppliers.length} Suppliers &amp; Brands
                     {selectedCategory ? ` for '${selectedCategory}'` : ''}
                     {activeBusinessType !== 'All' ? ` (${activeBusinessType})` : ''}
                   </span>
                   <span className="bg-[#F5EEF8] text-[#6B2D8C] text-[11px] px-2.5 py-0.5 rounded-full font-bold">
-                    {activeBusinessType !== 'All' ? activeBusinessType : 'Verified Hub'}
+                    {activeBusinessType !== 'All' ? activeBusinessType : 'Live Directory'}
                   </span>
                 </h1>
                 <p className="text-[13px] text-[#5B4A6E] mt-1 font-medium">
@@ -894,12 +911,14 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
             {/* Active Filters Pill Strip */}
             <div className="flex flex-wrap gap-2 items-center text-[12px]">
               <span className="text-[#7E6C96] font-semibold">Active:</span>
-              <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E8DEEF] rounded-full text-[#2A0E3F] font-medium shadow-2xs">
-                <span>Category: {selectedCategory}</span>
-                <button onClick={() => setSelectedCategory('')} className="hover:text-[#6B2D8C] text-[#7E6C96]">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              {selectedCategory && (
+                <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E8DEEF] rounded-full text-[#2A0E3F] font-medium shadow-2xs">
+                  <span>Category: {selectedCategory}</span>
+                  <button onClick={() => setSelectedCategory('')} className="hover:text-[#6B2D8C] text-[#7E6C96]">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
               {activeBusinessType !== 'All' && (
                 <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E8DEEF] rounded-full text-[#2A0E3F] font-medium shadow-2xs">
                   <span>Type: {activeBusinessType}</span>
@@ -1062,10 +1081,15 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                                 overallRating={sup.overallRating}
                                 size="sm"
                               />
-                              {sup.isVerified && (
+                              {sup.isVerified ? (
                                 <span className="flex items-center gap-1 text-[#6B2D8C] text-[12px] font-bold" title="Nexora Verified Partner">
                                   <ShieldCheck className="w-4 h-4 fill-[#6B2D8C] text-white" />
                                   <span className="hidden sm:inline">Verified</span>
+                                </span>
+                              ) : (
+                                <span className="flex items-center gap-1 text-amber-700 text-[12px] font-bold" title="Supplier is live, verification review pending">
+                                  <Clock className="w-4 h-4 text-amber-500" />
+                                  <span>Pending Verification</span>
                                 </span>
                               )}
                             </div>

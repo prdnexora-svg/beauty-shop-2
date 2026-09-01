@@ -953,6 +953,9 @@ function NexoraShopApp() {
             <main className="flex-1">
               <SupplierOnboardingScreen
                 authenticated={isLoggedIn && userRole === 'supplier'}
+                userId={session?.user?.id || user?.id || null}
+                userEmail={session?.user?.email || user?.email || null}
+                userRole={userRole}
                 onComplete={() => {
                   triggerToast('Business listing created! Redirecting to Portal...');
                   handleNavigate('supplier-portal');

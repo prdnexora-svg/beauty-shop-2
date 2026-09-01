@@ -3,8 +3,10 @@ import {
   Search, MapPin, ShieldCheck, ArrowLeft, Star, ExternalLink, 
   Calendar, Users, Award, Briefcase, Sparkles, Building2, 
   ChevronRight, ChevronLeft, Check, MessageSquare, FileText, Bookmark, 
-  BookmarkCheck, CheckCircle2, SlidersHorizontal, ArrowUpDown, PlusCircle
+  BookmarkCheck, CheckCircle2, SlidersHorizontal, ArrowUpDown, PlusCircle,
+  Loader2
 } from 'lucide-react';
+import { fetchSuppliers } from '../services/supplierService';
 
 interface BrandDirectoryDetailScreenProps {
   onOpenEnquiryModal: (productName: string, supplierName: string) => void;
@@ -14,145 +16,74 @@ interface BrandDirectoryDetailScreenProps {
   onNavigateToSupplierProfile?: (supplierId: string) => void;
 }
 
-const MOCK_BRANDS = [
-  {
-    id: 'b1',
-    name: 'Aura Beauty Labs',
-    logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCJ-JsV4RQ8_6O3skDxu1yeXyZ1uDoVdkrXJrKEoc-REI6s2Ctt8DGBLz04mevk1QLqNmbiTD0JYu4S1KxBueueVl1mfIgwsQOPMwE_6mglJWbRg0UCnRp6beBhwek581NsXfBCDDSZ-hzcmoB9zopoUSnnjyKA6yrqFDum4CshWSOC_WC-zDmMRAfo4i-ak3zXm93SP089UxrNBZMum0V62zNazRMj6pH2GvlhXLjTN8AYAV8SWw6L',
-    type: 'OEM & Contract Manufacturer',
-    rating: 4.9,
-    reviewsCount: 42,
-    location: 'Mumbai, Maharashtra',
-    established: '2012',
-    establishedYearNum: 2012,
-    employees: '150-200',
-    employeeCountNum: 200,
-    capacity: '50,000 units / day',
-    responseRate: '98%',
-    gstVerified: true,
-    certifications: ['ISO 22716', 'GMP', 'Cruelty-Free', 'Halal'],
-    about: 'Aura Beauty Labs is a state-of-the-art beauty brand developer and contract manufacturer. We specialize in high-efficacy skincare, premium haircare formulations, and vegan cosmetics. Partnering with top-tier global beauty brands for private label execution.',
-    categories: ['Skincare', 'Haircare', 'Cosmetics'],
-    products: [
-      { id: 'bp1', name: 'Peptide Skin Barrier Repair Cream', price: '₹145 - ₹180', moq: '2,000 Units', image: 'https://images.unsplash.com/photo-1608248597481-496100c8c836?w=400&auto=format&fit=crop&q=60' },
-      { id: 'bp2', name: 'Clinical Vitamin C Infused Glow Serum', price: '₹190 - ₹220', moq: '3,000 Units', image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&auto=format&fit=crop&q=60' },
-      { id: 'bp3', name: 'Salicylic Acid Overnight Blemish Gel', price: '₹110 - ₹135', moq: '5,000 Units', image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&auto=format&fit=crop&q=60' }
-    ],
-    facilities: [
-      { title: 'Quality Control Lab', desc: 'Rigorous batch testing and stability protocols' },
-      { title: 'Class 10,000 Cleanroom', desc: 'ISO 7 certified packaging and automated filling lines' },
-      { title: 'High-Shear Mixing Suite', desc: 'Undergoing strict molecular-emulsion quality controls' }
-    ]
-  },
-  {
-    id: 'b2',
-    name: 'Dermaglow India Ltd',
-    logo: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=200&auto=format&fit=crop&q=60',
-    type: 'Derma-Cosmetic Supplier',
-    rating: 4.8,
-    reviewsCount: 31,
-    location: 'Delhi NCR',
-    established: '2008',
-    establishedYearNum: 2008,
-    employees: '100-150',
-    employeeCountNum: 150,
-    capacity: '35,000 units / day',
-    responseRate: '96%',
-    gstVerified: true,
-    certifications: ['GMP', 'ISO 9001', 'FDA Approved'],
-    about: 'Dermaglow India manufactures medical-grade cosmetics and clinically tested skincare solutions. We work closely with clinical dermatologists to supply salons, spas, and premium dermo-cosmetic brands nationwide.',
-    categories: ['Skincare', 'Professional Derma'],
-    products: [
-      { id: 'bp4', name: 'Dermatological Barrier Repair Fluid', price: '₹220 - ₹260', moq: '1,000 Units', image: 'https://images.unsplash.com/photo-1612817288484-6f916006741a?w=400&auto=format&fit=crop&q=60' },
-      { id: 'bp5', name: 'Advanced Ceramide Hydrating Cleanser', price: '₹125 - ₹150', moq: '2,500 Units', image: 'https://images.unsplash.com/photo-1556229174-5e42a09e45af?w=400&auto=format&fit=crop&q=60' }
-    ],
-    facilities: [
-      { title: 'Dermatological Testing Lab', desc: 'In-vitro efficacy testing & skin irritation profiling' },
-      { title: 'High-Capacity Cold Storage', desc: 'Preserving active biological enzymes & botanical extracts' }
-    ]
-  },
-  {
-    id: 'b3',
-    name: 'LuxeForm Organics',
-    logo: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=200&auto=format&fit=crop&q=60',
-    type: 'Eco-Luxe Private Labeler',
-    rating: 4.7,
-    reviewsCount: 19,
-    location: 'Bengaluru, Karnataka',
-    established: '2016',
-    establishedYearNum: 2016,
-    employees: '50-80',
-    employeeCountNum: 80,
-    capacity: '20,000 units / day',
-    responseRate: '94%',
-    gstVerified: true,
-    certifications: ['Ecocert Organic', 'ISO 22716', '100% Vegan'],
-    about: 'LuxeForm Organics is dedicated to green chemistry and clean beauty. We offer turn-key solutions from botanical extraction to custom biodegradable packaging for organic beauty startups.',
-    categories: ['Skincare', 'Bodycare', 'Haircare'],
-    products: [
-      { id: 'bp6', name: 'Cold-Pressed Marula Infused Facial Oil', price: '₹280 - ₹340', moq: '500 Units', image: 'https://images.unsplash.com/photo-1601049676099-e7ed07d825b0?w=400&auto=format&fit=crop&q=60' },
-      { id: 'bp7', name: 'Organic Rosemary & Bamboo Volumizing Shampoo', price: '₹140 - ₹175', moq: '2,000 Units', image: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=400&auto=format&fit=crop&q=60' }
-    ],
-    facilities: [
-      { title: 'Supercritical CO2 Extraction Unit', desc: 'For high-purity natural and botanical oils' },
-      { title: 'Post-Consumer Recycled Packaging Line', desc: 'Advanced zero-waste bottle design facility' }
-    ]
-  },
-  {
-    id: 'b4',
-    name: 'CosmoPack Packaging Solutions',
-    logo: 'https://images.unsplash.com/photo-1612817288484-6f916006741a?w=200&auto=format&fit=crop&q=60',
-    type: 'Packaging & Container Manufacturer',
-    rating: 4.85,
-    reviewsCount: 56,
-    location: 'Ahmedabad, Gujarat',
-    established: '2005',
-    establishedYearNum: 2005,
-    employees: '250-300',
-    employeeCountNum: 300,
-    capacity: '120,000 units / day',
-    responseRate: '99%',
-    gstVerified: true,
-    certifications: ['ISO 9001', 'GMP', 'Sedex Audited'],
-    about: 'Leading manufacturer of luxury cosmetic glass bottles, PCR acrylic containers, airless pump dispensers, and customized anodized caps with precision tooling.',
-    categories: ['Packaging', 'Cosmetics'],
-    products: [
-      { id: 'bp8', name: 'Frosted Glass Dropper Bottle (30ml)', price: '₹18 - ₹24', moq: '5,000 Units', image: 'https://images.unsplash.com/photo-1612817288484-6f916006741a?w=400&auto=format&fit=crop&q=60' },
-      { id: 'bp9', name: 'Double-Walled Acrylic Cream Jar (50g)', price: '₹28 - ₹36', moq: '3,000 Units', image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&auto=format&fit=crop&q=60' }
-    ],
-    facilities: [
-      { title: 'Automated Injection Molding', desc: 'High-precision molds with sub-micron tolerances' },
-      { title: 'Cleanroom Assembly Area', desc: 'Dust-free environment for medical and salon grade packaging' }
-    ]
-  },
-  {
-    id: 'b5',
-    name: 'Radiant Cosmeceuticals Plant',
-    logo: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200&auto=format&fit=crop&q=60',
-    type: 'Color Cosmetics & Makeup OEM',
-    rating: 4.75,
-    reviewsCount: 28,
-    location: 'Hyderabad, Telangana',
-    established: '2014',
-    establishedYearNum: 2014,
-    employees: '120-160',
-    employeeCountNum: 160,
-    capacity: '40,000 units / day',
-    responseRate: '97%',
-    gstVerified: true,
-    certifications: ['GMP', 'FDA Approved', 'Cruelty-Free'],
-    about: 'Specialized in clean-label decorative makeup, liquid lipsticks, high-coverage foundations, and mineral pigmented eyeshadow palettes.',
-    categories: ['Cosmetics', 'Clean Makeup'],
-    products: [
-      { id: 'bp10', name: 'Ultra-Matte Longwear Liquid Lip', price: '₹65 - ₹85', moq: '2,500 Units', image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400&auto=format&fit=crop&q=60' },
-      { id: 'bp11', name: 'Micro-Fine Mineral Setting Powder', price: '₹95 - ₹120', moq: '2,000 Units', image: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400&auto=format&fit=crop&q=60' }
-    ],
-    facilities: [
-      { title: 'Color Matching Spectrometry Lab', desc: 'Digital Pantone precision color replication' },
-      { title: 'Sterile Powder Pressing Suite', desc: 'Automated hydraulic press for pressed powders' }
-    ]
-  }
-];
+interface BrandDirectoryItem {
+  id: string;
+  name: string;
+  logo: string;
+  type: string;
+  rating: number;
+  reviewsCount: number;
+  location: string;
+  established: string;
+  establishedYearNum: number;
+  employees: string;
+  employeeCountNum: number;
+  capacity: string;
+  responseRate: string;
+  gstVerified: boolean;
+  certifications: string[];
+  about: string;
+  categories: string[];
+  products: Array<{ id: string; name: string; price: string; moq: string; image: string }>;
+  facilities: Array<{ title: string; desc: string }>;
+  status?: string;
+  isVerified?: boolean;
+}
+/** Map a live `profiles_supplier` row into the brand-directory card shape. */
+function mapSupplierToBrand(sup: any): BrandDirectoryItem {
+  const c = sup.categories || [];
+  const firstCat = c[0] || 'Beauty';
+  const logo = sup.logo_url || sup.cover_image_url || 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=200&q=80';
+  const year = sup.establishedYear || sup.year_established || String(new Date().getFullYear());
+  const yearNum = parseInt(String(year).match(/\d{4}/)?.[0] || '0', 10) || new Date().getFullYear();
+  const about = sup.about || sup.brand_name || `${sup.name || sup.company_name} — ${sup.type || 'B2B Beauty Supplier'}`;
+  const certs = sup.certificationsList || [
+    ...(sup.isGstVerified ? ['GST Verified'] : []),
+    ...(sup.isIsoCertified ? ['ISO 9001'] : []),
+    ...(sup.isGmpCertified ? ['GMP'] : []),
+    ...(sup.isFdaRegistered ? ['FDA'] : [])
+  ];
+
+  return {
+    id: sup.id,
+    name: sup.name || sup.company_name,
+    logo,
+    type: sup.type || sup.business_type || 'Supplier',
+    rating: sup.overallRating || sup.trustScore / 20 || 4.6,
+    reviewsCount: sup.totalReviewsCount || 0,
+    location: `${sup.city || ''}, ${sup.state || ''}`.replace(/^,\s*|,\s*$/g, '') || 'India',
+    established: year,
+    establishedYearNum: yearNum,
+    employees: sup.employeeCount || 'Contact for Details',
+    employeeCountNum: sup.employeeCountNumber || 0,
+    capacity: sup.monthlyCapacity || 'Contact for Capacity',
+    responseRate: sup.responseRate || '95%',
+    gstVerified: Boolean(sup.isGstVerified),
+    certifications: certs,
+    about,
+    categories: c.length > 0 ? c : [firstCat],
+    products: (sup.portfolioProducts || []).map((p: any) => ({
+      id: p.id || `${sup.id}-${Math.random().toString(36).slice(2)}`,
+      name: p.name || 'Contact for product catalog',
+      price: p.price || 'Contact for price',
+      moq: p.moq || 'Contact for MOQ',
+      image: p.image || 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=400&q=60'
+    })),
+    facilities: [],
+    status: sup.status,
+    isVerified: Boolean(sup.isVerified)
+  };
+}
 
 export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProps> = ({
   onOpenEnquiryModal,
@@ -161,11 +92,13 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
   onNavigateToSuppliers,
   onNavigateToSupplierProfile
 }) => {
-  const [selectedBrand, setSelectedBrand] = useState<typeof MOCK_BRANDS[0] | null>(null);
+  const [remoteBrands, setRemoteBrands] = useState<BrandDirectoryItem[]>([]);
+  const [isLoadingBrands, setIsLoadingBrands] = useState(false);
+  const [selectedBrand, setSelectedBrand] = useState<BrandDirectoryItem | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('Relevance');
-  const [savedBrandIds, setSavedBrandIds] = useState<string[]>(['b1']);
+  const [savedBrandIds, setSavedBrandIds] = useState<string[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Scroll indicator state for categories bar
@@ -178,6 +111,44 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
     'Professional Derma', 'Packaging', 'Clean Beauty', 
     'Ayurvedic & Herbal', 'Fragrance & Deos', 'Salon Equipment'
   ];
+
+  // Live database fetch — replaces the old hard-coded brand cards.
+  useEffect(() => {
+    let mounted = true;
+    setIsLoadingBrands(true);
+    const serviceSort =
+      sortBy === 'Rating' ? 'rating' :
+      sortBy === 'Year Established' ? 'years_established' :
+      sortBy === 'Employee Count' ? 'response_time' : 'relevance';
+
+    fetchSuppliers({
+      searchQuery,
+      // Fetch the full database-backed supplier set; brand tabs use the custom
+      // brand-category labels (e.g. "Cosmetics") which are then filtered from
+      // the live rows below. The `/suppliers` page uses the exact `.eq(...)`
+      // database filter in supplierService.
+      category: 'All',
+      sortBy: serviceSort,
+      verifiedOnly: false,
+      limit: 100
+    })
+      .then((res) => {
+        if (mounted) {
+          setRemoteBrands((res.data || []).map(mapSupplierToBrand));
+        }
+      })
+      .catch((err) => {
+        console.warn('Brand directory fetch failed:', err);
+        if (mounted) setRemoteBrands([]);
+      })
+      .finally(() => {
+        if (mounted) setIsLoadingBrands(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [searchQuery, selectedCategory, sortBy]);
 
   const checkScroll = () => {
     if (filterScrollRef.current) {
@@ -221,13 +192,15 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
     });
   };
 
-  // Filter & Sort logic
+  // Filter & Sort logic — operates only on database-backed rows.
   const filteredBrands = useMemo(() => {
-    const list = MOCK_BRANDS.filter(brand => {
+    const list = remoteBrands.filter(brand => {
       const matchesSearch = brand.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             brand.about.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            brand.location.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategory === 'All' || brand.categories.includes(selectedCategory);
+                            brand.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            brand.categories.some((cat) => cat.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesCategory = selectedCategory === 'All' ||
+        brand.categories.some((cat) => cat.toLowerCase().includes(selectedCategory.toLowerCase()));
       return matchesSearch && matchesCategory;
     });
 
@@ -243,7 +216,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
       }
       return 0; // Default Relevance
     });
-  }, [searchQuery, selectedCategory, sortBy]);
+  }, [remoteBrands, searchQuery, selectedCategory, sortBy]);
 
   return (
     <div className="bg-[#FDFBF7] min-h-screen">
@@ -429,6 +402,13 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
             </div>
 
             {/* Brands & Manufacturers Grid */}
+            {isLoadingBrands && remoteBrands.length === 0 && (
+              <div className="py-16 text-center space-y-3">
+                <Loader2 className="w-7 h-7 text-[#6B2D8C] animate-spin mx-auto" />
+                <p className="text-sm font-bold text-[#5B4A6E]">Loading suppliers &amp; brands from the live directory…</p>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {filteredBrands.map((brand) => {
                 const isSaved = savedBrandIds.includes(brand.id);
@@ -458,7 +438,7 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
                           <button
                             onClick={(e) => toggleSaveBrand(brand.id, brand.name, e)}
                             className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
@@ -470,9 +450,15 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                           >
                             {isSaved ? <BookmarkCheck className="w-4 h-4 fill-[#6B2D8C]" /> : <Bookmark className="w-4 h-4" />}
                           </button>
-                          <span className="text-[10px] bg-[#F5EEF8] text-[#6B2D8C] px-2 py-1 rounded-md font-bold uppercase tracking-wider">
-                            GST Verified
-                          </span>
+                          {brand.isVerified === false || brand.status === 'pending_verification' ? (
+                            <span className="text-[10px] bg-amber-50 text-amber-700 px-2 py-1 rounded-md font-bold uppercase tracking-wider border border-amber-200">
+                              Pending Verification
+                            </span>
+                          ) : (
+                            <span className="text-[10px] bg-[#F5EEF8] text-[#6B2D8C] px-2 py-1 rounded-md font-bold uppercase tracking-wider">
+                              GST Verified
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -689,6 +675,11 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {selectedBrand.products.length === 0 && (
+                    <div className="md:col-span-2 p-5 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-xs text-[#5B4A6E] font-semibold">
+                      Product catalogue will be shared after your enquiry. Use “Enquire Custom Batch” to request current formulations, price bands and MOQ.
+                    </div>
+                  )}
                   {selectedBrand.products.map((prod) => (
                     <div key={prod.id} className="bg-white border border-[#E8DEEF] rounded-xl overflow-hidden flex flex-col justify-between shadow-3xs">
                       <div className="flex gap-4 p-4">
@@ -726,6 +717,11 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {selectedBrand.facilities.length === 0 && (
+                    <div className="md:col-span-3 p-4 bg-[#FDFBF7] border border-[#E8DEEF] rounded-lg text-xs text-[#5B4A6E] font-semibold">
+                      Facility &amp; compliance audit documents are available on request.
+                    </div>
+                  )}
                   {selectedBrand.facilities.map((fac, i) => (
                     <div key={i} className="p-4 bg-[#FDFBF7] border border-[#E8DEEF] rounded-lg">
                       <h4 className="font-bold text-xs text-zinc-900 flex items-center gap-1.5 mb-1">
@@ -749,22 +745,30 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                 
                 <div className="space-y-3.5 text-xs">
                   <div className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${selectedBrand.gstVerified ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
                       <Check className="w-3.5 h-3.5" />
                     </div>
                     <div>
-                      <span className="block font-bold text-zinc-900">GST Registration Confirmed</span>
-                      <span className="block text-[10.5px] text-[#5B4A6E]">Corporate tax filings fully checked &amp; active.</span>
+                      <span className="block font-bold text-zinc-900">
+                        {selectedBrand.gstVerified ? 'GST Registration Confirmed' : 'GST Verification Pending'}
+                      </span>
+                      <span className="block text-[10.5px] text-[#5B4A6E]">
+                        {selectedBrand.gstVerified ? 'Corporate tax filings fully checked & active.' : 'Supplier is live; submitting GST documents for review.'}
+                      </span>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${selectedBrand.isVerified ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
                       <Check className="w-3.5 h-3.5" />
                     </div>
                     <div>
-                      <span className="block font-bold text-zinc-900">GMP &amp; ISO 22716 Audited</span>
-                      <span className="block text-[10.5px] text-[#5B4A6E]">Maintains pristine hygienic and quality compliance standards.</span>
+                      <span className="block font-bold text-zinc-900">
+                        {selectedBrand.isVerified ? 'Nexora Verified Supplier' : 'Nexora Review In Progress'}
+                      </span>
+                      <span className="block text-[10.5px] text-[#5B4A6E]">
+                        {selectedBrand.isVerified ? 'GMP, ISO and quality compliance audits passed.' : 'Approved suppliers receive the Nexora Verified badge after review.'}
+                      </span>
                     </div>
                   </div>
 
