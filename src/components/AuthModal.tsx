@@ -7,6 +7,7 @@ interface AuthModalProps {
   onClose: () => void;
   onSuccess: (role: 'buyer' | 'supplier', isNewUser?: boolean) => void;
   initialMode?: 'login' | 'register';
+  initialRole?: 'buyer' | 'supplier';
   isFullPage?: boolean;
 }
 
@@ -15,6 +16,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onClose,
   onSuccess,
   initialMode = 'login',
+  initialRole = 'buyer',
   isFullPage = false
 }) => {
   const {
@@ -25,7 +27,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   } = useSupabase();
 
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
-  const [role, setRole] = useState<'buyer' | 'supplier'>('buyer');
+  const [role, setRole] = useState<'buyer' | 'supplier'>(initialRole);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [businessName, setBusinessName] = useState('');
@@ -83,31 +85,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
 
-    // Demo fallback
-    setTimeout(() => {
-      setIsGoogleLoading(false);
-      const token = `nexora_oauth_token_${Date.now()}`;
-      localStorage.setItem('nexora_user_session', JSON.stringify({
-        token,
-        email: 'priya.procurement@radiantbeauty.in',
-        name: 'Priya Sharma',
-        role,
-        authenticatedAt: new Date().toISOString()
-      }));
-      localStorage.setItem('nexora_is_logged_in', 'true');
-      localStorage.setItem('nexora_user_role', role);
-      localStorage.removeItem('nexora_guest_mode');
-      setResolvedRole(role);
-      setWasRegistration(false);
-      setVerified(true);
-    }, 900);
+    setIsGoogleLoading(false);
+    setErrorMessage('Sign-in is currently unavailable. Please browse as a guest and try again later.');
   };
 
   const handleGuestContinue = () => {
     localStorage.setItem('nexora_is_logged_in', 'false');
     localStorage.setItem('nexora_user_role', 'buyer');
     localStorage.setItem('nexora_guest_mode', 'true');
-    onSuccess('buyer', false);
     onClose();
   };
 
@@ -121,21 +106,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
     try {
       if (!isConfigured) {
-        // Demo mode - no Supabase
-        const token = `nexora_jwt_${Date.now()}`;
-        localStorage.setItem('nexora_user_session', JSON.stringify({
-          token,
-          email: email.trim().toLowerCase(),
-          name: businessName || (role === 'buyer' ? 'Priya Sharma' : 'Aura Beauty Labs'),
-          role,
-          authenticatedAt: new Date().toISOString()
-        }));
-        localStorage.setItem('nexora_is_logged_in', 'true');
-        localStorage.setItem('nexora_user_role', role);
-        localStorage.removeItem('nexora_guest_mode');
-        setResolvedRole(role);
-        setWasRegistration(mode === 'register');
-        setVerified(true);
+        setErrorMessage('Sign-in is currently unavailable. Please browse as a guest and try again later.');
         return;
       }
 

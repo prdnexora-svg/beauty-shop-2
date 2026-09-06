@@ -1,3 +1,4 @@
+import { CATALOG_PRODUCTS as SEARCH_PRODUCTS } from '../data/catalogProducts';
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -27,7 +28,7 @@ import {
   BookmarkCheck
 } from 'lucide-react';
 import { SearchProduct, SearchSupplier, OEMFormulation } from '../types';
-import { SEARCH_PRODUCTS, SEARCH_SUPPLIERS, SEARCH_OEM_FORMULATIONS } from '../data/mockData';
+import { SEARCH_SUPPLIERS, SEARCH_OEM_FORMULATIONS } from '../data/mockData';
 import { CATEGORY_TAXONOMY, CATEGORY_TAXONOMY_LIST } from '../data/categories';
 import { ProductCompareModal } from './ProductCompareModal';
 import { SupplierComparisonModal } from './SupplierComparisonModal';
@@ -36,6 +37,7 @@ import { VerifiedBadge } from './VerifiedBadge';
 import { getSavedProductIds, toggleSavedProduct } from '../data/savedStore';
 
 interface SearchFilterScreenProps {
+  initialTab?: 'products' | 'suppliers' | 'oem';
   initialQuery?: string;
   initialCategory?: string;
   initialLocation?: string;
@@ -52,9 +54,10 @@ interface SearchFilterScreenProps {
 }
 
 export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
-  initialQuery = 'Professional Hair Serum',
+  initialTab = 'products',
+  initialQuery = '',
   initialCategory = 'All',
-  initialLocation = 'Mumbai, Maharashtra (+50 km)',
+  initialLocation = 'All India',
   isSupplierSaved,
   onToggleSaveSupplier,
   onOpenEnquiryModal,
@@ -71,13 +74,13 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
   const [locationQuery, setLocationQuery] = useState(initialLocation);
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<'products' | 'suppliers' | 'oem'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'suppliers' | 'oem'>(initialTab);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<string>('relevance');
 
   // Filter states
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    initialCategory !== 'All' ? [initialCategory] : ['Haircare']
+    initialCategory && initialCategory !== 'All' ? [initialCategory] : []
   );
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
   const [selectedSupplierTypes, setSelectedSupplierTypes] = useState<string[]>([]);
@@ -117,7 +120,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Comparison State
-  const [comparedProductIds, setComparedProductIds] = useState<string[]>(['sp-1', 'sp-2']);
+  const [comparedProductIds, setComparedProductIds] = useState<string[]>([]);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
 
   const [comparedSupplierIds, setComparedSupplierIds] = useState<string[]>([]);
@@ -425,11 +428,9 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
   const filteredProducts = useMemo(() => {
     return SEARCH_PRODUCTS.filter((p) => {
       if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesText =
-          p.title.toLowerCase().includes(q) ||
-          p.supplierName.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q);
+        const terms = searchQuery.toLowerCase().trim().split(/\s+/);
+        const haystack = `${p.title} ${p.supplierName} ${p.category}`.toLowerCase();
+        const matchesText = terms.every(term => haystack.includes(term));
         if (!matchesText) return false;
       }
 
@@ -918,21 +919,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
               </div>
             </div>
 
-            {activeChips.length > 0 && (
-              <div className="flex flex-wrap gap-2 items-center">
-                <span className="text-[11px] font-bold text-[#7E6C96] uppercase mr-1">Active:</span>
-                {activeChips.map((chip) => (
-                  <button
-                    key={chip.id}
-                    onClick={chip.onRemove}
-                    className="flex items-center gap-1.5 bg-[#F6F1FA] border border-[#E8DEEF] px-2.5 py-1 rounded-lg text-[11px] font-bold text-[#5B4A6E] hover:border-[#6B2D8C] hover:text-[#6B2D8C] transition-all group"
-                  >
-                    {chip.label}
-                    <X className="w-3 h-3 opacity-60 group-hover:opacity-100" />
-                  </button>
-                ))}
-              </div>
-            )}
+
           </div>
 
           {/* Tabs & Sorting Bar */}

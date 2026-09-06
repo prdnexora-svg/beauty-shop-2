@@ -88,14 +88,14 @@ const LANDMARKS: Record<string, React.ReactNode> = {
 };
 
 const CITIES = [
-  { name: 'Mumbai', count: '5,400+ suppliers' },
-  { name: 'Delhi NCR', count: '4,800+ suppliers' },
-  { name: 'Bengaluru', count: '3,200+ suppliers' },
-  { name: 'Ahmedabad', count: '2,900+ suppliers' },
-  { name: 'Pune', count: '2,600+ suppliers' },
-  { name: 'Surat', count: '2,100+ suppliers' },
-  { name: 'Hyderabad', count: '1,900+ suppliers' },
-  { name: 'Chennai', count: '1,700+ suppliers' },
+  { name: 'Mumbai', count: 'Explore suppliers' },
+  { name: 'Delhi NCR', count: 'Explore suppliers' },
+  { name: 'Bengaluru', count: 'Explore suppliers' },
+  { name: 'Ahmedabad', count: 'Explore suppliers' },
+  { name: 'Pune', count: 'Explore suppliers' },
+  { name: 'Surat', count: 'Explore suppliers' },
+  { name: 'Hyderabad', count: 'Explore suppliers' },
+  { name: 'Chennai', count: 'Explore suppliers' },
 ];
 
 export const SourcingCities: React.FC<{ onCityClick: (city: string) => void }> = ({ onCityClick }) => (

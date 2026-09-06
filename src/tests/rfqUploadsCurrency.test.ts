@@ -129,6 +129,7 @@ test('formatBytes produces readable attachment sizes', () => {
 test('RFQ form renders INR labels, Add Own uploader and attachment previews', () => {
   const html = renderToStaticMarkup(
     React.createElement(PostRequirementScreen, {
+      initialDraft: { requirement: 'Test serum', quantity: '2500', city: 'Mumbai' },
       onNavigateToExplore: () => {},
       onNavigateToRFQs: () => {}
     })
@@ -153,10 +154,8 @@ test('RFQ form renders INR labels, Add Own uploader and attachment previews', ()
     assert.ok(html.includes(preset.label), `${preset.label} preset should render`);
   }
 
-  // Attachments: image thumbnail + document icon, both previewable
-  assert.ok(html.includes('reference_bottle_packaging.jpg'), 'seeded image attachment should render');
-  assert.ok(html.includes('brand_formulation_brief.pdf'), 'seeded pdf attachment should render');
-  assert.ok(html.includes('Preview reference_bottle_packaging.jpg'), 'preview control should render');
-  assert.ok(html.includes('Remove brand_formulation_brief.pdf'), 'delete control should render');
-  assert.ok(html.includes('Click to upload or drag and drop'), 'dropzone should render');
+  // A fresh RFQ must not pretend the buyer uploaded demo files.
+  assert.ok(!html.includes('reference_bottle_packaging.jpg'));
+  assert.ok(!html.includes('brand_formulation_brief.pdf'));
+
 });

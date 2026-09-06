@@ -29,7 +29,7 @@ export const SupplierCta: React.FC<{
             />
           </div>
           <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#2A0E3F] text-white text-[11.5px] font-semibold px-4 py-2 rounded-full shadow-xl flex items-center gap-1.5">
-            <span className="text-[#EFD9A0]">★</span> 2,400+ suppliers growing with us
+            <span className="text-[#EFD9A0]">★</span> Connect with beauty industry buyers
           </div>
         </div>
 

@@ -1,3 +1,4 @@
+import { CATALOG_PRODUCTS as SEARCH_PRODUCTS } from '../data/catalogProducts';
 import React, { useState, useMemo } from 'react';
 import {
   Search,
@@ -32,7 +33,7 @@ import {
   Star
 } from 'lucide-react';
 import { SearchProduct, RFQItem } from '../types';
-import { SEARCH_PRODUCTS, LIVE_RFQS } from '../data/mockData';
+import { LIVE_RFQS } from '../data/mockData';
 import { CATEGORY_TAXONOMY } from '../data/categories';
 import { getSavedProductIds, toggleSavedProduct } from '../data/savedStore';
 import { motion, AnimatePresence } from 'motion/react';
@@ -91,7 +92,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
     readyStock: boolean;
     fastResponse: boolean;
   }>({
-    verifiedMfg: true,
+    verifiedMfg: false,
     oemPrivateLabel: false,
     isoCertified: false,
     gmpCompliant: false,
@@ -107,7 +108,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
     getSavedProductIds().forEach((id) => { initial[id] = true; });
     return initial;
   });
-  const [comparedProductIds, setComparedProductIds] = useState<string[]>(['sp-1']);
+  const [comparedProductIds, setComparedProductIds] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [mobileFilterOpen, setMobileFilterOpen] = useState<boolean>(false);
 

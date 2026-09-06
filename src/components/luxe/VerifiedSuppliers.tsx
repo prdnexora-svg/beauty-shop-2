@@ -1,5 +1,6 @@
 import React from 'react';
 import { MapPin, CheckCircle2, Clock, ArrowRight } from 'lucide-react';
+import { SELLER_PROFILES_DB, getProductsForSeller } from '../../data/sellerProfilesData';
 import { SectionHeading } from './SectionHeading';
 
 export interface LuxeSupplier {
@@ -16,55 +17,18 @@ export interface LuxeSupplier {
 }
 
 export const LUXE_SUPPLIERS: LuxeSupplier[] = [
-  {
-    id: 'sup-1',
-    name: 'Aura Beauty Labs',
-    monogram: 'AB',
-    city: 'Mumbai, Maharashtra',
-    type: 'Manufacturer & OEM',
-    years: 12,
-    products: 340,
-    responseTime: '≈ 2 hrs',
-    rating: 4.9,
-    reviews: 287,
-  },
-  {
-    id: 'sup-2',
-    name: 'Dermaglow India',
-    monogram: 'DI',
-    city: 'Delhi NCR',
-    type: 'Cosmetic Manufacturer',
-    years: 9,
-    products: 265,
-    responseTime: '≈ 3 hrs',
-    rating: 4.8,
-    reviews: 341,
-  },
-  {
-    id: 'sup-8',
-    name: 'Prime Beauty Distribution',
-    monogram: 'PB',
-    city: 'Bengaluru, Karnataka',
-    type: 'Wholesaler & Distributor',
-    years: 7,
-    products: 520,
-    responseTime: '≈ 1 hr',
-    rating: 4.9,
-    reviews: 198,
-  },
-  {
-    id: 'sup-4',
-    name: 'BioTech Derma Labs',
-    monogram: 'BD',
-    city: 'Ahmedabad, Gujarat',
-    type: 'ISO-Certified Manufacturer',
-    years: 15,
-    products: 410,
-    responseTime: '≈ 4 hrs',
-    rating: 4.7,
-    reviews: 456,
-  },
-];
+  'seller_aura_001', 'seller_derma_003', 'seller_luxe_002', 'seller_biotech_005',
+].map(id => {
+  const supplier = SELLER_PROFILES_DB[id];
+  return {
+    id: supplier.id, name: supplier.name,
+    monogram: supplier.name.split(' ').map(word => word[0]).slice(0, 2).join(''),
+    city: `${supplier.city}, ${supplier.state}`, type: supplier.businessType,
+    years: Math.max(0, new Date().getFullYear() - parseInt(supplier.establishedYear, 10)),
+    products: getProductsForSeller(id).length, responseTime: supplier.responseSla,
+    rating: supplier.overallRating, reviews: supplier.totalReviewsCount,
+  };
+});
 
 interface VerifiedSuppliersProps {
   onViewProfile: (id: string) => void;
@@ -85,7 +49,7 @@ export const VerifiedSuppliers: React.FC<VerifiedSuppliersProps> = ({
           Featured <span className="italic text-gold-gradient">Verified Suppliers</span>
         </>
       }
-      sub="Hand-audited manufacturers and distributors with documented GST, GMP & export credentials."
+      sub="Explore supplier profiles, product catalogues and listed business credentials."
       action={
         <button
           onClick={onViewAll}
@@ -134,7 +98,7 @@ export const VerifiedSuppliers: React.FC<VerifiedSuppliersProps> = ({
               Responds {s.responseTime}
             </span>
             <span className="inline-flex items-center px-2 py-1 rounded-full bg-luxe-gold/10 text-luxe-gold text-xs font-semibold">
-              {s.years} yrs · {s.products}+ products
+              {s.years} yrs · {s.products} listed products
             </span>
           </div>
 

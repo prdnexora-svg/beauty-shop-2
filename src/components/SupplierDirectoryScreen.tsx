@@ -168,16 +168,6 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
     quickFilters.oemPrivateLabel
   ]);
 
-  // Phone Reveal State (per supplier ID)
-  const [revealedPhones, setRevealedPhones] = useState<{ [key: string]: boolean }>({});
-
-  // Paywall & Sourcing Credit Reveal System States
-  const [userCredits, setUserCredits] = useState<number>(120);
-  const [paywallModalSupplier, setPaywallModalSupplier] = useState<any | null>(null);
-
-  // Assets Dropdown Open State (per supplier ID)
-  const [openAssetsId, setOpenAssetsId] = useState<string | null>(null);
-
   // Comparison Selection State — starts empty; real DB rows get added on click.
   const [selectedComparisonIds, setSelectedComparisonIds] = useState<string[]>([]);
 
@@ -189,38 +179,6 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
     setTimeout(() => {
       setToastMessage(null);
     }, 3500);
-  };
-
-  const handlePhoneRevealClick = (sup: any) => {
-    if (revealedPhones[sup.id]) {
-      setRevealedPhones((prev) => ({
-        ...prev,
-        [sup.id]: false
-      }));
-    } else {
-      setPaywallModalSupplier(sup);
-    }
-  };
-
-  const confirmUnlockSupplier = (id: string, name: string) => {
-    if (userCredits < 10) {
-      showToast("❌ Insufficient Sourcing Credits! Please top up your wallet.");
-      return;
-    }
-    setUserCredits(prev => prev - 10);
-    setRevealedPhones(prev => ({
-      ...prev,
-      [id]: true
-    }));
-    setPaywallModalSupplier(null);
-    showToast(`🔓 Successfully unlocked full contacts for ${name}! (-10 Credits)`);
-  };
-
-  const togglePhoneReveal = (id: string) => {
-    setRevealedPhones((prev) => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
   };
 
   const toggleComparisonSelection = (id: string) => {
@@ -936,44 +894,6 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
             </div>
           </div>
 
-          {/* Sourcing Credit Wallet Banner */}
-          <div className="mb-8 flex flex-col md:flex-row items-center justify-between p-5 bg-white border border-[#D9C3E8] rounded-2xl gap-5 shadow-3xs relative overflow-hidden">
-            {/* Background subtle visual accent */}
-            <div className="absolute right-0 top-0 bottom-0 w-24 bg-[#F5EEF8] opacity-20 rounded-r-2xl transform skew-x-12 pointer-events-none"></div>
-            
-            <div className="flex items-center gap-4 relative z-10 text-left">
-              <div className="w-12 h-12 bg-[#F5EEF8] rounded-full flex items-center justify-center shrink-0 border border-[#6B2D8C]/20">
-                <Unlock className="w-6 h-6 text-[#6B2D8C] animate-pulse" />
-              </div>
-              <div>
-                <p className="text-[10px] font-extrabold text-[#6B2D8C] uppercase tracking-widest bg-[#F5EEF8] px-2.5 py-0.5 rounded-full inline-block">
-                  Verified Buyer Wallet
-                </p>
-                <h4 className="text-[15px] font-extrabold text-[#2A0E3F] mt-1 flex items-center gap-2">
-                  <span>Direct Contact Balance:</span>
-                  <span className="text-[#6B2D8C] text-lg font-black">{userCredits} Sourcing Credits</span>
-                </h4>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto relative z-10">
-              <div className="text-right sm:pr-2 hidden sm:block">
-                <p className="text-[11.5px] font-bold text-[#2A0E3F]">Unlock verified suppliers instantly</p>
-                <p className="text-[10px] font-bold text-[#7E6C96]">10 credits per verified contact unlock</p>
-              </div>
-              <button 
-                type="button"
-                onClick={() => {
-                  setUserCredits(prev => prev + 50);
-                  showToast("⚡ Wallet Refilled! Added 50 Premium Sourcing Credits.");
-                }}
-                className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold text-[12px] px-5 py-3 rounded-xl transition-all shadow-sm hover:shadow-md cursor-pointer text-center whitespace-nowrap"
-              >
-                + Top-Up 50 Credits (Demo)
-              </button>
-            </div>
-          </div>
-
           {/* Concierge Sourcing Header Banner */}
           <section className="mb-8 bg-white border border-[#E8DEEF] rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs">
             <div className="flex-1">
@@ -1013,8 +933,6 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
             {filteredSuppliers.map((sup, index) => {
               const saved = isSupplierSaved ? isSupplierSaved(sup.id) : false;
               const isSelectedForCompare = selectedComparisonIds.includes(sup.id);
-              const isPhoneRevealed = revealedPhones[sup.id];
-              const isAssetsOpen = openAssetsId === sup.id;
 
               return (
                 <React.Fragment key={sup.id}>
@@ -1210,57 +1128,6 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                           </div>
                         </div>
 
-                        {/* Paywall Differentiated Contact UI Block */}
-                        <div className="mt-3.5 mb-4 p-4 rounded-xl border border-dashed transition-all bg-[#FDFBF7] border-[#E5D4ED] flex flex-col md:flex-row flex-wrap md:items-center justify-between gap-4">
-                          <div className="flex flex-wrap items-center gap-4 text-[12.5px] text-[#5B4A6E]">
-                            <div className="flex items-center gap-2">
-                              <Phone className="w-3.5 h-3.5 text-[#6B2D8C] shrink-0" />
-                              <span className="font-bold">Phone:</span>
-                              {isPhoneRevealed ? (
-                                <span className="font-semibold text-[#2A0E3F] font-mono select-all bg-white px-1.5 py-0.5 rounded border border-[#E8DEEF]">{sup.phone}</span>
-                              ) : (
-                                <span className="font-medium text-stone-400 select-none tracking-widest">+91 98201 •••••</span>
-                              )}
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              <Mail className="w-3.5 h-3.5 text-[#6B2D8C] shrink-0" />
-                              <span className="font-bold">Email:</span>
-                              {isPhoneRevealed ? (
-                                <span className="font-semibold text-[#2A0E3F] font-mono select-all bg-white px-1.5 py-0.5 rounded border border-[#E8DEEF]">
-                                  {sup.name.toLowerCase().replace(/[^a-z0-9]/g, '')}@sourcing.nexoraluxe.com
-                                </span>
-                              ) : (
-                                <span className="font-medium text-stone-400 select-none tracking-widest">contact@•••••••.com</span>
-                              )}
-                            </div>
-
-                            <div className="flex items-center gap-2 w-full md:w-auto">
-                              <MapPin className="w-3.5 h-3.5 text-[#6B2D8C] shrink-0" />
-                              <span className="font-bold">Plant Address:</span>
-                              {isPhoneRevealed ? (
-                                <span className="font-semibold text-[#2A0E3F]">{sup.locationDetails?.fullAddress || `${sup.city}, India`}</span>
-                              ) : (
-                                <span className="font-medium text-stone-400 select-none">MIDC Industrial Zone, Plot C-•••</span>
-                              )}
-                            </div>
-                          </div>
-
-                          {isPhoneRevealed ? (
-                            <span className="text-[11px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1">
-                              <Unlock className="w-3 h-3 text-emerald-600" />
-                              <span>Unlocked Contact Card</span>
-                            </span>
-                          ) : (
-                            <button
-                              onClick={() => handlePhoneRevealClick(sup)}
-                              className="text-[11.5px] font-black text-[#6B2D8C] hover:text-[#4A2560] bg-white border border-[#6B2D8C] hover:bg-[#F5EEF8] px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer shadow-3xs"
-                            >
-                              <Lock className="w-3 h-3 text-[#6B2D8C]" />
-                              <span>Unlock Supplier Details (10 Credits)</span>
-                            </button>
-                          )}
-                        </div>
 
                       </div>
 
@@ -1291,15 +1158,11 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                         </button>
 
                         <button
-                          onClick={() => handlePhoneRevealClick(sup)}
-                          className={`border font-bold px-3.5 py-2 rounded-xl text-[13px] flex items-center gap-1.5 transition-colors cursor-pointer ${
-                            isPhoneRevealed 
-                              ? 'bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100' 
-                              : 'bg-white border-[#6B2D8C] text-[#6B2D8C] hover:bg-[#F5EEF8]'
-                          }`}
+                          onClick={() => onCallSupplier(sup.name)}
+                          className="border border-[#6B2D8C] text-[#6B2D8C] font-bold px-3.5 py-2 rounded-xl text-[13px] flex items-center gap-1.5"
                         >
-                          {isPhoneRevealed ? <Unlock className="w-3.5 h-3.5" /> : <Phone className="w-3.5 h-3.5" />}
-                          <span>{isPhoneRevealed ? 'Hide Number' : 'Show Number'}</span>
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>Call Supplier</span>
                         </button>
 
                         {onOpenFacilityTour && (
@@ -1321,69 +1184,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                           <MessageSquare className="w-4 h-4" />
                         </button>
 
-                        {/* Assets Dropdown Menu */}
-                        <div className="relative">
-                          <button
-                            onClick={() => setOpenAssetsId(isAssetsOpen ? null : sup.id)}
-                            className="bg-white border border-[#E8DEEF] text-[#5B4A6E] font-bold px-3.5 py-2 rounded-xl hover:bg-[#F4F0E9] transition-colors text-[13px] flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <FolderDown className="w-3.5 h-3.5 text-[#6B2D8C]" />
-                            <span>Assets</span>
-                            <ChevronDown className="w-3.5 h-3.5" />
-                          </button>
 
-                          {isAssetsOpen && (
-                            <div className="absolute bottom-full left-0 mb-2 w-48 bg-white border border-[#E8DEEF] rounded-xl shadow-lg z-30 py-1.5 animate-in fade-in-50 duration-150">
-                              <button
-                                onClick={() => {
-                                  setOpenAssetsId(null);
-                                  showToast(`Downloaded brochure for ${sup.name}`);
-                                }}
-                                className="w-full text-left px-3.5 py-2 text-[12px] font-semibold text-[#2A0E3F] hover:bg-[#F5EEF8] hover:text-[#6B2D8C] transition-colors flex items-center gap-2"
-                              >
-                                <Download className="w-3.5 h-3.5 text-[#6B2D8C]" />
-                                <span>Download Brochure</span>
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setOpenAssetsId(null);
-                                  showToast(`Opened Product Catalog for ${sup.name}`);
-                                }}
-                                className="w-full text-left px-3.5 py-2 text-[12px] font-semibold text-[#2A0E3F] hover:bg-[#F5EEF8] hover:text-[#6B2D8C] transition-colors flex items-center gap-2 border-t border-[#F4F0E9]"
-                              >
-                                <Package className="w-3.5 h-3.5 text-[#6B2D8C]" />
-                                <span>Product Catalog PDF</span>
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setOpenAssetsId(null);
-                                  showToast(`Verified GST/ISO Documents for ${sup.name}`);
-                                }}
-                                className="w-full text-left px-3.5 py-2 text-[12px] font-semibold text-[#2A0E3F] hover:bg-[#F5EEF8] hover:text-[#6B2D8C] transition-colors flex items-center gap-2 border-t border-[#F4F0E9]"
-                              >
-                                <Award className="w-3.5 h-3.5 text-[#059669]" />
-                                <span>ISO/GST Status</span>
-                              </button>
-                            </div>
-                          )}
-                        </div>
-
-                        <button
-                          onClick={() => {
-                            if (onNavigateToSupplierProfile) {
-                              onNavigateToSupplierProfile(sup.id);
-                            } else {
-                              onOpenEnquiryModal({
-                                title: `${sup.name} Full Profile Inspection`,
-                                supplierName: sup.name
-                              });
-                            }
-                          }}
-                          className="text-[#6B2D8C] hover:underline font-bold text-[12.5px] ml-auto flex items-center gap-1 cursor-pointer"
-                        >
-                          <span>View Profile</span>
-                          <ExternalLink className="w-3 h-3" />
-                        </button>
                       </div>
                     </div>
 
@@ -1641,85 +1442,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
       )}
 
       {/* Premium Contact Reveal Paywall Modal */}
-      {paywallModalSupplier && (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full border border-[#E8DEEF] shadow-2xl p-6 md:p-8 animate-in zoom-in-95 duration-200 relative text-center">
-            <button 
-              type="button"
-              onClick={() => setPaywallModalSupplier(null)}
-              className="absolute top-4 right-4 text-stone-400 hover:text-stone-700 transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
 
-            <div className="w-14 h-14 bg-[#F5EEF8] text-[#6B2D8C] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#D9C3E8]/30">
-              <Lock className="w-6 h-6 text-[#6B2D8C]" />
-            </div>
-
-            <span className="text-[10px] font-black uppercase tracking-widest text-[#6B2D8C] bg-[#F5EEF8] px-3 py-1 rounded-full">
-              Premium B2B Directory Unlock
-            </span>
-
-            <h3 className="text-lg font-black text-[#2A0E3F] mt-3 mb-2">
-              Unlock Contact Details
-            </h3>
-            <p className="text-[12.5px] text-[#5B4A6E] leading-relaxed mb-5">
-              Confirm spending credits to unlock the direct mobile sourcing lines, executive emails, and registered factory plant address for <strong className="text-[#2A0E3F] font-extrabold">{paywallModalSupplier.name}</strong>.
-            </p>
-
-            {/* Credit Ledger Breakdown */}
-            <div className="bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl p-4 text-left mb-6 text-[12.5px] space-y-2.5">
-              <div className="flex justify-between font-medium">
-                <span className="text-[#5B4A6E]">Your Sourcing Wallet:</span>
-                <span className="font-bold text-[#2A0E3F]">{userCredits} Credits</span>
-              </div>
-              <div className="flex justify-between font-medium text-amber-700">
-                <span>Unlock Sourcing Fee:</span>
-                <span className="font-extrabold">-10 Credits</span>
-              </div>
-              <div className="w-full h-px bg-[#E8DEEF]"></div>
-              <div className="flex justify-between font-bold text-[#6B2D8C]">
-                <span>Remaining Balance:</span>
-                <span>{userCredits - 10} Credits</span>
-              </div>
-            </div>
-
-            {/* Benefits locked badges */}
-            <div className="grid grid-cols-3 gap-2.5 mb-6 text-[10.5px] font-bold text-[#5B4A6E]">
-              <div className="p-2 bg-[#FDFBF7] rounded-lg border border-[#E5D4ED] flex flex-col items-center">
-                <Phone className="w-4 h-4 text-[#6B2D8C] mb-1" />
-                <span>Direct Mobile</span>
-              </div>
-              <div className="p-2 bg-[#FDFBF7] rounded-lg border border-[#E5D4ED] flex flex-col items-center">
-                <Mail className="w-4 h-4 text-[#6B2D8C] mb-1" />
-                <span>Corp Email</span>
-              </div>
-              <div className="p-2 bg-[#FDFBF7] rounded-lg border border-[#E5D4ED] flex flex-col items-center">
-                <MapPin className="w-4 h-4 text-[#6B2D8C] mb-1" />
-                <span>Full Address</span>
-              </div>
-            </div>
-
-            <div className="space-y-2.5">
-              <button
-                type="button"
-                onClick={() => confirmUnlockSupplier(paywallModalSupplier.id, paywallModalSupplier.name)}
-                className="w-full bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold text-[13.5px] py-3 rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
-              >
-                <Unlock className="w-4 h-4" />
-                <span>Unlock with 10 Credits</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaywallModalSupplier(null)}
-                className="w-full bg-white hover:bg-[#F4F0E9] text-[#5B4A6E] font-bold text-[13px] py-2.5 rounded-xl transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

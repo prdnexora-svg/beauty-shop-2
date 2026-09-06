@@ -162,6 +162,7 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
               <div className="relative sm:w-[168px] shrink-0">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#C9A961] pointer-events-none" />
                 <select
+                  aria-label="Sourcing location"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   className="w-full appearance-none bg-white/10 border border-white/30 rounded-xl pl-9 pr-8 py-3 text-[13.5px] font-medium text-white outline-none cursor-pointer hover:border-[#EFD9A0] transition-colors [&>option]:text-[#2A0E3F]"
