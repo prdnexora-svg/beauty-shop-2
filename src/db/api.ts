@@ -50,18 +50,42 @@ export interface AuthSession {
   token: string;
 }
 
+/**
+ * Legacy auth helpers. The live sign-in path is `AuthModal` → `useSupabase()`;
+ * prefer the context in new code. These wrappers stay for compatibility but
+ * read real Supabase rows (never the local seed store) since migration 0010
+ * guarantees profile stubs exist for every account.
+ *
+ * @deprecated Use `useSupabase()` from `src/lib/supabase.ts` instead.
+ */
 export const authApi = {
   async getSession(): Promise<AuthSession | null> {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) return null;
 
-      const buyerProfile = session.user.user_metadata?.role === 'buyer'
-        ? db.getBuyerProfileByUserId(session.user.id)
-        : undefined;
-      const supplierProfile = session.user.user_metadata?.role === 'supplier'
-        ? db.getSupplierProfileByUserId(session.user.id)
-        : undefined;
+      const role = session.user.user_metadata?.role;
+      let buyerProfile: DBProfileBuyer | undefined;
+      let supplierProfile: DBProfileSupplier | undefined;
+      try {
+        if (role === 'buyer') {
+          const { data } = await supabase
+            .from('profiles_buyer')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+          buyerProfile = (data as unknown as DBProfileBuyer) || undefined;
+        } else if (role === 'supplier') {
+          const { data } = await supabase
+            .from('profiles_supplier')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+          supplierProfile = (data as unknown as DBProfileSupplier) || undefined;
+        }
+      } catch {
+        // Profiles are best-effort here; the session itself is authoritative.
+      }
 
       return {
         user: mapSupabaseUser(session.user),

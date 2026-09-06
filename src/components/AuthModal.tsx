@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { X, CheckCircle2, ArrowRight, Building2, ShoppingBag, Mail, Lock, Eye, EyeOff, AlertCircle, Info } from 'lucide-react';
-import { useSupabase, MIN_PASSWORD_LENGTH, EMAIL_REGEX } from '../lib/supabase';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, CheckCircle2, ArrowRight, Building2, ShoppingBag, Mail, Lock, Eye, EyeOff, AlertCircle, Info, KeyRound, ChevronLeft, Send } from 'lucide-react';
+import { useSupabase, MIN_PASSWORD_LENGTH, EMAIL_REGEX, AUTH_RESEND_COOLDOWN_MS } from '../lib/supabase';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -22,15 +22,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     signInWithEmailPassword,
     signUpWithEmailPassword,
     signInWithGoogle,
+    sendPasswordResetEmail,
+    resendSignupConfirmation,
   } = useSupabase();
 
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
+  const [view, setView] = useState<'auth' | 'forgot'>('auth');
   const [role, setRole] = useState<'buyer' | 'supplier'>('buyer');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [verified, setVerified] = useState(false);
+  const [showResend, setShowResend] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resetSent, setResetSent] = useState(false);
   // The role the SERVER confirmed for this account. On sign-in this can differ
   // from the `role` toggle, and the server value must win when routing.
   const [resolvedRole, setResolvedRole] = useState<'buyer' | 'supplier' | null>(null);
@@ -39,6 +45,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
+
+  const errorBoxRef = useRef<HTMLDivElement>(null);
+
+  // Screen readers announce auth errors; keyboard focus moves to the banner
+  // so the failure is impossible to miss.
+  useEffect(() => {
+    if (errorMessage && errorBoxRef.current) {
+      errorBoxRef.current.focus();
+    }
+  }, [errorMessage]);
+
+  // Resend cooldown ticker (confirmation + reset emails).
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
 
   if (!isOpen && !isFullPage) return null;
 
@@ -103,11 +126,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }, 900);
   };
 
+  // Guests simply browse the public marketplace — no fake login, no flags.
   const handleGuestContinue = () => {
-    localStorage.setItem('nexora_is_logged_in', 'false');
-    localStorage.setItem('nexora_user_role', 'buyer');
-    localStorage.setItem('nexora_guest_mode', 'true');
-    onSuccess('buyer', false);
+    try {
+      localStorage.setItem('nexora_is_logged_in', 'false');
+      localStorage.removeItem('nexora_user_role');
+      localStorage.removeItem('nexora_guest_mode');
+    } catch { /* storage disabled */ }
     onClose();
   };
 
@@ -198,8 +223,78 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setBusinessName('');
     setResolvedRole(null);
     setWasRegistration(false);
+    setShowResend(false);
     onSuccess(finalRole, isNew);
     onClose();
+  };
+
+  const startCooldown = () => {
+    setResendCooldown(Math.ceil(AUTH_RESEND_COOLDOWN_MS / 1000));
+  };
+
+  const handleResendConfirmation = async () => {
+    if (resendCooldown > 0) return;
+    resetMessages();
+    const clean = email.trim().toLowerCase();
+    if (!clean || !EMAIL_REGEX.test(clean)) {
+      setErrorMessage('Please enter the email you registered with, then tap Resend.');
+      return;
+    }
+    if (!isConfigured) {
+      setInfoMessage('Demo preview — no email is sent. Just press Sign In to continue.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const { error, failure } = await resendSignupConfirmation(clean);
+      if (error || failure) {
+        setErrorMessage(failure?.message || error?.message || 'Could not resend the email. Please try again.');
+        return;
+      }
+      startCooldown();
+      setInfoMessage(`Confirmation email sent again to ${clean}. It can take a minute — also check Spam.`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    resetMessages();
+    const clean = email.trim().toLowerCase();
+    if (!clean || !EMAIL_REGEX.test(clean)) {
+      setErrorMessage('Please enter a valid Gmail / Email address. Example: name@gmail.com');
+      return;
+    }
+    if (!isConfigured) {
+      setInfoMessage('Demo preview — password reset needs a connected Supabase project.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const { error, failure } = await sendPasswordResetEmail(clean);
+      if (error || failure) {
+        setErrorMessage(failure?.message || error?.message || 'Could not send the reset email. Please try again.');
+        return;
+      }
+      setResetSent(true);
+      startCooldown();
+      setInfoMessage(`If an account exists for ${clean}, a reset link is on its way. It expires in 1 hour.`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openForgotView = () => {
+    resetMessages();
+    setResetSent(false);
+    setView('forgot');
+  };
+
+  const backToAuth = () => {
+    resetMessages();
+    setResetSent(false);
+    setView('auth');
   };
 
   const content = (
@@ -232,20 +327,92 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       {/* Body */}
       <div className="p-6">
         {errorMessage && (
-          <div className="mb-4 flex items-start gap-2 px-3 py-2.5 rounded-xl text-[12px] font-semibold border bg-red-50 border-red-200 text-red-700">
+          <div
+            ref={errorBoxRef}
+            tabIndex={-1}
+            role="alert"
+            aria-live="assertive"
+            className="mb-4 flex items-start gap-2 px-3 py-2.5 rounded-xl text-[12px] font-semibold border bg-red-50 border-red-200 text-red-700 focus:outline-none"
+          >
             <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         {infoMessage && (
-          <div className="mb-4 flex items-start gap-2 bg-sky-50 border border-sky-200 text-sky-700 px-3 py-2.5 rounded-xl text-[12px] font-semibold">
+          <div role="status" aria-live="polite" className="mb-4 flex items-start gap-2 bg-sky-50 border border-sky-200 text-sky-700 px-3 py-2.5 rounded-xl text-[12px] font-semibold">
             <Info className="w-4 h-4 mt-0.5 shrink-0" />
             <span>{infoMessage}</span>
           </div>
         )}
 
-        {verified ? (
+        {showResend && !verified && view === 'auth' && (
+          <button
+            type="button"
+            onClick={handleResendConfirmation}
+            disabled={isSubmitting || resendCooldown > 0}
+            className="mb-4 w-full flex items-center justify-center gap-2 bg-white hover:bg-[#F6F1FA] disabled:opacity-60 border border-[#E8DEEF] text-[#6B2D8C] font-bold text-[12px] py-2.5 rounded-xl transition-all cursor-pointer"
+          >
+            <Send className="w-3.5 h-3.5" />
+            <span>
+              {resendCooldown > 0
+                ? `Resend available in ${resendCooldown}s`
+                : 'Resend confirmation email'}
+            </span>
+          </button>
+        )}
+
+        {view === 'forgot' ? (
+          <form onSubmit={handleForgotSubmit} className="space-y-4">
+            <div className="w-12 h-12 bg-[#F6F1FA] rounded-2xl flex items-center justify-center mx-auto">
+              <KeyRound className="w-6 h-6 text-[#6B2D8C]" />
+            </div>
+            <p className="text-[13px] text-[#5B4A6E] text-center leading-relaxed">
+              Enter the email you signed up with. We will send a link to set a new password — no old password needed.
+            </p>
+            <div>
+              <label className="block text-[12px] font-bold text-[#2A0E3F] mb-1">
+                Gmail / Email Address
+              </label>
+              <div className="relative">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); if (errorMessage) resetMessages(); }}
+                  placeholder="yourname@gmail.com"
+                  autoComplete="email"
+                  className="w-full bg-[#F6F1FA] border border-[#E8DEEF] focus:border-[#C9A961] rounded-xl pl-9 pr-3.5 py-2.5 text-[13px] text-[#2A0E3F] focus:outline-none transition-colors"
+                  required
+                />
+                <Mail className="w-4 h-4 text-[#7E6C96] absolute left-3 top-1/2 -translate-y-1/2" />
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={isSubmitting || (resetSent && resendCooldown > 0)}
+              className="w-full bg-[#6B2D8C] hover:bg-[#4A2560] disabled:opacity-60 text-white font-extrabold text-[13px] py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+            >
+              <span>
+                {isSubmitting
+                  ? 'Sending...'
+                  : resetSent && resendCooldown > 0
+                    ? `Link sent — resend in ${resendCooldown}s`
+                    : resetSent
+                      ? 'Send the link again'
+                      : 'Send reset link'}
+              </span>
+              {!isSubmitting && <ArrowRight className="w-4 h-4" />}
+            </button>
+            <button
+              type="button"
+              onClick={backToAuth}
+              className="w-full flex items-center justify-center gap-1.5 text-[12px] font-bold text-[#5B4A6E] hover:text-[#6B2D8C] py-1 cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Back to Sign In
+            </button>
+          </form>
+        ) : verified ? (
           <div className="text-center py-6 space-y-4">
             <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
               <CheckCircle2 className="w-8 h-8" />
@@ -377,8 +544,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {mode === 'register' && (
+              {mode === 'register' ? (
                 <p className="mt-1.5 text-[11px] text-[#7E6C96]">Use at least {MIN_PASSWORD_LENGTH} characters. No mobile, no OTP needed.</p>
+              ) : (
+                <div className="mt-1.5 text-right">
+                  <button
+                    type="button"
+                    onClick={openForgotView}
+                    className="text-[12px] font-bold text-[#6B2D8C] hover:underline cursor-pointer"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
               )}
             </div>
 
@@ -435,6 +612,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 Continue Browsing as Guest
               </button>
             </div>
+
+            {!isConfigured && (
+              <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-center leading-relaxed">
+                Demo preview — any email works, and data stays in this browser only.
+              </p>
+            )}
 
             <p className="text-[11px] text-[#7E6C96] text-center leading-relaxed">
               Simple & secure — only Gmail/Email + Password. No mobile number, no OTP required.
