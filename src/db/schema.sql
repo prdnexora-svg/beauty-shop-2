@@ -260,6 +260,9 @@ DROP POLICY IF EXISTS buyer_profile_self_access ON profiles_buyer;
 CREATE POLICY buyer_profile_self_access ON profiles_buyer
   FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
+-- One buyer profile per auth user, so stub creation and client upserts are idempotent.
+CREATE UNIQUE INDEX IF NOT EXISTS profiles_buyer_user_id_unique ON profiles_buyer (user_id);
+
 -- 3. Supplier Profiles policy (Public Read, Owner Update)
 DROP POLICY IF EXISTS supplier_profile_public_read ON profiles_supplier;
 CREATE POLICY supplier_profile_public_read ON profiles_supplier
@@ -277,6 +280,16 @@ CREATE POLICY supplier_profile_owner_update ON profiles_supplier
 
 GRANT SELECT ON public.profiles_supplier TO anon, authenticated;
 GRANT INSERT, UPDATE ON public.profiles_supplier TO authenticated;
+
+-- Marketplace grants (RLS policies above do the scoping; without these,
+-- Postgres denies authenticated clients before RLS is even evaluated).
+GRANT SELECT, INSERT, UPDATE ON public.profiles_buyer TO authenticated;
+GRANT SELECT ON public.products TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.products TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.rfqs_enquiries TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.quotes        TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.messages      TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.follow_ups    TO authenticated;
 
 CREATE UNIQUE INDEX IF NOT EXISTS profiles_supplier_user_id_unique ON profiles_supplier (user_id);
 CREATE INDEX IF NOT EXISTS profiles_supplier_status_idx   ON profiles_supplier (status);
@@ -354,6 +367,25 @@ CREATE POLICY quotes_verified_supplier_manage ON quotes
 DROP POLICY IF EXISTS quotes_buyer_view_received ON quotes;
 CREATE POLICY quotes_buyer_view_received ON quotes
   FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM rfqs_enquiries rfq
+      JOIN profiles_buyer buyer ON buyer.id = rfq.buyer_id
+      WHERE rfq.id = quotes.rfq_id
+        AND buyer.user_id = auth.uid()
+    )
+  );
+
+-- Buyers can negotiate (accept / reject / counter) quotes on their own RFQs.
+DROP POLICY IF EXISTS quotes_buyer_negotiate_own_rfqs ON quotes;
+CREATE POLICY quotes_buyer_negotiate_own_rfqs ON quotes
+  FOR UPDATE TO authenticated USING (
+    EXISTS (
+      SELECT 1 FROM rfqs_enquiries rfq
+      JOIN profiles_buyer buyer ON buyer.id = rfq.buyer_id
+      WHERE rfq.id = quotes.rfq_id
+        AND buyer.user_id = auth.uid()
+    )
+  ) WITH CHECK (
     EXISTS (
       SELECT 1 FROM rfqs_enquiries rfq
       JOIN profiles_buyer buyer ON buyer.id = rfq.buyer_id

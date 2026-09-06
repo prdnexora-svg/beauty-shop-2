@@ -9,7 +9,10 @@ import { useLocationSync, LocationSyncStatus } from '../hooks/useLocationSync';
 // No mobile number, no OTP. Only Gmail/Email + Password + Google OAuth.
 // ============================================================================
 
-const SUPABASE_STORAGE_KEY = 'nexora.auth.qwaehqsmodekbgvnaavz';
+const DEFAULT_STORAGE_KEY = 'nexora.auth.qwaehqsmodekbgvnaavz';
+// Storage key is env-overridable so multiple Supabase projects (staging/prod)
+// can share a browser without clobbering each other's session.
+const SUPABASE_STORAGE_KEY = readEnv('VITE_SUPABASE_STORAGE_KEY') || DEFAULT_STORAGE_KEY;
 export const AUTH_LOGIN_PATH = '/auth/login';
 export const AUTH_CALLBACK_PATH = '/auth/callback';
 export const AUTH_CALLBACK_PREFIX = '/auth/';
@@ -262,6 +265,31 @@ export function resolveUserRole(user: User | null | undefined): AuthRole | null 
   return raw === 'buyer' || raw === 'supplier' ? raw : null;
 }
 
+/** Absolute URL for email-link redirects (confirm / recovery / invite). */
+export function buildAuthRedirect(path: string = AUTH_CALLBACK_PATH): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  return `${window.location.origin}${path}`;
+}
+
+/**
+ * True when the account was created within `windowMs` (default 10 minutes).
+ * Used to route first-time OAuth users into onboarding — Google never tells us
+ * "new user" directly, but a session on a seconds-old account is one.
+ * Pure and unit-tested; `nowMs` exists only for tests.
+ */
+export const NEW_USER_WINDOW_MS = 10 * 60 * 1000;
+
+export function isNewAuthUser(
+  user: { created_at?: string } | null | undefined,
+  windowMs: number = NEW_USER_WINDOW_MS,
+  nowMs: number = Date.now(),
+): boolean {
+  if (!user?.created_at) return false;
+  const createdMs = Date.parse(user.created_at);
+  if (!Number.isFinite(createdMs)) return false;
+  return nowMs - createdMs >= 0 && nowMs - createdMs <= windowMs;
+}
+
 function classifySimpleError(error: any): AuthFailure {
   const msg = (error?.message || '').toLowerCase();
   const code = (error?.code || '').toLowerCase();
@@ -286,7 +314,7 @@ function classifySimpleError(error: any): AuthFailure {
   if (msg.includes('invalid login credentials') || msg.includes('incorrect password')) {
     return { kind: 'credentials', title: 'Incorrect email or password', message: 'Please check your Gmail ID and password and try again.' };
   }
-  if (msg.includes('rate limit') || msg.includes('too many requests') || code === 'over_request_rate_limit') {
+  if (msg.includes('rate limit') || msg.includes('too many requests') || msg.includes('only request this after') || code === 'over_request_rate_limit' || code === 'over_email_send_rate_limit') {
     return { kind: 'rate_limited', title: 'Too many attempts', message: 'Please wait a minute before trying again.' };
   }
   if (msg.includes('invalid email') || msg.includes('unable to validate email')) {
@@ -301,6 +329,11 @@ function classifySimpleError(error: any): AuthFailure {
 // Context types - simplified, no phone/OTP
 export type AuthenticationStatus = 'loading' | 'authenticated' | 'unauthenticated';
 
+export interface SignupProfile {
+  businessName?: string;
+  contactName?: string;
+}
+
 export interface SupabaseContextType {
   supabase: SupabaseClient;
   isConfigured: boolean;
@@ -309,19 +342,25 @@ export interface SupabaseContextType {
   session: Session | null;
   user: User | null;
   lastAuthEvent: AuthChangeEvent | null;
+  /**
+   * True after the user lands back from a password-recovery email link. The
+   * app must show the set-new-password screen instead of normal content.
+   */
+  passwordRecovery: boolean;
+  clearPasswordRecovery: () => void;
   locationSyncStatus: LocationSyncStatus;
   testConnection: () => Promise<{ connected: boolean; message: string; details?: any; latencyMs?: number }>;
   syncData: (state: DatabaseState) => Promise<{ success: boolean; syncedCount: number; errors: string[] }>;
   signInWithEmailPassword: (email: string, password: string) => Promise<{ error?: Error | null; failure?: AuthFailure | null; role?: AuthRole | null }>;
-  signUpWithEmailPassword: (email: string, password: string, role: AuthRole) => Promise<{ error?: Error | null; needsEmailConfirmation?: boolean; failure?: AuthFailure | null; role?: AuthRole | null }>;
+  signUpWithEmailPassword: (email: string, password: string, role: AuthRole, profile?: SignupProfile) => Promise<{ error?: Error | null; needsEmailConfirmation?: boolean; failure?: AuthFailure | null; role?: AuthRole | null }>;
   signInWithGoogle: (role: AuthRole) => Promise<{ error?: Error | null; failure?: AuthFailure | null }>;
+  /** Sends the "reset your password" email. Never reveals if the email exists. */
+  sendPasswordResetEmail: (email: string) => Promise<{ error?: Error | null; failure?: AuthFailure | null }>;
+  /** Re-sends the signup confirmation email (lost / expired / spam-filtered). */
+  resendSignupConfirmation: (email: string) => Promise<{ error?: Error | null; failure?: AuthFailure | null }>;
+  /** Sets a new password (used by the recovery screen and account settings). */
+  updatePassword: (newPassword: string) => Promise<{ error?: Error | null; failure?: AuthFailure | null }>;
   signOut: (opts?: { redirectToLogin?: boolean }) => Promise<void>;
-  // Deprecated stubs for backward compatibility (no-op, always disabled)
-  signInWithOtp?: any;
-  verifyOtp?: any;
-  phoneOtpCapability?: any;
-  phoneOtpCapabilityDetail?: any;
-  recheckPhoneOtpCapability?: any;
 }
 
 const defaultContext: SupabaseContextType = {
@@ -332,18 +371,18 @@ const defaultContext: SupabaseContextType = {
   session: null,
   user: null,
   lastAuthEvent: null,
+  passwordRecovery: false,
+  clearPasswordRecovery: () => {},
   locationSyncStatus: 'idle',
   testConnection: testSupabaseConnection,
   syncData: syncAllDataToSupabase,
   signInWithEmailPassword: async () => ({ error: null, failure: null, role: null }),
   signUpWithEmailPassword: async () => ({ error: null, needsEmailConfirmation: false, failure: null, role: null }),
   signInWithGoogle: async () => ({ error: null, failure: null }),
+  sendPasswordResetEmail: async () => ({ error: null, failure: null }),
+  resendSignupConfirmation: async () => ({ error: null, failure: null }),
+  updatePassword: async () => ({ error: null, failure: null }),
   signOut: async () => {},
-  signInWithOtp: async () => ({ error: new Error('OTP login is disabled. Use email + password.'), failure: null, channel: 'email', target: '', skipped: true }),
-  verifyOtp: async () => ({ error: new Error('OTP disabled'), failure: null }),
-  phoneOtpCapability: 'disabled',
-  phoneOtpCapabilityDetail: null,
-  recheckPhoneOtpCapability: async () => 'disabled',
 };
 
 export const SupabaseContext = createContext<SupabaseContextType>(defaultContext);
@@ -354,6 +393,7 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [session, setSession] = useState<Session | null>(null);
   const [authenticationStatus, setAuthenticationStatus] = useState<AuthenticationStatus>('loading');
   const [lastAuthEvent, setLastAuthEvent] = useState<AuthChangeEvent | null>(null);
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
   const hadSessionRef = useRef(false);
 
   const locationSyncStatus = useLocationSync({
@@ -378,6 +418,11 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setLastAuthEvent(event);
       setAuthenticationStatus(nextSession ? 'authenticated' : 'unauthenticated');
       setAuthReady(true);
+      if (event === 'PASSWORD_RECOVERY') {
+        // Recovery link opened: force the set-new-password screen.
+        setPasswordRecovery(true);
+        stripAuthCallbackParams();
+      }
       if (nextSession) {
         hadSessionRef.current = true;
         lastAuthRedirectAt = 0;
@@ -386,6 +431,7 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
       } else if (event === 'SIGNED_OUT') {
         hadSessionRef.current = false;
+        setPasswordRecovery(false);
       }
     };
 
@@ -467,6 +513,8 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     session,
     user: session?.user ?? null,
     lastAuthEvent,
+    passwordRecovery,
+    clearPasswordRecovery: () => setPasswordRecovery(false),
     locationSyncStatus,
     testConnection: testSupabaseConnection,
     syncData: syncAllDataToSupabase,
@@ -543,8 +591,57 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return { error: err as Error, failure: classifySimpleError(err) };
       }
     },
+    sendPasswordResetEmail: async (email) => {
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: buildAuthRedirect(AUTH_CALLBACK_PATH),
+        });
+        if (error) {
+          return { error: error as Error, failure: classifySimpleError(error) };
+        }
+        return { error: null, failure: null };
+      } catch (err: any) {
+        return { error: err as Error, failure: classifySimpleError(err), };
+      }
+    },
+    resendSignupConfirmation: async (email) => {
+      try {
+        const { error } = await supabase.auth.resend({
+          type: 'signup',
+          email,
+          options: { emailRedirectTo: buildAuthRedirect(AUTH_CALLBACK_PATH) },
+        });
+        if (error) {
+          return { error: error as Error, failure: classifySimpleError(error) };
+        }
+        return { error: null, failure: null };
+      } catch (err: any) {
+        return { error: err as Error, failure: classifySimpleError(err) };
+      }
+    },
+    updatePassword: async (newPassword) => {
+      try {
+        if (!newPassword || newPassword.length < MIN_PASSWORD_LENGTH) {
+          const failure: AuthFailure = {
+            kind: 'weak_password',
+            title: 'Password too short',
+            message: `Please choose a password with at least ${MIN_PASSWORD_LENGTH} characters.`,
+          };
+          return { error: new Error(failure.message), failure };
+        }
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) {
+          return { error: error as Error, failure: classifySimpleError(error) };
+        }
+        setPasswordRecovery(false);
+        return { error: null, failure: null };
+      } catch (err: any) {
+        return { error: err as Error, failure: classifySimpleError(err) };
+      }
+    },
     signOut: async (opts) => {
       clearPendingAuthRole();
+      setPasswordRecovery(false);
       if (!isConfigured) {
         localStorage.removeItem('nexora_user_session');
         localStorage.setItem('nexora_is_logged_in', 'false');
@@ -565,33 +662,12 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (opts?.redirectToLogin) redirectToLogin();
       }
     },
-    // Stubs for backward compat
-    signInWithOtp: async () => ({ error: new Error('OTP disabled'), failure: null, channel: 'email', target: '', skipped: true }),
-    verifyOtp: async () => ({ error: new Error('OTP disabled'), failure: null }),
-    phoneOtpCapability: 'disabled',
-    phoneOtpCapabilityDetail: null,
-    recheckPhoneOtpCapability: async () => 'disabled' as any,
-  }), [isConfigured, authReady, authenticationStatus, session, lastAuthEvent, locationSyncStatus]);
+  }), [isConfigured, authReady, authenticationStatus, session, lastAuthEvent, passwordRecovery, locationSyncStatus]);
 
   return React.createElement(SupabaseContext.Provider, { value }, children);
 };
 
 export const useSupabase = () => useContext(SupabaseContext);
 
-// Backward compatible exports (so other files don't break, but OTP is disabled)
-export const SUPABASE_OTP_LENGTH = 6;
-export const OTP_RESEND_COOLDOWN_MS = 60000;
-export const SUPABASE_AUTH_PROVIDERS_URL = 'https://supabase.com/dashboard/project/_/auth/providers-and-otp';
-export const SMS_PROVIDER_FIX_STEPS: { label: string; detail: string }[] = [];
-export const formatPhoneForDisplay = (v: string) => v;
-export const parseAuthIdentifier = (raw: string) => {
-  const input = (raw || '').trim().toLowerCase();
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!input) return { kind: 'invalid' as const, value: '', display: '', error: 'Enter email.' };
-  if (emailRegex.test(input)) return { kind: 'email' as const, value: input, display: input };
-  return { kind: 'invalid' as const, value: input, display: input, error: 'Enter valid email.' };
-};
-export const phoneOtpAllowed = () => false;
-export const toE164Phone = (raw: string) => ({ value: raw, ok: false, error: 'Phone not supported' });
-export type OtpChannel = 'email' | 'sms' | 'whatsapp';
-export type PhoneCapability = 'disabled' | 'unknown' | 'available' | 'unavailable';
+/** Cooldown between confirmation / password-reset email re-sends. */
+export const AUTH_RESEND_COOLDOWN_MS = 60000;
