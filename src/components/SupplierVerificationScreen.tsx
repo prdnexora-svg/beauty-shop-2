@@ -303,21 +303,7 @@ export const SupplierVerificationScreen: React.FC<SupplierVerificationScreenProp
                   <UploadCloud className="w-4 h-4" />
                   Bulk Upload (.ZIP)
                 </button>
-                <button 
-                  onClick={() => {
-                    // Simulate export
-                    const link = document.createElement('a');
-                    link.href = '#';
-                    link.download = 'Nexora_Audit_Vault_AuraLabs.zip';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
-                  className="shrink-0 flex items-center justify-center gap-2 px-4 py-2 bg-[#FDFBF7] border border-[#6B2D8C] rounded-lg text-[13px] font-bold text-[#6B2D8C] hover:bg-[#F5EEF8] transition-colors"
-                >
-                  <FileText className="w-4 h-4" />
-                  Export Audit Vault
-                </button>
+
               </div>
             </div>
             

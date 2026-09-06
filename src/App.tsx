@@ -1030,6 +1030,7 @@ function NexoraShopApp() {
                 onCallSupplier={handleCallSupplier}
                 onWhatsAppSupplier={handleWhatsAppSupplier}
                 onOpenAuth={() => handleOpenAuthModal('login')}
+                onOpenChat={handleOpenChat}
                 buyerProfile={buyerProfile}
                 onSaveProfile={handleSaveProfile}
                 onOpenEditProfile={() => setIsEditProfileOpen(true)}
@@ -1059,6 +1060,7 @@ function NexoraShopApp() {
                 onCallSupplier={handleCallSupplier}
                 onWhatsAppSupplier={handleWhatsAppSupplier}
                 onOpenAuth={() => handleOpenAuthModal('login')}
+                onOpenChat={handleOpenChat}
                 buyerProfile={buyerProfile}
                 onSaveProfile={handleSaveProfile}
                 onOpenEditProfile={() => setIsEditProfileOpen(true)}

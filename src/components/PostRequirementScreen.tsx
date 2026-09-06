@@ -1885,9 +1885,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                           />
                           <label className="text-[11.5px] text-[#5B4A6E] font-medium leading-relaxed cursor-pointer" htmlFor="termsCheck">
                             By posting this RFQ, you agree to Nexora Luxe's{' '}
-                            <a className="text-[#6B2D8C] hover:underline font-bold" href="#">
-                              Procurement Terms
-                            </a>{' '}
+                            <span className="text-[#6B2D8C] font-bold">Procurement Terms</span>{' '}
                             &amp; NDA Guidelines.
                           </label>
                         </div>
