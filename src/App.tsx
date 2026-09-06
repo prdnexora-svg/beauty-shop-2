@@ -55,6 +55,9 @@ import {
   redirectToLogin,
   stripAuthCallbackParams,
   resolveUserRole,
+  isSupabaseConfigured,
+  readDemoAuthSession,
+  clearDemoAuthSession,
 } from './lib/supabase';
 import {
   evaluateAccess,
@@ -88,8 +91,17 @@ function NexoraShopApp() {
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>('seller_aura_001');
   const [selectedLocation, setSelectedLocation] = useState('All');
   
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState<'buyer' | 'supplier' | null>(null);
+  // The demo build (no Supabase project) keeps a clearly namespaced browser
+  // local session so an evaluated buyer/supplier portal survives a refresh.
+  // A configured production build never restores this demo identity.
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    if (isSupabaseConfigured()) return false;
+    return Boolean(readDemoAuthSession());
+  });
+  const [userRole, setUserRole] = useState<'buyer' | 'supplier' | null>(() => {
+    if (isSupabaseConfigured()) return null;
+    return readDemoAuthSession()?.role ?? null;
+  });
 
   // The single identity every access decision is made against.
   const viewer = toViewer(isLoggedIn, userRole);
@@ -238,6 +250,7 @@ function NexoraShopApp() {
     localStorage.removeItem('nexora_guest_mode');
     localStorage.setItem('nexora_is_logged_in', 'false');
     localStorage.removeItem('nexora_user_role');
+    clearDemoAuthSession();
     setIsLoggedIn(false);
     setUserRole(null);
     setIsEditProfileOpen(false);

@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, CheckCircle2, ArrowRight, Building2, ShoppingBag, Mail, Lock, Eye, EyeOff, AlertCircle, Info, KeyRound, ChevronLeft, Send } from 'lucide-react';
-import { useSupabase, MIN_PASSWORD_LENGTH, EMAIL_REGEX, AUTH_RESEND_COOLDOWN_MS } from '../lib/supabase';
+import {
+  useSupabase,
+  MIN_PASSWORD_LENGTH,
+  EMAIL_REGEX,
+  AUTH_RESEND_COOLDOWN_MS,
+  writeDemoAuthSession,
+  clearDemoAuthSession,
+} from '../lib/supabase';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -108,8 +115,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
 
+    // No Supabase project in this build: still let the demo accept the Google
+    // button so the sign-in path is never a one-click dead end. The result is
+    // explicitly a local demo session, not a real identity.
+    const demoEmail = 'demo.google@nexora.luxe';
+    writeDemoAuthSession({
+      role,
+      email: demoEmail,
+      businessName: `Demo ${role === 'buyer' ? 'Buyer' : 'Supplier'}`,
+      createdAt: new Date().toISOString(),
+    });
+    setEmail(demoEmail);
+    setResolvedRole(role);
+    setWasRegistration(mode === 'register');
+    setInfoMessage('Demo preview — Google is simulated locally. Connect Supabase for a real Google sign-in.');
+    setVerified(true);
     setIsGoogleLoading(false);
-    setErrorMessage('Sign-in is currently unavailable. Please browse as a guest and try again later.');
   };
 
   // Guests simply browse the public marketplace — no fake login, no flags.
@@ -118,6 +139,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       localStorage.setItem('nexora_is_logged_in', 'false');
       localStorage.removeItem('nexora_user_role');
       localStorage.removeItem('nexora_guest_mode');
+      clearDemoAuthSession();
     } catch { /* storage disabled */ }
     onClose();
   };
@@ -132,7 +154,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
     try {
       if (!isConfigured) {
-        setErrorMessage('Sign-in is currently unavailable. Please browse as a guest and try again later.');
+        // Demo build without a Supabase project: a clearly local session is
+        // created so sign-in actually works instead of dead-ending the form.
+        const cleanEmail = email.trim().toLowerCase();
+        const cleanBusinessName = businessName.trim() || `Demo ${role === 'buyer' ? 'Buyer' : 'Supplier'}`;
+        writeDemoAuthSession({
+          role,
+          email: cleanEmail,
+          businessName: mode === 'register' ? cleanBusinessName : undefined,
+          createdAt: new Date().toISOString(),
+        });
+        setResolvedRole(role);
+        setWasRegistration(mode === 'register');
+        setVerified(true);
         return;
       }
 
@@ -587,7 +621,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
             {!isConfigured && (
               <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-center leading-relaxed">
-                Demo preview — any email works, and data stays in this browser only.
+                Demo preview — any Gmail/Email + password works. Your session stays in this browser only; connect Supabase for live authentication.
               </p>
             )}
 
