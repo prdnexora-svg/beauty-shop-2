@@ -40,7 +40,7 @@ import { EditProfileModal, BuyerProfileData } from './components/EditProfileModa
 import { ProductDetailPage } from './components/ProductDetailPage';
 import { ChatModalDrawer } from './components/ChatModalDrawer';
 import { BuyerOnboardingScreen } from './components/BuyerOnboardingScreen';
-import { DatabaseStatusModal } from './components/DatabaseStatusModal';
+import { SELLER_PROFILES_DB } from './data/sellerProfilesData';
 import { getBuyerProfile, BUYER_PROFILES_DB } from './data/buyerProfilesData';
 import { isSupplierSaved as isSupplierSavedInStore, toggleSavedSupplier } from './data/savedStore';
 import {
@@ -71,7 +71,7 @@ import {
   VERIFIED_SUPPLIERS
 } from './data/mockData';
 import { RFQItem, DealProduct, TrendingProduct, VerifiedSupplier, SearchProduct } from './types';
-import { CheckCircle2, Database } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 function NexoraShopApp() {
   const {
@@ -88,19 +88,8 @@ function NexoraShopApp() {
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>('seller_aura_001');
   const [selectedLocation, setSelectedLocation] = useState('All');
   
-  // Persistent Auth State (synced from the single Supabase auth session when a
-  // real Supabase project is configured; local demo storage is only a fallback).
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
-    if (isConfigured) return false;
-    const stored = localStorage.getItem('nexora_is_logged_in');
-    return stored === 'true';
-  });
-
-  const [userRole, setUserRole] = useState<'buyer' | 'supplier' | null>(() => {
-    if (isConfigured) return null;
-    const stored = localStorage.getItem('nexora_user_role');
-    return (stored === 'buyer' || stored === 'supplier') ? stored : null;
-  });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<'buyer' | 'supplier' | null>(null);
 
   // The single identity every access decision is made against.
   const viewer = toViewer(isLoggedIn, userRole);
@@ -154,6 +143,9 @@ function NexoraShopApp() {
     return priyaDefault;
   });
 
+  const [requirementDraft, setRequirementDraft] = useState<{ requirement: string; quantity: string; city: string } | undefined>();
+  const [pendingScreen, setPendingScreen] = useState<ScreenId | null>(null);
+
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [buyerDashboardTab, setBuyerDashboardTab] = useState<'overview' | 'about' | 'rfqs' | 'saved' | 'social' | 'activity' | 'notifications'>('overview');
   
@@ -167,6 +159,7 @@ function NexoraShopApp() {
   
   // Modals state
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authRole, setAuthRole] = useState<'buyer' | 'supplier'>('buyer');
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
   const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
@@ -187,8 +180,6 @@ function NexoraShopApp() {
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [targetQuoteRFQ, setTargetQuoteRFQ] = useState<RFQItem | null>(null);
 
-  // Phase 4 Database Inspector Modal State
-  const [isDatabaseModalOpen, setIsDatabaseModalOpen] = useState(false);
 
   const handleOpenProductComparison = (products: SearchProduct[]) => {
     setComparedProductsList(products);
@@ -220,6 +211,7 @@ function NexoraShopApp() {
   };
 
   const handleOpenChat = (supplier?: { id: string; name: string; location: string; isVerified: boolean }, product?: { title: string; image: string; price?: string; moq?: string }) => {
+    if (!isLoggedIn) { handleOpenAuthModal('login'); return; }
     setChatInitialSupplier(supplier);
     setChatInitialProduct(product);
     setChatModalOpen(true);
@@ -267,7 +259,8 @@ function NexoraShopApp() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       triggerToast(`Welcome to Nexora Luxe! Let's set up your ${role} profile.`);
     } else {
-      const target = role === 'buyer' ? 'buyer-dashboard' : 'supplier-portal';
+      const target = pendingScreen && canAccess(pendingScreen, role) ? pendingScreen : role === 'buyer' ? 'buyer-dashboard' : 'supplier-portal';
+      setPendingScreen(null);
       setCurrentScreen(target);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       triggerToast(`Welcome back! Logged in as ${role === 'buyer' ? 'Buyer' : 'Supplier'}.`);
@@ -284,6 +277,7 @@ function NexoraShopApp() {
     if (!decision.allowed) {
       if (decision.reason === 'unauthenticated') {
         // Guests get the sign-in modal rather than a dead end.
+        setPendingScreen(screen);
         setAuthMode('login');
         setIsAuthModalOpen(true);
         triggerToast(decision.message || 'Please sign in to continue.');
@@ -338,7 +332,8 @@ function NexoraShopApp() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleOpenAuthModal = (mode: 'login' | 'register') => {
+  const handleOpenAuthModal = (mode: 'login' | 'register', role: 'buyer' | 'supplier' = 'buyer') => {
+    setAuthRole(role);
     if (mode === 'register') {
       setAuthMode('register');
       setIsAuthModalOpen(true);
@@ -349,6 +344,7 @@ function NexoraShopApp() {
   };
 
   const handleOpenEnquiry = (item: any) => {
+    if (!isLoggedIn) { handleOpenAuthModal('login'); return; }
     setTargetEnquiryItem(item);
     setIsEnquiryModalOpen(true);
   };
@@ -362,7 +358,9 @@ function NexoraShopApp() {
     }
 
     const supplier = VERIFIED_SUPPLIERS.find(s => s.name === supplierName);
-    const phone = supplier?.phone || '+919820155443';
+    const profile = Object.values(SELLER_PROFILES_DB).find(s => s.name === supplierName);
+    const phone = profile?.phone || supplier?.phone;
+    if (!phone) { triggerToast('This supplier has not provided a phone number.'); return; }
     const cleanPhone = phone.replace(/[^0-9+]/g, '');
     
     // Direct native dialer trigger
@@ -379,20 +377,22 @@ function NexoraShopApp() {
     }
 
     const supplier = VERIFIED_SUPPLIERS.find(s => s.name === supplierName);
-    const whatsapp = supplier?.whatsapp || '919820155443'; // Default if not found
+    const profile = Object.values(SELLER_PROFILES_DB).find(s => s.name === supplierName);
+    const whatsapp = (profile?.whatsapp || supplier?.whatsapp)?.replace(/\D/g, '');
+    if (!whatsapp) { triggerToast('This supplier has not provided a WhatsApp number.'); return; }
     const nameToUse = supplierName || supplier?.name || 'Supplier';
     const message = encodeURIComponent(`Hello ${nameToUse}, I found your business on Nexora Luxe and I am interested in your products. Can we discuss a potential enquiry?`);
     
     // Direct WhatsApp redirect
-    window.open(`https://wa.me/${whatsapp}?text=${message}`, '_blank');
+    window.open(`https://wa.me/${whatsapp}?text=${message}`, '_blank', 'noopener,noreferrer');
     triggerToast(`Opening direct WhatsApp channel with ${nameToUse}`);
   };
 
   const handleSearchSubmit = (params: any) => {
     setSearchParams({
       query: params.query || '',
-      category: params.category !== 'All Categories' ? params.category : 'All',
-      location: params.location !== 'Any Location' ? params.location : 'All India',
+      category: params.category && params.category !== 'All Categories' ? params.category : 'All',
+      location: params.location && params.location !== 'Any Location' ? params.location : 'All India',
       tab: params.scope || 'products'
     });
     setCurrentScreen('search-results');
@@ -499,15 +499,6 @@ function NexoraShopApp() {
     }
   }, [isConfigured, authReady, session?.user?.id, supabaseRole]);
 
-  // Demo / local mode fallback keeps the existing offline preview working.
-  useEffect(() => {
-    if (isConfigured) return;
-    const stored = localStorage.getItem('nexora_is_logged_in');
-    const storedRole = localStorage.getItem('nexora_user_role');
-    setIsLoggedIn(stored === 'true');
-    setUserRole(storedRole === 'buyer' || storedRole === 'supplier' ? storedRole : null);
-  }, [isConfigured]);
-
   // PKCE / OAuth callback handling: once a session exists on any /auth/*
   // path, normalize the URL back to the app root to avoid repeat exchanges.
   // This also covers authenticated users landing on /auth/login, preventing
@@ -596,7 +587,7 @@ function NexoraShopApp() {
         isFullPage
         initialMode="login"
         onClose={() => {
-          window.history.replaceState({}, '', '/');
+          window.location.assign('/');
         }}
         onSuccess={(role, isNewUser) => {
           handleLoginSuccess(role, isNewUser);
@@ -663,7 +654,7 @@ function NexoraShopApp() {
                 } else if (scope === 'brands') {
                   handleNavigate('brands');
                 } else if (scope === 'oem') {
-                  handleSearchSubmit({ query: 'OEM', location: 'All India' });
+                  handleNavigate('oem-hub');
                 } else {
                   handleNavigate('plp');
                 }
@@ -672,9 +663,9 @@ function NexoraShopApp() {
 
             <Reveal>
             <BuySmartCard
-              onGetQuotes={() => {
+              onGetQuotes={(requirement, quantity, city) => {
+                setRequirementDraft({ requirement, quantity, city });
                 handleNavigate('post-rfq');
-                triggerToast('Requirement captured — complete the form to receive supplier quotes.');
               }}
               onPostDetailed={() => handleNavigate('post-rfq')}
             />
@@ -687,9 +678,9 @@ function NexoraShopApp() {
             <CategoryStrip
               onCategoryClick={(label) => {
                 if (label === 'OEM/Private Label') {
-                  handleSearchSubmit({ query: 'OEM', location: 'All India' });
+                  handleNavigate('oem-hub');
                 } else {
-                  handleSearchSubmit({ query: label, location: 'All India' });
+                  handleCategorySelect(label);
                 }
               }}
             />
@@ -744,7 +735,7 @@ function NexoraShopApp() {
 
             <Reveal>
             <SupplierCta
-              onJoin={() => handleNavigate('onboarding')}
+              onJoin={() => isLoggedIn ? handleNavigate('onboarding') : handleOpenAuthModal('register', 'supplier')}
               onLogin={() => handleOpenAuthModal('login')}
             />
 
@@ -754,7 +745,7 @@ function NexoraShopApp() {
 
             <Reveal>
             <SourcingCities
-              onCityClick={(city) => handleSearchSubmit({ query: '', location: city })}
+              onCityClick={(city) => handleSearchSubmit({ query: '', location: city, scope: 'suppliers' })}
             />
 
             </Reveal>
@@ -790,6 +781,8 @@ function NexoraShopApp() {
         {currentScreen === 'search-results' && (
           <main className="flex-1">
             <SearchFilterScreen
+              key={JSON.stringify(searchParams)}
+              initialTab={searchParams.tab}
               initialQuery={searchParams.query}
               initialCategory={searchParams.category}
               initialLocation={searchParams.location}
@@ -810,6 +803,7 @@ function NexoraShopApp() {
         {currentScreen === 'product-detail' && (
           <main className="flex-1">
             <ProductDetailPage
+              key={selectedProductId}
               productId={selectedProductId}
               onBack={() => handleNavigate('explore')}
               onNavigateToProduct={(productId) => handleNavigate('product-detail', { productId })}
@@ -1110,8 +1104,7 @@ function NexoraShopApp() {
               <SampleRequestScreen 
                 onBack={() => handleNavigate('search-results')}
                 onSubmit={(data) => {
-                  console.log('Sample Request Submitted:', data);
-                  handleNavigate('buyer-dashboard');
+                  triggerToast('Sample ordering is not available yet. Please contact the supplier directly.');
                 }}
               />
             </main>
@@ -1130,6 +1123,7 @@ function NexoraShopApp() {
           >
             <main className="flex-1">
               <PostRequirementScreen
+                initialDraft={requirementDraft}
                 onNavigateToExplore={() => handleNavigate('explore')}
                 onNavigateToRFQs={() => handleNavigate('rfq-tracking')}
               />
@@ -1177,6 +1171,8 @@ function NexoraShopApp() {
       />
 
       <AuthModal
+        key={`${authMode}-${authRole}-${isAuthModalOpen}`}
+        initialRole={authRole}
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         onSuccess={handleLoginSuccess}
@@ -1218,12 +1214,6 @@ function NexoraShopApp() {
         rfq={targetQuoteRFQ}
       />
 
-      <DatabaseStatusModal
-        isOpen={isDatabaseModalOpen}
-        onClose={() => setIsDatabaseModalOpen(false)}
-        onNavigateToScreen={(screen) => handleNavigate(screen)}
-      />
-
       {/* Shared Footer — Luxe edition on the homepage */}
       {currentScreen === 'explore' ? (
         <LuxeFooter
@@ -1231,6 +1221,7 @@ function NexoraShopApp() {
           onOpenRFQModal={() => handleNavigate('post-rfq')}
           isLoggedIn={isLoggedIn}
           userRole={userRole}
+          onOpenAuthModal={handleOpenAuthModal}
         />
       ) : (
         <Footer
@@ -1251,23 +1242,6 @@ function NexoraShopApp() {
         onOpenAuth={handleOpenAuthModal}
       />
 
-      {/* Floating Action Button (FAB) for Phase 4 Relational Database Inspector */}
-      <button
-        id="fab-db-inspector"
-        aria-label="Toggle Phase 4 Database Schema & Live Engine Inspector"
-        title={isLoggedIn && locationSyncStatus === 'synced'
-          ? 'Phase 4 Relational Database Inspector & Live Location Synced'
-          : 'Phase 4 Relational Database Inspector (8 Entities & Live Event Engine)'}
-        onClick={() => setIsDatabaseModalOpen(prev => !prev)}
-        className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 bg-[#2A0E3F] hover:bg-[#6B2D8C] text-white py-2.5 px-3.5 rounded-full shadow-xl flex items-center gap-2 text-xs font-bold transition-all transform hover:scale-105 cursor-pointer border border-white/20 group"
-      >
-        <div className="relative">
-          <Database className="w-4 h-4 text-[#F5EEF8] group-hover:text-white" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-        </div>
-        <span className="hidden sm:inline">DB Inspector</span>
-        <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-[10px] font-mono">8 Tables</span>
-      </button>
 
       </div>
   );

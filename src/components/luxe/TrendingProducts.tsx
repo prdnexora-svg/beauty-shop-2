@@ -1,9 +1,6 @@
 import React from 'react';
 import { BadgeCheck, ArrowRight, Flame } from 'lucide-react';
-import trendSerum from '../../assets/images/luxe/hero-serum.jpg';
-import trendCream from '../../assets/images/luxe/cat-skincare.jpg';
-import trendShampoo from '../../assets/images/luxe/cat-haircare.jpg';
-import trendLipstick from '../../assets/images/luxe/cat-makeup.jpg';
+import { SPONSORED_PRODUCTS_DB } from '../../data/sponsoredProductsData';
 import { SectionHeading } from './SectionHeading';
 
 export interface LuxeTrendingProduct {
@@ -19,51 +16,16 @@ export interface LuxeTrendingProduct {
 }
 
 export const LUXE_TRENDING: LuxeTrendingProduct[] = [
-  {
-    id: 'product_vitc_101',
-    title: 'Vitamin C Brightening Face Serum 30 ml — Amber Glass',
-    supplier: 'Aura Beauty Labs',
-    supplierId: 'sup-1',
-    image: trendSerum,
-    moq: 'MOQ 100 pcs',
-    price: '₹120 — ₹150 / pc',
-    badge: 'Bestseller',
-    badgeTone: 'gold',
-  },
-  {
-    id: 'product_barrier_102',
-    title: 'Kumkumadi Night Repair Cream 50 g — Ayurvedic Formula',
-    supplier: 'Dermaglow India',
-    supplierId: 'sup-2',
-    image: trendCream,
-    moq: 'MOQ 200 pcs',
-    price: '₹180 — ₹220 / pc',
-    badge: 'Low MOQ',
-    badgeTone: 'green',
-  },
-  {
-    id: 'product_scalp_105',
-    title: 'Argan Oil Repair Shampoo 200 ml — Sulphate-Free',
-    supplier: 'BioTech Derma Labs',
-    supplierId: 'sup-4',
-    image: trendShampoo,
-    moq: 'MOQ 500 pcs',
-    price: '₹85 — ₹110 / pc',
-    badge: 'Bulk Deal',
-    badgeTone: 'purple',
-  },
-  {
-    id: 'product_matte_104',
-    title: 'Matte Liquid Lipstick — 12 Shades, Transfer-Proof',
-    supplier: 'Prime Beauty Distribution',
-    supplierId: 'sup-8',
-    image: trendLipstick,
-    moq: 'MOQ 300 pcs',
-    price: '₹95 — ₹140 / pc',
-    badge: 'Trending',
-    badgeTone: 'gold',
-  },
-];
+  'product_vitc_101', 'product_barrier_102', 'product_scalp_105', 'product_matte_104',
+].map(id => {
+  const product = SPONSORED_PRODUCTS_DB[id];
+  return {
+    id: product.id, title: product.title, supplier: product.supplierName,
+    supplierId: product.seller_id, image: product.images[0],
+    moq: `MOQ ${product.moq}`, price: product.priceRange,
+    badge: 'Featured', badgeTone: 'gold' as const,
+  };
+});
 
 const BADGE_STYLES: Record<string, string> = {
   gold: 'bg-[#FBF3DF] text-[#8A6A2F] border-[#E2C98C]',
@@ -90,7 +52,7 @@ export const TrendingProducts: React.FC<TrendingProductsProps> = ({
           Trending <span className="italic text-gold-gradient">B2B Products</span>
         </>
       }
-      sub="Bulk-ready bestsellers with transparent MOQs and wholesale price slabs, refreshed weekly."
+      sub="Browse featured catalogue listings with minimum quantities and wholesale pricing."
       action={
         <button
           onClick={onViewAll}

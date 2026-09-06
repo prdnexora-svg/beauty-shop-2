@@ -70,10 +70,7 @@ export const LuxeHeader: React.FC<LuxeHeaderProps> = ({
               className="relative w-10 h-10 rounded-full border border-[#EFE4F2] bg-white hover:bg-[#F7F2FA] hover:border-[#D9B96A] flex items-center justify-center text-[#3D1E4E] transition-all shadow-sm"
             >
               <MessageCircle className="w-[18px] h-[18px]" />
-              <span className="absolute -top-0.5 -right-0.5 flex">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-60 animate-ping" />
-                <span className="relative inline-flex w-[9px] h-[9px] rounded-full bg-[#E23A3A] border-2 border-white" />
-              </span>
+
             </button>
 
             {/* Profile */}

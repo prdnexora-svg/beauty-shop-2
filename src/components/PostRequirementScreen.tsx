@@ -111,11 +111,13 @@ export const isSupportedImage = (file: File): boolean =>
   /\.(jpe?g|png|webp)$/i.test(file.name);
 
 interface PostRequirementScreenProps {
+  initialDraft?: { requirement: string; quantity: string; city: string };
   onNavigateToExplore: () => void;
   onNavigateToRFQs?: () => void;
 }
 
 export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
+  initialDraft,
   onNavigateToExplore,
   onNavigateToRFQs
 }) => {
@@ -126,7 +128,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
 
   // Step 1: Requirement Details
   const [requirementType, setRequirementType] = useState<'oem' | 'supply' | 'ingredients' | 'packaging'>('oem');
-  const [productName, setProductName] = useState('My Custom Brightening Serum');
+  const [productName, setProductName] = useState(initialDraft?.requirement || '');
   // Primary Category + Subcategory Multi-Select (Active Taxonomy Path)
   const [taxonomy, setTaxonomy] = useState<TaxonomySelectionState>(
     createInitialTaxonomyState('Skincare', ['Serums & Treatments'])
@@ -139,7 +141,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
   const [showFormulationError, setShowFormulationError] = useState(false);
   
   // Quantities & Commercials (all monetary values are INR — ₹)
-  const [quantity, setQuantity] = useState('2500');
+  const [quantity, setQuantity] = useState(initialDraft?.quantity || '');
   const [unit, setUnit] = useState('Units');
   const [frequency, setFrequency] = useState<'one-time' | 'recurring'>('one-time');
   const [targetUnitPrice, setTargetUnitPrice] = useState('290');
@@ -153,25 +155,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
   const [requireSamples, setRequireSamples] = useState<'yes' | 'no'>('yes');
   
   // Uploaded Files (Attachments + custom visual references)
-  const [attachments, setAttachments] = useState<UploadedFile[]>([
-    {
-      id: 'seed-brief',
-      name: 'brand_formulation_brief.pdf',
-      sizeLabel: '2.4 MB',
-      sizeBytes: 2.4 * 1024 * 1024,
-      mimeType: 'application/pdf',
-      kind: 'pdf'
-    },
-    {
-      id: 'seed-reference',
-      name: 'reference_bottle_packaging.jpg',
-      sizeLabel: '1.1 MB',
-      sizeBytes: 1.1 * 1024 * 1024,
-      mimeType: 'image/jpeg',
-      kind: 'image',
-      previewUrl: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=500&q=80'
-    }
-  ]);
+  const [attachments, setAttachments] = useState<UploadedFile[]>([]);
   /** Images uploaded from the device via the "+ Add Own" visual-reference card. */
   const [customVisualRefs, setCustomVisualRefs] = useState<UploadedFile[]>([]);
   /** File currently open in the fullscreen lightbox (attachments & visual refs). */
@@ -191,26 +175,16 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
   const [additionalSupplierNotes, setAdditionalSupplierNotes] = useState('Prefer manufacturers with existing export documentation for US/EU markets.');
 
   // Step 3: Contact Details
-  const [buyerName, setBuyerName] = useState('Elena Rostova');
-  const [buyerEmail, setBuyerEmail] = useState('elena@auracosmetics.com');
-  const [buyerPhone, setBuyerPhone] = useState('+91 98201 44521');
-  const [companyName, setCompany] = useState('Aura Cosmetics Ltd.');
-  const [deliveryCity, setDeliveryCity] = useState('Mumbai, Maharashtra');
-
-  // Live match and interactive success overlay simulation states
-  const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
-  const [progressBarWidth, setProgressBarWidth] = useState(45);
-  const [progressText, setProgressText] = useState('Notifying 5 matching labs in Europe...');
-  
-  // Direct Lead Distribution System State
-  const [distributionStep, setDistributionStep] = useState<number>(0);
-  const [leadLogs, setLeadLogs] = useState<Array<{ time: string; text: string; channel?: 'Email' | 'WhatsApp' | 'Platform'; supplier?: string; status: 'pending' | 'sending' | 'success' }>>([]);
-  const [distributionFinished, setDistributionFinished] = useState(false);
+  const [buyerName, setBuyerName] = useState('');
+  const [buyerEmail, setBuyerEmail] = useState('');
+  const [buyerPhone, setBuyerPhone] = useState('');
+  const [companyName, setCompany] = useState('');
+  const [deliveryCity, setDeliveryCity] = useState(initialDraft?.city || '');
 
   // Error messaging
   const [errorMessage, setErrorMessage] = useState('');
 
-  const rfqReference = `RFQ-847291`;
+  const [rfqReference, setRfqReference] = useState('');
 
   const handleCopyRef = () => {
     navigator.clipboard.writeText(rfqReference);
@@ -513,80 +487,20 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
         send_to_similar_suppliers: true
       });
 
-      // Confirm publication through the existing notification center
-      const matchedCount = createdRfq.matched_supplier_ids?.length || 0;
+      setRfqReference(createdRfq.id);
       addNotification({
-        type: 'rfq_response',
-        title: `Requirement published — ${matchedCount > 0 ? `${matchedCount} verified suppliers matched` : 'supplier matching in progress'}`,
-        description: `"${productName}" (${quantity || '1000'} ${unit}) is now live on the RFQ marketplace. Quotes will appear under My RFQs & Quotes.`,
-        priority: 'medium',
-        targetScreen: 'rfq-tracking',
+        type: 'rfq_response', title: 'Requirement saved in this browser',
+        description: `"${productName}" was saved locally. Supplier delivery is not connected.`,
+        priority: 'medium', targetScreen: 'rfq-tracking',
         targetParams: { rfqId: createdRfq.id },
-        metadata: {
-          rfqId: createdRfq.id,
-          quantity: `${quantity || '1000'} ${unit}`,
-          productName
-        }
       });
-    } catch (err) {
-      console.warn('[PostRequirementScreen] DB write error handled gracefully', err);
+
+    } catch {
+      setErrorMessage('Could not save your requirement. Please try again.');
+      return;
     }
-
-    // Start real-time Lead Distribution System
-    setShowSuccessOverlay(true);
-    setProgressBarWidth(10);
-    setProgressText('Processing specifications and running matching AI...');
-    setDistributionFinished(false);
-    setDistributionStep(0);
-
-    const initialLogs: Array<{ time: string; text: string; channel?: 'Email' | 'WhatsApp' | 'Platform'; supplier?: string; status: 'pending' | 'sending' | 'success' }> = [
-      { time: '13:08:15', text: '🔍 Parsed RFQ brief for ' + productName, status: 'success' },
-      { time: '13:08:16', text: '⚙️ Matching requirements against 48 verified beauty-industry manufacturers...', status: 'sending' }
-    ];
-    setLeadLogs(initialLogs);
-
-    // Timeout chain representing live Lead Pushing
-    setTimeout(() => {
-      setProgressBarWidth(35);
-      setProgressText('3 Match-grade OEM partners targeted.');
-      setLeadLogs(prev => [
-        ...prev.map(l => l.text.includes('Matching requirements') ? { ...l, status: 'success' as const } : l),
-        { time: '13:08:17', text: '🎯 Targeted: Aura Beauty Labs (Mumbai), Dermaglow India (Delhi), Verde Pack Labs (Seoul)', status: 'success' },
-        { time: '13:08:18', text: '✉️ Dispatching formal private-label RFQ briefs via automated secure SMTP mailers...', status: 'sending' }
-      ]);
-    }, 1000);
-
-    setTimeout(() => {
-      setProgressBarWidth(65);
-      setProgressText('Dispatched email brief packets.');
-      setLeadLogs(prev => [
-        ...prev.map(l => l.text.includes('Dispatching formal') ? { ...l, status: 'success' as const } : l),
-        { time: '13:08:19', text: '📨 SMTP Email sent to aura@aurabeautylabs.com', channel: 'Email', supplier: 'Aura Beauty Labs', status: 'success' },
-        { time: '13:08:19', text: '📨 SMTP Email sent to corporate@dermaglow.in', channel: 'Email', supplier: 'Dermaglow India', status: 'success' },
-        { time: '13:08:20', text: '💬 Invoking WhatsApp Business API endpoints for automated instant alerts...', status: 'sending' }
-      ]);
-    }, 2200);
-
-    setTimeout(() => {
-      setProgressBarWidth(90);
-      setProgressText('WhatsApp notification streams delivered.');
-      setLeadLogs(prev => [
-        ...prev.map(l => l.text.includes('Invoking WhatsApp') ? { ...l, status: 'success' as const } : l),
-        { time: '13:08:21', text: '🟢 WhatsApp alert delivered to Aura Sourcing Desk (+91 98201 55443)', channel: 'WhatsApp', supplier: 'Aura Beauty Labs', status: 'success' },
-        { time: '13:08:21', text: '🟢 WhatsApp alert delivered to Dermaglow Sales (+91 98110 33221)', channel: 'WhatsApp', supplier: 'Dermaglow India', status: 'success' },
-        { time: '13:08:22', text: '⚡ Injecting lead details directly into Supplier Dashboards...', status: 'sending' }
-      ]);
-    }, 3400);
-
-    setTimeout(() => {
-      setProgressBarWidth(100);
-      setProgressText('All notifications pushed successfully!');
-      setDistributionFinished(true);
-      setLeadLogs(prev => [
-        ...prev.map(l => l.text.includes('Injecting lead details') ? { ...l, status: 'success' as const } : l),
-        { time: '13:08:23', text: '✨ Direct Lead Distribution Complete! Suppliers notified via Email & WhatsApp.', channel: 'Platform', status: 'success' }
-      ]);
-    }, 4500);
+    setSubmitted(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -606,7 +520,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
         <div className="mb-8 text-center md:text-left">
           <div className="inline-flex items-center gap-2 bg-[#F5EEF8] text-[#6B2D8C] text-[11px] font-extrabold uppercase tracking-widest px-3.5 py-1 rounded-full mb-3">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Screen 10.1 — Public RFQ Form</span>
+            <span>Post a Sourcing Requirement</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-extrabold text-[#2A0E3F] tracking-tight mb-2">
             Tell Us What You Need
@@ -695,13 +609,13 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
 
             <div>
               <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#059669] bg-[#D1FAE5] px-3 py-1 rounded-full">
-                Sourcing Request Published
+                Local Requirement Record
               </span>
               <h2 className="text-2xl md:text-3xl font-extrabold text-[#2A0E3F] mt-3">
-                Requirement Posted Successfully!
+                Requirement Saved in This Browser
               </h2>
               <p className="text-[14px] text-[#5B4A6E] font-medium mt-2">
-                Your RFQ has been broadcasted to <strong className="text-[#2A0E3F]">38+ verified manufacturers</strong> matching your exact specifications.
+                Your requirement is saved locally. It has not been delivered to suppliers by email, WhatsApp or another device.
               </p>
             </div>
 
@@ -730,9 +644,8 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
                 <span>What Happens Next?</span>
               </div>
               <p className="leading-relaxed">
-                • Verified suppliers will review your formula specs and packaging criteria.<br />
-                • You will receive direct quotes and sample offers in your <strong className="text-[#2A0E3F]">Buyer Workspace</strong> within 24 hours.<br />
-                • Free benchmark samples will be dispatched upon request confirmation.
+                Keep a copy of your requirement and contact the supplier directly.
+                Quotes, delivery dates and samples need to be confirmed with the supplier.
               </p>
             </div>
 
@@ -2026,153 +1939,6 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
               </div>
             )}
 
-      {/* SUCCESS OVERLAY (SCREEN 10.3) */}
-      {showSuccessOverlay && (
-        <div className="fixed inset-0 z-[100] bg-[#2A0E3F]/85 backdrop-blur-md flex flex-col items-center justify-center p-4 md:p-6 animate-in fade-in duration-300 overflow-y-auto">
-          <div className="max-w-2xl w-full bg-white rounded-3xl shadow-2xl border border-[#E8DEEF] p-6 md:p-10 text-center animate-in zoom-in-95 duration-300">
-            
-            <div className="flex flex-col md:flex-row items-center gap-6 mb-6 pb-6 border-b border-[#F4F0E9] text-left">
-              <div className="w-16 h-16 bg-[#F5EEF8] rounded-full flex items-center justify-center shrink-0 relative">
-                <div className="absolute inset-0 border-4 border-[#6B2D8C] rounded-full animate-ping opacity-25"></div>
-                <CheckCircle2 className="w-8 h-8 text-[#6B2D8C]" />
-              </div>
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#6B2D8C] bg-[#F5EEF8] px-2.5 py-0.5 rounded-full">
-                  Direct Sourcing Engine Live
-                </span>
-                <h2 className="text-xl md:text-2xl font-extrabold text-[#2A0E3F] mt-1.5">
-                  RFQ Dispatched &amp; Live Lead Pushed!
-                </h2>
-                <p className="text-[13px] text-[#5B4A6E] font-medium leading-relaxed mt-0.5">
-                  Your requirements are being distributed directly to verified matching suppliers via automated Email SMTP &amp; official WhatsApp API alerts.
-                </p>
-              </div>
-            </div>
-
-            {/* Progress Tracker and Live Stream Console */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 text-left">
-              
-              {/* Left Column: Progress status and supplier badges */}
-              <div className="md:col-span-5 space-y-4">
-                <div className="bg-[#FDFBF7] rounded-2xl p-4 border border-[#E8DEEF] shadow-3xs">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10.5px] font-extrabold uppercase tracking-wider text-[#2A0E3F]">
-                      Lead Distribution
-                    </span>
-                    <span className="text-[10.5px] font-extrabold text-[#6B2D8C] animate-pulse flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#6B2D8C]"></span>
-                      {distributionFinished ? 'Pushed' : 'Routing...'}
-                    </span>
-                  </div>
-                  
-                  <div className="w-full bg-[#F4F0E9] rounded-full h-2.5 mb-2 overflow-hidden">
-                    <div 
-                      className="bg-[#6B2D8C] h-2.5 rounded-full transition-all duration-300 ease-out" 
-                      style={{ width: `${progressBarWidth}%` }}
-                    ></div>
-                  </div>
-                  
-                  <p className="text-[11.5px] font-bold text-[#5B4A6E] flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-[#6B2D8C] shrink-0 animate-spin" style={{ animationDuration: '3s' }} />
-                    <span>{progressText}</span>
-                  </p>
-                </div>
-
-                {/* Targeted Suppliers status card */}
-                <div className="bg-white rounded-2xl p-4 border border-[#E8DEEF] space-y-3">
-                  <h4 className="text-[10.5px] font-extrabold uppercase tracking-widest text-[#7E6C96]">Targeted Recipients</h4>
-                  
-                  <div className="space-y-2.5 text-[12px]">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#6B2D8C]"></span>
-                        <span className="font-bold text-[#2A0E3F]">Aura Beauty Labs</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Email SMTP</span>
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">WhatsApp</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#6B2D8C]"></span>
-                        <span className="font-bold text-[#2A0E3F]">Dermaglow India</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Email SMTP</span>
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">WhatsApp</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#7E6C96]"></span>
-                        <span className="font-bold text-[#2A0E3F]">Verde Pack Labs</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Email SMTP</span>
-                        <span className="text-[10px] font-bold text-stone-500 bg-stone-50 px-2 py-0.5 rounded border border-stone-200">N/A</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column: Live Terminal logs */}
-              <div className="md:col-span-7 flex flex-col h-[280px]">
-                <div className="flex items-center justify-between px-4 py-2 bg-[#2A0E3F] text-stone-400 rounded-t-xl text-[10px] font-bold uppercase tracking-wider font-mono">
-                  <span>System Lead-Push Logs</span>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                </div>
-                <div className="flex-1 bg-[#121111] rounded-b-xl p-4 font-mono text-[11px] text-[#D1FAE5] overflow-y-auto space-y-2.5 no-scrollbar shadow-inner text-left">
-                  {leadLogs.map((log, idx) => (
-                    <div key={idx} className="flex items-start gap-2.5 leading-relaxed">
-                      <span className="text-stone-500 font-bold shrink-0">[{log.time}]</span>
-                      <p className="flex-1 text-stone-200">
-                        {log.text}
-                      </p>
-                      {log.status === 'success' && (
-                        <span className="text-emerald-400 font-extrabold shrink-0">✔</span>
-                      )}
-                      {log.status === 'sending' && (
-                        <span className="text-[#6B2D8C] font-extrabold shrink-0 animate-pulse">...</span>
-                      )}
-                    </div>
-                  ))}
-                  {!distributionFinished && (
-                    <div className="text-stone-500 text-[10px] italic animate-pulse">
-                      &gt; Awaiting next automated trigger payload dispatch...
-                    </div>
-                  )}
-                </div>
-              </div>
-
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-6 mt-6 border-t border-[#F4F0E9]">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowSuccessOverlay(false);
-                  setSubmitted(true);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                disabled={!distributionFinished}
-                className={`w-full sm:w-auto font-extrabold text-[13.5px] px-8 py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                  distributionFinished 
-                    ? 'bg-[#6B2D8C] hover:bg-[#4A2560] text-white shadow-md' 
-                    : 'bg-stone-100 text-stone-400 border border-stone-200 cursor-not-allowed'
-                }`}
-              >
-                <span>Continue to RFQ Reference Desk</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
 
           </form>
         )}

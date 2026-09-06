@@ -3,7 +3,7 @@ import { toViewer, type AppRole } from '../lib/roleAccess';
 
 interface FooterProps {
   onOpenRFQModal?: () => void;
-  onOpenAuthModal?: (mode: 'login' | 'register') => void;
+  onOpenAuthModal?: (mode: 'login' | 'register', role?: 'buyer' | 'supplier') => void;
   onNavigate?: (screen: any) => void;
   isLoggedIn?: boolean;
   userRole?: AppRole | null;
@@ -25,7 +25,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenRFQModal, onOp
             Elevating the B2B beauty supply chain through verified connections and premium sourcing.
           </p>
           <div className="text-[13px] text-[#8B7FA3]">
-            © 2024 Nexora Luxe. All rights reserved.
+            © {new Date().getFullYear()} Nexora Luxe. All rights reserved.
           </div>
         </div>
 
@@ -39,17 +39,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenRFQModal, onOp
                 onClick={() => onNavigate?.('plp')}
                 className="text-[#4E3D63] hover:text-[#2A0E3F] hover:underline underline-offset-4 transition-colors cursor-pointer"
               >
-                Skincare
+                Browse Products
               </button>
             </li>
-            <li>
-              <button
-                onClick={() => onNavigate?.('plp')}
-                className="text-[#4E3D63] hover:text-[#2A0E3F] hover:underline underline-offset-4 transition-colors cursor-pointer"
-              >
-                Color Cosmetics
-              </button>
-            </li>
+
             <li>
               <button
                 onClick={() => onNavigate?.('supplier-directory')}
@@ -77,7 +70,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenRFQModal, onOp
           <ul className="space-y-2 text-[14px]">
             <li>
               <button
-                onClick={() => onNavigate?.('rfq-tracking')}
+                onClick={() => onOpenRFQModal?.()}
                 className="text-[#4E3D63] hover:text-[#2A0E3F] hover:underline underline-offset-4 transition-colors cursor-pointer"
               >
                 Post RFQ
@@ -111,7 +104,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenRFQModal, onOp
             {!isLoggedIn && (
               <li>
                 <button
-                  onClick={() => onOpenAuthModal?.('register')}
+                  onClick={() => onOpenAuthModal?.('register', 'supplier')}
                   className="text-[#4E3D63] hover:text-[#2A0E3F] hover:underline underline-offset-4 transition-colors cursor-pointer"
                 >
                   Join as Supplier

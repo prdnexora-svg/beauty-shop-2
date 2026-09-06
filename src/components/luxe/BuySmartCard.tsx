@@ -69,6 +69,7 @@ export const BuySmartCard: React.FC<BuySmartCardProps> = ({ onGetQuotes, onPostD
               <input
                 id="bsc-requirement"
                 type="text"
+                required
                 value={requirement}
                 onChange={(e) => setRequirement(e.target.value)}
                 placeholder="e.g., Vitamin C Serum"
@@ -82,7 +83,10 @@ export const BuySmartCard: React.FC<BuySmartCardProps> = ({ onGetQuotes, onPostD
               </label>
               <input
                 id="bsc-quantity"
-                type="text"
+                type="number"
+                required
+                min="1"
+                step="1"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="e.g., 500 pcs"
@@ -92,21 +96,15 @@ export const BuySmartCard: React.FC<BuySmartCardProps> = ({ onGetQuotes, onPostD
 
             <div>
               <label htmlFor="bsc-contact" className="text-sm font-medium text-luxe-purple mb-1.5 block">
-                City / Mobile
+                Delivery City
               </label>
               <div className="flex gap-2">
-                <select
-                  aria-label="Country code"
-                  className="w-20 px-3 py-3 rounded-xl bg-white/60 border border-white/40 focus:border-luxe-gold outline-none text-luxe-purple-dark"
-                >
-                  <option>+91</option>
-                </select>
                 <input
                   id="bsc-contact"
                   type="text"
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
-                  placeholder="Enter city or mobile number"
+                  placeholder="e.g., Mumbai"
                   className={`flex-1 min-w-0 ${inputClasses}`}
                 />
               </div>
