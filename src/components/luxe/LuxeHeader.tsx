@@ -61,8 +61,8 @@ export const LuxeHeader: React.FC<LuxeHeaderProps> = ({
 
           <div className="flex-1" />
 
-          {/* Right cluster */}
-          <div className="flex items-center gap-2.5">
+          {/* Right cluster — every control sits on the same 40px rhythm. */}
+          <div className="flex shrink-0 items-center gap-3">
             {/* Chat with red notification dot */}
             <button
               onClick={onOpenChat}
@@ -89,15 +89,20 @@ export const LuxeHeader: React.FC<LuxeHeaderProps> = ({
               {isLoggedIn ? initial : <User className="w-[18px] h-[18px]" />}
             </button>
 
-            {/* Post Requirement pill — buyers only; suppliers answer RFQs. */}
+            {/* Post Requirement pill — buyers only; suppliers answer RFQs.
+                Fixed 40px height + symmetric px-4 so the pill lines up with the
+                icon buttons beside it instead of sitting a few px taller. */}
             {showRfqCta && (
-            <button
-              onClick={() => onNavigate('post-rfq')}
-              className="btn-shine hidden sm:inline-flex items-center gap-1.5 bg-royal-gradient hover:brightness-110 text-white text-[13px] font-semibold pl-4 pr-5 py-2.5 rounded-full ring-1 ring-[#C9A961]/70 hover:ring-[#C9A961] shadow-[0_8px_20px_-6px_rgba(61,30,78,0.5)] hover:shadow-[0_10px_26px_-6px_rgba(61,30,78,0.55)] transition-all hover:-translate-y-px"
-            >
-              <Plus className="relative z-10 w-4 h-4 text-[#E9D29A]" />
-              <span className="relative z-10">Post Requirement</span>
-            </button>
+              <>
+                <span aria-hidden="true" className="hidden h-6 w-px bg-[#EFE4F2] sm:block" />
+                <button
+                  onClick={() => onNavigate('post-rfq')}
+                  className="btn-shine hidden h-10 shrink-0 items-center gap-2 rounded-full bg-royal-gradient px-4 text-[13px] font-semibold text-white ring-1 ring-[#C9A961]/70 shadow-[0_8px_20px_-8px_rgba(61,30,78,0.5)] transition-all hover:brightness-110 hover:ring-[#C9A961] hover:shadow-[0_10px_26px_-8px_rgba(61,30,78,0.55)] sm:inline-flex"
+                >
+                  <Plus className="relative z-10 h-4 w-4 text-[#E9D29A]" />
+                  <span className="relative z-10">Post Requirement</span>
+                </button>
+              </>
             )}
 
             {/* Mobile menu */}
