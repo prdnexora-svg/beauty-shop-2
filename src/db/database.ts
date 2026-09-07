@@ -569,6 +569,13 @@ class RelationalDatabase {
           if (!Array.isArray(parsed.orders)) {
             parsed.orders = [];
           }
+          // Migration from the pre-canonical buyer id: seed orders previously
+          // stored buyer_priya_001 even though their RFQ belongs to
+          // buyer-prof-priya. Normalise so order history is consistent.
+          (parsed.orders || []).forEach((o: any) => {
+            if (!o || o.id !== 'order-seed-8801') return;
+            if (o.buyer_id === 'buyer_priya_001') o.buyer_id = 'buyer-prof-priya';
+          });
           if (typeof parsed.order_seq !== 'number') {
             parsed.order_seq = parsed.orders.length || 1;
           }
