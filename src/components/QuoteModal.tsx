@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { RFQItem } from '../types';
+import { db } from '../db/database';
 
 interface QuoteModalProps {
   isOpen: boolean;
@@ -37,6 +38,46 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, rfq }) 
 
   const quoteReference = `QUO-${Math.floor(100000 + Math.random() * 900000)}`;
 
+  const resolveSupplierId = (): string => {
+    const map: Record<string, string> = {
+      'Aura Beauty Labs': 'supp-aura-labs',
+      'Dermaglow India': 'supp-dermaglow',
+      'LuxeForm Cosmetics': 'supp-luxeform',
+      'Radiant Cosmeceuticals': 'supp-radiant'
+    };
+    return map[supplierName] || 'supp-aura-labs';
+  };
+
+  const resolveRfqQuantity = (): number => {
+    const parsed = parseInt(rfq.quantityRequired.replace(/[^0-9]/g, ''), 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 2000;
+  };
+
+  const ensureRfqForQuote = () => {
+    const existing = db.getRFQById(rfq.id);
+    if (existing) return existing;
+
+    // Synthetic / demo RFQ (e.g. App's generic quote entry) is persisted here so
+    // the quote lands on the buyer tracker instead of being written to a fake id.
+    const parsedBudget = parseInt((rfq.targetPrice || '').replace(/[^0-9]/g, ''), 10) || 180;
+    return db.createRFQEnquiry({
+      buyer_id: 'buyer-prof-priya',
+      supplier_id: resolveSupplierId(),
+      product_id: null,
+      requirement_title: rfq.title || 'Beauty supply requirement',
+      category: rfq.category || 'Skincare & Serums',
+      quantity_required: resolveRfqQuantity(),
+      quantity_unit: 'Units',
+      target_budget: parsedBudget,
+      delivery_location: rfq.buyerLocation || 'Mumbai, MH',
+      details: rfq.description || 'Public RFQ posted from the quote workspace.',
+      attachments: [],
+      status: 'new',
+      type: 'public_rfq',
+      send_to_similar_suppliers: true
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!unitPrice.trim()) {
@@ -44,6 +85,38 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, rfq }) 
       return;
     }
     setErrorMessage('');
+
+    // Persist the quote into the shared relational store so the buyer sees it
+    // immediately on the RFQ tracking screen. Synthetic/demo RFQs are created
+    // as real public RFQ rows when needed so nothing is silently lost.
+    const targetRfq = ensureRfqForQuote();
+    const parsedPrice = parseFloat(unitPrice.replace(/[^0-9.]/g, '')) || 0;
+    const parsedQty = resolveRfqQuantity();
+    const validity = new Date();
+    validity.setDate(validity.getDate() + 14);
+
+    if (targetRfq && parsedPrice > 0) {
+      try {
+        db.createQuote({
+          rfq_id: targetRfq.id,
+          supplier_id: resolveSupplierId(),
+          unit_price: parsedPrice,
+          total_price: parsedPrice * parsedQty,
+          moq_offered: parsedQty,
+          lead_time: leadTime,
+          validity_date: validity.toISOString(),
+          terms_and_conditions: paymentTerms,
+          status: 'submitted',
+          sample_available: samplesReady,
+          sample_cost: samplesReady ? 0 : 500,
+          is_simulated: false,
+          notes: supplierRemarks || 'Structured commercial quote submitted against this RFQ.'
+        });
+      } catch (err) {
+        console.warn('Unable to persist quote:', err);
+      }
+    }
+
     setSubmitted(true);
   };
 

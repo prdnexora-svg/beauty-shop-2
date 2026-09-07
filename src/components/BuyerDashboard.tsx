@@ -66,6 +66,7 @@ interface BuyerDashboardProps {
   onCallSupplier: (name: string) => void;
   onWhatsAppSupplier: (name: string) => void;
   onOpenAuth: () => void;
+  onOpenChat?: (supplier?: { id: string; name: string; location: string; isVerified: boolean }) => void;
   buyerProfile?: BuyerProfileData;
   onSaveProfile?: (updated: BuyerProfileData) => void;
   onOpenEditProfile?: () => void;
@@ -108,6 +109,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   onCallSupplier,
   onWhatsAppSupplier,
   onOpenAuth,
+  onOpenChat,
   buyerProfile: propBuyerProfile,
   onSaveProfile: propOnSaveProfile,
   onOpenEditProfile: propOnOpenEditProfile,
@@ -2436,7 +2438,12 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                         </div>
                         <button
                           onClick={() => {
-                            onNavigate?.('supplier-chat', { supplierId: item.id });
+                            onOpenChat?.({
+                              id: item.id,
+                              name: item.name,
+                              location: item.location,
+                              isVerified: item.verified,
+                            });
                           }}
                           className="px-3.5 py-1.5 bg-[#6B2D8C] hover:bg-[#4A2560] text-white rounded-xl text-[11px] font-black tracking-tight transition-all cursor-pointer"
                         >
@@ -2472,7 +2479,12 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
           onPostRFQ();
         }}
         onSendMessage={(supplierId) => {
-          onNavigate('supplier-chat', { supplierId });
+          onOpenChat?.({
+            id: supplierId,
+            name: supplierId,
+            location: 'India',
+            isVerified: false,
+          });
         }}
       />
     </div>

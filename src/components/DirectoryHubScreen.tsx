@@ -97,7 +97,7 @@ export const DirectoryHubScreen: React.FC<DirectoryHubScreenProps> = ({
               />
             </div>
             <button 
-              onClick={() => onNavigate('search', { query: searchQuery })}
+              onClick={() => onNavigate('search-results', { query: searchQuery, scope: 'suppliers' })}
               className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold px-8 py-4 rounded-xl shadow-md transition-all cursor-pointer"
             >
               Search Directory
@@ -192,7 +192,7 @@ export const DirectoryHubScreen: React.FC<DirectoryHubScreenProps> = ({
               <p className="text-xs text-[#5B4A6E] mt-1">Suppliers with consistent 95%+ response rates and audited quality standards.</p>
             </div>
             <button 
-              onClick={() => onNavigate('suppliers')}
+              onClick={() => onNavigate('supplier-directory')}
               className="text-xs font-bold text-[#6B2D8C] hover:underline flex items-center gap-1 cursor-pointer"
             >
               View Full Directory

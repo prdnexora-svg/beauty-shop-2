@@ -11,8 +11,10 @@ import {
   DBQuote,
   DBMessage,
   DBFollowUp,
+  DBOrder,
   PopulatedRFQEnquiry,
   PopulatedQuote,
+  PopulatedOrder,
   PopulatedProduct,
   UserRole
 } from './types';
@@ -26,8 +28,11 @@ export interface DatabaseState {
   products: DBProduct[];
   rfqs_enquiries: DBRFQEnquiry[];
   quotes: DBQuote[];
+  orders: DBOrder[];
   messages: DBMessage[];
   follow_ups: DBFollowUp[];
+  order_seq: number;
+  invoice_seq: number;
 }
 
 // Initial Seed Data for Phase 4
@@ -422,6 +427,56 @@ const SEED_QUOTES: DBQuote[] = [
   }
 ];
 
+  const SEED_ORDERS: DBOrder[] = [
+  {
+    id: 'order-seed-8801',
+    order_no: 'ORD-2026-8801',
+    quote_id: 'quote-aura-8801',
+    rfq_id: 'rfq-2026-8801',
+    buyer_id: 'buyer-prof-priya',
+    supplier_id: 'supp-aura-labs',
+    product: 'Vitamin C Brightening Serum (Bulk)',
+    quantity: 2000,
+    quantity_unit: 'Units',
+    unit_price: 175,
+    subtotal: 350000,
+    tax_rate: 18,
+    tax_amount: 63000,
+    total_amount: 413000,
+    currency: 'INR',
+    status: 'in_production',
+    payment_status: 'partially_paid',
+    invoice_no: 'INV-2026-8801',
+    invoice_url: '',
+    shipping_address: 'Plot No. 42, Bandra-Kurla Complex, Mumbai, Maharashtra 400051',
+    delivery_location: 'Mumbai Salon Branches',
+    expected_delivery: '2026-10-12T00:00:00.000Z',
+    terms: '50% Advance with Purchase Order, 50% prior to dispatch.',
+    notes: 'Confirmed against Aura Beauty Labs quote. Batch COA required before dispatch.',
+    line_items: [
+      {
+        id: 'order-line-seed-8801',
+        product: 'Vitamin C Brightening Serum (Bulk)',
+        quantity: 2000,
+        quantity_unit: 'Units',
+        unit_price: 175,
+        tax_rate: 18,
+        subtotal: 350000,
+        tax_amount: 63000,
+        total_amount: 413000,
+        notes: '30ml amber dropper bottle, private label.'
+      }
+    ],
+    seller_gstin: '27ACBFA1234F1Z8',
+    buyer_gstin: '27AABCR1234F1Z8',
+    advance_percent: 50,
+    is_reorder: false,
+    source_order_id: null,
+    created_at: '2026-08-17T09:00:00.000Z',
+    updated_at: '2026-08-20T11:00:00.000Z'
+  }
+];
+
 const SEED_MESSAGES: DBMessage[] = [
   {
     id: 'msg-101',
@@ -501,12 +556,32 @@ class RelationalDatabase {
     this.runAutomatedReminderEngine();
   }
 
+
   private loadInitialState(): DatabaseState {
     try {
       const stored = localStorage.getItem(DB_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed.users && parsed.products && parsed.rfqs_enquiries) {
+          // Pre-order migrations of the local store keep working; only data
+          // written before the orders collection / sequence counters were added
+          // is augmented here.
+          if (!Array.isArray(parsed.orders)) {
+            parsed.orders = [];
+          }
+          // Migration from the pre-canonical buyer id: seed orders previously
+          // stored buyer_priya_001 even though their RFQ belongs to
+          // buyer-prof-priya. Normalise so order history is consistent.
+          (parsed.orders || []).forEach((o: any) => {
+            if (!o || o.id !== 'order-seed-8801') return;
+            if (o.buyer_id === 'buyer_priya_001') o.buyer_id = 'buyer-prof-priya';
+          });
+          if (typeof parsed.order_seq !== 'number') {
+            parsed.order_seq = parsed.orders.length || 1;
+          }
+          if (typeof parsed.invoice_seq !== 'number') {
+            parsed.invoice_seq = parsed.orders.length || 1;
+          }
           return parsed;
         }
       }
@@ -521,8 +596,11 @@ class RelationalDatabase {
       products: SEED_PRODUCTS,
       rfqs_enquiries: SEED_RFQS_ENQUIRIES,
       quotes: SEED_QUOTES,
+      orders: SEED_ORDERS,
       messages: SEED_MESSAGES,
-      follow_ups: SEED_FOLLOW_UPS
+      follow_ups: SEED_FOLLOW_UPS,
+      order_seq: 1,
+      invoice_seq: 1
     };
 
     this.persist(defaultState);
@@ -567,8 +645,11 @@ class RelationalDatabase {
       products: SEED_PRODUCTS,
       rfqs_enquiries: SEED_RFQS_ENQUIRIES,
       quotes: SEED_QUOTES,
+      orders: SEED_ORDERS,
       messages: SEED_MESSAGES,
-      follow_ups: SEED_FOLLOW_UPS
+      follow_ups: SEED_FOLLOW_UPS,
+      order_seq: 1,
+      invoice_seq: 1
     };
     this.state = defaultState;
     this.persist(defaultState);
@@ -1035,7 +1116,19 @@ class RelationalDatabase {
       .map((q) => ({
         ...q,
         supplier: this.getSupplierProfileById(q.supplier_id),
-        rfq: this.state.rfqs_enquiries.find((r) => r.id === q.rfq_id)
+        rfq: this.state.rfqs_enquiries.find((r) => r.id === q.rfq_id),
+        order: this.state.orders.find((o) => o.quote_id === q.id) ?? null
+      }));
+  }
+
+  public getQuotesBySupplierId(supplierId: string): PopulatedQuote[] {
+    return this.state.quotes
+      .filter((q) => q.supplier_id === supplierId)
+      .map((q) => ({
+        ...q,
+        supplier: this.getSupplierProfileById(q.supplier_id),
+        rfq: this.state.rfqs_enquiries.find((r) => r.id === q.rfq_id),
+        order: this.state.orders.find((o) => o.quote_id === q.id) ?? null
       }));
   }
 
@@ -1045,7 +1138,8 @@ class RelationalDatabase {
     return {
       ...q,
       supplier: this.getSupplierProfileById(q.supplier_id),
-      rfq: this.state.rfqs_enquiries.find((r) => r.id === q.rfq_id)
+      rfq: this.state.rfqs_enquiries.find((r) => r.id === q.rfq_id),
+      order: this.state.orders.find((o) => o.quote_id === q.id) ?? null
     };
   }
 
@@ -1080,6 +1174,18 @@ class RelationalDatabase {
     const quote = this.state.quotes.find((q) => q.id === id);
     if (!quote) return undefined;
 
+    // Expired quotes are locked. The only write that survives is the expiry
+    // transition itself (or a supplier re-submission that creates a new quote).
+    if (new Date(quote.validity_date).getTime() < Date.now()) {
+      if (quote.status !== 'expired' && (quote.status === 'submitted' || quote.status === 'negotiating')) {
+        quote.status = 'expired';
+        quote.updated_at = new Date().toISOString();
+        this.persist(this.state);
+        this.notify('quotes', 'EXPIRED', quote);
+      }
+      return quote;
+    }
+
     quote.status = status;
     if (metadata?.counter_offer_price) {
       quote.counter_offer_price = metadata.counter_offer_price;
@@ -1101,6 +1207,294 @@ class RelationalDatabase {
     this.persist(this.state);
     this.notify('quotes', 'UPDATE_STATUS', quote);
     return quote;
+  }
+
+  // --------------------------------------------------------------------------
+  // ORDERS & INVOICE / FINAL ORDER CONFIRMATION REPOSITORY
+  // --------------------------------------------------------------------------
+
+  public getOrders(): PopulatedOrder[] {
+    return this.state.orders
+      .map((o) => ({
+        ...o,
+        quote: this.getQuoteById(o.quote_id) ?? null,
+        rfq: this.state.rfqs_enquiries.find((r) => r.id === o.rfq_id) ?? null,
+        supplier: this.getSupplierProfileById(o.supplier_id) ?? null,
+        buyer: this.getBuyerProfileById(o.buyer_id) ?? null
+      }))
+      .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  }
+
+  public getOrdersByBuyerId(buyerId: string): PopulatedOrder[] {
+    return this.getOrders().filter((o) => o.buyer_id === buyerId);
+  }
+
+  public getOrdersBySupplierId(supplierId: string): PopulatedOrder[] {
+    return this.getOrders().filter((o) => o.supplier_id === supplierId);
+  }
+
+  public getOrderById(id: string): PopulatedOrder | undefined {
+    const order = this.state.orders.find((o) => o.id === id);
+    if (!order) return undefined;
+    return {
+      ...order,
+      quote: this.getQuoteById(order.quote_id) ?? null,
+      rfq: this.state.rfqs_enquiries.find((r) => r.id === order.rfq_id) ?? null,
+      supplier: this.getSupplierProfileById(order.supplier_id) ?? null,
+      buyer: this.getBuyerProfileById(order.buyer_id) ?? null
+    };
+  }
+
+  private nextOrderNumber(): string {
+    const year = new Date().getFullYear();
+    const seq = (this.state.order_seq || 1);
+    this.state.order_seq = seq + 1;
+    return `ORD-${year}-${String(seq).padStart(5, '0')}`;
+  }
+
+  private nextInvoiceNumber(): string {
+    const year = new Date().getFullYear();
+    const seq = (this.state.invoice_seq || 1);
+    this.state.invoice_seq = seq + 1;
+    return `INV-${year}-${String(seq).padStart(5, '0')}`;
+  }
+
+  private parseLeadTimeDays(leadTime: string): number {
+    const matches = (leadTime || '').match(/\d+/g);
+    if (!matches || matches.length === 0) return 21;
+    const max = Math.max(...matches.map((m) => parseInt(m, 10)));
+    return Number.isFinite(max) && max > 0 ? max : 21;
+  }
+
+  /**
+   * Create a final purchase order from an accepted quote. The buyer's tracking
+   * screen calls this on "Confirm Order"; it generates sequential invoice
+   * references, marks the quote and RFQ as closed, and notifies subscribers.
+   */
+  public createOrderFromQuote(quoteId: string, shippingAddress?: string): DBOrder | undefined {
+    const quote = this.state.quotes.find((q) => q.id === quoteId);
+    if (!quote) return undefined;
+    if (quote.status !== 'accepted') {
+      // Allow idempotent re-entry: if an order already exists, return it.
+      const existing = this.state.orders.find((o) => o.quote_id === quoteId);
+      return existing;
+    }
+
+    const rfq = this.state.rfqs_enquiries.find((r) => r.id === quote.rfq_id);
+    const buyer = this.state.profiles_buyer.find((b) => b.id === rfq?.buyer_id);
+    const quantity = rfq?.quantity_required || quote.moq_offered || 1;
+    const unitPrice = quote.counter_offer_price && quote.counter_offer_price > 0
+      ? quote.counter_offer_price
+      : quote.unit_price;
+    const taxRate = 18; // GST 18% standard beauty supply (configurable per SKU later)
+    const subtotal = Math.round(unitPrice * quantity);
+    const taxAmount = Math.round((subtotal * taxRate) / 100);
+    const total = subtotal + taxAmount;
+    const now = new Date();
+    const leadDays = this.parseLeadTimeDays(quote.lead_time);
+    const expected = new Date(now);
+    expected.setDate(expected.getDate() + leadDays);
+    const orderNo = this.nextOrderNumber();
+    const invoiceNo = this.nextInvoiceNumber();
+
+    const lineItem = {
+      id: `line-${Date.now()}`,
+      product: rfq?.requirement_title || 'Beauty supply purchase order',
+      quantity,
+      quantity_unit: rfq?.quantity_unit || 'Units',
+      unit_price: unitPrice,
+      tax_rate: taxRate,
+      subtotal,
+      tax_amount: taxAmount,
+      total_amount: total,
+      notes: quote.notes
+    };
+
+    const order: DBOrder = {
+      id: `order-${Date.now()}`,
+      order_no: orderNo,
+      quote_id: quote.id,
+      rfq_id: quote.rfq_id,
+      buyer_id: buyer?.id || rfq?.buyer_id || 'buyer-prof-priya',
+      supplier_id: quote.supplier_id,
+      product: lineItem.product,
+      quantity,
+      quantity_unit: lineItem.quantity_unit,
+      unit_price: unitPrice,
+      subtotal,
+      tax_rate: taxRate,
+      tax_amount: taxAmount,
+      total_amount: total,
+      currency: 'INR',
+      status: 'order_confirmed',
+      payment_status: 'pending',
+      invoice_no: invoiceNo,
+      invoice_url: '',
+      shipping_address: shippingAddress || buyer?.address || 'Address to be confirmed by buyer.',
+      delivery_location: rfq?.delivery_location || buyer?.city || 'India',
+      expected_delivery: expected.toISOString(),
+      terms: quote.terms_and_conditions,
+      notes: quote.notes,
+      line_items: [lineItem],
+      seller_gstin: '27ACBFA1234F1Z8',
+      buyer_gstin: buyer?.gst_number,
+      advance_percent: 50,
+      is_reorder: false,
+      source_order_id: null,
+      created_at: now.toISOString(),
+      updated_at: now.toISOString()
+    };
+
+    this.state.orders = [order, ...this.state.orders];
+    quote.status = 'order_placed';
+    quote.updated_at = now.toISOString();
+    if (rfq) {
+      rfq.status = 'closed';
+      rfq.updated_at = now.toISOString();
+    }
+    this.persist(this.state);
+    this.notify('orders', 'CREATE', order);
+    this.notify('quotes', 'ORDER_PLACED', quote);
+    this.notify('rfqs_enquiries', 'ORDER_CLOSED', rfq);
+    return order;
+  }
+
+  /**
+   * Marks submitted quotes whose validity date has passed as `expired`. The
+   * buyer tracking screen runs this on load / refresh so stale quotes are
+   * visibly non-actionable instead of only being labelled in the UI.
+   */
+  public expireExpiredQuotes(now = new Date()): number {
+    let changed = 0;
+    this.state.quotes.forEach((q) => {
+      if ((q.status === 'submitted' || q.status === 'negotiating') && new Date(q.validity_date).getTime() < now.getTime()) {
+        q.status = 'expired';
+        q.updated_at = now.toISOString();
+        changed += 1;
+      }
+    });
+    if (changed > 0) {
+      this.persist(this.state);
+      this.notify('quotes', 'EXPIRE_BATCH', changed);
+    }
+    return changed;
+  }
+
+  /**
+   * Cancel an order. Used by the buyer's order history; the supplier order view
+   * reflects the change on the next store refresh.
+   */
+  public cancelOrder(id: string, reason?: string): PopulatedOrder | undefined {
+    const order = this.state.orders.find((o) => o.id === id);
+    if (!order) return undefined;
+    order.status = 'cancelled';
+    order.notes = reason || order.notes;
+    order.updated_at = new Date().toISOString();
+    this.persist(this.state);
+    this.notify('orders', 'CANCELLED', order);
+    return this.getOrderById(id);
+  }
+
+  /**
+   * Reorder from a confirmed / delivered order. Creates a fresh public RFQ
+   * carrying the original line-item product, quantity and delivery city so the
+   * buyer can run a new comparison instead of silently re-opening a completed PO.
+   */
+  public reorderFromOrder(orderId: string): DBRFQEnquiry | undefined {
+    const order = this.state.orders.find((o) => o.id === orderId);
+    if (!order) return undefined;
+    const rfq = this.createRFQEnquiry({
+      buyer_id: order.buyer_id,
+      supplier_id: order.supplier_id,
+      product_id: null,
+      requirement_title: `Reorder: ${order.product}`,
+      category: 'Skincare & Serums',
+      quantity_required: order.quantity,
+      quantity_unit: order.quantity_unit,
+      delivery_location: order.delivery_location,
+      details: `Repeat order request generated from ${order.order_no}. Original invoice ${order.invoice_no}.`,
+      attachments: [],
+      status: 'new',
+      type: 'public_rfq',
+      send_to_similar_suppliers: true
+    });
+    order.is_reorder = true;
+    order.source_order_id = orderId;
+    order.updated_at = new Date().toISOString();
+    this.persist(this.state);
+    this.notify('orders', 'REORDERED', order);
+    return rfq;
+  }
+
+  public updateOrderStatus(id: string, status: DBOrder['status']): PopulatedOrder | undefined {
+    const order = this.state.orders.find((o) => o.id === id);
+    if (!order) return undefined;
+    order.status = status;
+    order.updated_at = new Date().toISOString();
+    this.persist(this.state);
+    this.notify('orders', 'UPDATE_STATUS', order);
+    return this.getOrderById(id);
+  }
+
+  public updateOrderPaymentStatus(id: string, paymentStatus: DBOrder['payment_status']): PopulatedOrder | undefined {
+    const order = this.state.orders.find((o) => o.id === id);
+    if (!order) return undefined;
+    order.payment_status = paymentStatus;
+    order.updated_at = new Date().toISOString();
+    this.persist(this.state);
+    this.notify('orders', 'UPDATE_PAYMENT', order);
+    return this.getOrderById(id);
+  }
+
+  // --------------------------------------------------------------------------
+  // SUPPLIER RESPONSE SIMULATION
+  // --------------------------------------------------------------------------
+  /**
+   * Simulates one round of supplier responses for an RFQ that has no quotes.
+   * Used by the demo/demo preview and the "Simulate Supplier Responses" action
+   * on the buyer tracking screen. Real deployments replace this with actual
+   * supplier quotes submitted through the Supplier Admin Portal.
+   */
+  public simulateSupplierResponses(rfqId: string, count = 3): DBQuote[] {
+    const rfq = this.state.rfqs_enquiries.find((r) => r.id === rfqId);
+    if (!rfq) return [];
+    const supplierPool = [
+      { supplier_id: 'supp-aura-labs', name: 'Aura Beauty Labs' },
+      { supplier_id: 'supp-dermaglow', name: 'Dermaglow India' },
+      { supplier_id: 'supp-luxeform', name: 'LuxeForm Cosmetics' },
+      { supplier_id: 'supp-radiant', name: 'Radiant Cosmeceuticals' }
+    ].filter((s) => !this.state.quotes.some((q) => q.rfq_id === rfqId && q.supplier_id === s.supplier_id));
+
+    const creators = supplierPool.slice(0, count);
+    const now = new Date();
+    const created: DBQuote[] = [];
+    creators.forEach((supplier, idx) => {
+      const base = Math.max(80, (rfq.target_budget || 200) * (0.94 + idx * 0.045));
+      const unitPrice = Math.round(base);
+      const quantity = rfq.quantity_required || 1000;
+      const validity = new Date(now);
+      validity.setDate(validity.getDate() + 14);
+      const quote = this.createQuote({
+        rfq_id: rfqId,
+        supplier_id: supplier.supplier_id,
+        unit_price: unitPrice,
+        total_price: unitPrice * quantity,
+        moq_offered: quantity,
+        lead_time: `${8 + idx * 3}-${11 + idx * 4} Business Days`,
+        validity_date: validity.toISOString(),
+        terms_and_conditions: idx === 0
+          ? '50% Advance with Purchase Order, 50% prior to dispatch. Batch COA and stability report included.'
+          : '30% Advance, 70% against dispatch confirmation. GST extra as applicable.',
+        status: 'submitted',
+        sample_available: true,
+        sample_cost: idx === 0 ? 0 : 500,
+        is_simulated: true,
+        notes: `Simulated response from ${supplier.name}: formulation and packaging compliance available upon sample confirmation.`
+      });
+      created.push(quote);
+    });
+    this.notify('quotes', 'SIMULATED_RESPONSES', created);
+    return created;
   }
 
   // --------------------------------------------------------------------------

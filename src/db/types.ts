@@ -145,7 +145,19 @@ export interface DBRFQEnquiry {
   updated_at: string;
 }
 
-export type QuoteStatus = 'submitted' | 'accepted' | 'rejected' | 'negotiating';
+export type QuoteStatus = 'submitted' | 'accepted' | 'rejected' | 'negotiating' | 'order_placed' | 'expired';
+
+/** Lifecycle of a confirmed B2B purchase order after a quote is accepted. */
+export type OrderStatus =
+  | 'order_confirmed'
+  | 'in_production'
+  | 'quality_check'
+  | 'ready_dispatch'
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled';
+
+export type PaymentStatus = 'pending' | 'partially_paid' | 'paid' | 'refunded';
 
 export interface DBQuote {
   id: string; // Primary Key
@@ -164,8 +176,74 @@ export interface DBQuote {
   notes?: string;
   counter_offer_price?: number;
   counter_offer_notes?: string;
+  is_simulated?: boolean;
   created_at: string;
   updated_at: string;
+}
+
+/**
+ * A single line item within a confirmed order. Keeps the order model flexible
+ * so one order can contain multiple products, formulations or packaging SKUs
+ * while preserving a lightweight aggregate on DBOrder for list rendering.
+ */
+export interface DBOrderLineItem {
+  id: string;
+  product: string;
+  quantity: number;
+  quantity_unit: string;
+  unit_price: number;
+  tax_rate: number;
+  subtotal: number;
+  tax_amount: number;
+  total_amount: number;
+  notes?: string;
+}
+
+/**
+ * A confirmed order created when a buyer accepts a supplier quote. It carries
+ * the invoice metadata used by the PDF invoice generator and the status stepper
+ * shown on the buyer tracking screen and supplier portal.
+ */
+export interface DBOrder {
+  id: string; // Primary Key
+  order_no: string; // e.g. ORD-2026-XXXXX
+  quote_id: string; // FK to DBQuote
+  rfq_id: string; // FK to DBRFQEnquiry
+  buyer_id: string; // FK to DBProfileBuyer
+  supplier_id: string; // FK to DBProfileSupplier
+  product: string;
+  quantity: number;
+  quantity_unit: string;
+  unit_price: number;
+  subtotal: number;
+  tax_rate: number;
+  tax_amount: number;
+  total_amount: number;
+  currency: string;
+  status: OrderStatus;
+  payment_status: PaymentStatus;
+  invoice_no: string;
+  invoice_url?: string;
+  shipping_address: string;
+  delivery_location: string;
+  expected_delivery: string;
+  terms: string;
+  notes?: string;
+  line_items?: DBOrderLineItem[];
+  seller_gstin?: string;
+  buyer_gstin?: string;
+  advance_percent?: number;
+  is_reorder?: boolean;
+  source_order_id?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PopulatedOrder extends DBOrder {
+  quote?: DBQuote | null;
+  rfq?: DBRFQEnquiry | null;
+  supplier?: DBProfileSupplier | null;
+  buyer?: DBProfileBuyer | null;
 }
 
 export interface DBMessage {
@@ -207,6 +285,7 @@ export interface PopulatedRFQEnquiry extends DBRFQEnquiry {
 export interface PopulatedQuote extends DBQuote {
   supplier?: DBProfileSupplier;
   rfq?: DBRFQEnquiry;
+  order?: DBOrder | null;
 }
 
 export interface PopulatedProduct extends DBProduct {

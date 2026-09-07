@@ -231,7 +231,7 @@ export interface OEMFormulation {
 
 export interface AppNotification {
   id: string;
-  type: 'rfq_response' | 'quote_update' | 'message' | 'verification' | 'sample' | 'system';
+  type: 'rfq_response' | 'quote_update' | 'message' | 'verification' | 'sample' | 'order' | 'payment' | 'system';
   title: string;
   description: string;
   timestamp: string;
