@@ -10,8 +10,9 @@ import { getStoredSponsoredAnalyticsEvents, SponsoredAnalyticsEvent } from '../d
 import { getStoredChatThreads, supplierReplyMessage, ChatThread } from '../data/chatStore';
 import { ProductCreationWizard, CatalogProduct } from './ProductCreationWizard';
 import { db } from '../db/database';
-import { PopulatedRFQEnquiry } from '../db/types';
+import { PopulatedOrder, PopulatedRFQEnquiry } from '../db/types';
 import { addNotification } from '../data/notifications';
+import { downloadOrderInvoice, ORDER_STATUS_LABELS, formatInr, formatDate } from '../utils/invoicePdf';
 
 // Demo tenant: in production this comes from the authenticated supplier session
 // and every db read below is scoped by RLS to the supplier's own rows.
@@ -55,14 +56,14 @@ function timeAgoLabel(iso: string): string {
 
 interface SupplierAdminPortalProps {
   onNavigateToProduct?: (productId: string) => void;
-  initialTab?: 'dashboard' | 'products' | 'sponsored-ads' | 'analytics' | 'enquiries' | 'rfqs' | 'verification' | 'chat-hub';
+  initialTab?: 'dashboard' | 'products' | 'sponsored-ads' | 'analytics' | 'enquiries' | 'rfqs' | 'orders' | 'verification' | 'chat-hub';
 }
 
 export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
   onNavigateToProduct,
   initialTab = 'dashboard'
 }) => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'sponsored-ads' | 'analytics' | 'enquiries' | 'rfqs' | 'verification' | 'chat-hub'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'sponsored-ads' | 'analytics' | 'enquiries' | 'rfqs' | 'orders' | 'verification' | 'chat-hub'>(initialTab);
   const [analyticsEvents, setAnalyticsEvents] = useState<SponsoredAnalyticsEvent[]>([]);
   const [chatThreads, setChatThreads] = useState<ChatThread[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
@@ -112,6 +113,7 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
   // public RFQs arrive from the Post Requirement screen.
   const [liveEnquiries, setLiveEnquiries] = useState<PopulatedRFQEnquiry[]>([]);
   const [liveRfqs, setLiveRfqs] = useState<PopulatedRFQEnquiry[]>([]);
+  const [supplierOrders, setSupplierOrders] = useState<PopulatedOrder[]>(() => db.getOrdersBySupplierId(PORTAL_SUPPLIER_ID));
 
   useEffect(() => {
     const loadLeads = () => {
@@ -119,6 +121,7 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
       const sorted = [...all].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
       setLiveEnquiries(sorted.filter((r) => r.type === 'direct_enquiry'));
       setLiveRfqs(sorted.filter((r) => r.type === 'public_rfq'));
+      setSupplierOrders(db.getOrdersBySupplierId(PORTAL_SUPPLIER_ID));
     };
     loadLeads();
     const unsubscribe = db.subscribe(() => loadLeads());
@@ -226,6 +229,13 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
     }, 900);
   };
 
+  const handleOrderStatusChange = (orderId: string, status: PopulatedOrder['status']) => {
+    db.updateOrderStatus(orderId, status);
+    setSupplierOrders(db.getOrdersBySupplierId(PORTAL_SUPPLIER_ID));
+    setQuoteSentToast(`Order ${db.getOrderById(orderId)?.order_no || ''} moved to ${ORDER_STATUS_LABELS[status] || status}.`);
+    setTimeout(() => setQuoteSentToast(null), 3000);
+  };
+
   return (
     <div className="bg-[#FDFBF7] min-h-screen flex flex-col md:flex-row">
       
@@ -305,6 +315,16 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
           >
             <FileText className="w-4.5 h-4.5" />
             <span>RFQ Marketplace ({liveRfqs.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('orders')}
+            className={`flex items-center gap-2.5 px-4 py-3 rounded-lg text-left transition-all cursor-pointer ${
+              activeTab === 'orders' ? 'bg-[#F5EEF8] text-[#6B2D8C]' : 'hover:bg-neutral-50'
+            }`}
+          >
+            <Package className="w-4.5 h-4.5" />
+            <span>Orders ({supplierOrders.length})</span>
           </button>
 
           <button
@@ -754,6 +774,88 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
               ))}
             </div>
 
+          </div>
+        )}
+
+        {/* ================== ORDERS (confirmed commercial orders) ================== */}
+        {activeTab === 'orders' && (
+          <div className="space-y-6">
+            <div className="space-y-1">
+              <h3 className="font-black text-sm text-zinc-950">Confirmed Orders</h3>
+              <p className="text-xs text-[#5B4A6E]">Orders created the moment a buyer accepts your quote. Download the tax invoice, track production/shipping, and update the order lifecycle.</p>
+            </div>
+
+            {supplierOrders.length === 0 && (
+              <div className="bg-white border border-[#E8DEEF] rounded-xl p-8 text-center space-y-2">
+                <Package className="w-8 h-8 text-[#D9C3E8] mx-auto" />
+                <p className="text-sm font-extrabold text-zinc-900">No confirmed orders yet</p>
+                <p className="text-xs text-[#5B4A6E]">When the buyer accepts a quote, the purchase order will appear here with its invoice and shipping tracker.</p>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {supplierOrders.map((order) => (
+                <div key={order.id} className="bg-white border border-[#E8DEEF] rounded-2xl p-5 space-y-4">
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-black text-sm text-zinc-950">{order.order_no}</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+                          {ORDER_STATUS_LABELS[order.status]}
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-50 text-stone-600 border border-stone-200 uppercase">
+                          {order.payment_status.replace('_', ' ')}
+                        </span>
+                      </div>
+                      <p className="text-xs font-bold text-zinc-800">{order.product}</p>
+                      <p className="text-[11px] text-[#5B4A6E]">
+                        {order.quantity.toLocaleString('en-IN')} {order.quantity_unit} × {formatInr(order.unit_price)} · {formatInr(order.total_amount, order.currency)} · Est. {formatDate(order.expected_delivery)}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="text-[11px] font-bold text-[#5B4A6E] flex items-center gap-2">
+                        <span>Update</span>
+                        <select
+                          value={order.status}
+                          onChange={(e) => handleOrderStatusChange(order.id, e.target.value as PopulatedOrder['status'])}
+                          className="text-[11px] font-bold border border-[#E8DEEF] rounded-lg px-2 py-1.5 bg-[#FDFBF7] focus:outline-none focus:border-[#6B2D8C] cursor-pointer"
+                        >
+                          {Object.entries(ORDER_STATUS_LABELS).map(([key, label]) => (
+                            <option key={key} value={key}>{label}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <button
+                        onClick={() => downloadOrderInvoice(order)}
+                        className="inline-flex items-center gap-1.5 bg-[#6B2D8C] text-white text-[11px] font-black px-3 py-2 rounded-lg hover:bg-[#4A2560] transition-all cursor-pointer"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        Invoice PDF
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-[#E8DEEF] grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px]">
+                    <div>
+                      <p className="text-[#7E6C96] font-bold uppercase tracking-wide text-[9px]">Invoice</p>
+                      <p className="font-bold text-zinc-900">{order.invoice_no}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#7E6C96] font-bold uppercase tracking-wide text-[9px]">Buyer</p>
+                      <p className="font-bold text-zinc-900">{order.buyer_id}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#7E6C96] font-bold uppercase tracking-wide text-[9px]">Delivery</p>
+                      <p className="font-bold text-zinc-900">{order.delivery_location}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#7E6C96] font-bold uppercase tracking-wide text-[9px]">Terms</p>
+                      <p className="font-bold text-zinc-900 line-clamp-2">{order.terms}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

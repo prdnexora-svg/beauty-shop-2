@@ -11,8 +11,10 @@ import {
   DBQuote,
   DBMessage,
   DBFollowUp,
+  DBOrder,
   PopulatedRFQEnquiry,
   PopulatedQuote,
+  PopulatedOrder,
   PopulatedProduct,
   UserRole
 } from './types';
@@ -26,6 +28,7 @@ export interface DatabaseState {
   products: DBProduct[];
   rfqs_enquiries: DBRFQEnquiry[];
   quotes: DBQuote[];
+  orders: DBOrder[];
   messages: DBMessage[];
   follow_ups: DBFollowUp[];
 }
@@ -422,6 +425,37 @@ const SEED_QUOTES: DBQuote[] = [
   }
 ];
 
+const SEED_ORDERS: DBOrder[] = [
+  {
+    id: 'order-seed-8801',
+    order_no: 'ORD-2026-8801',
+    quote_id: 'quote-aura-8801',
+    rfq_id: 'rfq-2026-8801',
+    buyer_id: 'buyer_priya_001',
+    supplier_id: 'supp-aura-labs',
+    product: 'Vitamin C Brightening Serum (Bulk)',
+    quantity: 2000,
+    quantity_unit: 'Units',
+    unit_price: 175,
+    subtotal: 350000,
+    tax_rate: 18,
+    tax_amount: 63000,
+    total_amount: 413000,
+    currency: 'INR',
+    status: 'in_production',
+    payment_status: 'partially_paid',
+    invoice_no: 'INV-2026-8801',
+    invoice_url: '',
+    shipping_address: 'Plot No. 42, Bandra-Kurla Complex, Mumbai, Maharashtra 400051',
+    delivery_location: 'Mumbai Salon Branches',
+    expected_delivery: '2026-10-12T00:00:00.000Z',
+    terms: '50% Advance with Purchase Order, 50% prior to dispatch.',
+    notes: 'Confirmed against Aura Beauty Labs quote. Batch COA required before dispatch.',
+    created_at: '2026-08-17T09:00:00.000Z',
+    updated_at: '2026-08-20T11:00:00.000Z'
+  }
+];
+
 const SEED_MESSAGES: DBMessage[] = [
   {
     id: 'msg-101',
@@ -501,12 +535,18 @@ class RelationalDatabase {
     this.runAutomatedReminderEngine();
   }
 
+
   private loadInitialState(): DatabaseState {
     try {
       const stored = localStorage.getItem(DB_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed.users && parsed.products && parsed.rfqs_enquiries) {
+          // Pre-order migrations of the local store keep working; only data
+          // written before the orders collection was added is augmented here.
+          if (!Array.isArray(parsed.orders)) {
+            parsed.orders = [];
+          }
           return parsed;
         }
       }
@@ -521,6 +561,7 @@ class RelationalDatabase {
       products: SEED_PRODUCTS,
       rfqs_enquiries: SEED_RFQS_ENQUIRIES,
       quotes: SEED_QUOTES,
+      orders: SEED_ORDERS,
       messages: SEED_MESSAGES,
       follow_ups: SEED_FOLLOW_UPS
     };
@@ -567,6 +608,7 @@ class RelationalDatabase {
       products: SEED_PRODUCTS,
       rfqs_enquiries: SEED_RFQS_ENQUIRIES,
       quotes: SEED_QUOTES,
+      orders: SEED_ORDERS,
       messages: SEED_MESSAGES,
       follow_ups: SEED_FOLLOW_UPS
     };
@@ -1035,7 +1077,8 @@ class RelationalDatabase {
       .map((q) => ({
         ...q,
         supplier: this.getSupplierProfileById(q.supplier_id),
-        rfq: this.state.rfqs_enquiries.find((r) => r.id === q.rfq_id)
+        rfq: this.state.rfqs_enquiries.find((r) => r.id === q.rfq_id),
+        order: this.state.orders.find((o) => o.quote_id === q.id) ?? null
       }));
   }
 
@@ -1045,7 +1088,8 @@ class RelationalDatabase {
     return {
       ...q,
       supplier: this.getSupplierProfileById(q.supplier_id),
-      rfq: this.state.rfqs_enquiries.find((r) => r.id === q.rfq_id)
+      rfq: this.state.rfqs_enquiries.find((r) => r.id === q.rfq_id),
+      order: this.state.orders.find((o) => o.quote_id === q.id) ?? null
     };
   }
 
@@ -1101,6 +1145,181 @@ class RelationalDatabase {
     this.persist(this.state);
     this.notify('quotes', 'UPDATE_STATUS', quote);
     return quote;
+  }
+
+  // --------------------------------------------------------------------------
+  // ORDERS & INVOICE / FINAL ORDER CONFIRMATION REPOSITORY
+  // --------------------------------------------------------------------------
+
+  public getOrders(): PopulatedOrder[] {
+    return this.state.orders
+      .map((o) => ({
+        ...o,
+        quote: this.getQuoteById(o.quote_id) ?? null,
+        rfq: this.state.rfqs_enquiries.find((r) => r.id === o.rfq_id) ?? null,
+        supplier: this.getSupplierProfileById(o.supplier_id) ?? null
+      }))
+      .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  }
+
+  public getOrdersByBuyerId(buyerId: string): PopulatedOrder[] {
+    return this.getOrders().filter((o) => o.buyer_id === buyerId);
+  }
+
+  public getOrdersBySupplierId(supplierId: string): PopulatedOrder[] {
+    return this.getOrders().filter((o) => o.supplier_id === supplierId);
+  }
+
+  public getOrderById(id: string): PopulatedOrder | undefined {
+    const order = this.state.orders.find((o) => o.id === id);
+    if (!order) return undefined;
+    return {
+      ...order,
+      quote: this.getQuoteById(order.quote_id) ?? null,
+      rfq: this.state.rfqs_enquiries.find((r) => r.id === order.rfq_id) ?? null,
+      supplier: this.getSupplierProfileById(order.supplier_id) ?? null
+    };
+  }
+
+  /**
+   * Create a final purchase order from an accepted quote. The buyer's tracking
+   * screen calls this on "Confirm Order"; it generates an invoice reference,
+   * marks the quote and RFQ as closed, and notifies subscribers.
+   */
+  public createOrderFromQuote(quoteId: string, shippingAddress?: string): DBOrder | undefined {
+    const quote = this.state.quotes.find((q) => q.id === quoteId);
+    if (!quote) return undefined;
+    if (quote.status !== 'accepted') {
+      // Allow idempotent re-entry: if an order already exists, return it.
+      const existing = this.state.orders.find((o) => o.quote_id === quoteId);
+      return existing;
+    }
+
+    const rfq = this.state.rfqs_enquiries.find((r) => r.id === quote.rfq_id);
+    const buyer = this.state.profiles_buyer.find((b) => b.id === rfq?.buyer_id);
+    const quantity = rfq?.quantity_required || quote.moq_offered || 1;
+    const unitPrice = quote.counter_offer_price && quote.counter_offer_price > 0
+      ? quote.counter_offer_price
+      : quote.unit_price;
+    const taxRate = 18; // GST 18% standard beauty supply (configurable per SKU later)
+    const subtotal = Math.round(unitPrice * quantity);
+    const taxAmount = Math.round((subtotal * taxRate) / 100);
+    const total = subtotal + taxAmount;
+    const now = new Date();
+    const expected = new Date(now);
+    expected.setDate(expected.getDate() + 21);
+
+    const order: DBOrder = {
+      id: `order-${Date.now()}`,
+      order_no: `ORD-${now.getFullYear()}-${String(Math.floor(10000 + Math.random() * 90000))}`,
+      quote_id: quote.id,
+      rfq_id: quote.rfq_id,
+      buyer_id: buyer?.id || rfq?.buyer_id || 'buyer_priya_001',
+      supplier_id: quote.supplier_id,
+      product: rfq?.requirement_title || 'Beauty supply purchase order',
+      quantity,
+      quantity_unit: rfq?.quantity_unit || 'Units',
+      unit_price: unitPrice,
+      subtotal,
+      tax_rate: taxRate,
+      tax_amount: taxAmount,
+      total_amount: total,
+      currency: 'INR',
+      status: 'order_confirmed',
+      payment_status: 'pending',
+      invoice_no: `INV-${now.getFullYear()}-${String(Math.floor(10000 + Math.random() * 90000))}`,
+      invoice_url: '',
+      shipping_address: shippingAddress || buyer?.address || 'Address to be confirmed by buyer.',
+      delivery_location: rfq?.delivery_location || buyer?.city || 'India',
+      expected_delivery: expected.toISOString(),
+      terms: quote.terms_and_conditions,
+      notes: quote.notes,
+      created_at: now.toISOString(),
+      updated_at: now.toISOString()
+    };
+
+    this.state.orders = [order, ...this.state.orders];
+    quote.status = 'order_placed';
+    quote.updated_at = now.toISOString();
+    if (rfq) {
+      rfq.status = 'closed';
+      rfq.updated_at = now.toISOString();
+    }
+    this.persist(this.state);
+    this.notify('orders', 'CREATE', order);
+    this.notify('quotes', 'ORDER_PLACED', quote);
+    this.notify('rfqs_enquiries', 'ORDER_CLOSED', rfq);
+    return order;
+  }
+
+  public updateOrderStatus(id: string, status: DBOrder['status']): PopulatedOrder | undefined {
+    const order = this.state.orders.find((o) => o.id === id);
+    if (!order) return undefined;
+    order.status = status;
+    order.updated_at = new Date().toISOString();
+    this.persist(this.state);
+    this.notify('orders', 'UPDATE_STATUS', order);
+    return this.getOrderById(id);
+  }
+
+  public updateOrderPaymentStatus(id: string, paymentStatus: DBOrder['payment_status']): PopulatedOrder | undefined {
+    const order = this.state.orders.find((o) => o.id === id);
+    if (!order) return undefined;
+    order.payment_status = paymentStatus;
+    order.updated_at = new Date().toISOString();
+    this.persist(this.state);
+    this.notify('orders', 'UPDATE_PAYMENT', order);
+    return this.getOrderById(id);
+  }
+
+  // --------------------------------------------------------------------------
+  // SUPPLIER RESPONSE SIMULATION
+  // --------------------------------------------------------------------------
+  /**
+   * Simulates one round of supplier responses for an RFQ that has no quotes.
+   * Used by the demo/demo preview and the "Simulate Supplier Responses" action
+   * on the buyer tracking screen. Real deployments replace this with actual
+   * supplier quotes submitted through the Supplier Admin Portal.
+   */
+  public simulateSupplierResponses(rfqId: string, count = 3): DBQuote[] {
+    const rfq = this.state.rfqs_enquiries.find((r) => r.id === rfqId);
+    if (!rfq) return [];
+    const supplierPool = [
+      { supplier_id: 'supp-aura-labs', name: 'Aura Beauty Labs' },
+      { supplier_id: 'supp-dermaglow', name: 'Dermaglow India' },
+      { supplier_id: 'supp-luxeform', name: 'LuxeForm Cosmetics' },
+      { supplier_id: 'supp-radiant', name: 'Radiant Cosmeceuticals' }
+    ].filter((s) => !this.state.quotes.some((q) => q.rfq_id === rfqId && q.supplier_id === s.supplier_id));
+
+    const creators = supplierPool.slice(0, count);
+    const now = new Date();
+    const created: DBQuote[] = [];
+    creators.forEach((supplier, idx) => {
+      const base = Math.max(80, (rfq.target_budget || 200) * (0.94 + idx * 0.045));
+      const unitPrice = Math.round(base);
+      const quantity = rfq.quantity_required || 1000;
+      const validity = new Date(now);
+      validity.setDate(validity.getDate() + 14);
+      const quote = this.createQuote({
+        rfq_id: rfqId,
+        supplier_id: supplier.supplier_id,
+        unit_price: unitPrice,
+        total_price: unitPrice * quantity,
+        moq_offered: quantity,
+        lead_time: `${8 + idx * 3}-${11 + idx * 4} Business Days`,
+        validity_date: validity.toISOString(),
+        terms_and_conditions: idx === 0
+          ? '50% Advance with Purchase Order, 50% prior to dispatch. Batch COA and stability report included.'
+          : '30% Advance, 70% against dispatch confirmation. GST extra as applicable.',
+        status: 'submitted',
+        sample_available: true,
+        sample_cost: idx === 0 ? 0 : 500,
+        notes: `Simulated response from ${supplier.name}: formulation and packaging compliance available upon sample confirmation.`
+      });
+      created.push(quote);
+    });
+    this.notify('quotes', 'SIMULATED_RESPONSES', created);
+    return created;
   }
 
   // --------------------------------------------------------------------------

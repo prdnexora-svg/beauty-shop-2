@@ -39,6 +39,49 @@ export interface PaginatedSuppliersResponse {
 const VISIBLE_STATUSES = ['active', 'pending_verification'];
 
 /**
+ * Directory-safe projection for public/anonymous reads.
+ *
+ * This is deliberately NOT `select('*')`: after migration 0110 the `anon` /
+ * `authenticated` roles only have column-level SELECT on the directory columns
+ * below. Private fields (phone, private email, address, GSTIN, PAN, bank) stay
+ * in the table and are only available to the profile owner through RLS.
+ */
+const DIRECTORY_COLUMNS = [
+  'id',
+  'user_id',
+  'company_name',
+  'slug',
+  'business_type',
+  'brand_name',
+  'about',
+  'city',
+  'state',
+  'categories',
+  'category',
+  'subcategory',
+  'status',
+  'onboarding_status',
+  'is_verified_supplier',
+  'is_verified',
+  'verification_level',
+  'logo_url',
+  'cover_image_url',
+  'trust_score',
+  'response_rate',
+  'avg_response_time',
+  'year_established',
+  'employee_count',
+  'monthly_capacity',
+  'facility_area',
+  'moq',
+  'certifications',
+  'certifications_list',
+  'cold_chain_available',
+  'created_at',
+  'updated_at',
+].join(',');
+
+/**
  * Convert a `profiles_supplier` row (Supabase or local store) into the public
  * directory shape used by the React UI.
  */
@@ -195,7 +238,7 @@ export async function fetchSuppliers(params: SupplierFilterParams = {}): Promise
     try {
       let query = supabase
         .from('profiles_supplier')
-        .select('*', { count: 'exact' });
+        .select(DIRECTORY_COLUMNS, { count: 'exact' });
 
       query = applyFilters(query, params);
 
@@ -385,12 +428,16 @@ export async function publishSupplierProfile(
     address: input.address || `${input.city || ''}, ${input.state || ''}, ${input.pincode || ''}`.trim(),
     phone: input.phone || '',
     whatsapp: input.whatsapp || input.phone || '',
-    is_verified: status === 'active',
+    // Trust/verification fields are deliberately never set by the supplier
+    // client. Approval/production publishing happens through the admin RPC.
+    is_verified: false,
     is_gst_verified: isGstVerified,
     is_verified_supplier: true,
-    status,
-    onboarding_status: status === 'active' ? 'approved' : 'review',
-    verification_level: status === 'active' ? 'Nexora Verified' : 'Business Verified'
+    status: 'pending_verification',
+    onboarding_status: 'business_pending',
+    verification_level: null,
+    reviewed_at: null,
+    approved_at: null
   });
 
   if (!isSupabaseConfigured()) {
@@ -422,13 +469,16 @@ export async function publishSupplierProfile(
       city: input.city || 'Mumbai',
       state: input.state || 'Maharashtra',
       address: input.address || null,
-      is_verified: status === 'active',
+      // These must remain safe for RLS `supplier_profile_owner_insert` /
+      // `supplier_profile_owner_update`: owners are never allowed to set
+      // trust or approval fields from the browser.
+      is_verified: false,
       is_gst_verified: isGstVerified,
       is_iso_certified: false,
       is_verified_supplier: true,
-      status,
-      onboarding_status: status === 'active' ? 'approved' : 'review',
-      verification_level: status === 'active' ? 'Nexora Verified' : 'Business Verified',
+      status: 'pending_verification',
+      onboarding_status: 'business_pending',
+      verification_level: null,
       response_rate: 95,
       avg_response_time: 2.0,
       trust_score: 80,

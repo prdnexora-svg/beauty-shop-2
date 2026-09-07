@@ -33,6 +33,9 @@ const {
   setPendingAuthRole,
   readPendingAuthRole,
   clearPendingAuthRole,
+  readDemoAuthSession,
+  writeDemoAuthSession,
+  clearDemoAuthSession,
   MIN_PASSWORD_LENGTH,
   EMAIL_REGEX,
 } = await import('../lib/supabase');
@@ -76,6 +79,41 @@ test('pending auth role round-trips across a simulated OAuth redirect', () => {
 test('pending auth role ignores corrupted storage values', () => {
   storage.set('nexora_pending_role', 'not-a-role');
   assert.equal(readPendingAuthRole(), null);
+});
+
+// ---------------------------------------------------------------------------
+// Demo-mode auth (Supabase not configured). The demo creates a clearly local
+// session so sign-in still works in previews; it must never leak into a
+// configured production build.
+// ---------------------------------------------------------------------------
+test('demo auth session round-trips a buyer role', () => {
+  clearDemoAuthSession();
+  assert.equal(readDemoAuthSession(), null);
+  writeDemoAuthSession({ role: 'buyer', email: 'priya@radiant.in', businessName: 'Radiant Beauty', createdAt: '2026-09-06T00:00:00.000Z' });
+  const session = readDemoAuthSession();
+  assert.equal(session?.role, 'buyer');
+  assert.equal(session?.email, 'priya@radiant.in');
+  assert.equal(session?.businessName, 'Radiant Beauty');
+  clearDemoAuthSession();
+  assert.equal(readDemoAuthSession(), null);
+});
+
+test('demo auth session round-trips a supplier role', () => {
+  clearDemoAuthSession();
+  writeDemoAuthSession({ role: 'supplier', email: 'contact@aurabeauty.in', createdAt: '2026-09-06T00:00:00.000Z' });
+  assert.equal(readDemoAuthSession()?.role, 'supplier');
+  assert.equal(readDemoAuthSession()?.businessName, undefined);
+  clearDemoAuthSession();
+});
+
+test('demo auth session rejects corrupted or privilege-escalating values', () => {
+  clearDemoAuthSession();
+  storage.set('nexora_demo_auth_session', JSON.stringify({ role: 'admin', email: 'admin@bad.in' }));
+  assert.equal(readDemoAuthSession(), null);
+  storage.set('nexora_demo_auth_session', JSON.stringify({ role: 'buyer' }));
+  assert.equal(readDemoAuthSession(), null);
+  storage.set('nexora_demo_auth_session', 'not-json');
+  assert.equal(readDemoAuthSession(), null);
 });
 
 // ---------------------------------------------------------------------------

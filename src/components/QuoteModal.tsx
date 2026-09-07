@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { RFQItem } from '../types';
+import { db } from '../db/database';
 
 interface QuoteModalProps {
   isOpen: boolean;
@@ -37,6 +38,21 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, rfq }) 
 
   const quoteReference = `QUO-${Math.floor(100000 + Math.random() * 900000)}`;
 
+  const resolveSupplierId = (): string => {
+    const map: Record<string, string> = {
+      'Aura Beauty Labs': 'supp-aura-labs',
+      'Dermaglow India': 'supp-dermaglow',
+      'LuxeForm Cosmetics': 'supp-luxeform',
+      'Radiant Cosmeceuticals': 'supp-radiant'
+    };
+    return map[supplierName] || 'supp-aura-labs';
+  };
+
+  const resolveRfqQuantity = (): number => {
+    const parsed = parseInt(rfq.quantityRequired.replace(/[^0-9]/g, ''), 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 2000;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!unitPrice.trim()) {
@@ -44,6 +60,37 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, rfq }) 
       return;
     }
     setErrorMessage('');
+
+    // Persist the quote into the shared relational store so the buyer sees it
+    // immediately on the RFQ tracking screen. Demo/guest RFQs that do not exist
+    // in the store are submitted locally and still render a success state.
+    const targetRfq = db.getRFQById(rfq.id);
+    const parsedPrice = parseFloat(unitPrice.replace(/[^0-9.]/g, '')) || 0;
+    const parsedQty = resolveRfqQuantity();
+    const validity = new Date();
+    validity.setDate(validity.getDate() + 14);
+
+    if (targetRfq && parsedPrice > 0) {
+      try {
+        db.createQuote({
+          rfq_id: targetRfq.id,
+          supplier_id: resolveSupplierId(),
+          unit_price: parsedPrice,
+          total_price: parsedPrice * parsedQty,
+          moq_offered: parsedQty,
+          lead_time: leadTime,
+          validity_date: validity.toISOString(),
+          terms_and_conditions: paymentTerms,
+          status: 'submitted',
+          sample_available: samplesReady,
+          sample_cost: samplesReady ? 0 : 500,
+          notes: supplierRemarks || 'Structured commercial quote submitted against this RFQ.'
+        });
+      } catch (err) {
+        console.warn('Unable to persist quote:', err);
+      }
+    }
+
     setSubmitted(true);
   };
 

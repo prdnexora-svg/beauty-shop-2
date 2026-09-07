@@ -229,6 +229,61 @@ export interface AuthFailure {
 
 export type AuthRole = 'buyer' | 'supplier';
 
+// ----------------------------------------------------------------------------
+// Local demo auth (only used when VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY
+// are not configured). The public marketplace is otherwise guest-browsable, but
+// the demo still needs a working sign-in path so the protected buyer/supplier
+// portals can be evaluated without a live Supabase project. This is stored in a
+// clearly namespaced browser-local session and is never treated as a real
+// production identity.
+// ----------------------------------------------------------------------------
+const DEMO_AUTH_KEY = 'nexora_demo_auth_session';
+
+export interface DemoAuthSession {
+  role: AuthRole;
+  email: string;
+  businessName?: string;
+  createdAt: string;
+}
+
+export function readDemoAuthSession(): DemoAuthSession | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(DEMO_AUTH_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<DemoAuthSession>;
+    const role = parsed.role === 'buyer' || parsed.role === 'supplier' ? parsed.role : null;
+    const email = typeof parsed.email === 'string' ? parsed.email.trim() : '';
+    if (!role || !email) return null;
+    return {
+      role,
+      email,
+      businessName: typeof parsed.businessName === 'string' ? parsed.businessName : undefined,
+      createdAt: typeof parsed.createdAt === 'string' ? parsed.createdAt : new Date().toISOString(),
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function writeDemoAuthSession(session: DemoAuthSession): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(DEMO_AUTH_KEY, JSON.stringify(session));
+  } catch {
+    /* storage disabled / quota exceeded — demo login stays in-memory */
+  }
+}
+
+export function clearDemoAuthSession(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(DEMO_AUTH_KEY);
+  } catch {
+    /* storage disabled */
+  }
+}
+
 /**
  * Single source of truth for credential validation, shared by the AuthModal and
  * authApi so the two paths cannot drift apart (they previously disagreed: 6 vs 8).
@@ -645,7 +700,8 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (!isConfigured) {
         localStorage.removeItem('nexora_user_session');
         localStorage.setItem('nexora_is_logged_in', 'false');
-        localStorage.setItem('nexora_user_role', 'guest');
+        localStorage.removeItem('nexora_user_role');
+        clearDemoAuthSession();
         setSession(null);
         setAuthenticationStatus('unauthenticated');
         setAuthReady(true);

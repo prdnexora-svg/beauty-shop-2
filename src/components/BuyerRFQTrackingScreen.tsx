@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  ArrowLeft, 
-  Search, 
-  Filter, 
-  Clock, 
-  CheckCircle2, 
-  MessageSquare, 
-  FileText, 
+import {
+  ArrowLeft,
+  Search,
+  Filter,
+  Clock,
+  CheckCircle2,
+  MessageSquare,
+  FileText,
   MoreVertical,
   ChevronRight,
   TrendingUp,
@@ -24,10 +24,15 @@ import {
   Edit3,
   Check,
   Save,
-  Layers
+  Layers,
+  RefreshCw,
+  PackageCheck
 } from 'lucide-react';
 import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../data/categories';
 import { db } from '../db/database';
+import type { PopulatedOrder } from '../db/types';
+import { OrderConfirmationModal } from './OrderConfirmationModal';
+import { downloadOrderInvoice, ORDER_STATUS_LABELS, formatInr, formatDate } from '../utils/invoicePdf';
 
 interface RFQTrackingScreenProps {
   onBack: () => void;
@@ -79,7 +84,7 @@ const INITIAL_RFQS = [
   }
 ];
 
-export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({ 
+export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
   onBack,
   onNavigateToChat
 }) => {
@@ -125,9 +130,17 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
   const [counterPriceInput, setCounterPriceInput] = useState('');
   const [counterNotesInput, setCounterNotesInput] = useState('');
 
+  // Final order / confirmation state
+  const [activeOrders, setActiveOrders] = useState<PopulatedOrder[]>(() => db.getOrdersByBuyerId('buyer_priya_001'));
+  const [confirmationOrder, setConfirmationOrder] = useState<PopulatedOrder | null>(null);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simulatedRfqIds, setSimulatedRfqIds] = useState<Set<string>>(() => new Set());
+
   // React state synchronization with the relational database
   useEffect(() => {
     const unsubscribe = db.subscribe(() => {
+      setActiveOrders(db.getOrdersByBuyerId('buyer_priya_001'));
       const updated = db.getRFQsAndEnquiries().map(rfq => ({
         id: rfq.id,
         product: rfq.requirement_title,
@@ -148,87 +161,40 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
     return unsubscribe;
   }, []);
 
+  // Auto-populate the selected RFQ with one round of simulated supplier
+  // responses when the database has no real quotes for it yet. This keeps the
+  // buyer journey alive in preview and demo mode while real suppliers can also
+  // submit quotes through the Supplier Admin Portal.
+  useEffect(() => {
+    if (!selectedRfqId) return;
+    const hasQuotes = db.getQuotesByRfqId(selectedRfqId).length > 0;
+    if (!hasQuotes && !simulatedRfqIds.has(selectedRfqId)) {
+      db.simulateSupplierResponses(selectedRfqId, 3);
+      setSimulatedRfqIds((prev) => new Set(prev).add(selectedRfqId));
+    }
+  }, [selectedRfqId, simulatedRfqIds]);
+
+  const handleSimulateMore = () => {
+    if (!selectedRfqId) return;
+    setIsSimulating(true);
+    setTimeout(() => {
+      db.simulateSupplierResponses(selectedRfqId, 3);
+      setIsSimulating(false);
+      setToastMessage('3 more supplier responses received for this requirement.');
+      setTimeout(() => setToastMessage(null), 3500);
+    }, 900);
+  };
+
   // Get dynamic quotes for the selected RFQ
   const activeQuotes = useMemo(() => {
     if (!selectedRfqId) return [];
     const dbQuotes = db.getQuotesByRfqId(selectedRfqId);
-    
-    // Fallback to high-fidelity simulated quotes if no quotes exist in the db for this RFQ yet
-    if (dbQuotes.length === 0) {
-      return [
-        {
-          id: `QT-SIM-101-${selectedRfqId}`,
-          supplier: 'Aura Beauty Labs',
-          supplier_id: 'supp-aura-labs',
-          location: 'Mumbai, MH',
-          price: '₹195',
-          priceNum: 195,
-          moq: '2,000 Units',
-          leadTime: '12 Business Days',
-          rating: 4.8,
-          verified: true,
-          features: ['Free Custom Sample', 'WHO-GMP, ISO 22716'],
-          terms: '50% Advance with Purchase Order, 50% prior to dispatch.',
-          formulation: '10% Stable L-Ascorbic Acid + 2% Ferulic Acid + 1% Vitamin E',
-          ph: '3.2 - 3.5 (Highly active, bioavailable)',
-          stability: 'Passed 90-day accelerated oven stability testing',
-          certifications: 'WHO-GMP, ISO 22716, Halal Certified',
-          samplePolicy: 'Free Custom Sample (Courier charge paid by buyer)',
-          logisticTerms: 'FOB JNPT Port (Mumbai MH)',
-          status: 'submitted',
-          notes: 'Standard lab sample ready for immediate courier dispatch.'
-        },
-        {
-          id: `QT-SIM-102-${selectedRfqId}`,
-          supplier: 'Dermaglow India',
-          supplier_id: 'supp-dermaglow',
-          location: 'Ahmedabad, GJ',
-          price: '₹188',
-          priceNum: 188,
-          moq: '5,000 Units',
-          leadTime: '15 Business Days',
-          rating: 4.5,
-          verified: true,
-          features: ['Bulk Discount', 'GMP certified'],
-          terms: '30% Advance, 70% against Bill of Lading.',
-          formulation: '8% Ethyl Ascorbic Acid + 1% Hyaluronic Acid',
-          ph: '3.8 - 4.2 (Extremely gentle, non-sticky)',
-          stability: 'Standard real-time shelf life study (In-Progress)',
-          certifications: 'GMP, ISO 9001, Cruelty-Free certified',
-          samplePolicy: 'Reimbursed on first production run (₹1,500 upfront)',
-          logisticTerms: 'EXW Factory (Ahmedabad GJ)',
-          status: 'submitted',
-          notes: 'Formulation specialized for extreme stability under tropical climate conditions.'
-        },
-        {
-          id: `QT-SIM-103-${selectedRfqId}`,
-          supplier: 'Radiant Cosmeceuticals',
-          supplier_id: 'supp-radiant',
-          location: 'Noida, UP',
-          price: '₹210',
-          priceNum: 210,
-          moq: '1,000 Units',
-          leadTime: '10 Business Days',
-          rating: 4.9,
-          verified: false,
-          features: ['Low MOQ Match', 'Ayush Premium'],
-          terms: '100% payment upon receipt of dispatch confirmation.',
-          formulation: '12% Sodium Ascorbyl Phosphate + Vitamin E',
-          ph: '5.5 - 6.0 (Highly stable, mild skincare formulation)',
-          stability: 'Passed 180-day ambient temperature testing',
-          certifications: 'Ayush Premium Certified, WHO-GMP, Vegan',
-          samplePolicy: 'Paid custom sample (Deducted from final commercial order)',
-          logisticTerms: 'CIF Destination (PAN India shipping)',
-          status: 'submitted',
-          notes: 'High-stability formulation suitable for wide-neck retail pump packaging.'
-        }
-      ];
-    }
 
     return dbQuotes.map(q => {
       const supplierProfile = db.getSupplierProfileById(q.supplier_id);
       return {
         id: q.id,
+        order: q.order,
         supplier: supplierProfile?.company_name || 'Verified Supplier',
         supplier_id: q.supplier_id,
         location: supplierProfile ? `${supplierProfile.city}, ${supplierProfile.state}` : 'India',
@@ -247,30 +213,36 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
         samplePolicy: q.sample_available ? 'Free Sample (Reimbursable)' : 'Paid custom sample',
         logisticTerms: 'FOB Plant (Domestic dispatch)',
         status: q.status,
-        notes: q.notes
+        notes: q.notes,
+        validityDate: q.validity_date,
+        counterPrice: q.counter_offer_price,
+        counterNotes: q.counter_offer_notes,
+        createdAt: q.created_at
       };
     });
   }, [selectedRfqId, rfqsList]);
 
   const handleUpdateQuoteStatus = (quoteId: string, action: 'accept' | 'counter' | 'decline', valPrice?: number, valNotes?: string) => {
-    const isSimulated = quoteId.startsWith('QT-SIM-');
     let dbStatus: 'accepted' | 'rejected' | 'negotiating' = 'accepted';
     if (action === 'counter') dbStatus = 'negotiating';
     if (action === 'decline') dbStatus = 'rejected';
 
-    if (!isSimulated) {
-      db.updateQuoteStatus(quoteId, dbStatus, action === 'counter' ? {
-        counter_offer_price: valPrice,
-        counter_offer_notes: valNotes
-      } : undefined);
+    db.updateQuoteStatus(quoteId, dbStatus, action === 'counter' ? {
+      counter_offer_price: valPrice,
+      counter_offer_notes: valNotes
+    } : undefined);
 
-      if (selectedRfqId) {
-        db.updateRFQStatus(selectedRfqId, action === 'accept' ? 'closed' : 'negotiating');
-      }
-    } else {
-      // Direct update to matching simulated representation in UI
-      if (selectedRfqId) {
-        db.updateRFQStatus(selectedRfqId, action === 'accept' ? 'closed' : 'negotiating');
+    if (selectedRfqId) {
+      db.updateRFQStatus(selectedRfqId, action === 'accept' ? 'closed' : 'negotiating');
+    }
+
+    // Accept → transition cleanly to final order confirmation
+    if (action === 'accept') {
+      const order = db.createOrderFromQuote(quoteId);
+      if (order) {
+        setActiveOrders(db.getOrdersByBuyerId('buyer_priya_001'));
+        setConfirmationOrder(order);
+        setIsOrderModalOpen(true);
       }
     }
 
@@ -313,11 +285,33 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const filteredRfqs = activeTab === 'all' 
-    ? rfqsList 
+  const filteredRfqs = activeTab === 'all'
+    ? rfqsList
     : rfqsList.filter(r => r.status.toLowerCase() === activeTab);
 
   const selectedRfq = rfqsList.find(r => r.id === selectedRfqId);
+
+  const bestActiveQuote = useMemo(() => {
+    const actionable = activeQuotes.filter(q => q.status === 'submitted' || q.status === 'negotiating');
+    return actionable.sort((a, b) => (a.counterPrice || a.priceNum) - (b.counterPrice || b.priceNum))[0] || null;
+  }, [activeQuotes]);
+
+  const getQuoteStatusChip = (status: string) => {
+    if (status === 'accepted' || status === 'order_placed') return { label: 'Accepted', className: 'bg-emerald-100 text-emerald-800' };
+    if (status === 'rejected') return { label: 'Declined', className: 'bg-rose-100 text-rose-800' };
+    if (status === 'negotiating') return { label: 'Negotiating', className: 'bg-amber-100 text-amber-800' };
+    return { label: 'Pending', className: 'bg-sky-100 text-sky-800' };
+  };
+
+  const isQuoteExpired = (quote: typeof activeQuotes[number]) => {
+    if (!quote.validityDate) return false;
+    return new Date(quote.validityDate).getTime() < new Date().getTime();
+  };
+
+  const acceptBestQuote = () => {
+    if (!bestActiveQuote) return;
+    handleUpdateQuoteStatus(bestActiveQuote.id, 'accept');
+  };
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] pt-6 pb-20 relative">
@@ -330,11 +324,11 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Navigation & Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div className="space-y-1">
-            <button 
+            <button
               onClick={onBack}
               className="flex items-center gap-2 text-[#6B2D8C] font-bold text-[13px] hover:underline mb-2 cursor-pointer"
             >
@@ -344,7 +338,7 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
             <h1 className="text-3xl font-black text-[#2A0E3F] tracking-tight">Requirement Tracking</h1>
             <p className="text-[14px] text-[#5B4A6E]">Manage your active RFQs and compare supplier quotes in real-time.</p>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <button className="px-5 py-2.5 bg-white border border-[#E8DEEF] rounded-xl text-[13px] font-bold text-[#2A0E3F] flex items-center gap-2 hover:bg-[#FDFBF7] transition-all cursor-pointer">
               <Download className="w-4 h-4" />
@@ -358,29 +352,29 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
+
           {/* RFQ List Column */}
           <div className="lg:col-span-1 space-y-6">
-            
+
             {/* Search & Tabs */}
             <div className="bg-white border border-[#E8DEEF] rounded-2xl p-4 shadow-sm space-y-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7E6C96]" />
-                <input 
+                <input
                   type="text"
                   placeholder="Search requirements..."
                   className="w-full pl-10 pr-4 py-2 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-[12px] font-bold focus:outline-none focus:border-[#C9A961]"
                 />
               </div>
-              
+
               <div className="flex items-center p-1 bg-[#FDFBF7] rounded-lg border border-[#E8DEEF]">
                 {['all', 'pending', 'quoted', 'closed'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab as any)}
                     className={`flex-1 py-1.5 text-[11px] font-black uppercase tracking-wider rounded-md transition-all cursor-pointer ${
-                      activeTab === tab 
-                        ? 'bg-white text-[#6B2D8C] shadow-sm' 
+                      activeTab === tab
+                        ? 'bg-white text-[#6B2D8C] shadow-sm'
                         : 'text-[#7E6C96] hover:text-[#2A0E3F]'
                     }`}
                   >
@@ -397,8 +391,8 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                   key={rfq.id}
                   onClick={() => setSelectedRfqId(rfq.id)}
                   className={`w-full text-left bg-white border rounded-2xl p-5 transition-all group cursor-pointer ${
-                    selectedRfqId === rfq.id 
-                      ? 'border-[#6B2D8C] ring-2 ring-[#F5EEF8]' 
+                    selectedRfqId === rfq.id
+                      ? 'border-[#6B2D8C] ring-2 ring-[#F5EEF8]'
                       : 'border-[#E8DEEF] hover:border-[#6B2D8C]/40 shadow-sm'
                   }`}
                 >
@@ -446,7 +440,7 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
               </div>
             ) : (
               <div className="space-y-6 animate-in fade-in duration-300">
-                
+
                 {/* Active Selection Header */}
                 <div className="bg-white border border-[#E8DEEF] rounded-3xl p-8 shadow-sm">
                   <div className="flex flex-col md:flex-row justify-between gap-6">
@@ -458,6 +452,15 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                         <span className="flex items-center gap-1 text-[12px] text-[#5B4A6E] font-medium">
                           <Clock className="w-3.5 h-3.5" />
                           Posted on {selectedRfq.date}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                          selectedRfq.status === 'Closed'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : selectedRfq.status === 'Quoted'
+                              ? 'bg-sky-100 text-sky-800'
+                              : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {selectedRfq.status}
                         </span>
                       </div>
                       <h2 className="text-2xl font-black text-[#2A0E3F]">{selectedRfq.product}</h2>
@@ -477,10 +480,14 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                       </div>
                     </div>
                     <div className="flex flex-col gap-2">
-                      <button className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-[13px] font-black hover:bg-emerald-700 transition-all shadow-sm cursor-pointer">
-                        Accept Final Quote
+                      <button
+                        onClick={acceptBestQuote}
+                        disabled={!bestActiveQuote}
+                        className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-[13px] font-black hover:bg-emerald-700 transition-all shadow-sm cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed"
+                      >
+                        {bestActiveQuote ? `Accept Best Quote · ₹${bestActiveQuote.counterPrice || bestActiveQuote.priceNum}` : 'Awaiting Quotes'}
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleOpenEditModal(selectedRfq.id)}
                         className="px-6 py-2.5 bg-white border border-[#E8DEEF] text-[#5B4A6E] hover:text-[#6B2D8C] hover:border-[#6B2D8C] rounded-xl text-[13px] font-bold hover:bg-[#FDFBF7] transition-all flex items-center justify-center gap-2 cursor-pointer"
                       >
@@ -490,7 +497,7 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                     </div>
                   </div>
                 </div>
- 
+
                 {/* Quotes Table / Comparison */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -498,22 +505,32 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                       Received Quotes
                       <span className="text-[12px] font-bold px-2 py-0.5 bg-[#F5EEF8] text-[#6B2D8C] rounded-full">{activeQuotes.length}</span>
                     </h3>
-                    <button 
-                      onClick={() => setIsCompareModalOpen(true)}
-                      className="text-[12px] font-bold text-[#6B2D8C] hover:text-[#4A2560] hover:underline flex items-center gap-1 cursor-pointer bg-[#F5EEF8] px-3 py-1.5 rounded-xl border border-[#D9C3E8] transition-all shadow-xs"
-                    >
-                      <Scale className="w-4 h-4" />
-                      <span>Compare Side-by-Side</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleSimulateMore}
+                        disabled={isSimulating}
+                        className="text-[12px] font-bold text-[#6B2D8C] hover:text-[#4A2560] hover:underline flex items-center gap-1 cursor-pointer bg-[#F5EEF8] px-3 py-1.5 rounded-xl border border-[#D9C3E8] transition-all shadow-xs disabled:opacity-50"
+                      >
+                        <RefreshCw className={`w-4 h-4 ${isSimulating ? 'animate-spin' : ''}`} />
+                        <span>Simulate Supplier Response</span>
+                      </button>
+                      <button
+                        onClick={() => setIsCompareModalOpen(true)}
+                        className="text-[12px] font-bold text-[#6B2D8C] hover:text-[#4A2560] hover:underline flex items-center gap-1 cursor-pointer bg-[#F5EEF8] px-3 py-1.5 rounded-xl border border-[#D9C3E8] transition-all shadow-xs"
+                      >
+                        <Scale className="w-4 h-4" />
+                        <span>Compare Side-by-Side</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
- 
+
                   <div className="space-y-4">
                     {activeQuotes.map((quote) => (
                       <div key={quote.id} className={`bg-white border rounded-2xl overflow-hidden transition-all group ${quote.status === 'accepted' ? 'border-emerald-500 ring-2 ring-emerald-50' : 'border-[#E8DEEF] hover:border-[#6B2D8C]/30'}`}>
                         <div className="p-6">
                           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                            
+
                             <div className="flex items-center gap-4">
                               <div className="w-12 h-12 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl flex items-center justify-center text-[#6B2D8C]">
                                 <Building2 className="w-6 h-6" />
@@ -524,14 +541,16 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                                   {quote.verified && (
                                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                                   )}
-                                  {quote.status === 'accepted' && (
-                                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-black uppercase tracking-wider">Accepted</span>
-                                  )}
-                                  {quote.status === 'rejected' && (
-                                    <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[9px] font-black uppercase tracking-wider">Declined</span>
-                                  )}
-                                  {quote.status === 'negotiating' && (
-                                    <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[9px] font-black uppercase tracking-wider">Negotiating</span>
+                                  {(() => {
+                                    const chip = getQuoteStatusChip(quote.status);
+                                    return (
+                                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${chip.className}`}>
+                                        {chip.label}
+                                      </span>
+                                    );
+                                  })()}
+                                  {isQuoteExpired(quote) && quote.status === 'submitted' && (
+                                    <span className="px-2 py-0.5 rounded-full bg-stone-200 text-stone-700 text-[9px] font-black uppercase tracking-wider">Expired</span>
                                   )}
                                 </div>
                                 <p className="text-[11px] text-[#5B4A6E] flex items-center gap-1">
@@ -539,7 +558,7 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                                 </p>
                               </div>
                             </div>
- 
+
                             <div className="flex flex-wrap items-center gap-8">
                               <div className="space-y-1 text-center">
                                 <p className="text-[9px] text-[#7E6C96] uppercase font-black">Quote Price</p>
@@ -554,25 +573,25 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                                 <p className="text-[14px] font-bold text-[#2A0E3F]">{quote.moq}</p>
                               </div>
                             </div>
- 
+
                             <div className="flex items-center gap-2 w-full md:w-auto">
-                              <button 
+                              <button
                                 onClick={() => onNavigateToChat(quote.id)}
                                 className="flex-1 md:flex-none px-4 py-2 bg-[#F5EEF8] text-[#6B2D8C] text-[12px] font-black rounded-lg hover:bg-[#E8D5F2] transition-all flex items-center justify-center gap-2 cursor-pointer"
                               >
                                 <MessageSquare className="w-4 h-4" />
                                 Chat
                               </button>
-                              
+
                               {(quote.status === 'submitted' || quote.status === 'negotiating') && (
                                 <>
-                                  <button 
+                                  <button
                                     onClick={() => handleUpdateQuoteStatus(quote.id, 'accept')}
                                     className="px-4 py-2 bg-emerald-600 text-white text-[12px] font-black rounded-lg hover:bg-emerald-700 transition-all cursor-pointer"
                                   >
                                     Accept
                                   </button>
-                                  <button 
+                                  <button
                                     onClick={() => {
                                       setCounterQuoteId(quote.id);
                                       setCounterPriceInput(quote.priceNum?.toString() || '');
@@ -582,7 +601,7 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                                   >
                                     Counter
                                   </button>
-                                  <button 
+                                  <button
                                     onClick={() => handleUpdateQuoteStatus(quote.id, 'decline')}
                                     className="px-4 py-2 bg-rose-50 text-rose-600 text-[12px] font-black rounded-lg hover:bg-rose-100 transition-all cursor-pointer"
                                   >
@@ -591,22 +610,38 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                                 </>
                               )}
                             </div>
- 
+
                           </div>
- 
+
                           {/* Terms & Conditions details if any */}
                           {quote.terms && (
                             <div className="mt-4 p-3 bg-[#FDFBF7] rounded-xl border border-[#E8DEEF] text-[11px] text-[#5B4A6E] leading-relaxed">
                               <strong>Commercial Terms:</strong> {quote.terms}
                             </div>
                           )}
- 
+
                           {quote.notes && (
                             <div className="mt-2 text-[11px] text-stone-500 italic">
                               <strong>Formulation Notes:</strong> {quote.notes}
                             </div>
                           )}
- 
+
+                          <div className="mt-3 flex flex-wrap gap-3 text-[11px] text-[#5B4A6E]">
+                            {quote.validityDate && (
+                              <span className={`inline-flex items-center gap-1 ${isQuoteExpired(quote) && quote.status === 'submitted' ? 'text-rose-600 font-bold' : ''}`}>
+                                <Clock className="w-3.5 h-3.5" />
+                                Valid till {formatDate(quote.validityDate)}
+                              </span>
+                            )}
+                            {quote.counterPrice && quote.counterPrice !== quote.priceNum && (
+                              <span className="inline-flex items-center gap-1 text-amber-700 font-bold">
+                                <TrendingDown className="w-3.5 h-3.5" />
+                                Counter offer ₹{quote.counterPrice}
+                                {quote.counterNotes ? ` · ${quote.counterNotes}` : ''}
+                              </span>
+                            )}
+                          </div>
+
                           {/* Features / Highlights */}
                           <div className="mt-4 pt-3 border-t border-[#FDFBF7] flex flex-wrap gap-2">
                             {quote.features.map((feature, idx) => (
@@ -619,6 +654,62 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                       </div>
                     ))}
                   </div>
+                </div>
+
+                {/* Active Orders / Order History */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-black text-[#2A0E3F] flex items-center gap-2">
+                    <PackageCheck className="w-5 h-5 text-[#6B2D8C]" />
+                    Your Orders
+                    <span className="text-[12px] font-bold px-2 py-0.5 bg-[#F5EEF8] text-[#6B2D8C] rounded-full">{activeOrders.length}</span>
+                  </h3>
+
+                  {activeOrders.length === 0 ? (
+                    <div className="bg-white border border-dashed border-[#D9C3E8] rounded-2xl p-6 text-center">
+                      <p className="text-[13px] text-[#5B4A6E]">No orders yet. Accept a supplier quote to create your order and download the invoice.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {activeOrders.map(order => (
+                        <div key={order.id} className="bg-white border border-[#E8DEEF] rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[12px] font-black text-[#6B2D8C]">{order.order_no}</span>
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-black uppercase border border-emerald-200">
+                                {ORDER_STATUS_LABELS[order.status] || order.status}
+                              </span>
+                              <span className="px-2 py-0.5 rounded-full bg-stone-50 text-stone-600 text-[9px] font-black uppercase border border-stone-200">
+                                {order.payment_status.replace('_', ' ')}
+                              </span>
+                            </div>
+                            <p className="text-[14px] font-bold text-[#2A0E3F]">{order.product}</p>
+                            <p className="text-[12px] text-[#5B4A6E]">
+                              {order.quantity.toLocaleString()} {order.quantity_unit} · {formatInr(order.total_amount)} {order.currency} · Est. delivery {formatDate(order.expected_delivery)}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => { setConfirmationOrder(db.getOrderById(order.id)); setIsOrderModalOpen(true); }}
+                              className="px-4 py-2 bg-[#F5EEF8] text-[#6B2D8C] text-[12px] font-black rounded-lg hover:bg-[#E8D5F2] transition-all flex items-center gap-2 cursor-pointer"
+                            >
+                              <Eye className="w-4 h-4" />
+                              View Details
+                            </button>
+                            <button
+                              onClick={() => {
+                                const orderRecord = db.getOrderById(order.id);
+                                if (orderRecord) downloadOrderInvoice(orderRecord);
+                              }}
+                              className="px-4 py-2 bg-[#6B2D8C] text-white text-[12px] font-black rounded-lg hover:bg-[#4A2560] transition-all flex items-center gap-2 cursor-pointer"
+                            >
+                              <Download className="w-4 h-4" />
+                              Invoice
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* No Quotes Empty State Logic would go here */}
@@ -635,7 +726,7 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
       {isCompareModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white border border-[#E8DEEF] rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col text-left">
-            
+
             {/* Modal Header */}
             <div className="p-6 border-b border-[#F4F0E9] bg-[#FDFBF7] flex items-center justify-between">
               <div>
@@ -645,7 +736,7 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                 </div>
                 <h3 className="text-xl font-black text-[#2A0E3F]">Side-by-Side Sourcing Comparison Matrix</h3>
               </div>
-              <button 
+              <button
                 onClick={() => setIsCompareModalOpen(false)}
                 className="p-2 rounded-xl hover:bg-gray-100 text-[#7E6C96] transition-all cursor-pointer border border-[#E8DEEF] bg-white shadow-xs"
               >
@@ -655,7 +746,7 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
 
             {/* Modal Body / Comparison Grid */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              
+
               {/* Informational Alert */}
               <div className="bg-[#FDFBF7] border border-[#6B2D8C]/10 rounded-2xl p-4 flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-[#6B2D8C] shrink-0 mt-0.5" />
@@ -694,7 +785,7 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E8DEEF] font-medium text-[#2A0E3F]">
-                    
+
                     {/* SECTION 1: COMMERCIALS */}
                     <tr className="bg-[#FDFBF7]/40">
                       <td className="p-4 font-black text-[#7E6C96] uppercase tracking-widest text-[10px]" colSpan={4}>Commercial Sourcing Metrics</td>
@@ -811,7 +902,7 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                         <span className="block text-[9px] text-[#7E6C96] mt-0.5">(In-transit insurance & clearance handled by supplier)</span>
                       </td>
                     </tr>
-                    
+
                   </tbody>
                 </table>
               </div>
@@ -850,7 +941,7 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
       {isEditModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl max-w-2xl w-full border border-[#E8DEEF] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            
+
             {/* Modal Header */}
             <div className="p-6 border-b border-[#F4F0E9] bg-[#FDFBF7] flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -992,6 +1083,16 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
 
           </div>
         </div>
+      )}
+
+      {/* ORDER CONFIRMATION MODAL */}
+      {isOrderModalOpen && confirmationOrder && (
+        <OrderConfirmationModal
+          isOpen={isOrderModalOpen}
+          order={confirmationOrder}
+          onClose={() => setIsOrderModalOpen(false)}
+          onViewOrders={() => setIsOrderModalOpen(false)}
+        />
       )}
     </div>
   );

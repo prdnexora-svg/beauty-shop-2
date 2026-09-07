@@ -225,6 +225,35 @@ const TABLE_SCHEMAS: Record<keyof DatabaseState, { title: string; description: s
       { name: 'created_at', type: 'TIMESTAMP', description: 'Quote creation date' }
     ]
   },
+  orders: {
+    title: 'orders',
+    description: 'Purchase orders created when a buyer accepts a final quote; carries invoice + shipment status',
+    columns: [
+      { name: 'id', type: 'UUID', isPk: true, description: 'Primary Key for order record' },
+      { name: 'order_no', type: 'VARCHAR(32)', description: 'Human-readable order number e.g. ORD-2026-00123' },
+      { name: 'quote_id', type: 'UUID', fkTarget: 'quotes.id', description: 'Accepted supplier quote' },
+      { name: 'rfq_id', type: 'UUID', fkTarget: 'rfqs_enquiries.id', description: 'Sourcing requirement' },
+      { name: 'buyer_id', type: 'UUID', fkTarget: 'profiles_buyer.id', description: 'Ordering buyer' },
+      { name: 'supplier_id', type: 'UUID', fkTarget: 'profiles_supplier.id', description: 'Fulfilling supplier' },
+      { name: 'product', type: 'VARCHAR(255)', description: 'Product / formulation line-item name' },
+      { name: 'quantity', type: 'INTEGER', description: 'Confirmed order quantity' },
+      { name: 'quantity_unit', type: 'VARCHAR(32)', description: 'Units, Liters, Kg, Pieces' },
+      { name: 'unit_price', type: 'NUMERIC', description: 'Final agreed unit price in INR' },
+      { name: 'subtotal', type: 'NUMERIC', description: 'Quantity × unit price' },
+      { name: 'tax_rate', type: 'NUMERIC', description: 'GST percentage (e.g. 18)' },
+      { name: 'tax_amount', type: 'NUMERIC', description: 'GST amount' },
+      { name: 'total_amount', type: 'NUMERIC', description: 'Invoice grand total' },
+      { name: 'currency', type: 'VARCHAR(8)', description: 'INR' },
+      { name: 'status', type: 'VARCHAR(32)', description: 'order_confirmed | in_production | quality_check | ready_dispatch | shipped | delivered | cancelled' },
+      { name: 'payment_status', type: 'VARCHAR(32)', description: 'pending | partially_paid | paid | refunded' },
+      { name: 'invoice_no', type: 'VARCHAR(32)', description: 'Tax invoice reference e.g. INV-2026-00123' },
+      { name: 'shipping_address', type: 'TEXT', description: 'Destination delivery address' },
+      { name: 'delivery_location', type: 'VARCHAR(255)', description: 'City / pincode delivery point' },
+      { name: 'expected_delivery', type: 'DATE', description: 'Estimated delivery date' },
+      { name: 'terms', type: 'TEXT', description: 'Commercial payment & logistics terms' },
+      { name: 'created_at', type: 'TIMESTAMP', description: 'Order confirmation time' }
+    ]
+  },
   messages: {
     title: 'messages',
     description: 'Real-time buyer-supplier communication logs & attachments',
