@@ -29,10 +29,66 @@ import {
   PackageCheck
 } from 'lucide-react';
 import { CATEGORY_TAXONOMY, getSubcategoriesForCategoryName } from '../data/categories';
+import { addNotification } from '../data/notifications';
 import { db } from '../db/database';
-import type { PopulatedOrder } from '../db/types';
+import type { PopulatedOrder, PopulatedRFQEnquiry } from '../db/types';
 import { OrderConfirmationModal } from './OrderConfirmationModal';
-import { downloadOrderInvoice, ORDER_STATUS_LABELS, formatInr, formatDate } from '../utils/invoicePdf';
+import { downloadOrderInvoice, downloadOrderInvoiceCsv, getOrderLineItems, ORDER_STATUS_LABELS, formatInr, formatDate } from '../utils/invoicePdf';
+
+/**
+ * Canonical demo buyer for the relational store. The RFQ tracking screen
+ * derives its buyer from the selected RFQ so accepted orders always appear in
+ * "Your Orders".
+ */
+const RESOLVE_BUYER_ID = 'buyer-prof-priya';
+
+const BUSINESS_DAYS = 30;
+
+function resolveBuyerIdFromRfqs(): string {
+  const list = db.getRFQsAndEnquiries();
+  if (list.length > 0 && list[0].buyer_id) return list[0].buyer_id;
+  return RESOLVE_BUYER_ID;
+}
+
+function isActiveRfqListItemStatus(status: string): string {
+  if (status === 'new') return 'Pending';
+  if (status === 'negotiating') return 'Negotiating';
+  if (status === 'responded') return 'Quoted';
+  if (status === 'closed') return 'Closed';
+  return 'Closed';
+}
+
+function statusLabelForNotification(status: string): string {
+  return ORDER_STATUS_LABELS[status as keyof typeof ORDER_STATUS_LABELS] || status;
+}
+
+function buildRfqListItem(rfq: PopulatedRFQEnquiry) {
+  const quotes = db.getQuotesByRfqId(rfq.id);
+  const actionable = quotes.filter((q) => q.status === 'submitted' || q.status === 'negotiating');
+  const best = actionable.length
+    ? actionable.sort((a, b) => (a.counter_offer_price || a.unit_price) - (b.counter_offer_price || b.unit_price))[0]
+    : null;
+  return {
+    id: rfq.id,
+    product: rfq.requirement_title,
+    category: rfq.category,
+    subcategory: '',
+    date: new Date(rfq.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+    status: isActiveRfqListItemStatus(rfq.status),
+    rawStatus: rfq.status,
+    responses: rfq.quotes_count + 1,
+    quotes: rfq.quotes_count,
+    quantity: `${rfq.quantity_required.toLocaleString()} ${rfq.quantity_unit || 'Units'}`,
+    targetPrice: rfq.target_budget ? `₹${rfq.target_budget} / unit` : 'Price on Request',
+    urgency: 'Standard',
+    details: rfq.details,
+    bestQuotePrice: best ? best.counter_offer_price || best.unit_price : null,
+    bestQuoteSupplier: best?.supplier?.company_name || best?.supplier_id || null,
+    bestQuoteValidity: best?.validity_date || null,
+    maxValidity: quotes.length ? Math.max(...quotes.map((q) => new Date(q.validity_date).getTime())) : null,
+    rawRfq: rfq,
+  };
+}
 
 interface RFQTrackingScreenProps {
   onBack: () => void;
@@ -95,21 +151,7 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
   });
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [rfqsList, setRfqsList] = useState(() => {
-    return db.getRFQsAndEnquiries().map(rfq => ({
-      id: rfq.id,
-      product: rfq.requirement_title,
-      category: rfq.category,
-      subcategory: '',
-      date: new Date(rfq.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-      status: rfq.status === 'new' ? 'Pending' : rfq.status === 'responded' ? 'Quoted' : rfq.status === 'negotiating' ? 'Quoted' : 'Closed',
-      responses: rfq.quotes_count + 1,
-      quotes: rfq.quotes_count,
-      quantity: `${rfq.quantity_required.toLocaleString()} ${rfq.quantity_unit || 'Units'}`,
-      targetPrice: rfq.target_budget ? `₹${rfq.target_budget} / unit` : 'Price on Request',
-      urgency: 'Standard',
-      details: rfq.details,
-      rawRfq: rfq
-    }));
+    return db.getRFQsAndEnquiries().map(buildRfqListItem);
   });
 
   // Edit RFQ Modal State
@@ -131,7 +173,8 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
   const [counterNotesInput, setCounterNotesInput] = useState('');
 
   // Final order / confirmation state
-  const [activeOrders, setActiveOrders] = useState<PopulatedOrder[]>(() => db.getOrdersByBuyerId('buyer_priya_001'));
+  const [activeBuyerId, setActiveBuyerId] = useState<string>(() => resolveBuyerIdFromRfqs());
+  const [activeOrders, setActiveOrders] = useState<PopulatedOrder[]>(() => db.getOrdersByBuyerId(resolveBuyerIdFromRfqs()));
   const [confirmationOrder, setConfirmationOrder] = useState<PopulatedOrder | null>(null);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -139,25 +182,16 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
 
   // React state synchronization with the relational database
   useEffect(() => {
-    const unsubscribe = db.subscribe(() => {
-      setActiveOrders(db.getOrdersByBuyerId('buyer_priya_001'));
-      const updated = db.getRFQsAndEnquiries().map(rfq => ({
-        id: rfq.id,
-        product: rfq.requirement_title,
-        category: rfq.category,
-        subcategory: '',
-        date: new Date(rfq.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-        status: rfq.status === 'new' ? 'Pending' : rfq.status === 'responded' ? 'Quoted' : rfq.status === 'negotiating' ? 'Quoted' : 'Closed',
-        responses: rfq.quotes_count + 1,
-        quotes: rfq.quotes_count,
-        quantity: `${rfq.quantity_required.toLocaleString()} ${rfq.quantity_unit || 'Units'}`,
-        targetPrice: rfq.target_budget ? `₹${rfq.target_budget} / unit` : 'Price on Request',
-        urgency: 'Standard',
-        details: rfq.details,
-        rawRfq: rfq
-      }));
+    const refresh = () => {
+      db.expireExpiredQuotes();
+      const buyerId = resolveBuyerIdFromRfqs();
+      setActiveBuyerId(buyerId);
+      setActiveOrders(db.getOrdersByBuyerId(buyerId));
+      const updated = db.getRFQsAndEnquiries().map(buildRfqListItem);
       setRfqsList(updated);
-    });
+    };
+    const unsubscribe = db.subscribe(() => refresh());
+    refresh();
     return unsubscribe;
   }, []);
 
@@ -217,12 +251,20 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
         validityDate: q.validity_date,
         counterPrice: q.counter_offer_price,
         counterNotes: q.counter_offer_notes,
+        isSimulated: q.is_simulated,
         createdAt: q.created_at
       };
     });
   }, [selectedRfqId, rfqsList]);
 
   const handleUpdateQuoteStatus = (quoteId: string, action: 'accept' | 'counter' | 'decline', valPrice?: number, valNotes?: string) => {
+    const targetQuote = activeQuotes.find((q) => q.id === quoteId);
+    if (targetQuote && isQuoteExpired(targetQuote)) {
+      setToastMessage('This quote has expired. Request a revised quote before acting on it.');
+      setTimeout(() => setToastMessage(null), 3500);
+      return;
+    }
+
     let dbStatus: 'accepted' | 'rejected' | 'negotiating' = 'accepted';
     if (action === 'counter') dbStatus = 'negotiating';
     if (action === 'decline') dbStatus = 'rejected';
@@ -240,9 +282,29 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
     if (action === 'accept') {
       const order = db.createOrderFromQuote(quoteId);
       if (order) {
-        setActiveOrders(db.getOrdersByBuyerId('buyer_priya_001'));
+        const buyerId = resolveBuyerIdFromRfqs();
+        setActiveBuyerId(buyerId);
+        setActiveOrders(db.getOrdersByBuyerId(buyerId));
         setConfirmationOrder(order);
         setIsOrderModalOpen(true);
+        const populatedOrder = db.getOrderById(order.id);
+        addNotification({
+          type: 'order',
+          title: `Order confirmed: ${order.order_no}`,
+          description: `${order.product} · ${formatInr(order.total_amount, order.currency)} · ${statusLabelForNotification(order.status)}`,
+          priority: 'high',
+          targetScreen: 'rfq-tracking',
+          targetParams: { rfqId: order.rfq_id, orderId: order.id },
+          sender: { name: populatedOrder?.supplier?.company_name || 'Supplier', isVerified: true },
+          metadata: {
+            rfqId: order.rfq_id,
+            price: `${formatInr(order.unit_price, order.currency)} / unit`,
+            quantity: `${order.quantity.toLocaleString()} ${order.quantity_unit}`,
+            supplierName: populatedOrder?.supplier?.company_name,
+            productName: order.product,
+            trackingNumber: order.order_no
+          }
+        });
       }
     }
 
@@ -287,7 +349,9 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
 
   const filteredRfqs = activeTab === 'all'
     ? rfqsList
-    : rfqsList.filter(r => r.status.toLowerCase() === activeTab);
+    : activeTab === 'quoted'
+      ? rfqsList.filter(r => r.status === 'Quoted' || r.status === 'Negotiating')
+      : rfqsList.filter(r => r.status.toLowerCase() === activeTab);
 
   const selectedRfq = rfqsList.find(r => r.id === selectedRfqId);
 
@@ -300,17 +364,65 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
     if (status === 'accepted' || status === 'order_placed') return { label: 'Accepted', className: 'bg-emerald-100 text-emerald-800' };
     if (status === 'rejected') return { label: 'Declined', className: 'bg-rose-100 text-rose-800' };
     if (status === 'negotiating') return { label: 'Negotiating', className: 'bg-amber-100 text-amber-800' };
+    if (status === 'expired') return { label: 'Expired', className: 'bg-stone-200 text-stone-700' };
     return { label: 'Pending', className: 'bg-sky-100 text-sky-800' };
   };
 
   const isQuoteExpired = (quote: typeof activeQuotes[number]) => {
+    if (quote.status === 'expired') return true;
     if (!quote.validityDate) return false;
     return new Date(quote.validityDate).getTime() < new Date().getTime();
   };
 
   const acceptBestQuote = () => {
     if (!bestActiveQuote) return;
+    if (isQuoteExpired(bestActiveQuote)) {
+      setToastMessage('This quote has expired. Request a revised quote before accepting.');
+      setTimeout(() => setToastMessage(null), 3500);
+      return;
+    }
     handleUpdateQuoteStatus(bestActiveQuote.id, 'accept');
+  };
+
+  const handleCancelOrder = (orderId: string) => {
+    const order = db.cancelOrder(orderId, 'Cancelled by buyer from RFQ tracking.');
+    if (order) {
+      setActiveOrders(db.getOrdersByBuyerId(activeBuyerId));
+      addNotification({
+        type: 'order',
+        title: `Order cancelled: ${order.order_no}`,
+        description: order.product,
+        priority: 'high',
+        targetScreen: 'rfq-tracking',
+        targetParams: { rfqId: order.rfq_id, orderId: order.id },
+        sender: { name: 'You', isVerified: true },
+        metadata: { rfqId: order.rfq_id, productName: order.product }
+      });
+    }
+    setToastMessage('Order cancelled. You can reorder from the order history.');
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const handleReorder = (orderId: string) => {
+    const rfq = db.reorderFromOrder(orderId);
+    if (rfq) {
+      setSelectedRfqId(rfq.id);
+      setActiveTab('all');
+      addNotification({
+        type: 'rfq_response',
+        title: `Reorder created: ${rfq.id}`,
+        description: rfq.requirement_title,
+        priority: 'medium',
+        targetScreen: 'rfq-tracking',
+        targetParams: { rfqId: rfq.id },
+        sender: { name: 'Order history', isVerified: true }
+      });
+      setToastMessage(`Reorder RFQ created as ${rfq.id}. Simulated supplier responses will populate on selection.`);
+      setTimeout(() => setToastMessage(null), 4500);
+    } else {
+      setToastMessage('Unable to create a reorder for this order.');
+      setTimeout(() => setToastMessage(null), 3500);
+    }
   };
 
   return (
@@ -423,6 +535,16 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                       </p>
                     </div>
                   </div>
+                  {rfq.bestQuotePrice !== null && rfq.rawStatus !== 'closed' && (
+                    <div className="mt-3 pt-3 border-t border-[#F4F0E9] flex flex-wrap items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-full bg-[#6B2D8C]/10 text-[#6B2D8C] text-[9px] font-black uppercase tracking-wide">
+                        Best quote ₹{rfq.bestQuotePrice}
+                      </span>
+                      <span className="text-[10px] text-[#5B4A6E]">
+                        {rfq.bestQuoteSupplier || 'Verified supplier'} · {rfq.bestQuoteValidity ? `valid ${formatDate(rfq.bestQuoteValidity)}` : ''}
+                      </span>
+                    </div>
+                  )}
                 </button>
               ))}
             </div>
@@ -456,9 +578,11 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                         <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
                           selectedRfq.status === 'Closed'
                             ? 'bg-emerald-100 text-emerald-800'
-                            : selectedRfq.status === 'Quoted'
-                              ? 'bg-sky-100 text-sky-800'
-                              : 'bg-amber-100 text-amber-800'
+                            : selectedRfq.status === 'Negotiating'
+                              ? 'bg-amber-100 text-amber-800'
+                              : selectedRfq.status === 'Quoted'
+                                ? 'bg-sky-100 text-sky-800'
+                                : 'bg-stone-100 text-stone-700'
                         }`}>
                           {selectedRfq.status}
                         </span>
@@ -549,8 +673,8 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                                       </span>
                                     );
                                   })()}
-                                  {isQuoteExpired(quote) && quote.status === 'submitted' && (
-                                    <span className="px-2 py-0.5 rounded-full bg-stone-200 text-stone-700 text-[9px] font-black uppercase tracking-wider">Expired</span>
+                                  {quote.isSimulated && (
+                                    <span className="px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 text-[9px] font-black uppercase tracking-wider border border-sky-200">Demo</span>
                                   )}
                                 </div>
                                 <p className="text-[11px] text-[#5B4A6E] flex items-center gap-1">
@@ -583,7 +707,7 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                                 Chat
                               </button>
 
-                              {(quote.status === 'submitted' || quote.status === 'negotiating') && (
+                              {(quote.status === 'submitted' || quote.status === 'negotiating') && !isQuoteExpired(quote) && (
                                 <>
                                   <button
                                     onClick={() => handleUpdateQuoteStatus(quote.id, 'accept')}
@@ -684,16 +808,19 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                             </div>
                             <p className="text-[14px] font-bold text-[#2A0E3F]">{order.product}</p>
                             <p className="text-[12px] text-[#5B4A6E]">
-                              {order.quantity.toLocaleString()} {order.quantity_unit} · {formatInr(order.total_amount)} {order.currency} · Est. delivery {formatDate(order.expected_delivery)}
+                              {getOrderLineItems(order).length} line item{getOrderLineItems(order).length > 1 ? 's' : ''} · {order.quantity.toLocaleString()} {order.quantity_unit} · {formatInr(order.total_amount, order.currency)} · Est. delivery {formatDate(order.expected_delivery)}
+                            </p>
+                            <p className="text-[11px] text-[#7E6C96]">
+                              Advance {order.advance_percent ? `${order.advance_percent}%` : '50%'} · Seller GSTIN {order.seller_gstin || 'Standard'} · {order.is_reorder ? 'Reorder order' : 'Original order'}
                             </p>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <button
                               onClick={() => { setConfirmationOrder(db.getOrderById(order.id)); setIsOrderModalOpen(true); }}
                               className="px-4 py-2 bg-[#F5EEF8] text-[#6B2D8C] text-[12px] font-black rounded-lg hover:bg-[#E8D5F2] transition-all flex items-center gap-2 cursor-pointer"
                             >
                               <Eye className="w-4 h-4" />
-                              View Details
+                              View
                             </button>
                             <button
                               onClick={() => {
@@ -703,7 +830,31 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                               className="px-4 py-2 bg-[#6B2D8C] text-white text-[12px] font-black rounded-lg hover:bg-[#4A2560] transition-all flex items-center gap-2 cursor-pointer"
                             >
                               <Download className="w-4 h-4" />
-                              Invoice
+                              PDF
+                            </button>
+                            <button
+                              onClick={() => {
+                                const orderRecord = db.getOrderById(order.id);
+                                if (orderRecord) downloadOrderInvoiceCsv(orderRecord);
+                              }}
+                              className="px-4 py-2 bg-white border border-[#6B2D8C] text-[#6B2D8C] text-[12px] font-black rounded-lg hover:bg-[#FDFBF7] transition-all flex items-center gap-2 cursor-pointer"
+                            >
+                              <FileText className="w-4 h-4" />
+                              CSV
+                            </button>
+                            {order.status !== 'cancelled' && (
+                              <button
+                                onClick={() => handleCancelOrder(order.id)}
+                                className="px-4 py-2 bg-rose-50 text-rose-600 text-[12px] font-black rounded-lg hover:bg-rose-100 transition-all cursor-pointer"
+                              >
+                                Cancel
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleReorder(order.id)}
+                              className="px-4 py-2 bg-emerald-50 text-emerald-700 text-[12px] font-black rounded-lg hover:bg-emerald-100 transition-all cursor-pointer"
+                            >
+                              Reorder
                             </button>
                           </div>
                         </div>
@@ -722,221 +873,101 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* COMPARISON MATRIX MODAL */}
+      {/* COMPARISON MATRIX MODAL (dynamic from activeQuotes) */}
       {isCompareModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-[#E8DEEF] rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col text-left">
-
-            {/* Modal Header */}
+          <div className="bg-white border border-[#E8DEEF] rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col text-left">
             <div className="p-6 border-b border-[#F4F0E9] bg-[#FDFBF7] flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="px-2.5 py-0.5 rounded-full bg-[#F5EEF8] text-[#6B2D8C] text-[10px] font-black uppercase tracking-wider">Procurement Matrix</span>
-                  <span className="text-xs text-[#7E6C96] font-semibold">Comparing Quotes for: Vitamin C Brightening Serum (Bulk)</span>
+                  <span className="text-xs text-[#7E6C96] font-semibold">Comparing {activeQuotes.length} quote{activeQuotes.length === 1 ? '' : 's'} for requirement {selectedRfq?.id || ''}</span>
                 </div>
-                <h3 className="text-xl font-black text-[#2A0E3F]">Side-by-Side Sourcing Comparison Matrix</h3>
+                <h3 className="text-xl font-black text-[#2A0E3F]">Side-by-Side Sourcing Comparison</h3>
               </div>
-              <button
-                onClick={() => setIsCompareModalOpen(false)}
-                className="p-2 rounded-xl hover:bg-gray-100 text-[#7E6C96] transition-all cursor-pointer border border-[#E8DEEF] bg-white shadow-xs"
-              >
+              <button onClick={() => setIsCompareModalOpen(false)} className="p-2 rounded-xl hover:bg-gray-100 text-[#7E6C96] transition-all cursor-pointer border border-[#E8DEEF] bg-white shadow-xs">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Modal Body / Comparison Grid */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-
-              {/* Informational Alert */}
-              <div className="bg-[#FDFBF7] border border-[#6B2D8C]/10 rounded-2xl p-4 flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-[#6B2D8C] shrink-0 mt-0.5" />
-                <div className="text-xs text-[#5B4A6E] leading-relaxed">
-                  <strong className="text-[#2A0E3F]">Compare and Decisioning Helper:</strong> This side-by-side matrix compares chemical formulations, stability testing reports, batch price scalability, and logistics. Highlighting indicates the best metric in each class to assist your procurement team.
+            <div className="flex-1 overflow-y-auto p-6">
+              {activeQuotes.length === 0 ? (
+                <div className="py-16 text-center">
+                  <AlertCircle className="w-10 h-10 text-[#D9C3E8] mx-auto mb-3" />
+                  <p className="text-sm font-black text-[#2A0E3F]">No quotes to compare yet</p>
+                  <p className="text-xs text-[#5B4A6E] mt-1">Use “Simulate Supplier Response” or wait for supplier quotes to arrive.</p>
                 </div>
-              </div>
-
-              {/* Matrix Table */}
-              <div className="overflow-x-auto rounded-2xl border border-[#E8DEEF] shadow-sm bg-white">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-[#FDFBF7] border-b border-[#E8DEEF]">
-                      <th className="p-4 font-black text-[#2A0E3F] uppercase tracking-wider w-64">Comparison Metrics</th>
-                      <th className="p-4 font-black text-[#2A0E3F] uppercase tracking-wider bg-[#6B2D8C]/5 border-x border-[#E8DEEF]">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="w-4 h-4 text-[#6B2D8C]" />
-                          <span>Aura Beauty Labs (QT-101)</span>
-                        </div>
-                        <span className="text-[10px] font-bold text-emerald-600 block mt-0.5">Nexora Verified • Mumbai</span>
-                      </th>
-                      <th className="p-4 font-black text-[#2A0E3F] uppercase tracking-wider border-r border-[#E8DEEF]">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="w-4 h-4 text-[#6B2D8C]" />
-                          <span>Dermaglow India (QT-102)</span>
-                        </div>
-                        <span className="text-[10px] font-bold text-emerald-600 block mt-0.5">Nexora Verified • Ahmedabad</span>
-                      </th>
-                      <th className="p-4 font-black text-[#2A0E3F] uppercase tracking-wider">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="w-4 h-4 text-[#5B4A6E]" />
-                          <span>Radiant Cosmeceuticals (QT-103)</span>
-                        </div>
-                        <span className="text-[10px] font-bold text-stone-500 block mt-0.5">Self-Verified • Noida</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#E8DEEF] font-medium text-[#2A0E3F]">
-
-                    {/* SECTION 1: COMMERCIALS */}
-                    <tr className="bg-[#FDFBF7]/40">
-                      <td className="p-4 font-black text-[#7E6C96] uppercase tracking-widest text-[10px]" colSpan={4}>Commercial Sourcing Metrics</td>
-                    </tr>
-                    <tr>
-                      <td className="p-4 text-[#5B4A6E] font-bold">Base Price (Target Qty)</td>
-                      <td className="p-4 bg-[#6B2D8C]/5 border-x border-[#E8DEEF]">
-                        <span className="text-sm font-black text-[#6B2D8C]">₹195 / unit</span>
-                        <span className="text-[10px] text-[#7E6C96] block mt-0.5">(for 5,000 Units)</span>
-                      </td>
-                      <td className="p-4 border-r border-[#E8DEEF] bg-emerald-50 text-emerald-800">
-                        <span className="text-sm font-black text-emerald-700">₹188 / unit</span>
-                        <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold ml-2">Best Price</span>
-                        <span className="text-[10px] text-[#7E6C96] block mt-0.5">(for 5,000 Units)</span>
-                      </td>
-                      <td className="p-4">
-                        <span className="text-sm font-black text-stone-700">₹210 / unit</span>
-                        <span className="text-[10px] text-[#7E6C96] block mt-0.5">(for 5,000 Units)</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="p-4 text-[#5B4A6E] font-bold">Minimum Order Qty (MOQ)</td>
-                      <td className="p-4 bg-[#6B2D8C]/5 border-x border-[#E8DEEF]">2,000 Units</td>
-                      <td className="p-4 border-r border-[#E8DEEF]">5,000 Units</td>
-                      <td className="p-4 bg-emerald-50 text-emerald-800">
-                        <span className="font-bold">1,000 Units</span>
-                        <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold ml-2">Lowest MOQ</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="p-4 text-[#5B4A6E] font-bold">Delivery Lead Time</td>
-                      <td className="p-4 bg-[#6B2D8C]/5 border-x border-[#E8DEEF]">15 Days (Air/Express)</td>
-                      <td className="p-4 border-r border-[#E8DEEF]">25 Days (Road freight)</td>
-                      <td className="p-4 bg-emerald-50 text-emerald-800">
-                        <span className="font-bold">10 Days (Direct express)</span>
-                        <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold ml-2">Fastest</span>
-                      </td>
-                    </tr>
-
-                    {/* MOQ SLABS DETAIL */}
-                    <tr className="bg-[#FDFBF7]/40">
-                      <td className="p-4 font-black text-[#7E6C96] uppercase tracking-widest text-[10px]" colSpan={4}>MOQ Price Slabs / Volume Scalability</td>
-                    </tr>
-                    <tr>
-                      <td className="p-4 text-[#5B4A6E] font-bold">1,000 Units Price Slab</td>
-                      <td className="p-4 bg-[#6B2D8C]/5 border-x border-[#E8DEEF]">₹210 / unit</td>
-                      <td className="p-4 text-stone-400 border-r border-[#E8DEEF] italic">Not Available (MOQ 5k)</td>
-                      <td className="p-4 font-bold text-stone-800">₹215 / unit</td>
-                    </tr>
-                    <tr>
-                      <td className="p-4 text-[#5B4A6E] font-bold">5,000 Units Price Slab</td>
-                      <td className="p-4 bg-[#6B2D8C]/5 border-x border-[#E8DEEF]">₹195 / unit</td>
-                      <td className="p-4 font-bold text-emerald-700 border-r border-[#E8DEEF]">₹188 / unit</td>
-                      <td className="p-4">₹210 / unit</td>
-                    </tr>
-                    <tr>
-                      <td className="p-4 text-[#5B4A6E] font-bold">10,000 Units Price Slab</td>
-                      <td className="p-4 bg-[#6B2D8C]/5 border-x border-[#E8DEEF]">₹180 / unit</td>
-                      <td className="p-4 font-bold text-emerald-700 border-r border-[#E8DEEF] bg-emerald-50">₹175 / unit</td>
-                      <td className="p-4">₹198 / unit</td>
-                    </tr>
-
-                    {/* TECHNICAL SPECS */}
-                    <tr className="bg-[#FDFBF7]/40">
-                      <td className="p-4 font-black text-[#7E6C96] uppercase tracking-widest text-[10px]" colSpan={4}>Technical & Formulation Specifications</td>
-                    </tr>
-                    <tr>
-                      <td className="p-4 text-[#5B4A6E] font-bold">Active Concentration</td>
-                      <td className="p-4 bg-[#6B2D8C]/10 border-x border-[#E8DEEF] font-bold text-[#6B2D8C]">
-                        10% Stable L-Ascorbic Acid + 2% Ferulic Acid + 1% Vitamin E
-                        <span className="block text-[9px] font-black text-[#8236A0] uppercase mt-1">★ Highly Recommended Formulation</span>
-                      </td>
-                      <td className="p-4 border-r border-[#E8DEEF]">8% Ethyl Ascorbic Acid + 1% Hyaluronic Acid</td>
-                      <td className="p-4">12% Sodium Ascorbyl Phosphate + Vitamin E</td>
-                    </tr>
-                    <tr>
-                      <td className="p-4 text-[#5B4A6E] font-bold">pH Range & Stability</td>
-                      <td className="p-4 bg-[#6B2D8C]/5 border-x border-[#E8DEEF]">3.2 - 3.5 (Highly active, bioavailable)</td>
-                      <td className="p-4 border-r border-[#E8DEEF]">3.8 - 4.2 (Extremely gentle, non-sticky)</td>
-                      <td className="p-4">5.5 - 6.0 (Highly stable, mild skincare formulation)</td>
-                    </tr>
-                    <tr>
-                      <td className="p-4 text-[#5B4A6E] font-bold">Stability Reports</td>
-                      <td className="p-4 bg-[#6B2D8C]/5 border-x border-[#E8DEEF] text-emerald-700">Passed 90-day accelerated oven stability testing</td>
-                      <td className="p-4 border-r border-[#E8DEEF]">Standard real-time shelf life study (In-Progress)</td>
-                      <td className="p-4">Passed 180-day ambient temperature testing</td>
-                    </tr>
-                    <tr>
-                      <td className="p-4 text-[#5B4A6E] font-bold">Facility Certifications</td>
-                      <td className="p-4 bg-[#6B2D8C]/5 border-x border-[#E8DEEF]">WHO-GMP, ISO 22716, Halal Certified</td>
-                      <td className="p-4 border-r border-[#E8DEEF]">GMP, ISO 9001, Cruelty-Free certified</td>
-                      <td className="p-4">Ayush Premium Certified, WHO-GMP, Vegan</td>
-                    </tr>
-
-                    {/* TERMS AND SAMPLES */}
-                    <tr className="bg-[#FDFBF7]/40">
-                      <td className="p-4 font-black text-[#7E6C96] uppercase tracking-widest text-[10px]" colSpan={4}>Logistics, Shipping & Sample Policies</td>
-                    </tr>
-                    <tr>
-                      <td className="p-4 text-[#5B4A6E] font-bold">Custom Sample Policy</td>
-                      <td className="p-4 bg-emerald-50 text-emerald-800 border-x border-[#E8DEEF]">
-                        <span className="font-bold">Free Custom Sample</span>
-                        <span className="block text-[9px] text-[#7E6C96] mt-0.5">(Buyer only pays actual courier charges)</span>
-                      </td>
-                      <td className="p-4 border-r border-[#E8DEEF]">Reimbursed on first production run (₹1,500 upfront)</td>
-                      <td className="p-4">Paid custom sample (Deducted from final commercial order)</td>
-                    </tr>
-                    <tr>
-                      <td className="p-4 text-[#5B4A6E] font-bold">Logistic Terms</td>
-                      <td className="p-4 bg-[#6B2D8C]/5 border-x border-[#E8DEEF]">FOB JNPT Port (Mumbai MH)</td>
-                      <td className="p-4 border-r border-[#E8DEEF]">EXW Factory (Ahmedabad GJ)</td>
-                      <td className="p-4 bg-emerald-50 text-emerald-800">
-                        <span className="font-bold">CIF Destination (PAN India shipping)</span>
-                        <span className="block text-[9px] text-[#7E6C96] mt-0.5">(In-transit insurance & clearance handled by supplier)</span>
-                      </td>
-                    </tr>
-
-                  </tbody>
-                </table>
-              </div>
-
+              ) : (
+                <div className="overflow-x-auto rounded-2xl border border-[#E8DEEF] shadow-sm bg-white">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-[#FDFBF7] border-b border-[#E8DEEF]">
+                        <th className="p-4 font-black text-[#2A0E3F] uppercase tracking-wider w-52">Metric</th>
+                        {activeQuotes.map((quote) => (
+                          <th key={quote.id} className="p-4 font-black text-[#2A0E3F] uppercase tracking-wider border-l border-[#E8DEEF]">
+                            <div className="flex items-center gap-2">
+                              <Building2 className="w-4 h-4 text-[#6B2D8C]" />
+                              <span>{quote.supplier} ({quote.id.replace(/^quote-/, 'Q-')})</span>
+                            </div>
+                            <span className="text-[10px] font-bold block mt-0.5">{quote.location} {quote.isSimulated ? '· Demo' : ''}</span>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E8DEEF] font-medium text-[#2A0E3F]">
+                      {[
+                        ['Status', (q: typeof activeQuotes[number]) => getQuoteStatusChip(q.status).label],
+                        ['Effective Unit Price', (q: typeof activeQuotes[number]) => `₹${q.counterPrice || q.priceNum}`],
+                        ['MOQ', (q: typeof activeQuotes[number]) => q.moq],
+                        ['Lead Time', (q: typeof activeQuotes[number]) => q.leadTime],
+                        ['Validity', (q: typeof activeQuotes[number]) => q.validityDate ? formatDate(q.validityDate) : '—'],
+                        ['Terms', (q: typeof activeQuotes[number]) => q.terms || '—'],
+                        ['Samples', (q: typeof activeQuotes[number]) => q.samplePolicy],
+                        ['Route', (q: typeof activeQuotes[number]) => q.logisticTerms],
+                      ].map(([label, getter]) => (
+                        <tr key={label as string}>
+                          <td className="p-4 text-[#5B4A6E] font-bold">{label as string}</td>
+                          {activeQuotes.map((quote) => (
+                            <td key={quote.id} className="p-4 border-l border-[#E8DEEF]">{(getter as (q: typeof activeQuotes[number]) => string)(quote)}</td>
+                          ))}
+                        </tr>
+                      ))}
+                      <tr className="bg-[#FDFBF7]/40">
+                        <td className="p-4 text-[#5B4A6E] font-bold">Action</td>
+                        {activeQuotes.map((quote) => (
+                          <td key={quote.id} className="p-4 border-l border-[#E8DEEF]">
+                            {(quote.status === 'submitted' || quote.status === 'negotiating') && !isQuoteExpired(quote) ? (
+                              <div className="flex flex-wrap gap-2">
+                                <button onClick={() => { setIsCompareModalOpen(false); handleUpdateQuoteStatus(quote.id, 'accept'); }} className="px-3 py-1.5 bg-emerald-600 text-white text-[10px] font-black rounded-lg hover:bg-emerald-700 transition-all cursor-pointer">Accept</button>
+                                <button onClick={() => { setIsCompareModalOpen(false); setCounterQuoteId(quote.id); setCounterPriceInput(quote.priceNum?.toString() || ''); setIsCounterModalOpen(true); }} className="px-3 py-1.5 bg-white border border-[#6B2D8C] text-[#6B2D8C] text-[10px] font-black rounded-lg hover:bg-[#FDFBF7] transition-all cursor-pointer">Counter</button>
+                              </div>
+                            ) : (
+                              <span className={quote.status === 'order_placed' ? 'text-emerald-700 font-bold' : 'text-[#7E6C96]'}>{getQuoteStatusChip(quote.status).label}</span>
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
 
-            {/* Modal Footer actions */}
-            <div className="p-6 border-t border-[#F4F0E9] bg-[#FDFBF7] flex flex-col sm:flex-row items-center justify-between gap-4">
-              <span className="text-xs text-[#5B4A6E] font-semibold">
-                Direct procurement integration powered by Nexora Luxe trust engines.
-              </span>
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <button
-                  onClick={() => setIsCompareModalOpen(false)}
-                  className="flex-1 sm:flex-none px-5 py-2.5 bg-white border border-[#E8DEEF] text-xs font-black text-[#2A0E3F] rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
-                >
-                  Close Matrix
-                </button>
-                <button
-                  onClick={() => {
-                    setIsCompareModalOpen(false);
-                    onNavigateToChat('Aura Beauty Labs');
-                  }}
-                  className="flex-1 sm:flex-none px-6 py-2.5 bg-[#6B2D8C] text-white text-xs font-black rounded-xl hover:bg-[#4A2560] transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  <span>Negotiate & Chat (Aura Labs)</span>
-                </button>
+            <div className="p-6 border-t border-[#F4F0E9] bg-[#FDFBF7] flex items-center justify-between gap-3">
+              <p className="text-[11px] text-[#5B4A6E]">Best price and fastest lead are highlighted in your quote cards.</p>
+              <div className="flex gap-2">
+                <button onClick={() => setIsCompareModalOpen(false)} className="px-5 py-2.5 bg-white border border-[#E8DEEF] text-xs font-bold text-[#5B4A6E] hover:bg-gray-50 rounded-xl transition-all cursor-pointer">Close</button>
+                {bestActiveQuote && (
+                  <button onClick={() => { setIsCompareModalOpen(false); acceptBestQuote(); }} className="px-5 py-2.5 bg-[#6B2D8C] text-white text-xs font-black rounded-xl hover:bg-[#4A2560] transition-all shadow-md cursor-pointer">
+                    Accept Best Quote · ₹{bestActiveQuote.counterPrice || bestActiveQuote.priceNum}
+                  </button>
+                )}
               </div>
             </div>
-
           </div>
         </div>
       )}
+
       {/* EDIT RFQ MODAL */}
       {isEditModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">

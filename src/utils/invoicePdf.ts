@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import type { PopulatedOrder } from '../db/types';
+import type { DBOrderLineItem, PopulatedOrder } from '../db/types';
 
 /**
  * Invoice generation utility.
@@ -8,7 +8,17 @@ import type { PopulatedOrder } from '../db/types';
  * the buyer/supplier can keep a PDF copy of the confirmed order. It is
  * deliberately dependency-light (jsPDF only) and data-driven from a
  * `PopulatedOrder`, so the same code path works for seed and live orders.
+ *
+ * Supports:
+ *   - multi-line item breakdowns
+ *   - configurable seller / buyer GSTIN
+ *   - sequential order + invoice references
+ *   - CSV export as a lightweight tabular fallback
+ *
+ * All exports are offline; no network call is made.
  */
+
+export const DEFAULT_SELLER_GSTIN = '27ACBFA1234F1Z8';
 
 export function formatInr(amount: number, currency = 'INR'): string {
   if (currency !== 'INR') return `${amount.toLocaleString('en-IN')} ${currency}`;
@@ -25,6 +35,32 @@ export function invoiceFileName(order: { invoice_no: string }): string {
   return `${order.invoice_no || 'INVOICE'}.pdf`;
 }
 
+export function getSellerGstin(order: PopulatedOrder): string {
+  return order.seller_gstin || DEFAULT_SELLER_GSTIN;
+}
+
+export function getBuyerGstin(order: PopulatedOrder): string {
+  return order.buyer_gstin || order.buyer?.gst_number || 'Not provided';
+}
+
+export function getOrderLineItems(order: PopulatedOrder): DBOrderLineItem[] {
+  if (order.line_items && order.line_items.length > 0) return order.line_items;
+  return [
+    {
+      id: `line-${order.id}`,
+      product: order.product,
+      quantity: order.quantity,
+      quantity_unit: order.quantity_unit,
+      unit_price: order.unit_price,
+      tax_rate: order.tax_rate,
+      subtotal: order.subtotal,
+      tax_amount: order.tax_amount,
+      total_amount: order.total_amount,
+      notes: order.notes,
+    },
+  ];
+}
+
 /**
  * Build the PDF and save it locally. Returns the file name so callers can show
  * a confirmation toast.
@@ -34,6 +70,7 @@ export function downloadOrderInvoice(order: PopulatedOrder): string {
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 42;
   const contentWidth = pageWidth - margin * 2;
+  const lineItems = getOrderLineItems(order);
 
   // Header brand band
   doc.setFillColor(107, 45, 140);
@@ -44,7 +81,7 @@ export function downloadOrderInvoice(order: PopulatedOrder): string {
   doc.text('NEXORA LUXE', margin, 42);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.text('B2B Beauty Marketplace · GSTIN: 27AAACR1234F1Z5', margin, 58);
+  doc.text(`B2B Beauty Marketplace · GSTIN: ${getSellerGstin(order)}`, margin, 58);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
@@ -65,13 +102,16 @@ export function downloadOrderInvoice(order: PopulatedOrder): string {
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
-  const buyerName = order.buyer_id ? 'Nexora Registered Buyer' : order.buyer_id;
+  const buyerName = order.buyer?.company_name || order.buyer?.contact_name || 'Nexora Registered Buyer';
+  const buyerTax = getBuyerGstin(order);
   doc.text(buyerName, margin, y);
   doc.text(order.supplier?.company_name || 'Verified Supplier', pageWidth - margin - 180, y);
   y += 14;
   doc.setFontSize(9);
   doc.text(order.shipping_address || '', margin, y, { maxWidth: 170 });
   doc.text(order.delivery_location || 'India', pageWidth - margin - 180, y);
+  y += 14;
+  doc.text(`GSTIN: ${buyerTax}`, margin, y);
   y += 18;
 
   // Divider
@@ -87,6 +127,8 @@ export function downloadOrderInvoice(order: PopulatedOrder): string {
     ['Quote Reference', order.quote_id],
     ['Expected Delivery', formatDate(order.expected_delivery)],
     ['Payment Status', order.payment_status.replace('_', ' ')],
+    ['Advance', order.advance_percent ? `${order.advance_percent}%` : 'Not set'],
+    ['Reorder', order.is_reorder ? `Yes (from ${order.source_order_id || order.invoice_no})` : 'No'],
   ];
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
@@ -117,23 +159,33 @@ export function downloadOrderInvoice(order: PopulatedOrder): string {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   doc.setTextColor(45, 45, 45);
-  doc.text(order.product || 'Beauty supply purchase order', margin, y, { maxWidth: 240 });
-  doc.text(String(order.quantity), margin + 300, y, { align: 'right' });
-  doc.text(`${order.quantity_unit}`, margin + 330, y);
-  doc.text(formatInr(order.unit_price, order.currency), margin + 370, y, { align: 'right' });
-  doc.text(`${order.tax_rate}%`, margin + 430, y, { align: 'right' });
-  doc.text(formatInr(order.subtotal, order.currency), pageWidth - margin, y, { align: 'right' });
-  y += 26;
+  lineItems.forEach((item) => {
+    if (y > 720) {
+      doc.addPage();
+      y = 52;
+      doc.setTextColor(45, 45, 45);
+      doc.setFontSize(10);
+    }
+    doc.text(item.product || 'Beauty supply line item', margin, y, { maxWidth: 240 });
+    doc.text(String(item.quantity), margin + 300, y, { align: 'right' });
+    doc.text(item.quantity_unit, margin + 330, y);
+    doc.text(formatInr(item.unit_price, order.currency), margin + 370, y, { align: 'right' });
+    doc.text(`${item.tax_rate}%`, margin + 430, y, { align: 'right' });
+    doc.text(formatInr(item.subtotal, order.currency), pageWidth - margin, y, { align: 'right' });
+    y += 26;
+  });
 
   doc.setDrawColor(220, 220, 220);
   doc.line(margin, y, pageWidth - margin, y);
   y += 22;
 
   // Totals
+  const subtotal = lineItems.reduce((sum, item) => sum + item.subtotal, 0);
+  const taxTotal = lineItems.reduce((sum, item) => sum + item.tax_amount, 0);
   const totals: Array<[string, string]> = [
-    ['Subtotal', formatInr(order.subtotal, order.currency)],
-    [`GST (${order.tax_rate}%)`, formatInr(order.tax_amount, order.currency)],
-    ['Total Payable', formatInr(order.total_amount, order.currency)],
+    ['Subtotal', formatInr(subtotal, order.currency)],
+    [`GST (${order.tax_rate}%)`, formatInr(taxTotal, order.currency)],
+    ['Total Payable', formatInr(order.total_amount || subtotal + taxTotal, order.currency)],
   ];
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
@@ -165,6 +217,56 @@ export function downloadOrderInvoice(order: PopulatedOrder): string {
   const fileName = invoiceFileName(order);
   doc.save(fileName);
   return fileName;
+}
+
+/**
+ * Export an order as a tabular CSV file. Useful for accounting imports and
+ * buyer/supplier external workflows while remaining fully offline.
+ */
+export function downloadOrderInvoiceCsv(order: PopulatedOrder): string {
+  const lineItems = getOrderLineItems(order);
+  const rows: Array<Array<string | number>> = [
+    ['Order No.', order.order_no],
+    ['Invoice No.', order.invoice_no],
+    ['Order Date', formatDate(order.created_at)],
+    ['Expected Delivery', formatDate(order.expected_delivery)],
+    ['Buyer', order.buyer?.company_name || order.buyer_id],
+    ['Buyer GSTIN', getBuyerGstin(order)],
+    ['Supplier', order.supplier?.company_name || order.supplier_id],
+    ['Seller GSTIN', getSellerGstin(order)],
+    ['Payment Status', order.payment_status],
+    ['Advance %', order.advance_percent || ''],
+    [],
+    ['Product', 'Qty', 'Unit', 'Unit Price', 'Tax %', 'Subtotal', 'Tax Amount', 'Total'],
+    ...lineItems.map((item) => [
+      item.product,
+      item.quantity,
+      item.quantity_unit,
+      item.unit_price,
+      item.tax_rate,
+      item.subtotal,
+      item.tax_amount,
+      item.total_amount,
+    ]),
+  ];
+
+  const csv = rows
+    .map((row) => row.map((cell) => {
+      const value = String(cell ?? '');
+      return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+    }).join(','))
+    .join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${order.invoice_no || 'INVOICE'}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  return link.download;
 }
 
 /**

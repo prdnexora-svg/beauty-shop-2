@@ -12,7 +12,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import type { PopulatedOrder } from '../db/types';
-import { downloadOrderInvoice, ORDER_STATUS_LABELS, ORDER_STATUS_STEPS, formatInr, formatDate } from '../utils/invoicePdf';
+import { downloadOrderInvoice, downloadOrderInvoiceCsv, getOrderLineItems, getSellerGstin, getBuyerGstin, ORDER_STATUS_LABELS, ORDER_STATUS_STEPS, formatInr, formatDate } from '../utils/invoicePdf';
 
 interface OrderConfirmationModalProps {
   isOpen: boolean;
@@ -37,6 +37,8 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
   const [downloaded, setDownloaded] = useState(false);
   if (!isOpen || !order) return null;
 
+  const lineItems = getOrderLineItems(order);
+
   const handleDownload = () => {
     try {
       downloadOrderInvoice(order);
@@ -44,6 +46,16 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
       setTimeout(() => setDownloaded(false), 2500);
     } catch (err) {
       console.warn('Invoice download failed:', err);
+    }
+  };
+
+  const handleDownloadCsv = () => {
+    try {
+      downloadOrderInvoiceCsv(order);
+      setDownloaded(true);
+      setTimeout(() => setDownloaded(false), 2500);
+    } catch (err) {
+      console.warn('Invoice CSV download failed:', err);
     }
   };
 
@@ -102,21 +114,28 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
             </div>
           </div>
 
-          {/* Line item */}
+          {/* Line items (multi-line capable) */}
           <div className="rounded-2xl border border-[#E8DEEF] overflow-hidden">
             <div className="bg-[#F5EEF8] px-4 py-2.5 text-[11px] font-black text-[#6B2D8C] uppercase tracking-wider">
-              Order Line
+              Order Line {lineItems.length > 1 ? `(${lineItems.length} items)` : ''}
             </div>
             <div className="divide-y divide-[#F4F0E9]">
-              <div className="px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <p className="text-[13px] font-bold text-[#2A0E3F]">{order.product}</p>
-                  <p className="text-[11px] text-[#5B4A6E]">{formatDate(order.created_at)} · Quote {order.quote_id}</p>
+              {lineItems.map((item, idx) => (
+                <div key={item.id || idx} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <p className="text-[13px] font-bold text-[#2A0E3F]">{item.product}</p>
+                    <p className="text-[11px] text-[#5B4A6E]">{idx === 0 ? formatDate(order.created_at) : ''} · Quote {order.quote_id}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[13px] font-bold text-[#2A0E3F]">{item.quantity} {item.quantity_unit} × {formatInr(item.unit_price, order.currency)}</p>
+                    <p className="text-[11px] text-[#7E6C96]">{formatInr(item.subtotal, order.currency)} + GST {item.tax_rate}%</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-[13px] font-bold text-[#2A0E3F]">{order.quantity} {order.quantity_unit} × {formatInr(order.unit_price)}</p>
-                  <p className="text-[11px] text-[#7E6C96]">{formatInr(order.subtotal)} + GST {order.tax_rate}%</p>
-                </div>
+              ))}
+              <div className="px-4 py-2.5 flex flex-wrap justify-between gap-2 text-[11px] text-[#5B4A6E] bg-[#FDFBF7]/60">
+                <span>Advance required: <strong className="text-[#2A0E3F]">{order.advance_percent ? `${order.advance_percent}%` : 'Standard 50%'}</strong></span>
+                <span>Seller GSTIN: <strong className="text-[#2A0E3F]">{getSellerGstin(order)}</strong></span>
+                <span>Buyer GSTIN: <strong className="text-[#2A0E3F]">{getBuyerGstin(order)}</strong></span>
               </div>
               <div className="px-4 py-3 flex items-center justify-between bg-[#FDFBF7]">
                 <span className="text-[12px] font-bold text-[#5B4A6E]">Total Payable</span>
@@ -160,20 +179,27 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
           )}
 
           {/* Actions */}
-          <div className="pt-2 border-t border-[#F4F0E9] flex flex-col sm:flex-row gap-3">
+          <div className="pt-2 border-t border-[#F4F0E9] grid grid-cols-1 sm:grid-cols-3 gap-3">
             <button
               onClick={handleDownload}
-              className="flex-1 inline-flex items-center justify-center gap-2 bg-[#6B2D8C] hover:bg-[#4A2560] text-white text-[13px] font-black py-3 rounded-xl transition-all shadow-md cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 bg-[#6B2D8C] hover:bg-[#4A2560] text-white text-[13px] font-black py-3 rounded-xl transition-all shadow-md cursor-pointer"
             >
               <Download className="w-4 h-4" />
-              <span>{downloaded ? 'Invoice Downloaded' : 'Download PDF Invoice'}</span>
+              <span>{downloaded ? 'Invoice Downloaded' : 'Download PDF'}</span>
+            </button>
+            <button
+              onClick={handleDownloadCsv}
+              className="inline-flex items-center justify-center gap-2 bg-white border border-[#6B2D8C] hover:bg-[#FDFBF7] text-[#6B2D8C] text-[13px] font-bold py-3 rounded-xl transition-all cursor-pointer"
+            >
+              <FileText className="w-4 h-4" />
+              <span>Download CSV</span>
             </button>
             <button
               onClick={() => {
                 onViewOrders?.();
                 onClose();
               }}
-              className="flex-1 inline-flex items-center justify-center gap-2 bg-white border border-[#E8DEEF] hover:bg-[#FDFBF7] text-[#2A0E3F] text-[13px] font-bold py-3 rounded-xl transition-all cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 bg-white border border-[#E8DEEF] hover:bg-[#FDFBF7] text-[#2A0E3F] text-[13px] font-bold py-3 rounded-xl transition-all cursor-pointer"
             >
               <FileText className="w-4 h-4 text-[#6B2D8C]" />
               <span>View Order Sheet</span>

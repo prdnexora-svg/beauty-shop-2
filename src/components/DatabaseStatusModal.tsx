@@ -251,8 +251,24 @@ const TABLE_SCHEMAS: Record<keyof DatabaseState, { title: string; description: s
       { name: 'delivery_location', type: 'VARCHAR(255)', description: 'City / pincode delivery point' },
       { name: 'expected_delivery', type: 'DATE', description: 'Estimated delivery date' },
       { name: 'terms', type: 'TEXT', description: 'Commercial payment & logistics terms' },
+      { name: 'line_items', type: 'JSONB', description: 'Multi-line item breakdown (product, qty, tax, total)' },
+      { name: 'seller_gstin', type: 'VARCHAR(15)', description: 'Seller tax invoice GSTIN' },
+      { name: 'buyer_gstin', type: 'VARCHAR(15)', description: 'Buyer GSTIN captured at order time' },
+      { name: 'advance_percent', type: 'NUMERIC', description: 'Advance payment percentage (0-100)' },
+      { name: 'is_reorder', type: 'BOOLEAN', description: 'True if generated from a previous order' },
+      { name: 'source_order_id', type: 'TEXT', description: 'Original order when is_reorder is true' },
       { name: 'created_at', type: 'TIMESTAMP', description: 'Order confirmation time' }
     ]
+  },
+  order_seq: {
+    title: 'order_seq',
+    description: 'Sequential counter used to generate human-friendly order numbers.',
+    columns: [{ name: 'value', type: 'BIGINT', description: 'Last issued order sequence number' }]
+  },
+  invoice_seq: {
+    title: 'invoice_seq',
+    description: 'Sequential counter used to generate invoice references.',
+    columns: [{ name: 'value', type: 'BIGINT', description: 'Last issued invoice sequence number' }]
   },
   messages: {
     title: 'messages',

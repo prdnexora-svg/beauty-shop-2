@@ -46,7 +46,9 @@ function readEnvFile(path: string): Record<string, string> {
     ['buyer profiles', 'profiles_buyer'],
     ['rfqs_enquiries', 'rfqs_enquiries'],
     ['quotes', 'quotes'],
+    ['orders', 'orders'],
     ['messages', 'messages'],
+    ['follow_ups', 'follow_ups'],
     ['categories', 'categories'],
     ['subcategories', 'subcategories'],
   ];

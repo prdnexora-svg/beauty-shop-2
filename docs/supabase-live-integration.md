@@ -30,6 +30,7 @@ Run in this order. They are idempotent/safe to re-run.
 9. `src/db/migrations/0009_supplier_directory_auto_publish.sql`
 10. `src/db/migrations/0010_profile_stubs_and_grants.sql`
 11. `src/db/migrations/0110_production_rls_hardening.sql` — column-level privacy, no self-verification, admin-only approval
+12. `src/db/migrations/0011_orders_payment.sql` — orders table, payment/advance metadata, multi-line JSONB invoice line items, RLS
 
 ## 3. Auth configuration
 

@@ -145,7 +145,7 @@ export interface DBRFQEnquiry {
   updated_at: string;
 }
 
-export type QuoteStatus = 'submitted' | 'accepted' | 'rejected' | 'negotiating' | 'order_placed';
+export type QuoteStatus = 'submitted' | 'accepted' | 'rejected' | 'negotiating' | 'order_placed' | 'expired';
 
 /** Lifecycle of a confirmed B2B purchase order after a quote is accepted. */
 export type OrderStatus =
@@ -176,8 +176,27 @@ export interface DBQuote {
   notes?: string;
   counter_offer_price?: number;
   counter_offer_notes?: string;
+  is_simulated?: boolean;
   created_at: string;
   updated_at: string;
+}
+
+/**
+ * A single line item within a confirmed order. Keeps the order model flexible
+ * so one order can contain multiple products, formulations or packaging SKUs
+ * while preserving a lightweight aggregate on DBOrder for list rendering.
+ */
+export interface DBOrderLineItem {
+  id: string;
+  product: string;
+  quantity: number;
+  quantity_unit: string;
+  unit_price: number;
+  tax_rate: number;
+  subtotal: number;
+  tax_amount: number;
+  total_amount: number;
+  notes?: string;
 }
 
 /**
@@ -210,6 +229,12 @@ export interface DBOrder {
   expected_delivery: string;
   terms: string;
   notes?: string;
+  line_items?: DBOrderLineItem[];
+  seller_gstin?: string;
+  buyer_gstin?: string;
+  advance_percent?: number;
+  is_reorder?: boolean;
+  source_order_id?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -218,6 +243,7 @@ export interface PopulatedOrder extends DBOrder {
   quote?: DBQuote | null;
   rfq?: DBRFQEnquiry | null;
   supplier?: DBProfileSupplier | null;
+  buyer?: DBProfileBuyer | null;
 }
 
 export interface DBMessage {

@@ -74,6 +74,7 @@ test('rfq order flow: simulated supplier responses populate a clean RFQ', () => 
   assert.ok(stored.every((q) => q.status === 'submitted'));
   assert.ok(stored.every((q) => q.validity_date));
   assert.ok(stored.every((q) => q.rfq_id === rfq.id));
+  assert.ok(stored.every((q) => q.is_simulated === true), 'simulated responses are explicitly flagged');
 
   assert.equal(db.getRFQById(rfq.id)?.status, 'responded');
 });
@@ -124,6 +125,13 @@ test('rfq order flow: accepting a quote creates a persisted order record', () =>
   assert.equal(order.total_amount, 413000);
   assert.equal(order.payment_status, 'pending');
   assert.equal(order.status, 'order_confirmed');
+  assert.equal(order.buyer_id, 'buyer-prof-priya');
+  assert.equal(order.advance_percent, 50);
+  assert.match(order.seller_gstin || '', /^[0-9]{2}[A-Z]{5}/);
+  assert.equal(order.buyer_gstin, '27AABCR1234F1Z8');
+  assert.equal(order.line_items?.length, 1);
+  assert.equal(order.line_items?.[0].product, 'Bulk Vitamin C Moisturiser Base (RFQ Order Flow Test)');
+  assert.ok(db.getOrderById(order.id)?.buyer?.company_name === 'Radiant Beauty Solutions & Spa Chain');
 
   // Quote + RFQ both transition away from the negotiating state.
   assert.equal(db.getQuoteById(quote.id)?.status, 'order_placed');
@@ -185,4 +193,127 @@ test('rfq order flow: order status labels and invoice filename are stable', () =
   const name = invoiceFileName({ invoice_no: 'INV-2026-00007' });
   assert.match(name, /INV-2026-00007/);
   assert.match(name, /\.pdf$/);
+});
+
+test('rfq order flow: quote expiry automation locks stale quotes', () => {
+  const rfq = db.createRFQEnquiry({
+    buyer_id: 'buyer-prof-priya',
+    supplier_id: 'supp-luxeform',
+    product_id: null,
+    requirement_title: 'Bulk Expiry Automation Test',
+    category: 'Skincare & Serums',
+    quantity_required: 1000,
+    quantity_unit: 'Units',
+    delivery_location: 'Chennai, TN',
+    details: 'Automated expiry test requirement.',
+    attachments: [],
+    status: 'new',
+    type: 'direct_enquiry',
+    send_to_similar_suppliers: false,
+  });
+
+  const stale = db.createQuote({
+    rfq_id: rfq.id,
+    supplier_id: 'supp-luxeform',
+    unit_price: 110,
+    total_price: 110 * 1000,
+    moq_offered: 1000,
+    lead_time: '10 business days',
+    validity_date: new Date(Date.now() - 3600 * 1000).toISOString(),
+    terms_and_conditions: 'Standard terms.',
+    status: 'submitted',
+    sample_available: true,
+  });
+
+  const affected = db.expireExpiredQuotes();
+  assert.ok(affected >= 1);
+  assert.equal(db.getQuoteById(stale.id)?.status, 'expired');
+
+  // Attempting to accept an expired quote is a no-op at the repository layer.
+  db.updateQuoteStatus(stale.id, 'accepted');
+  assert.equal(db.getQuoteById(stale.id)?.status, 'expired');
+});
+
+test('rfq order flow: buyer cancel marks order cancelled and reorder creates a fresh RFQ', () => {
+  const rfq = db.createRFQEnquiry({
+    buyer_id: 'buyer-prof-priya',
+    supplier_id: 'supp-radiant',
+    product_id: null,
+    requirement_title: 'Bulk Reorder Lifecycle Test',
+    category: 'Skincare & Serums',
+    quantity_required: 500,
+    quantity_unit: 'Units',
+    delivery_location: 'Delhi, DL',
+    details: 'Automated cancel + reorder test requirement.',
+    attachments: [],
+    status: 'new',
+    type: 'direct_enquiry',
+    send_to_similar_suppliers: false,
+  });
+
+  const quote = db.createQuote({
+    rfq_id: rfq.id,
+    supplier_id: 'supp-radiant',
+    unit_price: 90,
+    total_price: 90 * 500,
+    moq_offered: 500,
+    lead_time: '7 business days',
+    validity_date: new Date(Date.now() + 7 * 86400000).toISOString(),
+    terms_and_conditions: 'Standard terms.',
+    status: 'submitted',
+    sample_available: true,
+  });
+
+  db.updateQuoteStatus(quote.id, 'accepted');
+  const order = db.createOrderFromQuote(quote.id);
+  assert.ok(order);
+
+  const cancelled = db.cancelOrder(order.id, 'Buyer requested cancellation.');
+  assert.equal(cancelled?.status, 'cancelled');
+
+  const reorderedRfq = db.reorderFromOrder(order.id);
+  assert.ok(reorderedRfq);
+  assert.match(reorderedRfq.requirement_title, /^Reorder:/);
+  assert.equal(reorderedRfq.quantity_required, order.quantity);
+  assert.equal(db.getOrderById(order.id)?.is_reorder, true);
+});
+
+test('rfq order flow: order and invoice numbers are sequential', () => {
+  const rfq = db.createRFQEnquiry({
+    buyer_id: 'buyer-prof-priya',
+    supplier_id: 'supp-aura-labs',
+    product_id: null,
+    requirement_title: 'Bulk Sequential Numbering Test',
+    category: 'Skincare & Serums',
+    quantity_required: 250,
+    quantity_unit: 'Units',
+    delivery_location: 'Jaipur, RJ',
+    details: 'Automated sequential numbering test requirement.',
+    attachments: [],
+    status: 'new',
+    type: 'direct_enquiry',
+    send_to_similar_suppliers: false,
+  });
+
+  const quote = db.createQuote({
+    rfq_id: rfq.id,
+    supplier_id: 'supp-aura-labs',
+    unit_price: 200,
+    total_price: 200 * 250,
+    moq_offered: 250,
+    lead_time: '14 days',
+    validity_date: new Date(Date.now() + 14 * 86400000).toISOString(),
+    terms_and_conditions: 'Standard terms.',
+    status: 'submitted',
+    sample_available: true,
+  });
+
+  db.updateQuoteStatus(quote.id, 'accepted');
+  const order = db.createOrderFromQuote(quote.id);
+  assert.ok(order);
+  assert.match(order.order_no, /^ORD-\d{4}-\d{5}$/);
+  assert.match(order.invoice_no, /^INV-\d{4}-\d{5}$/);
+  const orderSeq = parseInt(order.order_no.slice(-5), 10);
+  const invoiceSeq = parseInt(order.invoice_no.slice(-5), 10);
+  assert.ok(orderSeq > 0 && invoiceSeq > 0);
 });

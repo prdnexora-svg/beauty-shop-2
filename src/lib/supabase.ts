@@ -147,6 +147,16 @@ export async function syncAllDataToSupabase(state: DatabaseState): Promise<{ suc
       if (error) errors.push(`messages: ${error.message}`);
       else syncedCount += state.messages.length;
     }
+    if (state.orders?.length) {
+      const { error } = await supabase.from('orders').upsert(state.orders);
+      if (error) errors.push(`orders: ${error.message}`);
+      else syncedCount += state.orders.length;
+    }
+    if (state.follow_ups?.length) {
+      const { error } = await supabase.from('follow_ups').upsert(state.follow_ups);
+      if (error) errors.push(`follow_ups: ${error.message}`);
+      else syncedCount += state.follow_ups.length;
+    }
     return { success: errors.length === 0, syncedCount, errors };
   } catch (err: any) {
     return { success: false, syncedCount, errors: [err.message || 'Unexpected error.'] };

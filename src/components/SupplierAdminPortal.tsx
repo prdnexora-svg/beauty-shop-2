@@ -10,13 +10,14 @@ import { getStoredSponsoredAnalyticsEvents, SponsoredAnalyticsEvent } from '../d
 import { getStoredChatThreads, supplierReplyMessage, ChatThread } from '../data/chatStore';
 import { ProductCreationWizard, CatalogProduct } from './ProductCreationWizard';
 import { db } from '../db/database';
-import { PopulatedOrder, PopulatedRFQEnquiry } from '../db/types';
+import { PopulatedOrder, PopulatedQuote, PopulatedRFQEnquiry } from '../db/types';
 import { addNotification } from '../data/notifications';
-import { downloadOrderInvoice, ORDER_STATUS_LABELS, formatInr, formatDate } from '../utils/invoicePdf';
+import { downloadOrderInvoice, downloadOrderInvoiceCsv, ORDER_STATUS_LABELS, formatInr, formatDate } from '../utils/invoicePdf';
+import { getActiveSupplierId, setActiveSupplierId, DEFAULT_SUPPLIER_ID } from '../lib/activeTenant';
 
-// Demo tenant: in production this comes from the authenticated supplier session
-// and every db read below is scoped by RLS to the supplier's own rows.
-const PORTAL_SUPPLIER_ID = 'supp-aura-labs';
+// Demo tenant note: in production the active supplier is resolved from the
+// authenticated supplier session and every db read below is scoped by RLS to
+// the provider's own rows. `getActiveSupplierId()` persists the demo tenant.
 
 const CATALOG_STORAGE_KEY = 'nexora_supplier_catalog_v1';
 
@@ -56,14 +57,14 @@ function timeAgoLabel(iso: string): string {
 
 interface SupplierAdminPortalProps {
   onNavigateToProduct?: (productId: string) => void;
-  initialTab?: 'dashboard' | 'products' | 'sponsored-ads' | 'analytics' | 'enquiries' | 'rfqs' | 'orders' | 'verification' | 'chat-hub';
+  initialTab?: 'dashboard' | 'products' | 'sponsored-ads' | 'analytics' | 'enquiries' | 'rfqs' | 'negotiations' | 'orders' | 'verification' | 'chat-hub';
 }
 
 export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
   onNavigateToProduct,
   initialTab = 'dashboard'
 }) => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'sponsored-ads' | 'analytics' | 'enquiries' | 'rfqs' | 'orders' | 'verification' | 'chat-hub'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'sponsored-ads' | 'analytics' | 'enquiries' | 'rfqs' | 'negotiations' | 'orders' | 'verification' | 'chat-hub'>(initialTab);
   const [analyticsEvents, setAnalyticsEvents] = useState<SponsoredAnalyticsEvent[]>([]);
   const [chatThreads, setChatThreads] = useState<ChatThread[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
@@ -113,24 +114,33 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
   // public RFQs arrive from the Post Requirement screen.
   const [liveEnquiries, setLiveEnquiries] = useState<PopulatedRFQEnquiry[]>([]);
   const [liveRfqs, setLiveRfqs] = useState<PopulatedRFQEnquiry[]>([]);
-  const [supplierOrders, setSupplierOrders] = useState<PopulatedOrder[]>(() => db.getOrdersBySupplierId(PORTAL_SUPPLIER_ID));
+  const [supplierOrders, setSupplierOrders] = useState<PopulatedOrder[]>(() => db.getOrdersBySupplierId(getActiveSupplierId()));
+  const [supplierQuotes, setSupplierQuotes] = useState<PopulatedQuote[]>([]);
+  const [activeSupplierId, setActiveSupplierIdState] = useState(() => getActiveSupplierId());
 
   useEffect(() => {
     const loadLeads = () => {
-      const all = db.getRFQsAndEnquiries();
-      const sorted = [...all].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+      const scoped = db.getRFQsAndEnquiries({ supplier_id: activeSupplierId });
+      const sorted = [...scoped].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
       setLiveEnquiries(sorted.filter((r) => r.type === 'direct_enquiry'));
       setLiveRfqs(sorted.filter((r) => r.type === 'public_rfq'));
-      setSupplierOrders(db.getOrdersBySupplierId(PORTAL_SUPPLIER_ID));
+      setSupplierOrders(db.getOrdersBySupplierId(activeSupplierId));
+      setSupplierQuotes(db.getQuotesBySupplierId(activeSupplierId));
     };
     loadLeads();
     const unsubscribe = db.subscribe(() => loadLeads());
+    const onTenantChange = () => {
+      setActiveSupplierIdState(getActiveSupplierId());
+      loadLeads();
+    };
     window.addEventListener('nexora-db-change', loadLeads);
+    window.addEventListener('nexora-active-tenant-change', onTenantChange);
     return () => {
       unsubscribe();
       window.removeEventListener('nexora-db-change', loadLeads);
+      window.removeEventListener('nexora-active-tenant-change', onTenantChange);
     };
-  }, []);
+  }, [activeSupplierId]);
 
   // Quote form state (Screen 23) — now bound to a real RFQ/enquiry row
   const [selectedRfq, setSelectedRfq] = useState<PopulatedRFQEnquiry | null>(null);
@@ -175,6 +185,8 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
     const qty = rfq.quantity_required || 1;
     const validity = new Date();
     validity.setDate(validity.getDate() + 14);
+    const supplierProfile = db.getSupplierProfileById(activeSupplierId);
+    const supplierDisplayName = supplierProfile?.company_name || 'Your company';
 
     setTimeout(() => {
       try {
@@ -182,7 +194,7 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
         // "My RFQs & Quotes" (BuyerRFQTrackingScreen reads the same store).
         db.createQuote({
           rfq_id: rfq.id,
-          supplier_id: PORTAL_SUPPLIER_ID,
+          supplier_id: activeSupplierId,
           unit_price: unitPrice,
           total_price: unitPrice * qty,
           moq_offered: qty,
@@ -205,15 +217,15 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
           targetScreen: 'rfq-tracking',
           targetParams: { rfqId: rfq.id },
           sender: {
-            name: 'Aura Beauty Labs',
+            name: supplierDisplayName,
             isVerified: true,
-            location: 'Mumbai, MH'
+            location: supplierProfile?.city ? `${supplierProfile.city}, ${supplierProfile.state}` : 'Mumbai, MH'
           },
           metadata: {
             rfqId: rfq.id,
             price: `₹${unitPrice.toLocaleString('en-IN')} / unit`,
             quantity: `${qty.toLocaleString('en-IN')} ${rfq.quantity_unit}`,
-            supplierName: 'Aura Beauty Labs',
+            supplierName: supplierDisplayName,
             productName: rfq.requirement_title
           }
         });
@@ -230,10 +242,39 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
   };
 
   const handleOrderStatusChange = (orderId: string, status: PopulatedOrder['status']) => {
-    db.updateOrderStatus(orderId, status);
-    setSupplierOrders(db.getOrdersBySupplierId(PORTAL_SUPPLIER_ID));
+    const updated = db.updateOrderStatus(orderId, status);
+    setSupplierOrders(db.getOrdersBySupplierId(activeSupplierId));
+    if (updated) {
+      addNotification({
+        type: 'order',
+        title: `${updated.order_no} moved to ${ORDER_STATUS_LABELS[status] || status}`,
+        description: updated.product,
+        priority: 'high',
+        targetScreen: 'rfq-tracking',
+        targetParams: { orderId: updated.id },
+        sender: { name: updated.supplier?.company_name || 'Supplier', isVerified: true },
+        metadata: { productName: updated.product, trackingNumber: updated.order_no }
+      });
+    }
     setQuoteSentToast(`Order ${db.getOrderById(orderId)?.order_no || ''} moved to ${ORDER_STATUS_LABELS[status] || status}.`);
     setTimeout(() => setQuoteSentToast(null), 3000);
+  };
+
+  const handleRespondToNegotiation = (quoteId: string, action: 'accept' | 'decline' | 'revise') => {
+    if (action === 'accept') {
+      db.updateQuoteStatus(quoteId, 'accepted');
+      const order = db.createOrderFromQuote(quoteId);
+      setQuoteSentToast(order ? `Negotiation accepted — ${order.order_no} confirmed.` : 'Negotiation accepted.');
+    } else if (action === 'decline') {
+      db.updateQuoteStatus(quoteId, 'rejected');
+      setQuoteSentToast('Negotiation declined. The buyer has been notified.');
+    } else {
+      db.updateQuoteStatus(quoteId, 'submitted');
+      setQuoteSentToast('Quote re-opened for revised pricing. Ensure your new price is submitted.');
+    }
+    setSupplierQuotes(db.getQuotesBySupplierId(activeSupplierId));
+    setSupplierOrders(db.getOrdersBySupplierId(activeSupplierId));
+    setTimeout(() => setQuoteSentToast(null), 3500);
   };
 
   return (
@@ -318,6 +359,16 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
           </button>
 
           <button
+            onClick={() => setActiveTab('negotiations')}
+            className={`flex items-center gap-2.5 px-4 py-3 rounded-lg text-left transition-all cursor-pointer ${
+              activeTab === 'negotiations' ? 'bg-[#F5EEF8] text-[#6B2D8C]' : 'hover:bg-neutral-50'
+            }`}
+          >
+            <Activity className="w-4.5 h-4.5" />
+            <span>Negotiations ({supplierQuotes.filter((q) => q.status === 'negotiating').length})</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('orders')}
             className={`flex items-center gap-2.5 px-4 py-3 rounded-lg text-left transition-all cursor-pointer ${
               activeTab === 'orders' ? 'bg-[#F5EEF8] text-[#6B2D8C]' : 'hover:bg-neutral-50'
@@ -356,6 +407,27 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
 
       {/* MAIN WORKSPACE CONTENT */}
       <div className="flex-1 p-6 md:p-10 space-y-8 overflow-y-auto">
+        <div className="bg-white border border-[#E8DEEF] rounded-2xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <p className="text-[11px] uppercase font-black text-[#7E6C96] tracking-wider">Active Supplier Tenant</p>
+            <p className="text-[12px] text-[#5B4A6E] mt-0.5">Demo multi-tenant scope. In production this is resolved from the authenticated supplier session.</p>
+          </div>
+          <select
+            value={activeSupplierId}
+            onChange={(e) => setActiveSupplierId(e.target.value)}
+            className="text-[12px] font-bold text-[#2A0E3F] border border-[#E8DEEF] rounded-lg px-3 py-2 bg-[#FDFBF7] focus:outline-none focus:border-[#6B2D8C] cursor-pointer max-w-xs"
+          >
+            {db.getSupplierProfiles().filter((s) => s.is_verified || s.id === activeSupplierId).map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.company_name} ({s.id})
+              </option>
+            ))}
+            {!db.getSupplierProfiles().some((s) => s.id === activeSupplierId) && (
+              <option value={activeSupplierId}>{activeSupplierId}</option>
+            )}
+            <option value={DEFAULT_SUPPLIER_ID}>Reset to demo tenant</option>
+          </select>
+        </div>
         
         {/* ================== CHAT HUB TAB ================== */}
         {activeTab === 'chat-hub' && (
@@ -777,6 +849,79 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
           </div>
         )}
 
+        {/* ================== NEGOTIATIONS / COUNTER-OFFERS ================== */}
+        {activeTab === 'negotiations' && (
+          <div className="space-y-6">
+            <div className="space-y-1">
+              <h3 className="font-black text-sm text-zinc-950">Quote Negotiations</h3>
+              <p className="text-xs text-[#5B4A6E]">Buyer counter-offers and quote lifecycle for this supplier tenant. Accept to create the final order, decline to close the thread, or revise pricing.</p>
+            </div>
+
+            {supplierQuotes.length === 0 && (
+              <div className="bg-white border border-[#E8DEEF] rounded-xl p-8 text-center space-y-2">
+                <Activity className="w-8 h-8 text-[#D9C3E8] mx-auto" />
+                <p className="text-sm font-extrabold text-zinc-900">No quotes from this supplier yet</p>
+                <p className="text-xs text-[#5B4A6E]">Quotes submitted from this tenant appear here with status and buyer counter-offers.</p>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {supplierQuotes.map((quote) => {
+                const rfq = quote.rfq;
+                const order = quote.order;
+                const statusLabel = quote.status === 'order_placed' ? 'Order Placed'
+                  : quote.status === 'accepted' ? 'Accepted'
+                  : quote.status === 'rejected' ? 'Declined'
+                  : quote.status === 'expired' ? 'Expired'
+                  : quote.status === 'negotiating' ? 'Negotiating'
+                  : 'Submitted';
+                return (
+                  <div key={quote.id} className="bg-white border border-[#E8DEEF] rounded-2xl p-5 space-y-3">
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-black text-sm text-zinc-950">{rfq?.requirement_title || 'Commercial quote'}</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F5EEF8] text-[#6B2D8C] border border-[#D9C3E8] uppercase">{statusLabel}</span>
+                          {quote.is_simulated && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200 uppercase">Demo response</span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-[#5B4A6E]">
+                          {formatInr(quote.counter_offer_price || quote.unit_price)} / unit · MOQ {quote.moq_offered.toLocaleString('en-IN')} · {quote.lead_time} · Valid till {formatDate(quote.validity_date)}
+                        </p>
+                        {quote.counter_offer_price && quote.counter_offer_price !== quote.unit_price && (
+                          <p className="text-[11px] text-amber-700 font-bold">
+                            Buyer counter-offer: {formatInr(quote.counter_offer_price)} {quote.counter_offer_notes ? `— ${quote.counter_offer_notes}` : ''}
+                          </p>
+                        )}
+                      </div>
+                      {order ? (
+                        <button
+                          onClick={() => setActiveTab('orders')}
+                          className="px-4 py-2 bg-emerald-50 text-emerald-700 text-[11px] font-black rounded-lg border border-emerald-200 hover:bg-emerald-100 transition-all cursor-pointer"
+                        >
+                          View {order.order_no}
+                        </button>
+                      ) : (quote.status === 'negotiating' || quote.status === 'submitted') ? (
+                        <div className="flex flex-wrap gap-2">
+                          <button onClick={() => handleRespondToNegotiation(quote.id, 'accept')} className="px-4 py-2 bg-emerald-600 text-white text-[11px] font-black rounded-lg hover:bg-emerald-700 transition-all cursor-pointer">Accept</button>
+                          <button onClick={() => handleRespondToNegotiation(quote.id, 'revise')} className="px-4 py-2 bg-white border border-[#6B2D8C] text-[#6B2D8C] text-[11px] font-black rounded-lg hover:bg-[#FDFBF7] transition-all cursor-pointer">Revise</button>
+                          <button onClick={() => handleRespondToNegotiation(quote.id, 'decline')} className="px-4 py-2 bg-rose-50 text-rose-600 text-[11px] font-black rounded-lg hover:bg-rose-100 transition-all cursor-pointer">Decline</button>
+                        </div>
+                      ) : null}
+                    </div>
+                    {quote.terms_and_conditions && (
+                      <div className="text-[11px] text-[#5B4A6E] bg-[#FDFBF7] border border-[#E8DEEF] rounded-lg p-3">
+                        <strong>Terms:</strong> {quote.terms_and_conditions}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* ================== ORDERS (confirmed commercial orders) ================== */}
         {activeTab === 'orders' && (
           <div className="space-y-6">
@@ -832,6 +977,13 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
                         <FileText className="w-3.5 h-3.5" />
                         Invoice PDF
                       </button>
+                      <button
+                        onClick={() => downloadOrderInvoiceCsv(order)}
+                        className="inline-flex items-center gap-1.5 bg-white border border-[#6B2D8C] text-[#6B2D8C] text-[11px] font-black px-3 py-2 rounded-lg hover:bg-[#FDFBF7] transition-all cursor-pointer"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        CSV
+                      </button>
                     </div>
                   </div>
 
@@ -842,7 +994,7 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
                     </div>
                     <div>
                       <p className="text-[#7E6C96] font-bold uppercase tracking-wide text-[9px]">Buyer</p>
-                      <p className="font-bold text-zinc-900">{order.buyer_id}</p>
+                      <p className="font-bold text-zinc-900">{order.buyer?.company_name || order.buyer_id}</p>
                     </div>
                     <div>
                       <p className="text-[#7E6C96] font-bold uppercase tracking-wide text-[9px]">Delivery</p>
