@@ -1446,6 +1446,23 @@ class RelationalDatabase {
     return this.getOrderById(id);
   }
 
+  /**
+   * Persist a buyer-confirmed / corrected delivery address on a live order.
+   * The invoice and the supplier order view both read the address from the
+   * order record, so the change propagates on the next render.
+   */
+  public updateOrderShippingAddress(id: string, shippingAddress: string): PopulatedOrder | undefined {
+    const order = this.state.orders.find((o) => o.id === id);
+    if (!order) return undefined;
+    const trimmed = shippingAddress.trim();
+    if (!trimmed) return this.getOrderById(id);
+    order.shipping_address = trimmed;
+    order.updated_at = new Date().toISOString();
+    this.persist(this.state);
+    this.notify('orders', 'UPDATE_SHIPPING', order);
+    return this.getOrderById(id);
+  }
+
   // --------------------------------------------------------------------------
   // SUPPLIER RESPONSE SIMULATION
   // --------------------------------------------------------------------------

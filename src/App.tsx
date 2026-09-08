@@ -33,7 +33,7 @@ import { OemPrivateLabelHubScreen } from './components/OemPrivateLabelHubScreen'
 import { SupplierAdminPortal } from './components/SupplierAdminPortal';
 import { BuyerDashboard } from './components/BuyerDashboard';
 import { BuyerRFQTrackingScreen } from './components/BuyerRFQTrackingScreen';
-import { SampleRequestScreen } from './components/SampleRequestScreen';
+import { SampleRequestScreen, SampleRequestProduct, SampleRequestFormData } from './components/SampleRequestScreen';
 import { PostRequirementScreen } from './components/PostRequirementScreen';
 import { BuyerEnquiryLogScreen } from './components/BuyerEnquiryLogScreen';
 import { EditProfileModal, BuyerProfileData } from './components/EditProfileModal';
@@ -41,7 +41,10 @@ import { ProductDetailPage } from './components/ProductDetailPage';
 import { ChatModalDrawer } from './components/ChatModalDrawer';
 import { BuyerOnboardingScreen } from './components/BuyerOnboardingScreen';
 import { SELLER_PROFILES_DB } from './data/sellerProfilesData';
-import { getBuyerProfile, BUYER_PROFILES_DB } from './data/buyerProfilesData';
+import { SPONSORED_PRODUCTS_DB } from './data/sponsoredProductsData';
+import { addNotification } from './data/notifications';
+import { db } from './db/database';
+import { getBuyerProfile } from './data/buyerProfilesData';
 import { isSupplierSaved as isSupplierSavedInStore, toggleSavedSupplier } from './data/savedStore';
 import {
   SupabaseProvider,
@@ -65,15 +68,14 @@ import {
   canAccess,
   getAccessLevel,
   HOME_SCREEN,
+  SCREEN_ACCESS,
   type ScreenId,
 } from './lib/roleAccess';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import {
-  CATEGORIES,
-  TRENDING_PRODUCTS,
   VERIFIED_SUPPLIERS
 } from './data/mockData';
-import { RFQItem, DealProduct, TrendingProduct, VerifiedSupplier, SearchProduct } from './types';
+import { RFQItem, SearchProduct } from './types';
 import { CheckCircle2 } from 'lucide-react';
 
 function NexoraShopApp() {
@@ -86,11 +88,6 @@ function NexoraShopApp() {
     signOut,
   } = useSupabase();
 
-  const [currentScreen, setCurrentScreen] = useState<'explore' | 'directory' | 'supplier-directory' | 'plp' | 'product-detail' | 'search-results' | 'brands' | 'oem-hub' | 'supplier-profile' | 'onboarding' | 'buyer-onboarding' | 'supplier-portal' | 'supplier-verification' | 'buyer-dashboard' | 'buyer-profile' | 'rfq-tracking' | 'sample-request' | 'post-rfq' | 'buyer-enquiry-log'>('explore');
-  const [selectedProductId, setSelectedProductId] = useState<string>('product_vitc_101');
-  const [selectedSupplierId, setSelectedSupplierId] = useState<string>('seller_aura_001');
-  const [selectedLocation, setSelectedLocation] = useState('All');
-  
   // The demo build (no Supabase project) keeps a clearly namespaced browser
   // local session so an evaluated buyer/supplier portal survives a refresh.
   // A configured production build never restores this demo identity.
@@ -102,6 +99,27 @@ function NexoraShopApp() {
     if (isSupabaseConfigured()) return null;
     return readDemoAuthSession()?.role ?? null;
   });
+
+  // Initial screen is restored from the address bar so a refresh or a deep
+  // link (e.g. /rfq-tracking) re-opens the same workspace instead of always
+  // landing on the homepage. The shared access policy is applied with the
+  // freshly restored viewer, so a guest can never land inside a protected
+  // screen — they get the homepage plus the sign-in prompt below instead.
+  const [currentScreen, setCurrentScreen] = useState<ScreenId>(() => {
+    if (typeof window === 'undefined') return 'explore';
+    const path = window.location.pathname;
+    if (isSupabaseConfigured() || isAuthPath(path)) return 'explore';
+    const id = path.replace(/^\//, '');
+    if (!id || !(id in SCREEN_ACCESS)) return 'explore';
+    const initialViewer = toViewer(
+      Boolean(readDemoAuthSession()),
+      readDemoAuthSession()?.role ?? null
+    );
+    return canAccess(id, initialViewer) ? (id as ScreenId) : 'explore';
+  });
+  const [selectedProductId, setSelectedProductId] = useState<string>('product_vitc_101');
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string>('seller_aura_001');
+  const [selectedLocation, setSelectedLocation] = useState('All');
 
   // The single identity every access decision is made against.
   const viewer = toViewer(isLoggedIn, userRole);
@@ -157,6 +175,18 @@ function NexoraShopApp() {
 
   const [requirementDraft, setRequirementDraft] = useState<{ requirement: string; quantity: string; city: string } | undefined>();
   const [pendingScreen, setPendingScreen] = useState<ScreenId | null>(null);
+
+  // Product context carried into the sample requisition flow.
+  const [sampleRequestProduct, setSampleRequestProduct] = useState<SampleRequestProduct | null>(null);
+
+  // One-shot deep-focus for the tracking screen (e.g. dashboard "Compare
+  // Quotes" preselects the RFQ, "Edit RFQ" preselects and opens the editor).
+  const [rfqTrackingFocus, setRfqTrackingFocus] = useState<{ rfqId: string; openEdit?: boolean } | null>(null);
+
+  // Public buyer profiles VIEWED through the network/member screens must never
+  // overwrite the signed-in buyer's own identity used by the nav, dashboards
+  // and edit flows. Viewed profiles live in a separate slot.
+  const [viewedBuyerProfile, setViewedBuyerProfile] = useState<BuyerProfileData | null>(null);
 
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [buyerDashboardTab, setBuyerDashboardTab] = useState<'overview' | 'about' | 'rfqs' | 'saved' | 'social' | 'activity' | 'notifications'>('overview');
@@ -231,13 +261,24 @@ function NexoraShopApp() {
 
   // Interactive Toast Notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const toastTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const triggerToast = (msg: string) => {
+    // Clear any previous auto-hide timer so a stale timer can never clear a
+    // newer message early (and back-to-back toasts queue cleanly).
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     setToastMessage(msg);
-    setTimeout(() => {
+    toastTimerRef.current = setTimeout(() => {
       setToastMessage(null);
+      toastTimerRef.current = null;
     }, 4000);
   };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
 
   const handleSaveProfile = (updated: BuyerProfileData) => {
     setBuyerProfile(updated);
@@ -309,6 +350,14 @@ function NexoraShopApp() {
     if ((screen === 'buyer-dashboard' || screen === 'buyer-profile') && params?.tab) {
       setBuyerDashboardTab(params.tab);
     }
+    if (screen === 'rfq-tracking') {
+      setRfqTrackingFocus(params?.rfqId ? { rfqId: params.rfqId, openEdit: Boolean(params.openEdit) } : null);
+    }
+    if (screen === 'buyer-profile' && !params?.memberData && !params?.buyerId) {
+      // Navigating to your own profile (nav menu, breadcrumbs) always resets
+      // the viewed slot — with and without params.
+      setViewedBuyerProfile(null);
+    }
     if (params) {
       if (params.productId) {
         setSelectedProductId(params.productId);
@@ -317,23 +366,26 @@ function NexoraShopApp() {
         setSelectedSupplierId(params.supplierId);
       }
       if (params.buyerId || (screen === 'buyer-profile' && (params.memberData || params.buyerId))) {
+        // Public-profile browsing writes to the VIEWED slot only. The signed-in
+        // buyer's own profile (nav, dashboard, edit modal) is never touched, so
+        // viewing a member can no longer hijack your identity until reload.
         const found = getBuyerProfile(params.buyerId || params.memberData?.profileId || params.memberData?.id || params.memberData?.name);
         if (found) {
-          setBuyerProfile({ ...found });
+          setViewedBuyerProfile({ ...found });
         } else if (params.memberData) {
           const m = params.memberData;
           const cleanName = m.name.replace(/\s*\(.*?\)\s*/g, '').trim();
           const bizName = m.name.match(/\((.*?)\)/)?.[1] || `${cleanName} Enterprises`;
-          setBuyerProfile(prev => ({
-            ...prev,
+          setViewedBuyerProfile(prev => ({
+            ...(prev ?? buyerProfile),
             fullName: cleanName,
             businessName: bizName,
-            businessType: m.businessType || prev.businessType,
+            businessType: m.businessType || (prev ?? buyerProfile).businessType,
             avatarUrl: m.avatar,
-            city: m.city || prev.city,
-            state: m.state || prev.state,
+            city: m.city || (prev ?? buyerProfile).city,
+            state: m.state || (prev ?? buyerProfile).state,
             isGstVerified: m.isGstVerified,
-            followersCount: m.followersCount || prev.followersCount
+            followersCount: m.followersCount ?? (prev ?? buyerProfile).followersCount
           }));
         }
       }
@@ -544,6 +596,113 @@ function NexoraShopApp() {
     redirectToLogin();
   }, [isConfigured, authReady, session?.user?.id, isAuthCallbackPath]);
 
+  // ---------------------------------------------------------------------------
+  // Browser URL <-> screen synchronization
+  // ---------------------------------------------------------------------------
+  // Every screen maps to a canonical path (explore ↔ "/", others ↔ "/<id>").
+  // Navigating pushes a history entry, the back/forward buttons restore the
+  // screen, and refresh keeps the page (see the lazy currentScreen init above).
+  // Auth routes (/auth/*) are owned by the Supabase flow and never touched here.
+  const SCREEN_URL_TITLES: Record<string, string> = {
+    'explore': 'B2B Beauty Marketplace',
+    'directory': 'Directory Hub',
+    'supplier-directory': 'Supplier Directory',
+    'plp': 'Products',
+    'product-detail': 'Product Details',
+    'search-results': 'Search Results',
+    'brands': 'Brand Directory',
+    'oem-hub': 'OEM & Private Label',
+    'supplier-profile': 'Supplier Profile',
+    'onboarding': 'Supplier Onboarding',
+    'buyer-onboarding': 'Buyer Onboarding',
+    'supplier-portal': 'Supplier Portal',
+    'supplier-verification': 'Supplier Verification',
+    'buyer-dashboard': 'Buyer Dashboard',
+    'buyer-profile': 'Buyer Profile',
+    'rfq-tracking': 'Requirement Tracking',
+    'sample-request': 'Sample Request',
+    'post-rfq': 'Post Requirement',
+    'buyer-enquiry-log': 'Enquiry Log',
+  };
+  const pathForScreen = (screen: string) => (screen === 'explore' ? '/' : `/${screen}`);
+  const screenFromPath = (path: string): ScreenId | null => {
+    const id = path.replace(/^\//, '');
+    return id && id in SCREEN_ACCESS ? (id as ScreenId) : null;
+  };
+  const didInitialUrlSync = React.useRef(false);
+
+  // Keep the address bar in sync with the active screen.
+  useEffect(() => {
+    if (typeof window === 'undefined' || isAuthRoute) return;
+    const target = pathForScreen(currentScreen);
+    if (window.location.pathname === target) {
+      didInitialUrlSync.current = true;
+      return;
+    }
+    // The first sync after a deep-link restore replaces (no junk history);
+    // later navigations push so the back button walks the actual journey.
+    if (!didInitialUrlSync.current) {
+      window.history.replaceState({}, '', target);
+      didInitialUrlSync.current = true;
+    } else {
+      if (isConfigured && !session?.user && isProtectedScreen) return; // login redirect owns the URL
+      window.history.pushState({}, '', target);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentScreen, isAuthRoute]);
+
+  // Back / forward: restore the in-memory screen from the popped path, with
+  // the same policy evaluation used everywhere else.
+  useEffect(() => {
+    const onPopState = () => {
+      const path = window.location.pathname;
+      if (isAuthPath(path)) return;
+      const target = screenFromPath(path) ?? 'explore';
+      const decision = evaluateAccess(target, viewer);
+      if (decision.allowed) {
+        setCurrentScreen(target);
+        window.scrollTo({ top: 0 });
+      } else if (decision.reason === 'unauthenticated') {
+        setPendingScreen(target);
+        setAuthMode('login');
+        setIsAuthModalOpen(true);
+        window.history.replaceState({}, '', pathForScreen(currentScreen));
+      } else if (decision.redirectTo) {
+        setCurrentScreen(decision.redirectTo);
+      }
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewer, currentScreen]);
+
+  // Route-aware document title.
+  useEffect(() => {
+    if (typeof document === 'undefined' || isAuthRoute) return;
+    const label = SCREEN_URL_TITLES[currentScreen] || 'B2B Beauty Marketplace';
+    document.title = currentScreen === 'explore' ? `Nexora Luxe — ${label}` : `${label} | Nexora Luxe`;
+  }, [currentScreen, isAuthRoute]);
+
+  // Demo-mode guest opening a deep link to a protected screen sees the sign-in
+  // prompt with the original destination preserved (mirrors the click path).
+  useEffect(() => {
+    if (typeof window === 'undefined' || isSupabaseConfigured()) return;
+    const path = window.location.pathname;
+    if (isAuthPath(path)) return;
+    const target = screenFromPath(path);
+    if (!target) return;
+    const decision = evaluateAccess(target, viewer);
+    if (!decision.allowed && decision.reason === 'unauthenticated') {
+      setPendingScreen(target);
+      setAuthMode('login');
+      setIsAuthModalOpen(true);
+      window.history.replaceState({}, '', '/');
+    } else if (!decision.allowed && decision.redirectTo) {
+      window.history.replaceState({}, '', pathForScreen(decision.redirectTo));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   if (isConfigured && !authReady) {
     return (
       <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4 text-center">
@@ -648,12 +807,12 @@ function NexoraShopApp() {
 
       {/* Main Content Area with Top Spacing to Clear the Fixed Header */}
       <div className="flex-1 flex flex-col pt-20">
-        <Breadcrumbs 
-          currentScreen={currentScreen} 
-          onNavigate={handleNavigate} 
+        <Breadcrumbs
+          currentScreen={currentScreen}
+          onNavigate={handleNavigate}
           params={{
-            productName: currentScreen === 'product-detail' ? TRENDING_PRODUCTS.find(p => p.id === selectedProductId)?.title : undefined,
-            supplierName: currentScreen === 'supplier-profile' ? VERIFIED_SUPPLIERS.find(s => s.id === (selectedSupplierId || searchParams.supplierId))?.name : undefined
+            productName: currentScreen === 'product-detail' ? SPONSORED_PRODUCTS_DB[selectedProductId]?.title : undefined,
+            supplierName: currentScreen === 'supplier-profile' ? (SELLER_PROFILES_DB[selectedSupplierId]?.name || VERIFIED_SUPPLIERS.find(s => s.id === (selectedSupplierId || searchParams.supplierId))?.name) : undefined
           }}
         />
         {/* Screen 01: Homepage / Explore Hub — NEXORA LUXE purple-gold edition */}
@@ -829,7 +988,22 @@ function NexoraShopApp() {
                 });
               }}
               onOpenRFQModal={() => handleNavigate('post-rfq')}
-              onNavigateToSampleRequest={() => handleNavigate('sample-request')}
+              onNavigateToSampleRequest={() => {
+                // Carry the exact product/supplier the buyer was viewing into
+                // the requisition so no hardcoded product is ever shown.
+                const p = SPONSORED_PRODUCTS_DB[selectedProductId];
+                setSampleRequestProduct(p ? {
+                  id: p.id,
+                  title: p.title,
+                  supplierName: p.supplierName,
+                  supplierId: p.seller_id,
+                  image: p.images?.[0],
+                  priceRange: p.priceRange,
+                  moq: p.moq,
+                  location: p.supplierLocation,
+                } : null);
+                handleNavigate('sample-request');
+              }}
               onNavigateToSupplierProfile={(supplierId) => {
                 handleNavigate('supplier-profile', { supplierId });
               }}
@@ -1053,7 +1227,7 @@ function NexoraShopApp() {
             onSignIn={() => handleOpenAuthModal('login')}
           >
             <main className="flex-1">
-              <BuyerDashboard 
+              <BuyerDashboard
                 isLoggedIn={isLoggedIn}
                 onNavigate={handleNavigate}
                 onPostRFQ={() => handleNavigate('post-rfq')}
@@ -1061,7 +1235,7 @@ function NexoraShopApp() {
                 onWhatsAppSupplier={handleWhatsAppSupplier}
                 onOpenAuth={() => handleOpenAuthModal('login')}
                 onOpenChat={handleOpenChat}
-                buyerProfile={buyerProfile}
+                buyerProfile={viewedBuyerProfile ?? buyerProfile}
                 onSaveProfile={handleSaveProfile}
                 onOpenEditProfile={() => setIsEditProfileOpen(true)}
                 initialTab="activity"
@@ -1085,10 +1259,18 @@ function NexoraShopApp() {
             <main className="flex-1">
               <BuyerRFQTrackingScreen
                 onBack={() => handleNavigate('buyer-dashboard')}
+                onPostRFQ={() => handleNavigate('post-rfq')}
+                focusRequest={rfqTrackingFocus}
+                onFocusHandled={() => setRfqTrackingFocus(null)}
                 onNavigateToChat={(supplierIdOrName) => {
-                  const supp = VERIFIED_SUPPLIERS.find(s => 
-                    s.name.toLowerCase().includes(supplierIdOrName.toLowerCase()) || 
-                    s.id === supplierIdOrName
+                  // Quotes carry the registered company name ("Aura Beauty Labs &
+                  // Formulations") while the public directory uses the short brand
+                  // name — match in either direction, plus exact id equality.
+                  const needle = supplierIdOrName.toLowerCase();
+                  const supp = VERIFIED_SUPPLIERS.find(s =>
+                    s.id === supplierIdOrName ||
+                    s.name.toLowerCase().includes(needle) ||
+                    needle.includes(s.name.toLowerCase())
                   );
                   handleOpenChat(
                     {
@@ -1116,10 +1298,65 @@ function NexoraShopApp() {
             onSignIn={() => handleOpenAuthModal('login')}
           >
             <main className="flex-1">
-              <SampleRequestScreen 
-                onBack={() => handleNavigate('search-results')}
-                onSubmit={(data) => {
-                  triggerToast('Sample ordering is not available yet. Please contact the supplier directly.');
+              <SampleRequestScreen
+                product={sampleRequestProduct || undefined}
+                onBack={() => handleNavigate('product-detail', { productId: sampleRequestProduct?.id || selectedProductId })}
+                onAskFormulationLead={sampleRequestProduct ? () => {
+                  handleOpenEnquiry({
+                    id: 'enq-' + Date.now(),
+                    title: `Formulation question: ${sampleRequestProduct.title}`,
+                    supplierName: sampleRequestProduct.supplierName,
+                    type: 'product'
+                  });
+                } : undefined}
+                onSubmit={(data: SampleRequestFormData) => {
+                  // Persist the requisition as a direct enquiry so it surfaces in
+                  // the buyer enquiry log (which merges live direct enquiries)
+                  // and in the supplier's lead inbox for follow-up.
+                  // Supplier display names ("Aura Beauty Labs") are shorter than
+                  // registered company names ("Aura Beauty Labs & Formulations"),
+                  // so match in either direction instead of strict equality.
+                  const supplierNameLc = data.supplierName.toLowerCase();
+                  const supplier = db.getSupplierProfiles().find((s) => {
+                    const cn = s.company_name.toLowerCase();
+                    const base = cn.split('&')[0].trim();
+                    return cn === supplierNameLc || cn.includes(supplierNameLc) || base === supplierNameLc;
+                  });
+                  const detailLines = [
+                    `Sample requisition for ${data.productTitle}.`,
+                    `Set: ${data.sampleSet} · Variant: ${data.variant} · Shipping: ${data.shippingMethod === 'express' ? 'Express (2-3 days)' : 'Standard (5-7 days)'}`,
+                    data.purposes.length ? `Evaluation purpose: ${data.purposes.join(', ')}` : null,
+                    `Ship to: ${data.recipientName}${data.companyName ? ` (${data.companyName})` : ''}, ${data.streetAddress}, ${data.city}${data.state ? `, ${data.state}` : ''}`,
+                    data.notes ? `Notes: ${data.notes}` : null,
+                  ].filter(Boolean).join('\n');
+                  const enquiry = db.createRFQEnquiry({
+                    buyer_id: 'buyer-prof-priya',
+                    supplier_id: supplier?.id || null,
+                    product_id: null,
+                    requirement_title: `Sample Request: ${data.productTitle}`,
+                    category: 'Skincare & Serums',
+                    quantity_required: 1,
+                    quantity_unit: 'Sample Set',
+                    delivery_location: `${data.city}${data.state ? `, ${data.state}` : ''}`,
+                    details: detailLines,
+                    attachments: [],
+                    status: 'new',
+                    type: 'direct_enquiry',
+                    send_to_similar_suppliers: !supplier,
+                  });
+                  addNotification({
+                    type: 'sample',
+                    title: `Sample request logged: ${data.productTitle}`,
+                    description: supplier
+                      ? `Sent to ${supplier.company_name} as ${enquiry.id}. Saved in your Enquiry Log.`
+                      : `Saved as ${enquiry.id} and shared with matching verified suppliers.`,
+                    priority: 'medium',
+                    targetScreen: 'buyer-enquiry-log',
+                    sender: { name: 'Sample Desk', isVerified: true },
+                    metadata: { rfqId: enquiry.id, productName: data.productTitle, supplierName: supplier?.company_name }
+                  });
+                  triggerToast(`Sample request ${enquiry.id} saved${supplier ? ` and routed to ${supplier.company_name}` : ''}. Track it in your Enquiry Log.`);
+                  handleNavigate('buyer-enquiry-log');
                 }}
               />
             </main>

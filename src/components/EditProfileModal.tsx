@@ -133,6 +133,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   // Photo upload & auto-resize state
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverFileInputRef = useRef<HTMLInputElement>(null);
+  const regDocInputRef = useRef<HTMLInputElement>(null);
+  const [regDocName, setRegDocName] = useState<string | null>(null);
+  const [regDocError, setRegDocError] = useState<string | null>(null);
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
   const [isProcessingCover, setIsProcessingCover] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -818,12 +821,60 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   <Upload className="w-6 h-6 text-[#6B2D8C] mx-auto mb-1.5" />
                   <p className="text-xs font-bold text-[#2A0E3F]">Upload Business Registration / Trade License (Optional)</p>
                   <p className="text-[10px] text-[#7E6C96] mt-0.5">Supports PDF, JPG, PNG up to 5MB</p>
-                  <button 
-                    type="button" 
-                    className="mt-2.5 px-3 py-1.5 bg-white border border-[#E8DEEF] rounded-lg text-xs font-bold text-[#2A0E3F] hover:border-[#6B2D8C] transition-colors cursor-pointer"
-                  >
-                    Select File
-                  </button>
+                  <input
+                    ref={regDocInputRef}
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const MAX = 5 * 1024 * 1024;
+                      if (file.size > MAX) {
+                        setRegDocName(null);
+                        setRegDocError('File exceeds 5MB — choose a smaller document.');
+                      } else {
+                        setRegDocError(null);
+                        // Demo persistence keeps the file reference only; durable
+                        // document storage is part of the production backend.
+                        setRegDocName(file.name);
+                      }
+                      e.target.value = '';
+                    }}
+                  />
+                  {regDocName ? (
+                    <div className="mt-2.5 flex items-center justify-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs font-bold text-emerald-700">
+                        <Check className="w-3.5 h-3.5" />
+                        {regDocName}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => regDocInputRef.current?.click()}
+                        className="text-[11px] font-bold text-[#6B2D8C] hover:underline cursor-pointer"
+                      >
+                        Replace
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRegDocName(null)}
+                        className="text-[11px] font-bold text-rose-500 hover:underline cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => regDocInputRef.current?.click()}
+                      className="mt-2.5 px-3 py-1.5 bg-white border border-[#E8DEEF] rounded-lg text-xs font-bold text-[#2A0E3F] hover:border-[#6B2D8C] transition-colors cursor-pointer"
+                    >
+                      Select File
+                    </button>
+                  )}
+                  {regDocError && (
+                    <p className="mt-2 text-[11px] font-bold text-rose-600">{regDocError}</p>
+                  )}
                 </div>
               </div>
             </div>

@@ -143,8 +143,8 @@ Local tests, typecheck, and build are green on the current branch. These items a
 | 1.3 | Hardcoded comparison matrix | ✅ Fixed | Matrix now renders dynamically from `activeQuotes` with status, validity, terms, samples, routing and accept/counter actions. |
 | 2.1 | No supplier negotiation loop | ✅ Fixed | Supplier Admin Portal has a Negotiations tab (statuses, counter-offer visibility, accept/revise/decline). |
 | 2.2 | Expired quotes still actionable | ✅ Fixed | `expireExpiredQuotes()` runs on tracking refresh; repository locks expired quotes; UI hides actions and shows Expired chip. |
-| 2.3 | No shipping address capture | 🔶 Partial | Address is still resolved from buyer profile unless passed via `createOrderFromQuote`; editable confirmation field is a remaining UI enhancement. |
-| 2.4 | View Order Sheet dead-end | 🔶 Partial | Modal closes and the order history is viewable; a dedicated order-sheet screen is still not present. |
+| 2.3 | No shipping address capture | ✅ Fixed | Delivery card on `OrderConfirmationModal` is editable with validation; persists via `db.updateOrderShippingAddress` and refreshes through `onOrderUpdated`. Hidden on cancelled orders. |
+| 2.4 | View Order Sheet dead-end | ✅ Fixed | "View Order Sheet" now closes the modal, scrolls "Your Orders" into view and spotlights the order card (auto-clearing highlight). Full detail remains via the View button. |
 | 2.5 | Order notifications not in center | ✅ Fixed | Buyer order-confirm/cancel/reorder and supplier order-status updates now emit `order`/`rfq_response` notification-center entries. |
 | 2.6 | PopulatedOrder lacks buyer | ✅ Fixed | Added `buyer` profile to `getOrders`/`getOrderById`; invoice and supplier view show company name + GSTIN. |
 | 3.1 | No payment/advance workflow | ✅ Fixed | Orders carry `advance_percent`, payment status; UI shows advance summary. Full payment capture remains backend/payment-provider work. |

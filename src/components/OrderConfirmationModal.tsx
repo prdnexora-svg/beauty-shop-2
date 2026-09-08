@@ -6,12 +6,13 @@ import {
   Download,
   FileText,
   ArrowRight,
-  Truck,
   Building2,
   MapPin,
-  Calendar,
+  Edit3,
+  Save,
 } from 'lucide-react';
 import type { PopulatedOrder } from '../db/types';
+import { db } from '../db/database';
 import { downloadOrderInvoice, downloadOrderInvoiceCsv, getOrderLineItems, getSellerGstin, getBuyerGstin, ORDER_STATUS_LABELS, ORDER_STATUS_STEPS, formatInr, formatDate } from '../utils/invoicePdf';
 
 interface OrderConfirmationModalProps {
@@ -19,25 +20,54 @@ interface OrderConfirmationModalProps {
   onClose: () => void;
   order: PopulatedOrder | null;
   onViewOrders?: () => void;
+  /** Called after the delivery address is edited and persisted on the order. */
+  onOrderUpdated?: (order: PopulatedOrder) => void;
 }
 
 /**
  * Final order confirmation + invoice surface.
  *
  * Shown immediately after the buyer accepts a quote and an order is created.
- * Provides the downloadable PDF invoice and the full order-status stepper so
- * the transition from an accepted quote into a confirmed order is seamless.
+ * Provides the downloadable PDF invoice, an editable delivery address and the
+ * full order-status stepper so the transition from an accepted quote into a
+ * confirmed order is seamless.
  */
 export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
   isOpen,
   onClose,
   order,
   onViewOrders,
+  onOrderUpdated,
 }) => {
   const [downloaded, setDownloaded] = useState(false);
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [addressDraft, setAddressDraft] = useState('');
+  const [addressSaved, setAddressSaved] = useState(false);
+  const [addressError, setAddressError] = useState<string | null>(null);
   if (!isOpen || !order) return null;
 
   const lineItems = getOrderLineItems(order);
+
+  const handleStartEditAddress = () => {
+    setAddressDraft(order.shipping_address || '');
+    setAddressError(null);
+    setIsEditingAddress(true);
+  };
+
+  const handleSaveAddress = () => {
+    const trimmed = addressDraft.trim();
+    if (trimmed.length < 10) {
+      setAddressError('Enter the full delivery address (at least 10 characters).');
+      return;
+    }
+    const updated = db.updateOrderShippingAddress(order.id, trimmed);
+    if (updated) {
+      setIsEditingAddress(false);
+      setAddressSaved(true);
+      onOrderUpdated?.(updated);
+      setTimeout(() => setAddressSaved(false), 2500);
+    }
+  };
 
   const handleDownload = () => {
     try {
@@ -105,12 +135,57 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
               <p className="text-[11px] text-[#5B4A6E]">{order.supplier?.city || ''} {order.supplier?.state ? `, ${order.supplier.state}` : ''}</p>
             </div>
             <div className="bg-[#FDFBF7] rounded-2xl border border-[#E8DEEF] p-4 space-y-2">
-              <div className="flex items-center gap-2 text-[11px] font-black text-[#7E6C96] uppercase tracking-wider">
-                <MapPin className="w-4 h-4 text-[#6B2D8C]" />
-                Delivery
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-[11px] font-black text-[#7E6C96] uppercase tracking-wider">
+                  <MapPin className="w-4 h-4 text-[#6B2D8C]" />
+                  Delivery
+                </div>
+                {!isCancelled && !isEditingAddress && (
+                  <button
+                    onClick={handleStartEditAddress}
+                    className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-[#6B2D8C] hover:text-[#4A2560] cursor-pointer"
+                  >
+                    <Edit3 className="w-3 h-3" />
+                    Edit
+                  </button>
+                )}
+                {addressSaved && !isEditingAddress && (
+                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600">Saved</span>
+                )}
               </div>
               <p className="text-[12px] font-bold text-[#2A0E3F]">{order.delivery_location}</p>
-              <p className="text-[11px] text-[#5B4A6E]">{order.shipping_address}</p>
+              {isEditingAddress ? (
+                <div className="space-y-2 pt-1">
+                  <textarea
+                    rows={3}
+                    value={addressDraft}
+                    onChange={(e) => { setAddressDraft(e.target.value); setAddressError(null); }}
+                    className="w-full text-[12px] p-2.5 bg-white border border-[#D9C3E8] rounded-xl font-medium text-[#2A0E3F] focus:outline-none focus:border-[#6B2D8C]"
+                    placeholder="Full delivery address with PIN code"
+                    autoFocus
+                  />
+                  {addressError && (
+                    <p className="text-[11px] font-bold text-rose-600">{addressError}</p>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleSaveAddress}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#6B2D8C] text-white text-[11px] font-black rounded-lg hover:bg-[#4A2560] transition-all cursor-pointer"
+                    >
+                      <Save className="w-3 h-3" />
+                      Save Address
+                    </button>
+                    <button
+                      onClick={() => { setIsEditingAddress(false); setAddressError(null); }}
+                      className="px-3 py-1.5 bg-white border border-[#E8DEEF] text-[#5B4A6E] text-[11px] font-bold rounded-lg hover:bg-gray-50 transition-all cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-[11px] text-[#5B4A6E]">{order.shipping_address}</p>
+              )}
             </div>
           </div>
 

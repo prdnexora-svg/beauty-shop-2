@@ -4,7 +4,8 @@ import heroSerum from '../../assets/images/luxe/hero-serum.jpg';
 import heroBrushes from '../../assets/images/luxe/hero-brushes.jpg';
 import { Sparkles } from './Sparkles';
 import { LUXE_QUICK_TABS } from './LuxeHeader';
-import { CATEGORIES, TRENDING_PRODUCTS, VERIFIED_SUPPLIERS } from '../../data/mockData';
+import { CATEGORIES, VERIFIED_SUPPLIERS } from '../../data/mockData';
+import { CATALOG_PRODUCTS } from '../../data/catalogProducts';
 
 const CITIES = [
   'All India',
@@ -35,7 +36,9 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
   const suggestions = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (q.length < 2) return [];
-    const products = TRENDING_PRODUCTS
+    // Suggestions come from the same catalogue the results screen searches,
+    // so every suggested product name is guaranteed to produce results.
+    const products = CATALOG_PRODUCTS
       .filter((p) => p.title.toLowerCase().includes(q))
       .slice(0, 4)
       .map((p) => ({ type: 'product' as const, label: p.title }));
