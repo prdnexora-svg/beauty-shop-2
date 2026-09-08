@@ -1,25 +1,20 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   ArrowLeft,
   Search,
-  Filter,
   Clock,
   CheckCircle2,
   MessageSquare,
   FileText,
-  MoreVertical,
   ChevronRight,
   TrendingUp,
   Building2,
   Tag,
-  ArrowRight,
   Download,
   Eye,
   AlertCircle,
   X,
   Scale,
-  Truck,
-  FlaskConical,
   TrendingDown,
   Edit3,
   Check,
@@ -33,6 +28,7 @@ import { addNotification } from '../data/notifications';
 import { db } from '../db/database';
 import type { PopulatedOrder, PopulatedRFQEnquiry } from '../db/types';
 import { OrderConfirmationModal } from './OrderConfirmationModal';
+import { exportToCsv } from '../utils/exportCsv';
 import { downloadOrderInvoice, downloadOrderInvoiceCsv, getOrderLineItems, ORDER_STATUS_LABELS, formatInr, formatDate } from '../utils/invoicePdf';
 
 /**
@@ -41,8 +37,6 @@ import { downloadOrderInvoice, downloadOrderInvoiceCsv, getOrderLineItems, ORDER
  * "Your Orders".
  */
 const RESOLVE_BUYER_ID = 'buyer-prof-priya';
-
-const BUSINESS_DAYS = 30;
 
 function resolveBuyerIdFromRfqs(): string {
   const list = db.getRFQsAndEnquiries();
@@ -76,8 +70,9 @@ function buildRfqListItem(rfq: PopulatedRFQEnquiry) {
     date: new Date(rfq.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
     status: isActiveRfqListItemStatus(rfq.status),
     rawStatus: rfq.status,
-    responses: rfq.quotes_count + 1,
-    quotes: rfq.quotes_count,
+    // Responses must reflect the real quote records — never an inflated count.
+    responses: rfq.quotes_count ?? 0,
+    quotes: rfq.quotes_count ?? 0,
     quantity: `${rfq.quantity_required.toLocaleString()} ${rfq.quantity_unit || 'Units'}`,
     targetPrice: rfq.target_budget ? `₹${rfq.target_budget} / unit` : 'Price on Request',
     urgency: 'Standard',
@@ -92,57 +87,19 @@ function buildRfqListItem(rfq: PopulatedRFQEnquiry) {
 
 interface RFQTrackingScreenProps {
   onBack: () => void;
-  onNavigateToChat: (supplierId: string) => void;
+  onNavigateToChat: (supplierNameOrId: string) => void;
+  onPostRFQ?: () => void;
+  /** One-shot deep-focus from dashboards: preselect an RFQ and optionally open the editor. */
+  focusRequest?: { rfqId: string; openEdit?: boolean } | null;
+  onFocusHandled?: () => void;
 }
-
-const INITIAL_RFQS = [
-  {
-    id: 'RFQ-8821',
-    product: 'Vitamin C Brightening Serum (Bulk)',
-    category: 'Skincare',
-    subcategory: 'Serums & Treatments',
-    date: '24 May 2024',
-    status: 'Quoted',
-    responses: 5,
-    quotes: 3,
-    quantity: '5,000 Units',
-    targetPrice: '₹180 - ₹220 / unit',
-    urgency: 'Standard',
-    details: 'Looking for 15% 3-O-Ethyl Ascorbic Acid serum with UV amber glass dropper packaging.'
-  },
-  {
-    id: 'RFQ-8819',
-    product: 'Professional Hair Spa Steamer',
-    category: 'Salon & Spa Equipment',
-    subcategory: 'Hair Styling & Drying Tools',
-    date: '22 May 2024',
-    status: 'Pending',
-    responses: 12,
-    quotes: 0,
-    quantity: '15 Units',
-    targetPrice: '₹8,500 / unit',
-    urgency: 'Immediate',
-    details: 'Double helmet salon spa steamers with adjustable height and micro-mist features.'
-  },
-  {
-    id: 'RFQ-8790',
-    product: 'Eco-friendly Glass Dropper Bottles (30ml)',
-    category: 'Packaging & Containers',
-    subcategory: 'Bottles (Glass, PET, HDPE)',
-    date: '15 May 2024',
-    status: 'Closed',
-    responses: 8,
-    quotes: 6,
-    quantity: '20,000 Units',
-    targetPrice: '₹12 / unit',
-    urgency: 'Standard',
-    details: 'Matte frosted white 30ml glass bottles with rose gold metallic collar droppers.'
-  }
-];
 
 export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
   onBack,
-  onNavigateToChat
+  onNavigateToChat,
+  onPostRFQ,
+  focusRequest,
+  onFocusHandled
 }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'quoted' | 'closed'>('all');
   const [selectedRfqId, setSelectedRfqId] = useState<string | null>(() => {
@@ -180,6 +137,12 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulatedRfqIds, setSimulatedRfqIds] = useState<Set<string>>(() => new Set());
 
+  // Requirement list search + order-sheet focus target
+  const [listQuery, setListQuery] = useState('');
+  const [highlightedOrderId, setHighlightedOrderId] = useState<string | null>(null);
+  const ordersSectionRef = useRef<HTMLDivElement | null>(null);
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // React state synchronization with the relational database
   useEffect(() => {
     const refresh = () => {
@@ -207,6 +170,22 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
       setSimulatedRfqIds((prev) => new Set(prev).add(selectedRfqId));
     }
   }, [selectedRfqId, simulatedRfqIds]);
+
+  // Apply a one-shot deep-focus request coming from the buyer dashboard
+  // ("Compare Quotes" / "Edit RFQ" on a specific requirement card).
+  useEffect(() => {
+    if (!focusRequest?.rfqId) return;
+    setSelectedRfqId(focusRequest.rfqId);
+    setActiveTab('all');
+    if (focusRequest.openEdit) {
+      // Defer to the end of the frame so the refreshed list state is settled.
+      const t = setTimeout(() => handleOpenEditModal(focusRequest.rfqId), 0);
+      onFocusHandled?.();
+      return () => clearTimeout(t);
+    }
+    onFocusHandled?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusRequest]);
 
   const handleSimulateMore = () => {
     if (!selectedRfqId) return;
@@ -347,11 +326,60 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const filteredRfqs = activeTab === 'all'
+  const filteredRfqs = (activeTab === 'all'
     ? rfqsList
     : activeTab === 'quoted'
       ? rfqsList.filter(r => r.status === 'Quoted' || r.status === 'Negotiating')
-      : rfqsList.filter(r => r.status.toLowerCase() === activeTab);
+      : rfqsList.filter(r => r.status.toLowerCase() === activeTab)
+  ).filter((r) => {
+    if (!listQuery.trim()) return true;
+    const q = listQuery.trim().toLowerCase();
+    return (
+      r.id.toLowerCase().includes(q) ||
+      r.product.toLowerCase().includes(q) ||
+      r.category.toLowerCase().includes(q)
+    );
+  });
+
+  // Export the currently visible requirement list (with live quote summary) to CSV.
+  const handleExportData = () => {
+    exportToCsv(
+      `Nexora_Requirement_Tracking_${new Date().toISOString().split('T')[0]}.csv`,
+      [
+        { label: 'Requirement ID', key: 'id' },
+        { label: 'Requirement', key: 'product' },
+        { label: 'Category', key: 'category' },
+        { label: 'Status', key: 'status' },
+        { label: 'Posted On', key: 'date' },
+        { label: 'Quantity', key: 'quantity' },
+        { label: 'Target Price', key: 'targetPrice' },
+        { label: 'Quotes Received', key: 'quotes' },
+        { label: 'Best Quote (₹/unit)', key: 'bestQuotePrice' },
+        { label: 'Best Quote Supplier', key: 'bestQuoteSupplier' },
+        { label: 'Best Quote Validity', key: 'bestQuoteValidity' }
+      ],
+      filteredRfqs
+    );
+    setToastMessage(`Exported ${filteredRfqs.length} requirement(s) to CSV.`);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // "View Order Sheet" — jump to the order list and spotlight the order so the
+  // confirmation modal flows straight into track / invoice / status actions.
+  const handleViewOrderSheet = (orderId: string) => {
+    setHighlightedOrderId(orderId);
+    requestAnimationFrame(() => {
+      ordersSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+    highlightTimerRef.current = setTimeout(() => setHighlightedOrderId(null), 6000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+    };
+  }, []);
 
   const selectedRfq = rfqsList.find(r => r.id === selectedRfqId);
 
@@ -452,11 +480,17 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="px-5 py-2.5 bg-white border border-[#E8DEEF] rounded-xl text-[13px] font-bold text-[#2A0E3F] flex items-center gap-2 hover:bg-[#FDFBF7] transition-all cursor-pointer">
+            <button
+              onClick={handleExportData}
+              className="px-5 py-2.5 bg-white border border-[#E8DEEF] rounded-xl text-[13px] font-bold text-[#2A0E3F] flex items-center gap-2 hover:bg-[#FDFBF7] transition-all cursor-pointer"
+            >
               <Download className="w-4 h-4" />
               Export Data
             </button>
-            <button className="px-5 py-2.5 bg-[#6B2D8C] text-white rounded-xl text-[13px] font-black flex items-center gap-2 hover:bg-[#4A2560] transition-all shadow-md cursor-pointer">
+            <button
+              onClick={() => onPostRFQ?.()}
+              className="px-5 py-2.5 bg-[#6B2D8C] text-white rounded-xl text-[13px] font-black flex items-center gap-2 hover:bg-[#4A2560] transition-all shadow-md cursor-pointer"
+            >
               <TrendingUp className="w-4 h-4" />
               Post New RFQ
             </button>
@@ -474,9 +508,20 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7E6C96]" />
                 <input
                   type="text"
+                  value={listQuery}
+                  onChange={(e) => setListQuery(e.target.value)}
                   placeholder="Search requirements..."
-                  className="w-full pl-10 pr-4 py-2 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-[12px] font-bold focus:outline-none focus:border-[#C9A961]"
+                  className="w-full pl-10 pr-8 py-2 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-[12px] font-bold focus:outline-none focus:border-[#C9A961]"
                 />
+                {listQuery && (
+                  <button
+                    onClick={() => setListQuery('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7E6C96] hover:text-[#2A0E3F] cursor-pointer"
+                    aria-label="Clear requirement search"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
 
               <div className="flex items-center p-1 bg-[#FDFBF7] rounded-lg border border-[#E8DEEF]">
@@ -498,6 +543,13 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
 
             {/* RFQ Cards */}
             <div className="space-y-4">
+              {filteredRfqs.length === 0 && (
+                <div className="bg-white border border-dashed border-[#D9C3E8] rounded-2xl p-6 text-center">
+                  <p className="text-[13px] text-[#5B4A6E]">
+                    {listQuery ? `No requirements match "${listQuery}".` : 'No requirements under this tab yet.'}
+                  </p>
+                </div>
+              )}
               {filteredRfqs.map((rfq) => (
                 <button
                   key={rfq.id}
@@ -700,7 +752,7 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
 
                             <div className="flex items-center gap-2 w-full md:w-auto">
                               <button
-                                onClick={() => onNavigateToChat(quote.id)}
+                                onClick={() => onNavigateToChat(quote.supplier)}
                                 className="flex-1 md:flex-none px-4 py-2 bg-[#F5EEF8] text-[#6B2D8C] text-[12px] font-black rounded-lg hover:bg-[#E8D5F2] transition-all flex items-center justify-center gap-2 cursor-pointer"
                               >
                                 <MessageSquare className="w-4 h-4" />
@@ -718,7 +770,8 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                                   <button
                                     onClick={() => {
                                       setCounterQuoteId(quote.id);
-                                      setCounterPriceInput(quote.priceNum?.toString() || '');
+                                      setCounterPriceInput((quote.counterPrice || quote.priceNum)?.toString() || '');
+                                      setCounterNotesInput('');
                                       setIsCounterModalOpen(true);
                                     }}
                                     className="px-4 py-2 bg-white border border-[#6B2D8C] text-[#6B2D8C] text-[12px] font-black rounded-lg hover:bg-[#FDFBF7] transition-all cursor-pointer"
@@ -781,7 +834,7 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                 </div>
 
                 {/* Active Orders / Order History */}
-                <div className="space-y-4">
+                <div className="space-y-4" ref={ordersSectionRef}>
                   <h3 className="text-lg font-black text-[#2A0E3F] flex items-center gap-2">
                     <PackageCheck className="w-5 h-5 text-[#6B2D8C]" />
                     Your Orders
@@ -795,7 +848,11 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                   ) : (
                     <div className="space-y-3">
                       {activeOrders.map(order => (
-                        <div key={order.id} className="bg-white border border-[#E8DEEF] rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div key={order.id} className={`bg-white border rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 ${
+                          highlightedOrderId === order.id
+                            ? 'border-[#6B2D8C] ring-4 ring-[#E8D5F2] shadow-lg'
+                            : 'border-[#E8DEEF]'
+                        }`}>
                           <div className="space-y-1.5">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-[12px] font-black text-[#6B2D8C]">{order.order_no}</span>
@@ -939,7 +996,7 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
                             {(quote.status === 'submitted' || quote.status === 'negotiating') && !isQuoteExpired(quote) ? (
                               <div className="flex flex-wrap gap-2">
                                 <button onClick={() => { setIsCompareModalOpen(false); handleUpdateQuoteStatus(quote.id, 'accept'); }} className="px-3 py-1.5 bg-emerald-600 text-white text-[10px] font-black rounded-lg hover:bg-emerald-700 transition-all cursor-pointer">Accept</button>
-                                <button onClick={() => { setIsCompareModalOpen(false); setCounterQuoteId(quote.id); setCounterPriceInput(quote.priceNum?.toString() || ''); setIsCounterModalOpen(true); }} className="px-3 py-1.5 bg-white border border-[#6B2D8C] text-[#6B2D8C] text-[10px] font-black rounded-lg hover:bg-[#FDFBF7] transition-all cursor-pointer">Counter</button>
+                                <button onClick={() => { setIsCompareModalOpen(false); setCounterQuoteId(quote.id); setCounterPriceInput((quote.counterPrice || quote.priceNum)?.toString() || ''); setCounterNotesInput(''); setIsCounterModalOpen(true); }} className="px-3 py-1.5 bg-white border border-[#6B2D8C] text-[#6B2D8C] text-[10px] font-black rounded-lg hover:bg-[#FDFBF7] transition-all cursor-pointer">Counter</button>
                               </div>
                             ) : (
                               <span className={quote.status === 'order_placed' ? 'text-emerald-700 font-bold' : 'text-[#7E6C96]'}>{getQuoteStatusChip(quote.status).label}</span>
@@ -967,6 +1024,116 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
           </div>
         </div>
       )}
+
+      {/* COUNTER OFFER MODAL */}
+      {isCounterModalOpen && counterQuoteId && (() => {
+        const targetQuote = activeQuotes.find((q) => q.id === counterQuoteId);
+        const submitCounter = (e: React.FormEvent) => {
+          e.preventDefault();
+          const price = parseInt(counterPriceInput.replace(/[^0-9]/g, ''), 10);
+          if (!price || price <= 0) {
+            setToastMessage('Enter a valid counter-offer price before sending.');
+            setTimeout(() => setToastMessage(null), 3500);
+            return;
+          }
+          handleUpdateQuoteStatus(counterQuoteId, 'counter', price, counterNotesInput.trim() || undefined);
+          addNotification({
+            type: 'rfq_response',
+            title: `Counter-offer sent: ${targetQuote?.supplier || 'Supplier'}`,
+            description: `₹${price.toLocaleString('en-IN')} / unit${selectedRfq ? ` · ${selectedRfq.product}` : ''}`,
+            priority: 'medium',
+            targetScreen: 'rfq-tracking',
+            targetParams: selectedRfq ? { rfqId: selectedRfq.id } : undefined,
+            sender: { name: 'You', isVerified: true },
+            metadata: selectedRfq ? { rfqId: selectedRfq.id } : undefined
+          });
+          setIsCounterModalOpen(false);
+          setCounterQuoteId(null);
+          setCounterPriceInput('');
+          setCounterNotesInput('');
+        };
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl max-w-lg w-full border border-[#E8DEEF] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+              <div className="p-6 border-b border-[#F4F0E9] bg-[#FDFBF7] flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#F5EEF8] text-[#6B2D8C] flex items-center justify-center">
+                    <TrendingDown className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-[#2A0E3F]">Counter Offer</h3>
+                    <p className="text-xs text-[#5B4A6E]">
+                      Negotiate with {targetQuote?.supplier || 'the supplier'} · quoted ₹{targetQuote?.priceNum ?? '—'} / unit
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setIsCounterModalOpen(false); setCounterQuoteId(null); }}
+                  className="w-8 h-8 rounded-full bg-white border border-[#E8DEEF] text-[#5B4A6E] hover:text-[#2A0E3F] flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={submitCounter} className="p-6 space-y-5 overflow-y-auto">
+                <div className="bg-[#FDFBF7] border border-[#E8DEEF] rounded-2xl p-4 text-[12px] text-[#5B4A6E] leading-relaxed">
+                  Your counter-offer moves this quote to <strong>Negotiating</strong>. The supplier is notified and can
+                  accept, revise or decline it from their portal.
+                  {targetQuote?.validityDate ? (
+                    <span className="block mt-1">Quote validity: <strong>{formatDate(targetQuote.validityDate)}</strong></span>
+                  ) : null}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#2A0E3F] mb-1.5">Counter Price (₹ / unit)</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    required
+                    value={counterPriceInput}
+                    onChange={(e) => setCounterPriceInput(e.target.value)}
+                    className="w-full text-sm p-3 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl font-bold text-[#2A0E3F] focus:outline-none focus:border-[#C9A961]"
+                    placeholder="e.g. 165"
+                  />
+                  {targetQuote && counterPriceInput && parseInt(counterPriceInput.replace(/[^0-9]/g, ''), 10) >= targetQuote.priceNum && (
+                    <p className="mt-1.5 text-[11px] text-amber-700 font-bold">
+                      Your counter is at or above the quoted price — the supplier may simply accept it.
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#2A0E3F] mb-1.5">Message to Supplier (optional)</label>
+                  <textarea
+                    rows={3}
+                    value={counterNotesInput}
+                    onChange={(e) => setCounterNotesInput(e.target.value)}
+                    className="w-full text-xs p-3 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl font-medium text-[#2A0E3F] focus:outline-none focus:border-[#C9A961]"
+                    placeholder="e.g. Accept 165/unit for a 3-month rolling contract with 50% advance..."
+                  />
+                </div>
+
+                <div className="pt-4 border-t border-[#F4F0E9] flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => { setIsCounterModalOpen(false); setCounterQuoteId(null); }}
+                    className="px-5 py-2.5 bg-white border border-[#E8DEEF] text-xs font-bold text-[#5B4A6E] hover:bg-gray-50 rounded-xl transition-all cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 bg-[#6B2D8C] text-white text-xs font-black rounded-xl hover:bg-[#4A2560] transition-all shadow-md flex items-center gap-2 cursor-pointer"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>Send Counter Offer</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* EDIT RFQ MODAL */}
       {isEditModalOpen && (
@@ -1122,7 +1289,14 @@ export const BuyerRFQTrackingScreen: React.FC<RFQTrackingScreenProps> = ({
           isOpen={isOrderModalOpen}
           order={confirmationOrder}
           onClose={() => setIsOrderModalOpen(false)}
-          onViewOrders={() => setIsOrderModalOpen(false)}
+          onOrderUpdated={(updated) => {
+            setConfirmationOrder(updated);
+            setActiveOrders(db.getOrdersByBuyerId(activeBuyerId));
+          }}
+          onViewOrders={() => {
+            setIsOrderModalOpen(false);
+            handleViewOrderSheet(confirmationOrder.id);
+          }}
         />
       )}
     </div>

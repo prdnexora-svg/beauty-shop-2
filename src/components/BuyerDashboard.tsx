@@ -51,8 +51,9 @@ import {
   Flame,
   ArrowUpRight
 } from 'lucide-react';
-import { BuyerEnquiry, BuyerRFQ, VerifiedSupplier } from '../types';
-import { BUYER_MOCK_ENQUIRIES, BUYER_MOCK_RFQS, VERIFIED_SUPPLIERS } from '../data/mockData';
+import { BUYER_MOCK_ENQUIRIES, VERIFIED_SUPPLIERS } from '../data/mockData';
+import { db } from '../db/database';
+import type { PopulatedRFQEnquiry } from '../db/types';
 import { getSavedSupplierIds, subscribeSavedStore, toggleSavedSupplier } from '../data/savedStore';
 import { EditProfileModal, BuyerProfileData } from './EditProfileModal';
 import { FollowerNetworkModal } from './FollowerNetworkModal';
@@ -125,6 +126,19 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   );
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [profileToast, setProfileToast] = useState<string | null>(null);
+
+  // Live requirements from the relational store — the same records the RFQ
+  // tracking screen manages, so quote counts here can never drift from the
+  // comparison view. Canonical demo buyer matches the tracking screen.
+  const [liveRfqs, setLiveRfqs] = useState<PopulatedRFQEnquiry[]>(() =>
+    db.getRFQsAndEnquiries({ buyer_id: 'buyer-prof-priya' })
+  );
+  useEffect(() => {
+    const sync = () => setLiveRfqs(db.getRFQsAndEnquiries({ buyer_id: 'buyer-prof-priya' }));
+    const unsubscribe = db.subscribe(sync);
+    sync();
+    return unsubscribe;
+  }, []);
 
   const { unreadCount } = useNotifications();
 
@@ -582,12 +596,27 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
     return () => clearTimeout(timer);
   }, []);
 
+  const liveQuoteCount = liveRfqs.reduce((sum, r) => sum + (r.quotes_count || 0), 0);
+  const pendingQuoteCount = liveRfqs.reduce(
+    (sum, r) => sum + (r.quotes || []).filter((q) => q.status === 'submitted' || q.status === 'negotiating').length,
+    0
+  );
+
   const stats = [
-    { label: 'Active RFQs', value: '08', icon: ClipboardList, color: '#6B2D8C', trend: '+2 this week', route: 'rfq-tracking' },
-    { label: 'New Quotes', value: '03', icon: BarChart3, color: '#6B2D8C', badge: true, trend: 'Action needed', route: 'rfq-tracking' },
-    { label: 'Sent Enquiries', value: '14', icon: MessageSquare, color: '#8236A0', trend: '4 pending reply', route: 'buyer-enquiry-log' },
-    { label: 'Unread Messages', value: '02', icon: MessageCircle, color: '#2A0E3F', badge: true, trend: 'Aura Labs, LuxeForm', route: 'buyer-dashboard' },
+    { label: 'Active RFQs', value: String(liveRfqs.filter((r) => r.status !== 'closed').length).padStart(2, '0'), icon: ClipboardList, color: '#6B2D8C', trend: `${liveRfqs.length} total posted`, route: 'rfq-tracking' },
+    { label: 'New Quotes', value: String(pendingQuoteCount).padStart(2, '0'), icon: BarChart3, color: '#6B2D8C', badge: pendingQuoteCount > 0, trend: pendingQuoteCount > 0 ? 'Action needed' : `${liveQuoteCount} total received`, route: 'rfq-tracking' },
+    { label: 'Sent Enquiries', value: String(liveRfqs.filter((r) => r.type === 'direct_enquiry').length).padStart(2, '0'), icon: MessageSquare, color: '#8236A0', trend: 'Synced with log', route: 'buyer-enquiry-log' },
+    { label: 'Unread Notifications', value: String(unreadCount).padStart(2, '0'), icon: MessageCircle, color: '#2A0E3F', badge: unreadCount > 0, trend: unreadCount > 0 ? 'Review now' : 'All caught up', route: 'buyer-dashboard' },
   ];
+
+  // Map raw relational statuses to the labels this dashboard was designed for.
+  const rfqStatusLabel = (status: string): string => {
+    if (status === 'new') return 'Active';
+    if (status === 'responded') return 'Quote Received';
+    if (status === 'negotiating') return 'Negotiating';
+    if (status === 'closed') return 'Converted';
+    return 'Closed';
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -1260,8 +1289,13 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                     </div>
 
                     <div className="space-y-4">
-                      {BUYER_MOCK_RFQS.slice(0, 2).map((rfq) => (
-                        <motion.div 
+                      {liveRfqs.length === 0 && (
+                        <div className="bg-white border border-dashed border-[#D9C3E8] rounded-2xl p-6 text-center">
+                          <p className="text-sm text-[#5B4A6E]">No requirements posted yet. Post your first requirement to start receiving quotes.</p>
+                        </div>
+                      )}
+                      {liveRfqs.slice(0, 2).map((rfq) => (
+                        <motion.div
                           key={rfq.id}
                           whileHover={{ scale: 1.01 }}
                           className="bg-white border border-[#E8DEEF] rounded-2xl p-6 shadow-xs hover:shadow-md transition-all"
@@ -1269,30 +1303,30 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                             <div className="space-y-3">
                               <div className="flex items-center gap-2">
-                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black border uppercase tracking-wider ${getStatusColor(rfq.status)}`}>
-                                  {rfq.status}
+                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black border uppercase tracking-wider ${getStatusColor(rfqStatusLabel(rfq.status))}`}>
+                                  {rfqStatusLabel(rfq.status)}
                                 </span>
                                 <span className="text-[10px] font-bold text-[#7E6C96] uppercase tracking-widest">{rfq.category}</span>
                               </div>
-                              <h3 className="text-lg font-bold text-[#2A0E3F]">{rfq.title}</h3>
+                              <h3 className="text-lg font-bold text-[#2A0E3F]">{rfq.requirement_title}</h3>
                               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px] font-bold text-[#5B4A6E]">
                                 <div className="flex items-center gap-1.5">
                                   <Package className="w-3.5 h-3.5 text-[#6B2D8C]" />
-                                  Qty: {rfq.quantity}
+                                  Qty: {rfq.quantity_required.toLocaleString()} {rfq.quantity_unit}
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                   <Users className="w-3.5 h-3.5 text-[#6B2D8C]" />
-                                  {rfq.responsesCount} Supplier Responses
+                                  {rfq.quotes_count || 0} Supplier Response{(rfq.quotes_count || 0) === 1 ? '' : 's'}
                                 </div>
                               </div>
                             </div>
 
                             <div className="flex flex-row md:flex-col gap-2 pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-[#F4F0E9] md:pl-8 min-w-[140px]">
-                              <button onClick={() => setActiveTab('rfqs')} className="flex-1 py-2.5 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-[11px] font-black text-[#2A0E3F] hover:bg-white transition-all">
+                              <button onClick={() => onNavigate('rfq-tracking', { rfqId: rfq.id })} className="flex-1 py-2.5 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl text-[11px] font-black text-[#2A0E3F] hover:bg-white transition-all cursor-pointer">
                                 View RFQ
                               </button>
-                              <button onClick={() => setActiveTab('rfqs')} className="flex-1 py-2.5 bg-[#6B2D8C] text-white rounded-xl text-[11px] font-black shadow-sm hover:bg-[#4A2560] transition-all">
-                                Compare Quotes
+                              <button onClick={() => onNavigate('rfq-tracking', { rfqId: rfq.id })} className="flex-1 py-2.5 bg-[#6B2D8C] text-white rounded-xl text-[11px] font-black shadow-sm hover:bg-[#4A2560] transition-all cursor-pointer">
+                                Compare Quotes{rfq.quotes_count ? ` (${rfq.quotes_count})` : ''}
                               </button>
                             </div>
                           </div>
@@ -1569,34 +1603,46 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
               </div>
 
               <div className="space-y-4">
-                {BUYER_MOCK_RFQS.map((rfq) => (
+                {liveRfqs.length === 0 && (
+                  <div className="bg-white border border-dashed border-[#D9C3E8] rounded-2xl p-8 text-center">
+                    <p className="text-sm font-bold text-[#2A0E3F]">No sourcing requests yet</p>
+                    <p className="text-xs text-[#5B4A6E] mt-1">Post a requirement and supplier quotes will appear here for comparison.</p>
+                  </div>
+                )}
+                {liveRfqs.map((rfq) => (
                   <div key={rfq.id} className="bg-white border border-[#E8DEEF] rounded-2xl p-6 shadow-xs space-y-4">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-black border uppercase tracking-wider ${getStatusColor(rfq.status)}`}>
-                            {rfq.status}
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-black border uppercase tracking-wider ${getStatusColor(rfqStatusLabel(rfq.status))}`}>
+                            {rfqStatusLabel(rfq.status)}
                           </span>
                           <span className="text-[10px] font-bold text-[#7E6C96] uppercase tracking-widest">{rfq.category}</span>
-                          <span className="text-[10px] text-[#7E6C96]">• Posted {rfq.postedDate}</span>
+                          <span className="text-[10px] text-[#7E6C96]">• Posted {new Date(rfq.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                         </div>
-                        <h3 className="text-lg font-bold text-[#2A0E3F]">{rfq.title}</h3>
-                        <p className="text-xs text-[#5B4A6E]">{rfq.description}</p>
+                        <h3 className="text-lg font-bold text-[#2A0E3F]">{rfq.requirement_title}</h3>
+                        <p className="text-xs text-[#5B4A6E]">{rfq.details}</p>
                         <div className="flex flex-wrap items-center gap-6 text-xs font-bold text-[#5B4A6E] pt-2">
                           <div className="flex items-center gap-1.5">
-                            <Package className="w-4 h-4 text-[#6B2D8C]" /> Required Qty: {rfq.quantity}
+                            <Package className="w-4 h-4 text-[#6B2D8C]" /> Required Qty: {rfq.quantity_required.toLocaleString()} {rfq.quantity_unit}
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <Users className="w-4 h-4 text-[#6B2D8C]" /> {rfq.responsesCount} Manufacturer Quotes Received
+                            <Users className="w-4 h-4 text-[#6B2D8C]" /> {rfq.quotes_count || 0} Manufacturer Quote{(rfq.quotes_count || 0) === 1 ? '' : 's'} Received
                           </div>
                         </div>
                       </div>
 
                       <div className="flex flex-col gap-2 shrink-0">
-                        <button className="px-5 py-2.5 bg-[#6B2D8C] text-white rounded-xl text-xs font-extrabold shadow-sm hover:bg-[#4A2560] transition-all cursor-pointer">
-                          Compare Quotes (3)
+                        <button
+                          onClick={() => onNavigate('rfq-tracking', { rfqId: rfq.id })}
+                          className="px-5 py-2.5 bg-[#6B2D8C] text-white rounded-xl text-xs font-extrabold shadow-sm hover:bg-[#4A2560] transition-all cursor-pointer"
+                        >
+                          Compare Quotes{rfq.quotes_count ? ` (${rfq.quotes_count})` : ''}
                         </button>
-                        <button className="px-5 py-2.5 bg-[#FDFBF7] border border-[#E8DEEF] text-[#2A0E3F] rounded-xl text-xs font-bold hover:bg-white transition-all cursor-pointer">
+                        <button
+                          onClick={() => onNavigate('rfq-tracking', { rfqId: rfq.id, openEdit: true })}
+                          className="px-5 py-2.5 bg-[#FDFBF7] border border-[#E8DEEF] text-[#2A0E3F] rounded-xl text-xs font-bold hover:bg-white transition-all cursor-pointer"
+                        >
                           Edit RFQ
                         </button>
                       </div>

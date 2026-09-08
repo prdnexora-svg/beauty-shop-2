@@ -660,6 +660,12 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                 id="search-main-input"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('search-results-area')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
                 placeholder="Search products, suppliers, OEM formulations, machines..."
                 className="w-full bg-transparent border-none text-[14px] text-[#2A0E3F] placeholder:text-[#B9A8C6] focus:outline-none"
               />
@@ -688,10 +694,15 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
               )}
             </div>
 
-            {/* Submit Button */}
+            {/* Submit Button — results already filter live, so this confirms
+                the query and brings the results into view. */}
             <button
               id="search-submit-btn"
-              className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-bold text-[14px] px-8 py-2.5 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 active:scale-98 shrink-0"
+              type="button"
+              onClick={() => {
+                document.getElementById('search-results-area')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-bold text-[14px] px-8 py-2.5 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 active:scale-98 shrink-0 cursor-pointer"
             >
               <Search className="w-4 h-4" />
               <span>Search</span>
@@ -897,7 +908,7 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
         </aside>
 
         {/* Right Main Results Area */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0" id="search-results-area">
           
           {/* Result Summary Bar */}
           <div className="mb-6 bg-white border border-[#E8DEEF] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">

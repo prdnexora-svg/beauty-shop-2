@@ -1599,7 +1599,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                         </p>
                       </div>
 
-                      <button className="w-full bg-[#6B2D8C] text-white text-xs font-extrabold py-2.5 rounded-xl shadow-xs">
+                      <button type="button" data-inert="preview" tabIndex={-1} aria-hidden className="w-full bg-[#6B2D8C] text-white text-xs font-extrabold py-2.5 rounded-xl shadow-xs pointer-events-none">
                         {formCtaText} →
                       </button>
                     </div>
@@ -1621,7 +1621,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                         <p className="text-xs font-bold leading-snug drop-shadow-md">
                           {formHeadline || 'Reel Headline'}
                         </p>
-                        <button className="w-full bg-[#6B2D8C] text-white text-[11px] font-extrabold py-2 rounded-lg shadow-sm">
+                        <button type="button" data-inert="preview" tabIndex={-1} aria-hidden className="w-full bg-[#6B2D8C] text-white text-[11px] font-extrabold py-2 rounded-lg shadow-sm pointer-events-none">
                           {formCtaText}
                         </button>
                       </div>
@@ -1647,7 +1647,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                         </h4>
                       </div>
 
-                      <button className="w-full bg-[#6B2D8C] text-white text-xs font-extrabold py-2.5 rounded-xl">
+                      <button type="button" data-inert="preview" tabIndex={-1} aria-hidden className="w-full bg-[#6B2D8C] text-white text-xs font-extrabold py-2.5 rounded-xl pointer-events-none">
                         {formCtaText}
                       </button>
                     </div>
@@ -1885,7 +1885,7 @@ export const SponsoredAdManager: React.FC<SponsoredAdManagerProps> = ({
                 </span>
                 <h4 className="font-extrabold text-sm text-stone-900">{previewModalCampaign.adTitle}</h4>
                 <p className="text-xs text-stone-600">{previewModalCampaign.subtitle}</p>
-                <button className="w-full bg-[#6B2D8C] text-white font-extrabold py-2.5 rounded-lg mt-2">
+                <button type="button" data-inert="preview" tabIndex={-1} aria-hidden className="w-full bg-[#6B2D8C] text-white font-extrabold py-2.5 rounded-lg mt-2 pointer-events-none">
                   {previewModalCampaign.ctaText}
                 </button>
               </div>
