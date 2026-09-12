@@ -90,8 +90,14 @@ export function mapSupplierRow(item: any): VerifiedSupplier {
   const categories = Array.isArray(item.categories) ? item.categories : [];
   const city = item.city || '';
   const state = item.state || '';
-  const status = item.status || item.onboarding_status || 'pending_verification';
-  const isVerified = Boolean(item.is_verified ?? item.is_verified_supplier);
+  const isVerified = Boolean(
+    item.is_verified ||
+    item.is_verified_supplier ||
+    item.verification_level === 'Nexora Verified' ||
+    item.verification_level === 'Business Verified' ||
+    (typeof item.trust_score === 'number' && item.trust_score >= 80)
+  );
+  const status = item.status || (item.onboarding_status === 'approved' || isVerified ? 'active' : (item.onboarding_status || 'pending_verification'));
 
   return {
     id: item.id,
@@ -102,20 +108,20 @@ export function mapSupplierRow(item: any): VerifiedSupplier {
     state,
     isVerified,
     status,
-    onboardingStatus: item.onboarding_status || status,
-    isVerifiedSupplier: Boolean(item.is_verified_supplier ?? isVerified),
+    onboardingStatus: item.onboarding_status || (isVerified ? 'approved' : status),
+    isVerifiedSupplier: isVerified,
     about: item.about || item.brand_name || item.manufacturing_capabilities || '',
     logoUrl: item.logo_url || item.cover_image_url || '',
     isGstVerified: Boolean(item.is_gst_verified ?? true),
     isIsoCertified: Boolean(item.is_iso_certified ?? false),
-    isBusinessVerified: Boolean(item.is_verified ?? true),
+    isBusinessVerified: Boolean(item.is_verified ?? isVerified),
     isGmpCertified: Boolean(item.is_gmp_certified ?? false),
     isFdaRegistered: Boolean(item.is_fda_registered ?? false),
     categories,
     phone: item.phone || '',
     whatsapp: item.whatsapp || item.phone || '',
     responseRate: item.response_rate != null ? `${item.response_rate}%` : '95%',
-    trustScore: item.trust_score || 80,
+    trustScore: item.trust_score || (isVerified ? 92 : 65),
     reliabilityRating: item.trust_score ? item.trust_score / 20 : 4.5,
     productQualityRating: 4.8,
     overallRating: item.trust_score ? item.trust_score / 20 : 4.6,
@@ -128,7 +134,15 @@ export function mapSupplierRow(item: any): VerifiedSupplier {
     monthlyCapacity: item.monthly_capacity || '',
     facilityArea: item.facility_area || '',
     moq: item.moq || 'Contact for MOQ',
-    verificationBadge: item.verification_level || (isVerified ? 'Nexora Verified' : 'Pending Verification'),
+    verificationBadge: item.verification_level || (
+      typeof item.trust_score === 'number' && item.trust_score >= 95
+        ? 'Platinum Verified'
+        : item.is_gst_verified
+        ? 'GST Verified'
+        : isVerified
+        ? 'Nexora Verified'
+        : 'Pending Audit'
+    ),
     certificationsList: item.certifications || (item.is_gst_verified ? ['GST'] : []),
     locationDetails: {
       industrialZone: `${city} Industrial Hub`,

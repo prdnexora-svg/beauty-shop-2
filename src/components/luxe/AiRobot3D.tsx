@@ -1,248 +1,274 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, Bot, Zap, ShieldCheck, Activity, RotateCcw, Cpu } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { motion, useMotionValue, useSpring, useTransform } from 'motion/react';
+import { Sparkles, Bot, ShieldCheck, Zap, RefreshCw, MessageSquare } from 'lucide-react';
 
 interface AiRobot3DProps {
-  className?: string;
   onRobotClick?: () => void;
 }
 
-const AI_MESSAGES = [
-  "✦ AI Procurement Bot: 99.4% Match for Bio-Peptides!",
-  "✦ Scanning 48+ Verified OEM Labs in Mumbai & Delhi...",
-  "✦ Instant Quote Generated: ₹340/unit (MOQ 100 pcs)",
-  "✦ Drag or Hover to rotate 3D AI Assistant!",
-  "✦ Automated RFQ Broadcast active via WhatsApp & Email"
-];
-
-export const AiRobot3D: React.FC<AiRobot3DProps> = ({ className = '', onRobotClick }) => {
-  const [rotation, setRotation] = useState({ x: -5, y: 15, z: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+export const AiRobot3D: React.FC<AiRobot3DProps> = ({ onRobotClick }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [activeMessageIndex, setActiveMessageIndex] = useState(0);
-  const [pulseCore, setPulseCore] = useState(false);
-  const [clickSpin, setClickSpin] = useState(false);
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [speechIndex, setSpeechIndex] = useState(0);
+  const [manualRotationY, setManualRotationY] = useState(0);
+
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Auto idle rotation & floating
-  useEffect(() => {
-    if (isDragging || isHovered) return;
-    const interval = setInterval(() => {
-      setRotation(prev => ({
-        x: Math.sin(Date.now() / 1500) * 8 - 4,
-        y: (prev.y + 0.4) % 360,
-        z: Math.cos(Date.now() / 2000) * 4
-      }));
-    }, 30);
-    return () => clearInterval(interval);
-  }, [isDragging, isHovered]);
+  // Mouse tilt physics for 3D perspective effect
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
-  // Cycle messages
-  useEffect(() => {
-    const msgInterval = setInterval(() => {
-      setActiveMessageIndex((prev) => (prev + 1) % AI_MESSAGES.length);
-      setPulseCore(true);
-      setTimeout(() => setPulseCore(false), 800);
-    }, 4500);
-    return () => clearInterval(msgInterval);
-  }, []);
+  // Smooth springs for 3D rotation on hover
+  const rotateXSpring = useSpring(useTransform(mouseY, [-100, 100], [15, -15]), { stiffness: 200, damping: 20 });
+  const rotateYSpring = useSpring(useTransform(mouseX, [-100, 100], [-25, 25]), { stiffness: 200, damping: 20 });
+
+  const speechBubbles = [
+    '✨ Hi! I am Nexora AI. Hover or drag to rotate me in 3D!',
+    '🔍 Auto-matching 5,000+ verified cosmetics suppliers...',
+    '⚡ 99.4% instant quote accuracy for beauty RFQs!',
+    '💎 Click me to spin & discover premium OEM labs!',
+  ];
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isDragging) {
-      const deltaX = e.clientX - dragStart.x;
-      const deltaY = e.clientY - dragStart.y;
-      setRotation(prev => ({
-        x: Math.max(-45, Math.min(45, prev.x - deltaY * 0.5)),
-        y: prev.y + deltaX * 0.5,
-        z: prev.z
-      }));
-      setDragStart({ x: e.clientX, y: e.clientY });
-    } else if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      const tiltY = ((e.clientX - centerX) / (rect.width / 2)) * 25;
-      const tiltX = -((e.clientY - centerY) / (rect.height / 2)) * 20;
-      setRotation({ x: tiltX, y: tiltY, z: tiltY * 0.2 });
-    }
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    mouseX.set(e.clientX - centerX);
+    mouseY.set(e.clientY - centerY);
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setDragStart({ x: e.clientX, y: e.clientY });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    mouseX.set(0);
+    mouseY.set(0);
   };
 
   const handleClick = () => {
-    setClickSpin(true);
-    setPulseCore(true);
-    setActiveMessageIndex((prev) => (prev + 1) % AI_MESSAGES.length);
-    setTimeout(() => setClickSpin(false), 900);
-    setTimeout(() => setPulseCore(false), 600);
+    setIsSpinning(true);
+    setManualRotationY((prev) => prev + 360);
+    setSpeechIndex((prev) => (prev + 1) % speechBubbles.length);
     if (onRobotClick) onRobotClick();
-  };
-
-  const resetRotation = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setRotation({ x: -5, y: 15, z: 0 });
+    setTimeout(() => setIsSpinning(false), 1000);
   };
 
   return (
-    <div 
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        setIsDragging(false);
-      }}
-      className={`relative flex flex-col items-center justify-center select-none cursor-grab active:cursor-grabbing ${className}`}
-      style={{ perspective: '1200px' }}
-    >
-      {/* Interactive Speech / AI Status Bubble above Robot */}
-      <div 
-        onClick={handleClick}
-        className="mb-3 transition-all duration-300 transform hover:scale-105 cursor-pointer z-30"
+    <div className="relative flex flex-col items-center justify-center select-none py-2">
+      {/* Speech Bubble / Floating AI Status Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-3 relative"
       >
-        <div className="glass-card-dark bg-[#2A0E3F]/85 backdrop-blur-md rounded-2xl px-4 py-2 border border-[#C9A961]/50 shadow-[0_10px_25px_rgba(42,14,63,0.5)] flex items-center gap-2.5 max-w-[280px]">
-          <span className="relative flex h-2.5 w-2.5 shrink-0">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C9A961] opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#EFD9A0]"></span>
+        <div className="bg-[#1F0A2E]/90 border border-purple-300/30 text-white text-[11.5px] font-semibold px-3.5 py-1.5 rounded-full shadow-lg backdrop-blur-md flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
           </span>
-          <p className="text-[11.5px] font-semibold text-white leading-tight truncate">
-            {AI_MESSAGES[activeMessageIndex]}
-          </p>
-          <Sparkles className="w-3.5 h-3.5 text-[#EFD9A0] shrink-0 animate-pulse" />
+          <span className="text-[#EFD9A0] font-bold">Nexora 3D AI</span>
+          <span className="text-white/80 hidden sm:inline">{speechBubbles[speechIndex]}</span>
         </div>
-        {/* Little triangle tail */}
-        <div className="w-2.5 h-2.5 bg-[#2A0E3F] border-r border-b border-[#C9A961]/50 rotate-45 mx-auto -mt-1.5"></div>
-      </div>
+      </motion.div>
 
-      {/* 3D Robot Container with Perspective & Transform */}
-      <div 
+      {/* 3D Robot Container with Perspective */}
+      <div
+        ref={containerRef}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         onClick={handleClick}
-        className="relative w-48 h-56 md:w-56 md:h-64 flex items-center justify-center transition-transform duration-200"
-        style={{
-          transformStyle: 'preserve-3d',
-          transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) rotateZ(${rotation.z}deg) ${clickSpin ? 'rotateY(360deg) scale(1.1)' : ''}`,
-          transition: clickSpin ? 'transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)' : isDragging ? 'none' : 'transform 0.15s ease-out'
-        }}
+        className="relative w-44 h-52 sm:w-52 sm:h-60 cursor-pointer flex items-center justify-center group"
+        style={{ perspective: 1000 }}
       >
-        {/* Ambient Back Glow */}
-        <div className={`absolute inset-4 rounded-full bg-gradient-to-tr from-[#6B2D8C]/40 via-[#C9A961]/30 to-[#8236A0]/40 blur-2xl transition-opacity duration-500 ${isHovered ? 'opacity-90 scale-110' : 'opacity-60'}`} />
+        {/* Subtle glowing platform ring beneath robot */}
+        <div className="absolute bottom-2 w-32 h-8 bg-gradient-to-r from-purple-500/20 via-[#EFD9A0]/30 to-purple-500/20 rounded-full blur-md animate-pulse" />
+        <div className="absolute bottom-4 w-28 h-4 border border-[#EFD9A0]/40 rounded-full transform rotate-x-60 animate-spin-slow opacity-60" />
 
-        {/* Orbiting 3D Holographic Ring 1 (Gold) */}
-        <div 
-          className="absolute w-52 h-52 md:w-60 md:h-60 rounded-full border border-[#C9A961]/60 pointer-events-none"
+        {/* Floating 3D Robot Body */}
+        <motion.div
           style={{
-            transform: 'rotateX(75deg) rotateY(15deg)',
-            animation: 'spin 12s linear infinite',
-            boxShadow: '0 0 15px rgba(201, 169, 97, 0.4), inset 0 0 15px rgba(201, 169, 97, 0.2)'
+            rotateX: rotateXSpring,
+            rotateY: rotateYSpring,
+            transformStyle: 'preserve-3d',
           }}
-        >
-          {/* Node on Ring */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#EFD9A0] shadow-[0_0_10px_#EFD9A0]"></div>
-        </div>
-
-        {/* Orbiting 3D Holographic Ring 2 (Purple) */}
-        <div 
-          className="absolute w-44 h-44 md:w-52 md:h-52 rounded-full border border-[#E8D5F2]/40 pointer-events-none"
-          style={{
-            transform: 'rotateX(45deg) rotateY(-35deg)',
-            animation: 'spin 8s linear infinite reverse',
-            boxShadow: '0 0 12px rgba(232, 213, 242, 0.3)'
+          animate={{
+            y: [0, -12, 0],
+            rotateY: isSpinning ? manualRotationY : undefined,
           }}
+          transition={{
+            y: {
+              duration: 3.5,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            },
+            rotateY: {
+              duration: isSpinning ? 0.9 : 0.2,
+              ease: 'easeOut',
+            },
+          }}
+          className="relative w-full h-full flex flex-col items-center justify-center"
         >
-          <div className="absolute bottom-0 right-1/4 w-2.5 h-2.5 rounded-full bg-[#E8D5F2] shadow-[0_0_8px_#E8D5F2]"></div>
+          {/* SVG 3D AI Robot Design */}
+          <svg
+            viewBox="0 0 200 240"
+            className="w-full h-full drop-shadow-[0_15px_25px_rgba(107,45,140,0.5)] transition-transform duration-300 group-hover:scale-105"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Holographic Orbit Ring around robot */}
+            <g className="animate-spin-slow" style={{ transformOrigin: '100px 120px' }}>
+              <ellipse cx="100" cy="120" rx="85" ry="28" stroke="url(#orbitGlow)" strokeWidth="1.8" strokeDasharray="6 4" opacity="0.8" />
+              <circle cx="170" cy="130" r="4" fill="#EFD9A0" className="animate-ping" />
+            </g>
+
+            {/* Antenna with Pulsing Crystal Sphere */}
+            <path d="M100 42 V22" stroke="url(#metallicGradient)" strokeWidth="3.5" strokeLinecap="round" />
+            <circle cx="100" cy="18" r="7" fill="url(#goldSphere)" />
+            <circle cx="100" cy="18" r="10" stroke="#EFD9A0" strokeWidth="1.5" opacity="0.6" className="animate-ping" />
+
+            {/* Robot Head Outer Shell */}
+            <rect x="55" y="42" width="90" height="65" rx="28" fill="url(#metallicGradient)" stroke="url(#borderGlow)" strokeWidth="2" />
+
+            {/* Visor Screen */}
+            <rect x="65" y="52" width="70" height="42" rx="18" fill="#0D0314" stroke="url(#visorBorder)" strokeWidth="1.5" />
+            <rect x="68" y="55" width="64" height="36" rx="15" fill="url(#screenGradient)" />
+
+            {/* Glowing Digital Eyes */}
+            <motion.g
+              animate={{
+                scaleY: [1, 1, 0.1, 1, 1],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                repeatDelay: 2,
+              }}
+              style={{ transformOrigin: '100px 73px' }}
+            >
+              {/* Left Eye */}
+              <circle cx="83" cy="73" r="6" fill="#00FFCC" className="shadow-[0_0_10px_#00FFCC]" />
+              <circle cx="83" cy="73" r="3" fill="#FFFFFF" />
+
+              {/* Right Eye */}
+              <circle cx="117" cy="73" r="6" fill="#00FFCC" className="shadow-[0_0_10px_#00FFCC]" />
+              <circle cx="117" cy="73" r="3" fill="#FFFFFF" />
+            </motion.g>
+
+            {/* Friendly Digital Smile / Data Indicator */}
+            <path d="M90 84 Q100 89 110 84" stroke="#EFD9A0" strokeWidth="2" strokeLinecap="round" />
+
+            {/* Neck Joint */}
+            <rect x="88" y="106" width="24" height="10" rx="3" fill="url(#jointGradient)" />
+
+            {/* Torso / Body */}
+            <path d="M60 116 Q100 110 140 116 L130 185 Q100 195 70 185 Z" fill="url(#metallicGradient)" stroke="url(#borderGlow)" strokeWidth="2" />
+
+            {/* Chest Core Crystal Arc React Reactor */}
+            <circle cx="100" cy="150" r="16" fill="#1F0A2E" stroke="#6B2D8C" strokeWidth="2" />
+            <circle cx="100" cy="150" r="12" fill="url(#coreGlow)" className="animate-pulse" />
+            <polygon points="100,140 109,155 91,155" fill="#EFD9A0" opacity="0.9" />
+
+            {/* Arms / Shoulder Pads */}
+            <rect x="42" y="122" width="16" height="45" rx="8" fill="url(#metallicGradient)" stroke="url(#borderGlow)" strokeWidth="1.5" transform="rotate(12 50 122)" />
+            <rect x="142" y="122" width="16" height="45" rx="8" fill="url(#metallicGradient)" stroke="url(#borderGlow)" strokeWidth="1.5" transform="rotate(-12 150 122)" />
+
+            {/* Floating Hands */}
+            <circle cx="45" cy="176" r="6" fill="url(#goldSphere)" />
+            <circle cx="155" cy="176" r="6" fill="url(#goldSphere)" />
+
+            {/* Gradient Definitions */}
+            <defs>
+              <linearGradient id="metallicGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#4A1E60" />
+                <stop offset="50%" stopColor="#2A0E3F" />
+                <stop offset="100%" stopColor="#170624" />
+              </linearGradient>
+              <linearGradient id="borderGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#EFD9A0" />
+                <stop offset="50%" stopColor="#6B2D8C" />
+                <stop offset="100%" stopColor="#EFD9A0" />
+              </linearGradient>
+              <linearGradient id="goldSphere" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#FFF2D1" />
+                <stop offset="50%" stopColor="#C9A961" />
+                <stop offset="100%" stopColor="#8A6C29" />
+              </linearGradient>
+              <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#00FFCC" />
+                <stop offset="60%" stopColor="#6B2D8C" />
+                <stop offset="100%" stopColor="#1A0628" />
+              </radialGradient>
+              <linearGradient id="screenGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#1A072E" />
+                <stop offset="100%" stopColor="#080112" />
+              </linearGradient>
+              <linearGradient id="visorBorder" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#00FFCC" />
+                <stop offset="100%" stopColor="#EFD9A0" />
+              </linearGradient>
+              <linearGradient id="orbitGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#EFD9A0" />
+                <stop offset="50%" stopColor="#00FFCC" />
+                <stop offset="100%" stopColor="#6B2D8C" />
+              </linearGradient>
+              <linearGradient id="jointGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#8A6C29" />
+                <stop offset="100%" stopColor="#C9A961" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </motion.div>
+
+        {/* Hover Hint Overlay */}
+        <div className="absolute -bottom-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+          <span className="text-[10px] font-bold text-[#EFD9A0] bg-[#170624]/90 px-2.5 py-1 rounded-full border border-[#EFD9A0]/30 shadow-lg flex items-center gap-1">
+            <RefreshCw className="w-3 h-3 animate-spin" /> Click or drag to 3D rotate
+          </span>
         </div>
-
-        {/* 3D Robot Head & Body Structure */}
-        <div className="relative flex flex-col items-center justify-center z-20">
-          
-          {/* Floating Robot Antenna */}
-          <div className="flex flex-col items-center -mb-1 z-30">
-            <div className={`w-3 h-3 rounded-full bg-gradient-to-tr from-[#C9A961] to-[#FFF] shadow-[0_0_12px_#EFD9A0] transition-transform duration-300 ${pulseCore ? 'scale-150 shadow-[0_0_20px_#EFD9A0]' : 'animate-pulse'}`} />
-            <div className="w-1 h-3 bg-gradient-to-b from-[#C9A961] to-[#6B2D8C]" />
-          </div>
-
-          {/* Robot Head (Sleek Chrome & Glass Helmet) */}
-          <div className="relative w-28 h-24 md:w-32 md:h-28 rounded-[28px] bg-gradient-to-b from-[#FAF7F2] via-[#E5D4ED] to-[#3D1E4E] p-1.5 shadow-[0_15px_35px_rgba(42,14,63,0.5)] border border-white/60 overflow-hidden group">
-            
-            {/* Glossy Visor Highlight */}
-            <div className="absolute top-0 inset-x-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent pointer-events-none z-20"></div>
-
-            {/* Dark Cyber Visor */}
-            <div className="w-full h-full bg-[#1A0D24] rounded-[22px] flex items-center justify-center relative overflow-hidden border border-[#6B2D8C]/50 shadow-inner">
-              
-              {/* Scanlines Effect */}
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(201,169,97,0.05)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none"></div>
-
-              {/* Glowing LED Eyes */}
-              <div className="flex items-center justify-center gap-4 relative z-10">
-                {/* Left Eye */}
-                <div className={`relative w-6 h-6 rounded-full bg-gradient-to-tr from-[#6B2D8C] via-[#C9A961] to-[#EFD9A0] shadow-[0_0_15px_#C9A961] flex items-center justify-center transition-transform duration-300 ${clickSpin ? 'scale-y-10' : ''}`}>
-                  <div className="w-2.5 h-2.5 rounded-full bg-white shadow-[0_0_6px_#FFF]" />
-                </div>
-                {/* Right Eye */}
-                <div className={`relative w-6 h-6 rounded-full bg-gradient-to-tr from-[#6B2D8C] via-[#C9A961] to-[#EFD9A0] shadow-[0_0_15px_#C9A961] flex items-center justify-center transition-transform duration-300 ${clickSpin ? 'scale-y-10' : ''}`}>
-                  <div className="w-2.5 h-2.5 rounded-full bg-white shadow-[0_0_6px_#FFF]" />
-                </div>
-              </div>
-
-              {/* Interactive Audio Wave Mouth Accent */}
-              <div className="absolute bottom-2 inset-x-0 flex items-center justify-center gap-1 opacity-80">
-                <span className="w-1 h-1.5 bg-[#C9A961] rounded-full animate-bounce"></span>
-                <span className="w-1 h-3 bg-[#EFD9A0] rounded-full animate-bounce delay-100"></span>
-                <span className="w-1 h-2 bg-[#C9A961] rounded-full animate-bounce delay-200"></span>
-                <span className="w-1 h-3.5 bg-[#EFD9A0] rounded-full animate-bounce delay-150"></span>
-                <span className="w-1 h-1.5 bg-[#C9A961] rounded-full animate-bounce delay-75"></span>
-              </div>
-            </div>
-          </div>
-
-          {/* Neck Joint */}
-          <div className="w-10 h-2.5 bg-gradient-to-r from-[#2A0E3F] via-[#C9A961] to-[#2A0E3F] rounded-full my-0.5 shadow-xs border border-white/30" />
-
-          {/* Robot Torso / Body */}
-          <div className="relative w-32 h-24 md:w-36 md:h-28 rounded-[24px] bg-gradient-to-br from-[#3D1E4E] via-[#54276E] to-[#2A0E3F] p-2 shadow-[0_20px_45px_rgba(20,5,35,0.6)] border border-[#C9A961]/40 flex flex-col items-center justify-center">
-            
-            {/* Metallic Collar Plate */}
-            <div className="absolute top-1 inset-x-4 h-1.5 bg-gradient-to-r from-transparent via-[#C9A961]/60 to-transparent rounded-full"></div>
-
-            {/* Glowing AI Power Core */}
-            <div className={`relative w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#1A0D24] border-2 border-[#C9A961] flex items-center justify-center shadow-[0_0_20px_rgba(201,169,97,0.5)] transition-all duration-300 ${pulseCore ? 'scale-125 border-white shadow-[0_0_30px_#EFD9A0]' : ''}`}>
-              <Cpu className="w-5 h-5 text-[#EFD9A0] animate-pulse" />
-              <div className="absolute inset-0 rounded-full border border-[#EFD9A0]/40 animate-ping opacity-50" />
-            </div>
-
-            {/* B2B Badge Accent */}
-            <div className="mt-1.5 px-2.5 py-0.5 rounded-full bg-white/10 backdrop-blur-xs border border-white/20 text-[9px] font-extrabold uppercase tracking-widest text-[#EFD9A0]">
-              Nexora AI v2.4
-            </div>
-          </div>
-
-        </div>
-
-        {/* Base Shadow Float */}
-        <div className="absolute -bottom-6 w-36 h-6 bg-[#2A0E3F]/40 rounded-full blur-md pointer-events-none transform rotateX(75deg) scale-y-50"></div>
       </div>
 
-      {/* Helper Interaction Hint */}
-      <div className="mt-2 flex items-center gap-1.5 text-[10.5px] font-medium text-white/70 bg-white/10 backdrop-blur-xs px-3 py-1 rounded-full border border-white/20 transition-opacity duration-300 hover:bg-white/20">
-        <RotateCcw className="w-3 h-3 text-[#EFD9A0]" />
-        <span>Hover, Drag or Click to Interact</span>
-        <button 
-          onClick={resetRotation}
-          title="Reset 3D Angle"
-          className="ml-1.5 text-white/50 hover:text-white underline"
+      {/* Floating UI Status Cards with Pulsing & Floating Animations */}
+      <div className="w-full max-w-xs space-y-2.5 mt-2">
+        {/* Floating Card 1: AI Match Accuracy */}
+        <motion.div
+          animate={{ y: [0, -5, 0] }}
+          transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+          className="bg-white/10 border border-white/20 hover:border-[#EFD9A0]/50 rounded-xl p-2.5 backdrop-blur-md shadow-lg flex items-center justify-between text-white transition-all"
         >
-          Reset
-        </button>
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              <Zap className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <p className="text-[10px] uppercase font-bold text-white/70">AI Match Engine</p>
+              <p className="text-xs font-black text-white">99.4% Supplier Precision</p>
+            </div>
+          </div>
+          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+            ACTIVE
+          </span>
+        </motion.div>
+
+        {/* Floating Card 2: Verified Security Guard */}
+        <motion.div
+          animate={{ y: [0, -6, 0] }}
+          transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
+          className="bg-white/10 border border-white/20 hover:border-[#EFD9A0]/50 rounded-xl p-2.5 backdrop-blur-md shadow-lg flex items-center justify-between text-white transition-all"
+        >
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-purple-500/20 text-[#EFD9A0] border border-[#EFD9A0]/30">
+              <ShieldCheck className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <p className="text-[10px] uppercase font-bold text-white/70">Verification Guard</p>
+              <p className="text-xs font-black text-white">100% GST & ISO Screened</p>
+            </div>
+          </div>
+          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-purple-500/20 text-[#EFD9A0] border border-purple-500/40">
+            VERIFIED
+          </span>
+        </motion.div>
       </div>
     </div>
   );

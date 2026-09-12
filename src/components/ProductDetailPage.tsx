@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from 'recharts';
+import {
   ArrowLeft,
   ShieldCheck,
   Building2,
@@ -26,7 +35,10 @@ import {
   ZoomOut,
   Maximize2,
   X,
-  RotateCcw
+  RotateCcw,
+  TrendingDown,
+  TrendingUp,
+  BarChart2
 } from 'lucide-react';
 import { ProductDetailData } from '../types';
 import { SPONSORED_PRODUCTS_DB } from '../data/sponsoredProductsData';
@@ -64,7 +76,33 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const product: ProductDetailData | undefined = SPONSORED_PRODUCTS_DB[productId];
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState<'specs' | 'formulation' | 'packaging' | 'compliance'>('specs');
+  const [activeTab, setActiveTab] = useState<'specs' | 'priceTrend' | 'formulation' | 'packaging' | 'compliance'>('specs');
+
+  // 6-Month Price Trend dataset generated for professional B2B sourcing decisions
+  const priceHistoryData = React.useMemo(() => {
+    if (!product) return [];
+    const numbers = product.priceRange.match(/\d[\d,.]*/g);
+    let basePrice = 1200;
+    if (numbers && numbers.length > 0) {
+      const parsed = parseFloat(numbers[0].replace(/,/g, ''));
+      if (!isNaN(parsed) && parsed > 0) basePrice = parsed;
+    }
+
+    const months = ['Apr 2026', 'May 2026', 'Jun 2026', 'Jul 2026', 'Aug 2026', 'Sep 2026'];
+    const trendMultipliers = [1.12, 1.09, 1.06, 1.03, 1.01, 1.0];
+
+    return months.map((month, idx) => {
+      const unitPrice = Math.round(basePrice * trendMultipliers[idx]);
+      const bulkPrice = Math.round(unitPrice * 0.88);
+      return {
+        month,
+        unitPrice,
+        bulkPrice,
+        formattedUnit: `₹${unitPrice.toLocaleString('en-IN')}`,
+        formattedBulk: `₹${bulkPrice.toLocaleString('en-IN')}`,
+      };
+    });
+  }, [product?.priceRange]);
 
   // Lightbox Zoom state for high-resolution cosmetic texture inspection
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -308,7 +346,77 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 <h1 className="text-xl md:text-2xl font-black text-[#2A0E3F] leading-tight">
                   {product.title}
                 </h1>
-                <p className="text-sm text-[#5B4A6E] mt-2 leading-relaxed">
+
+                {/* Stock Availability Badge & Lead Time Indicator */}
+                {(() => {
+                  const availability = product.stockAvailability || (
+                    product.id.includes('vitc') ? 'In-Stock' :
+                    product.id.includes('barrier') ? 'Low Stock' :
+                    'Made-to-Order'
+                  );
+
+                  const leadTime = product.leadTimeText || (
+                    availability === 'In-Stock'
+                      ? 'Ready Batch (Dispatches in 24–48 Hours)'
+                      : availability === 'Low Stock'
+                      ? 'Limited Ready Stock (Dispatches in 1–2 Days)'
+                      : 'Fresh Custom Batch (Lead Time: 5–7 Business Days)'
+                  );
+
+                  const badgeConfig = {
+                    'In-Stock': {
+                      bg: 'bg-emerald-50 text-emerald-950 border-emerald-300/80',
+                      dotColor: 'bg-emerald-500',
+                      icon: Package,
+                      statusLabel: 'In-Stock',
+                      subtext: leadTime,
+                      tagBg: 'bg-emerald-600 text-white',
+                    },
+                    'Low Stock': {
+                      bg: 'bg-amber-50 text-amber-950 border-amber-300/80',
+                      dotColor: 'bg-amber-500',
+                      icon: Clock,
+                      statusLabel: 'Low Stock',
+                      subtext: leadTime,
+                      tagBg: 'bg-amber-600 text-white',
+                    },
+                    'Made-to-Order': {
+                      bg: 'bg-purple-50 text-purple-950 border-purple-300/80',
+                      dotColor: 'bg-[#6B2D8C]',
+                      icon: Factory,
+                      statusLabel: 'Made-to-Order',
+                      subtext: leadTime,
+                      tagBg: 'bg-[#6B2D8C] text-white',
+                    },
+                  }[availability];
+
+                  const IconComp = badgeConfig.icon;
+
+                  return (
+                    <div className="mt-3 flex flex-wrap items-center gap-2.5">
+                      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold shadow-xs ${badgeConfig.bg}`}>
+                        <span className="relative flex h-2.5 w-2.5">
+                          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${badgeConfig.dotColor}`} />
+                          <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${badgeConfig.dotColor}`} />
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-md text-[10.5px] font-black uppercase tracking-wider ${badgeConfig.tagBg}`}>
+                          {badgeConfig.statusLabel}
+                        </span>
+                        <span className="flex items-center gap-1.5 font-bold">
+                          <IconComp className="w-3.5 h-3.5 opacity-80" />
+                          {badgeConfig.subtext}
+                        </span>
+                      </div>
+
+                      <span className="text-[11px] text-[#5B4A6E] font-medium flex items-center gap-1 bg-gray-50/80 px-2.5 py-1 rounded-lg border border-gray-200/60">
+                        <Truck className="w-3.5 h-3.5 text-[#6B2D8C]" />
+                        Sample Lead: {product.specs.sampleLeadTime || '1-2 Days'}
+                      </span>
+                    </div>
+                  );
+                })()}
+
+                <p className="text-sm text-[#5B4A6E] mt-3 leading-relaxed">
                   {product.description}
                 </p>
               </div>
@@ -328,6 +436,22 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                       {product.moq}
                     </p>
                   </div>
+                </div>
+
+                {/* Price Trend Summary Badge */}
+                <div className="flex items-center justify-between pt-2 border-t border-[#E8D5F2]/60 text-xs">
+                  <span className="text-emerald-700 font-bold flex items-center gap-1">
+                    <TrendingDown className="w-3.5 h-3.5" />
+                    Price -10.7% lower vs 6-month peak
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('priceTrend')}
+                    className="text-[11px] font-bold text-[#6B2D8C] hover:text-[#4A2560] flex items-center gap-1 transition-colors"
+                  >
+                    <BarChart2 className="w-3.5 h-3.5" />
+                    View Price Trend Chart
+                  </button>
                 </div>
 
                 {/* Bulk Tiers Table */}
@@ -432,6 +556,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               <div className="pt-6 border-t border-gray-200 space-y-4">
                 <div className="flex border-b border-gray-200 gap-6 overflow-x-auto">
                   <button
+                    type="button"
                     onClick={() => setActiveTab('specs')}
                     className={`pb-3 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
                       activeTab === 'specs'
@@ -442,6 +567,19 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                     Technical Specifications
                   </button>
                   <button
+                    type="button"
+                    onClick={() => setActiveTab('priceTrend')}
+                    className={`pb-3 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
+                      activeTab === 'priceTrend'
+                        ? 'border-[#6B2D8C] text-[#6B2D8C]'
+                        : 'border-transparent text-gray-500 hover:text-gray-800'
+                    }`}
+                  >
+                    <BarChart2 className="w-3.5 h-3.5" />
+                    6-Month Price Trend
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setActiveTab('formulation')}
                     className={`pb-3 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
                       activeTab === 'formulation'
@@ -452,6 +590,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                     Formulation Base
                   </button>
                   <button
+                    type="button"
                     onClick={() => setActiveTab('packaging')}
                     className={`pb-3 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
                       activeTab === 'packaging'
@@ -462,6 +601,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                     Packaging & Private Label
                   </button>
                   <button
+                    type="button"
                     onClick={() => setActiveTab('compliance')}
                     className={`pb-3 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
                       activeTab === 'compliance'
@@ -474,6 +614,131 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 </div>
 
                 <div className="text-xs space-y-3 pt-2">
+                  {activeTab === 'priceTrend' && (
+                    <div className="p-4 bg-gray-50/80 rounded-xl space-y-4 border border-[#E8DEEF]">
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 pb-3">
+                        <div>
+                          <h4 className="font-extrabold text-[#2A0E3F] text-sm flex items-center gap-1.5">
+                            <BarChart2 className="w-4 h-4 text-[#6B2D8C]" />
+                            6-Month B2B Wholesale Sourcing Index
+                          </h4>
+                          <p className="text-[11px] text-[#5B4A6E]">
+                            Tracked unit pricing movement (INR) for cosmetic batch orders across Q2–Q3 2026
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[10px] flex items-center gap-1">
+                            <TrendingDown className="w-3 h-3" /> -10.7% Trend
+                          </span>
+                          <span className="px-2.5 py-1 rounded-full bg-purple-100 text-[#6B2D8C] font-extrabold text-[10px]">
+                            High Stability
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Stat Metrics Row */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <div className="p-2.5 bg-white rounded-lg border border-gray-200 text-center">
+                          <span className="text-[10px] text-gray-500 uppercase font-semibold block">Current Base Rate</span>
+                          <span className="text-xs font-black text-[#6B2D8C]">
+                            {priceHistoryData[priceHistoryData.length - 1]?.formattedUnit || '—'}
+                          </span>
+                        </div>
+                        <div className="p-2.5 bg-white rounded-lg border border-gray-200 text-center">
+                          <span className="text-[10px] text-gray-500 uppercase font-semibold block">6-Month High</span>
+                          <span className="text-xs font-extrabold text-gray-800">
+                            {priceHistoryData[0]?.formattedUnit || '—'}
+                          </span>
+                        </div>
+                        <div className="p-2.5 bg-white rounded-lg border border-gray-200 text-center">
+                          <span className="text-[10px] text-gray-500 uppercase font-semibold block">6-Month Low</span>
+                          <span className="text-xs font-extrabold text-emerald-700">
+                            {priceHistoryData[priceHistoryData.length - 1]?.formattedUnit || '—'}
+                          </span>
+                        </div>
+                        <div className="p-2.5 bg-white rounded-lg border border-gray-200 text-center">
+                          <span className="text-[10px] text-gray-500 uppercase font-semibold block">Bulk Tier (Est.)</span>
+                          <span className="text-xs font-black text-[#0050D6]">
+                            {priceHistoryData[priceHistoryData.length - 1]?.formattedBulk || '—'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Recharts Area Chart */}
+                      <div className="w-full h-[220px] bg-white p-3 rounded-xl border border-gray-200 shadow-inner pt-4">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={priceHistoryData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#6B2D8C" stopOpacity={0.35} />
+                                <stop offset="95%" stopColor="#6B2D8C" stopOpacity={0} />
+                              </linearGradient>
+                              <linearGradient id="bulkGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#0050D6" stopOpacity={0.25} />
+                                <stop offset="95%" stopColor="#0050D6" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#F0E8F5" vertical={false} />
+                            <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#5B4A6E' }} axisLine={false} tickLine={false} />
+                            <YAxis tick={{ fontSize: 10, fill: '#5B4A6E' }} axisLine={false} tickLine={false} domain={['dataMin - 50', 'dataMax + 50']} />
+                            <Tooltip
+                              content={({ active, payload, label }) => {
+                                if (active && payload && payload.length) {
+                                  return (
+                                    <div className="bg-[#2A0E3F] text-white p-2.5 rounded-xl shadow-xl border border-purple-300/20 text-xs space-y-1">
+                                      <p className="font-bold text-[#C9A961] border-b border-purple-300/20 pb-1">{label} Sourcing Rate</p>
+                                      <p className="font-semibold flex items-center justify-between gap-3 text-white">
+                                        <span>Base Price:</span>
+                                        <span className="text-purple-200 font-extrabold">₹{payload[0]?.value?.toLocaleString('en-IN')}</span>
+                                      </p>
+                                      {payload[1] && (
+                                        <p className="font-semibold flex items-center justify-between gap-3 text-blue-200">
+                                          <span>Bulk Tier:</span>
+                                          <span className="font-extrabold">₹{payload[1]?.value?.toLocaleString('en-IN')}</span>
+                                        </p>
+                                      )}
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              }}
+                            />
+                            <Area
+                              type="monotone"
+                              dataKey="unitPrice"
+                              name="Base Unit Price"
+                              stroke="#6B2D8C"
+                              strokeWidth={2.5}
+                              fillOpacity={1}
+                              fill="url(#priceGradient)"
+                            />
+                            <Area
+                              type="monotone"
+                              dataKey="bulkPrice"
+                              name="Bulk Tier Rate"
+                              stroke="#0050D6"
+                              strokeWidth={2}
+                              strokeDasharray="4 4"
+                              fillOpacity={1}
+                              fill="url(#bulkGradient)"
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[11px] text-gray-500 pt-1">
+                        <div className="flex items-center gap-4">
+                          <span className="flex items-center gap-1.5 font-bold text-[#6B2D8C]">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#6B2D8C]" /> Base Unit Price
+                          </span>
+                          <span className="flex items-center gap-1.5 font-bold text-[#0050D6]">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#0050D6]" /> Bulk Discount Rate
+                          </span>
+                        </div>
+                        <span className="italic">Updated September 2026</span>
+                      </div>
+                    </div>
+                  )}
                   {activeTab === 'specs' && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="p-3 bg-gray-50 rounded-xl">

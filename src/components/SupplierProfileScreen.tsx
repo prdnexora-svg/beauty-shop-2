@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { VERIFIED_SUPPLIERS } from '../data/mockData';
 import { VerifiedBadge } from './VerifiedBadge';
+import { TrustScoreGauge } from './TrustScoreGauge';
 
 interface SupplierProfileScreenProps {
   isLoggedIn: boolean;
@@ -500,6 +501,22 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Supplier Trust Score Visual Gauge */}
+      <section className="pt-8 px-4 md:px-10 max-w-[1440px] mx-auto">
+        <TrustScoreGauge
+          score={98}
+          supplierName="Aura Beauty Labs"
+          legalName="Aura Beauty Formulations & Manufacturing Pvt. Ltd."
+          gstin="27AABCU9601R1ZM"
+          isGstVerified={true}
+          businessType="Verified Manufacturer & OEM"
+          establishedYear="2014 (12 Yrs in Operation)"
+          certifications={['WHO-GMP Certified', 'ISO 22716:2007', 'US-FDA MoCRA Reg.', 'ISO 9001:2015']}
+          responseSla="< 1 hr"
+          ordersFulfilled="2,850+ B2B Shipments"
+        />
       </section>
 
       {/* The Aura Process (Narrative Section) */}

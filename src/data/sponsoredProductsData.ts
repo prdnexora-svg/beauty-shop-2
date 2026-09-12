@@ -31,6 +31,8 @@ export const SPONSORED_PRODUCTS_DB: Record<string, ProductDetailData> = {
       'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1608248597359-052445bfa3d0?auto=format&fit=crop&w=800&q=80'
     ],
+    stockAvailability: 'In-Stock',
+    leadTimeText: 'Ready Batch (Dispatches in 24–48 Hours)',
     specs: {
       formulationBase: '20% Ethyl Ascorbic Acid + 1% Ferulic Acid + 2% HA',
       packagingType: 'UV Amber Glass Bottle with Gold Pipette',
@@ -79,6 +81,8 @@ export const SPONSORED_PRODUCTS_DB: Record<string, ProductDetailData> = {
       'https://images.unsplash.com/photo-1608248597359-052445bfa3d0?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80'
     ],
+    stockAvailability: 'Low Stock',
+    leadTimeText: 'Only 350 Jars Left Ready (Fast 1–2 Day Dispatch)',
     specs: {
       formulationBase: 'Ceramide EOP/NS/NP + 5D Hyaluronic Acid Matrix',
       packagingType: 'Double-Wall Frosted Acrylic Jar (50g)',

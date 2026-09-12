@@ -11,6 +11,12 @@ export const CATALOG_PRODUCTS: SearchProduct[] = Object.values(SPONSORED_PRODUCT
     return {
       ...product,
       image: product.images[0],
+      images: product.images,
+      stockAvailability: product.stockAvailability || 'In-Stock',
+      leadTimeText: product.leadTimeText || 'Ready Batch (Dispatches in 24–48 Hours)',
+      description: product.description,
+      bulkTiers: product.bulkTiers,
+      specs: product.specs,
       moqNumber: Number(product.moq.match(/[\d,]+/)?.[0].replace(/,/g, '')) || 0,
       rating: seller?.overallRating,
       establishedYear: seller?.establishedYear,

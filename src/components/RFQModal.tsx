@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   CheckCircle2,
@@ -23,23 +23,47 @@ import {
 interface RFQModalProps {
   isOpen: boolean;
   onClose: () => void;
+  targetSupplier?: {
+    id?: string;
+    name?: string;
+    category?: string;
+    type?: string;
+  } | null;
 }
 
-export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
+export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose, targetSupplier }) => {
   const [submitted, setSubmitted] = useState(false);
+  const initialCategory = targetSupplier?.category || 'Skincare';
   const [taxonomy, setTaxonomy] = useState<TaxonomySelectionState>(
-    createInitialTaxonomyState('Skincare', ['Serums & Treatments'])
+    createInitialTaxonomyState(initialCategory, ['Serums & Treatments'])
   );
-  const [productName, setProductName] = useState('');
+  const [productName, setProductName] = useState(targetSupplier ? `Custom Order from ${targetSupplier.name}` : '');
   const [quantity, setQuantity] = useState('');
   const [unit, setUnit] = useState('Units');
   const [city, setCity] = useState('');
-  const [supplierType, setSupplierType] = useState('Manufacturer / OEM');
-  const [description, setDescription] = useState('');
+  const [supplierType, setSupplierType] = useState(targetSupplier?.type || 'Manufacturer / OEM');
+  const [description, setDescription] = useState(
+    targetSupplier ? `RFQ specifically directed to ${targetSupplier.name} (Supplier ID: ${targetSupplier.id || 'sup-verified'}). Please provide pricing & lead times.` : ''
+  );
   const [buyerName, setBuyerName] = useState('');
   const [buyerPhone, setBuyerPhone] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [copiedRef, setCopiedRef] = useState(false);
+
+  useEffect(() => {
+    if (targetSupplier) {
+      if (targetSupplier.category) {
+        setTaxonomy(createInitialTaxonomyState(targetSupplier.category, ['Serums & Treatments']));
+      }
+      if (targetSupplier.name) {
+        setProductName(`Custom Sourcing from ${targetSupplier.name}`);
+        setDescription(`Direct RFQ request for ${targetSupplier.name} (ID: ${targetSupplier.id || 'NEX-SUP'}).`);
+      }
+      if (targetSupplier.type) {
+        setSupplierType(targetSupplier.type);
+      }
+    }
+  }, [targetSupplier]);
 
   if (!isOpen) return null;
 
@@ -94,8 +118,19 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose }) => {
               <FileText className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-[#2A0E3F]">Post Sourcing Requirement (RFQ)</h3>
-              <p className="text-[12px] text-[#5B4A6E]">Receive direct quotes from verified manufacturers across India</p>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-[#2A0E3F]">Post Sourcing Requirement (RFQ)</h3>
+                {targetSupplier && (
+                  <span className="bg-[#F5EEF8] text-[#6B2D8C] border border-[#D9C3E8] text-[10px] px-2 py-0.5 rounded-full font-bold">
+                    Target: {targetSupplier.name}
+                  </span>
+                )}
+              </div>
+              <p className="text-[12px] text-[#5B4A6E]">
+                {targetSupplier
+                  ? `Pre-filled RFQ directly targeting ${targetSupplier.name} (ID: ${targetSupplier.id || 'NEX-SUP'})`
+                  : 'Receive direct quotes from verified manufacturers across India'}
+              </p>
             </div>
           </div>
           <button

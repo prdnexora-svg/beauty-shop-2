@@ -10,10 +10,14 @@ import { fetchSuppliers } from '../services/supplierService';
 
 interface BrandDirectoryDetailScreenProps {
   onOpenEnquiryModal: (productName: string, supplierName: string) => void;
-  onOpenRFQModal: () => void;
-  onOpenFacilityTour: (supplierName: string) => void;
+  onOpenRFQModal: (supplier?: { id?: string; name?: string; category?: string; type?: string }) => void;
+  onOpenFacilityTour: (supplierName?: string, location?: string) => void;
   onNavigateToSuppliers: () => void;
   onNavigateToSupplierProfile?: (supplierId: string) => void;
+  onOpenChat?: (
+    supplier: { id: string; name: string; location: string; isVerified: boolean },
+    product?: { title: string; image: string; price?: string; moq?: string }
+  ) => void;
 }
 
 interface BrandDirectoryItem {
@@ -81,7 +85,7 @@ function mapSupplierToBrand(sup: any): BrandDirectoryItem {
     })),
     facilities: [],
     status: sup.status,
-    isVerified: Boolean(sup.isVerified)
+    isVerified: Boolean(sup.isVerified || (sup.trustScore && sup.trustScore >= 80) || sup.isGstVerified)
   };
 }
 
@@ -90,7 +94,8 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
   onOpenRFQModal,
   onOpenFacilityTour,
   onNavigateToSuppliers,
-  onNavigateToSupplierProfile
+  onNavigateToSupplierProfile,
+  onOpenChat
 }) => {
   const [remoteBrands, setRemoteBrands] = useState<BrandDirectoryItem[]>([]);
   const [isLoadingBrands, setIsLoadingBrands] = useState(false);
@@ -450,13 +455,13 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                           >
                             {isSaved ? <BookmarkCheck className="w-4 h-4 fill-[#6B2D8C]" /> : <Bookmark className="w-4 h-4" />}
                           </button>
-                          {brand.isVerified === false || brand.status === 'pending_verification' ? (
+                          {(!brand.isVerified && brand.status === 'pending_verification') ? (
                             <span className="text-[10px] bg-amber-50 text-amber-700 px-2 py-1 rounded-md font-bold uppercase tracking-wider border border-amber-200">
-                              Pending Verification
+                              Pending Audit
                             </span>
                           ) : (
-                            <span className="text-[10px] bg-[#F5EEF8] text-[#6B2D8C] px-2 py-1 rounded-md font-bold uppercase tracking-wider">
-                              GST Verified
+                            <span className="text-[10px] bg-[#F5EEF8] text-[#6B2D8C] px-2 py-1 rounded-md font-bold uppercase tracking-wider border border-[#E8D5F2]">
+                              {brand.rating >= 4.8 ? 'Platinum Verified' : 'GST Verified'}
                             </span>
                           )}
                         </div>
@@ -515,7 +520,16 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            onOpenEnquiryModal(`Direct Manufacturing Enquiry`, brand.name);
+                            if (onOpenChat) {
+                              onOpenChat({
+                                id: brand.id,
+                                name: brand.name,
+                                location: brand.location,
+                                isVerified: Boolean(brand.isVerified || brand.gstVerified)
+                              });
+                            } else {
+                              onOpenEnquiryModal(`Direct Manufacturing Enquiry`, brand.name);
+                            }
                           }}
                           className="bg-white border border-[#6B2D8C] text-[#6B2D8C] hover:bg-[#F5EEF8] font-bold text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-3xs"
                         >
@@ -526,7 +540,12 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            onOpenRFQModal();
+                            onOpenRFQModal({
+                              id: brand.id,
+                              name: brand.name,
+                              category: brand.categories[0] || 'Skincare',
+                              type: brand.type
+                            });
                           }}
                           className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-3xs"
                         >
@@ -536,10 +555,16 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                       </div>
 
                       {/* Primary Navigation Action */}
-                      <div className="flex items-center justify-between text-xs font-bold text-[#6B2D8C] group-hover:text-[#4A2560] pt-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenFacilityTour(brand.name, brand.location);
+                        }}
+                        className="w-full flex items-center justify-between text-xs font-bold text-[#6B2D8C] hover:text-[#4A2560] pt-1 cursor-pointer bg-transparent border-0"
+                      >
                         <span>View Formulations &amp; Facility</span>
                         <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                      </div>
+                      </button>
                     </div>
 
                   </div>

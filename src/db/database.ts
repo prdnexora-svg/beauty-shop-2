@@ -1360,6 +1360,88 @@ class RelationalDatabase {
   }
 
   /**
+   * Create an express direct purchase order (e.g. from the Quick View "Buy Now" flow).
+   */
+  public createDirectOrder(params: {
+    productTitle: string;
+    supplierId?: string;
+    supplierName?: string;
+    quantity: number;
+    quantityUnit?: string;
+    unitPrice: number;
+    shippingAddress: string;
+    notes?: string;
+    buyerId?: string;
+  }): DBOrder {
+    const now = new Date();
+    const quantity = params.quantity || 1;
+    const unitPrice = params.unitPrice || 100;
+    const taxRate = 18;
+    const subtotal = Math.round(unitPrice * quantity);
+    const taxAmount = Math.round((subtotal * taxRate) / 100);
+    const total = subtotal + taxAmount;
+    const orderNo = this.nextOrderNumber();
+    const invoiceNo = this.nextInvoiceNumber();
+    const expected = new Date(now);
+    expected.setDate(expected.getDate() + 3);
+
+    const buyer = this.state.profiles_buyer.find((b) => b.id === params.buyerId) || this.state.profiles_buyer[0];
+
+    const lineItem = {
+      id: `line-${Date.now()}`,
+      product: params.productTitle,
+      quantity,
+      quantity_unit: params.quantityUnit || 'Units',
+      unit_price: unitPrice,
+      tax_rate: taxRate,
+      subtotal,
+      tax_amount: taxAmount,
+      total_amount: total,
+      notes: params.notes || 'Direct Quick View Buy Now Order'
+    };
+
+    const order: DBOrder = {
+      id: `order-${Date.now()}`,
+      order_no: orderNo,
+      quote_id: `direct-buy-${Date.now()}`,
+      rfq_id: `rfq-direct-${Date.now()}`,
+      buyer_id: buyer?.id || 'buyer-prof-priya',
+      supplier_id: params.supplierId || 'supp-aura-labs',
+      product: params.productTitle,
+      quantity,
+      quantity_unit: lineItem.quantity_unit,
+      unit_price: unitPrice,
+      subtotal,
+      tax_rate: taxRate,
+      tax_amount: taxAmount,
+      total_amount: total,
+      currency: 'INR',
+      status: 'order_confirmed',
+      payment_status: 'pending',
+      invoice_no: invoiceNo,
+      invoice_url: '',
+      shipping_address: params.shippingAddress || buyer?.address || 'Mumbai, Maharashtra, India',
+      delivery_location: buyer?.city || 'Mumbai',
+      expected_delivery: expected.toISOString(),
+      terms: '50% advance on order confirmation, 50% against delivery / dispatch invoice.',
+      notes: params.notes || 'Instant sourcing order via Quick View',
+      line_items: [lineItem],
+      seller_gstin: '27ACBFA1234F1Z8',
+      buyer_gstin: buyer?.gst_number || '27AABCR1234F1Z8',
+      advance_percent: 50,
+      is_reorder: false,
+      source_order_id: null,
+      created_at: now.toISOString(),
+      updated_at: now.toISOString()
+    };
+
+    this.state.orders = [order, ...this.state.orders];
+    this.persist(this.state);
+    this.notify('orders', 'CREATE', order);
+    return order;
+  }
+
+  /**
    * Marks submitted quotes whose validity date has passed as `expired`. The
    * buyer tracking screen runs this on load / refresh so stale quotes are
    * visibly non-actionable instead of only being labelled in the UI.

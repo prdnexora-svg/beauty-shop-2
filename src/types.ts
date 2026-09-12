@@ -168,7 +168,12 @@ export interface SearchProduct {
   responseTime: string;
   certifications: string[];
   image: string;
+  images?: string[];
   category: string;
+  description?: string;
+  stockAvailability?: 'In-Stock' | 'Low Stock' | 'Made-to-Order' | string;
+  leadTimeText?: string;
+  bulkTiers?: Array<{ quantityRange: string; unitPrice: string }>;
   specs?: {
     formulationBase?: string;
     packagingType?: string;
@@ -176,6 +181,7 @@ export interface SearchProduct {
     sampleLeadTime?: string;
     productionCapacity?: string;
     compliance?: string;
+    certifications?: string[];
   };
 }
 
@@ -345,6 +351,8 @@ export interface ProductDetailData {
   subcategory?: string;
   description: string;
   images: string[];
+  stockAvailability?: 'In-Stock' | 'Low Stock' | 'Made-to-Order';
+  leadTimeText?: string;
   specs: {
     formulationBase?: string;
     packagingType?: string;

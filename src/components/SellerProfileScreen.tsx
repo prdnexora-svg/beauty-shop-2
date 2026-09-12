@@ -43,6 +43,7 @@ import { getSellerProfile, getProductsForSeller, SellerProfileData } from '../da
 import { getReviewsForSeller, addSellerReview, getAggregateRating, subscribeSellerReviews, SellerReview } from '../data/reviewsStore';
 import { ProductDetailData } from '../types';
 import { VerifiedBadge } from './VerifiedBadge';
+import { TrustScoreGauge } from './TrustScoreGauge';
 
 interface SellerProfileScreenProps {
   sellerId?: string;
@@ -507,6 +508,23 @@ export const SellerProfileScreen: React.FC<SellerProfileScreenProps> = ({
 
       {/* Main Container & Interactive Tabbed Navigation */}
       <section className="max-w-[1440px] mx-auto px-4 md:px-10 mt-6">
+        {/* Supplier Trust Score Visual Gauge */}
+        <div className="mb-8">
+          <TrustScoreGauge
+            score={profile.trustScore || 98}
+            supplierName={profile.name}
+            legalName={profile.legalName}
+            gstin={profile.gstin}
+            isGstVerified={profile.isGstVerified}
+            businessType={profile.businessType}
+            establishedYear={profile.establishedYear}
+            certifications={profile.certifications}
+            responseSla={profile.responseSla}
+            ordersFulfilled={profile.ordersFulfilled}
+            onViewCertificates={() => setActiveTab('about')}
+          />
+        </div>
+
         {/* Navigation Tabs */}
         <div className="flex items-center gap-2 border-b border-[#D9C3E8] mb-8 overflow-x-auto no-scrollbar">
           <button

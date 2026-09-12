@@ -30,13 +30,15 @@ import {
   CheckCircle2,
   Share2,
   Phone,
-  Star
+  Star,
+  Eye
 } from 'lucide-react';
 import { SearchProduct, RFQItem } from '../types';
 import { LIVE_RFQS } from '../data/mockData';
 import { CATEGORY_TAXONOMY } from '../data/categories';
 import { getSavedProductIds, toggleSavedProduct } from '../data/savedStore';
 import { motion, AnimatePresence } from 'motion/react';
+import { ProductQuickViewModal } from './ProductQuickViewModal';
 
 interface ProductListingScreenProps {
   isLoggedIn: boolean;
@@ -111,6 +113,15 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
   const [comparedProductIds, setComparedProductIds] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [mobileFilterOpen, setMobileFilterOpen] = useState<boolean>(false);
+
+  // Quick View Modal state
+  const [quickViewProduct, setQuickViewProduct] = useState<SearchProduct | null>(null);
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState<boolean>(false);
+
+  const handleOpenQuickView = (product: SearchProduct) => {
+    setQuickViewProduct(product);
+    setIsQuickViewOpen(true);
+  };
 
   // Toggle capabilities
   const toggleCapability = (key: keyof typeof capabilities) => {
@@ -853,6 +864,21 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                           loading="lazy"
                         />
 
+                        {/* Quick View Hover Button on Image */}
+                        <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenQuickView(prod);
+                            }}
+                            className="pointer-events-auto bg-white/95 hover:bg-white text-[#2A0E3F] hover:text-[#6B2D8C] px-3.5 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1.5 transition-all transform translate-y-2 group-hover:translate-y-0 cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-[#6B2D8C]" />
+                            <span>Quick View</span>
+                          </button>
+                        </div>
+
                         {/* Top Left Verification Badge */}
                         <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1">
                           {prod.isNexoraVerified && (
@@ -1048,13 +1074,28 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                             )}
                           </div>
 
-                          <button
-                            onClick={() => onNavigateToProductDetail?.(prod.id)}
-                            className="w-full mt-1 border border-[#E8DEEF] text-[#2A0E3F] hover:bg-[#F6F1FA] hover:border-[#6B2D8C] py-2 rounded-lg text-[11px] font-bold transition-all shadow-2xs flex items-center justify-center gap-1.5"
-                          >
-                            <span>View Full Specifications</span>
-                            <ArrowUpRight className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="grid grid-cols-2 gap-2 mt-1.5">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenQuickView(prod);
+                              }}
+                              className="border border-[#6B2D8C] bg-[#FDFBF7] text-[#6B2D8C] hover:bg-[#F5EEF8] py-2 rounded-lg text-[11px] font-bold transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
+                              title="Quick View specifications, stock status & Buy Now"
+                            >
+                              <Eye className="w-3.5 h-3.5 text-[#6B2D8C]" />
+                              <span>Quick View</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onNavigateToProductDetail?.(prod.id)}
+                              className="border border-[#E8DEEF] text-[#2A0E3F] hover:bg-[#F6F1FA] hover:border-[#6B2D8C] py-2 rounded-lg text-[11px] font-bold transition-all shadow-2xs flex items-center justify-center gap-1 cursor-pointer"
+                            >
+                              <span>Full Specs</span>
+                              <ArrowUpRight className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
 
                       </div>
@@ -1231,6 +1272,24 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
           </div>
         </div>
       )}
+
+      {/* Product Quick View Modal with Stock Availability and Instant Buy Now Flow */}
+      <ProductQuickViewModal
+        isOpen={isQuickViewOpen}
+        onClose={() => {
+          setIsQuickViewOpen(false);
+          setQuickViewProduct(null);
+        }}
+        product={quickViewProduct}
+        onOpenEnquiry={(p) => {
+          setIsQuickViewOpen(false);
+          onOpenEnquiryModal?.(p);
+        }}
+        onNavigateToProductDetail={(id) => {
+          setIsQuickViewOpen(false);
+          onNavigateToProductDetail?.(id);
+        }}
+      />
 
     </div>
   );

@@ -1,11 +1,12 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { Search, MapPin, ChevronDown, TrendingUp, Store, Tag } from 'lucide-react';
+import { Search, MapPin, ChevronDown, TrendingUp, Store, Tag, Bot, Sparkles as SparklesIcon } from 'lucide-react';
 import heroSerum from '../../assets/images/luxe/hero-serum.jpg';
 import heroBrushes from '../../assets/images/luxe/hero-brushes.jpg';
 import { Sparkles } from './Sparkles';
 import { LUXE_QUICK_TABS } from './LuxeHeader';
 import { CATEGORIES, VERIFIED_SUPPLIERS } from '../../data/mockData';
 import { CATALOG_PRODUCTS } from '../../data/catalogProducts';
+import { AiRobot3D } from './AiRobot3D';
 
 const CITIES = [
   'All India',
@@ -72,33 +73,47 @@ export const LuxeHero: React.FC<LuxeHeroProps> = ({ onSearch, onTabChange }) => 
       <Sparkles />
 
       <div className="relative z-10 max-w-[1360px] mx-auto px-4 md:px-8 pt-[112px] md:pt-[128px] pb-28 md:pb-32">
-        <div className="grid lg:grid-cols-[280px_minmax(0,1fr)_280px] xl:grid-cols-[320px_minmax(0,1fr)_320px] gap-8 items-center">
-          {/* Left — serum bottle */}
-          <div className="hidden lg:block relative nl-float">
-            <div className="relative rounded-[22px] overflow-hidden border border-white/35 shadow-[0_30px_70px_-20px_rgba(20,5,35,0.65)] -rotate-2">
+        <div className="grid lg:grid-cols-[280px_minmax(0,1fr)_300px] xl:grid-cols-[320px_minmax(0,1fr)_340px] gap-8 items-center">
+          {/* Left — serum bottle + Floating Status Card */}
+          <div className="hidden lg:block relative nl-float space-y-4">
+            <div className="relative rounded-[22px] overflow-hidden border border-white/35 shadow-[0_30px_70px_-20px_rgba(20,5,35,0.65)] -rotate-2 group transition-transform duration-500 hover:scale-[1.02]">
               <img src={heroSerum} alt="Luxury saffron & gold face serum dropper bottle" className="w-full aspect-[3/4] object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#240B33]/35 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#240B33]/45 via-transparent to-transparent" />
             </div>
-            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap glass-card-dark rounded-full px-4 py-2 text-[11.5px] font-semibold text-white">
-              ✦ Saffron Gold Serum · MOQ 100 pcs
+
+            {/* Floating UI status badge */}
+            <div className="relative z-10 -mt-8 mx-auto w-11/12 glass-card-dark rounded-2xl p-3 border border-white/20 shadow-xl backdrop-blur-md animate-pulse">
+              <div className="flex items-center gap-2.5">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                </span>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider font-extrabold text-[#EFD9A0]">Live Lead Alert</p>
+                  <p className="text-[11.5px] font-bold text-white truncate">Saffron Serum · 500L Bulk Order</p>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Right — brush set */}
-          <div className="hidden lg:block relative nl-float-delayed order-3 lg:order-none">
-            <div className="relative rounded-[22px] overflow-hidden border border-white/35 shadow-[0_30px_70px_-20px_rgba(20,5,35,0.65)] rotate-2">
-              <img src={heroBrushes} alt="Professional makeup brush set with gold ferrules" className="w-full aspect-[3/4] object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#240B33]/35 via-transparent to-transparent" />
-            </div>
-            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap glass-card-dark rounded-full px-4 py-2 text-[11.5px] font-semibold text-white">
-              ✦ Pro Brush Set · 12 pc Gold Ferrule
-            </div>
+          {/* Right — 3D AI Robot Sourcing Assistant */}
+          <div className="hidden lg:block relative order-3 lg:order-none">
+            <AiRobot3D />
           </div>
 
-          {/* Center — headline + search */}
+          {/* Center — headline + search + mobile interactive 3D robot */}
           <div className="order-1 lg:order-none text-center max-w-[720px] mx-auto">
-            <div className="glass-card-dark inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[12px] font-semibold tracking-wide text-white/95 mb-6">
-              <span className="text-[#EFD9A0]">✦</span> India's Premium B2B Beauty Marketplace
+            {/* Mobile / Tablet interactive 3D Robot widget */}
+            <div className="lg:hidden mb-4 flex justify-center">
+              <AiRobot3D />
+            </div>
+
+            <div className="glass-card-dark inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[12px] font-semibold tracking-wide text-white/95 mb-6 shadow-md border border-white/20">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#EFD9A0] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#EFD9A0]" />
+              </span>
+              <span>India&apos;s Premium B2B Beauty Marketplace</span>
             </div>
 
             <h1 className="font-display text-white text-[34px] leading-[1.16] md:text-[52px] md:leading-[1.12] font-semibold text-editorial-tight">

@@ -52,7 +52,7 @@ interface SupplierDirectoryScreenProps {
   onToggleSaveSupplier?: (id: string, name?: string) => void;
   onOpenEnquiryModal: (item: any) => void;
   onOpenQuoteModal: (rfq?: any) => void;
-  onOpenRFQModal: () => void;
+  onOpenRFQModal: (supplier?: { id?: string; name?: string; category?: string; type?: string }) => void;
   onOpenMapModal?: (supplier: VerifiedSupplier) => void;
   onOpenFacilityTour?: (supplier: VerifiedSupplier) => void;
   onNavigateToExplore?: () => void;
@@ -61,6 +61,10 @@ interface SupplierDirectoryScreenProps {
   onOpenComparisonModal?: (selectedSuppliers: VerifiedSupplier[]) => void;
   onCallSupplier: (supplierName: string) => void;
   onWhatsAppSupplier: (supplierName: string) => void;
+  onOpenChat?: (
+    supplier: { id: string; name: string; location: string; isVerified: boolean },
+    product?: { title: string; image: string; price?: string; moq?: string }
+  ) => void;
 }
 
 export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = ({
@@ -76,7 +80,8 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
   onNavigateToProductDetail,
   onOpenComparisonModal,
   onCallSupplier,
-  onWhatsAppSupplier
+  onWhatsAppSupplier,
+  onOpenChat
 }) => {
   // Search & Top Filters State
   const [searchQuery, setSearchQuery] = useState('');
@@ -1141,18 +1146,42 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                       <div className="flex flex-wrap items-center gap-2.5 pt-2">
                         <button
                           onClick={() =>
-                            onOpenEnquiryModal({
-                              title: `${sup.name} Direct Sourcing Enquiry`,
-                              supplierName: sup.name,
-                              type: sup.type,
-                              city: sup.city,
-                              state: sup.state
+                            onOpenRFQModal({
+                              id: sup.id,
+                              name: sup.name,
+                              category: sup.categories?.[0] || 'Cosmetics & Skincare',
+                              type: sup.type
                             })
                           }
                           className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-bold px-4 py-2 rounded-xl text-[13px] flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
                         >
                           <Send className="w-3.5 h-3.5" />
-                          <span>Direct Enquiry</span>
+                          <span>Request Quote</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            if (onOpenChat) {
+                              onOpenChat({
+                                id: sup.id,
+                                name: sup.name,
+                                location: `${sup.city}, ${sup.state}`,
+                                isVerified: Boolean(sup.isVerified)
+                              });
+                            } else {
+                              onOpenEnquiryModal({
+                                title: `${sup.name} Direct Sourcing Enquiry`,
+                                supplierName: sup.name,
+                                type: sup.type,
+                                city: sup.city,
+                                state: sup.state
+                              });
+                            }
+                          }}
+                          className="bg-purple-50 hover:bg-purple-100 text-[#6B2D8C] font-bold px-3.5 py-2 rounded-xl text-[13px] flex items-center gap-1.5 transition-colors cursor-pointer border border-[#D9C3E8]"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>Direct Chat</span>
                         </button>
 
                         <button
@@ -1161,14 +1190,6 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                         >
                           <Building2 className="w-3.5 h-3.5 text-[#6B2D8C]" />
                           <span>View Profile</span>
-                        </button>
-
-                        <button
-                          onClick={() => onCallSupplier(sup.name)}
-                          className="border border-[#6B2D8C] text-[#6B2D8C] font-bold px-3.5 py-2 rounded-xl text-[13px] flex items-center gap-1.5"
-                        >
-                          <Phone className="w-3.5 h-3.5" />
-                          <span>Call Supplier</span>
                         </button>
 
                         {onOpenFacilityTour && (
@@ -1183,14 +1204,20 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                         )}
 
                         <button
+                          onClick={() => onCallSupplier(sup.name)}
+                          className="border border-[#6B2D8C] text-[#6B2D8C] font-bold px-3.5 py-2 rounded-xl text-[13px] flex items-center gap-1.5"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>Call</span>
+                        </button>
+
+                        <button
                           onClick={() => onWhatsAppSupplier(sup.name)}
                           className="bg-[#25D366]/10 text-[#075E54] border border-[#25D366]/30 px-3 py-2 rounded-xl hover:bg-[#25D366]/20 transition-colors flex items-center justify-center cursor-pointer"
                           title="Chat on WhatsApp"
                         >
                           <MessageSquare className="w-4 h-4" />
                         </button>
-
-
                       </div>
                     </div>
 

@@ -21,6 +21,8 @@ import { EnquiryModal } from './components/EnquiryModal';
 import { AuthModal } from './components/AuthModal';
 import { ProductCompareModal } from './components/ProductCompareModal';
 import { QuoteModal } from './components/QuoteModal';
+import { RFQModal } from './components/RFQModal';
+import { FacilityFormulationModal } from './components/FacilityFormulationModal';
 import { ProductListingScreen } from './components/ProductListingScreen';
 import { SearchFilterScreen } from './components/SearchFilterScreen';
 import { SupplierDirectoryScreen } from './components/SupplierDirectoryScreen';
@@ -222,6 +224,18 @@ function NexoraShopApp() {
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [targetQuoteRFQ, setTargetQuoteRFQ] = useState<RFQItem | null>(null);
 
+  // Interactive RFQ & Facility Modal States
+  const [isRFQModalOpen, setIsRFQModalOpen] = useState(false);
+  const [rfqTargetSupplier, setRfqTargetSupplier] = useState<{ id?: string; name?: string; category?: string; type?: string } | null>(null);
+
+  const [isFacilityModalOpen, setIsFacilityModalOpen] = useState(false);
+  const [facilitySupplierName, setFacilitySupplierName] = useState('Nexora Verified OEM Manufacturing Plant');
+  const [facilitySupplierLocation, setFacilitySupplierLocation] = useState('Baddi Industrial Zone, Himachal Pradesh');
+
+  const handleOpenRFQModal = (supplier?: { id?: string; name?: string; category?: string; type?: string }) => {
+    setRfqTargetSupplier(supplier || null);
+    setIsRFQModalOpen(true);
+  };
 
   const handleOpenProductComparison = (products: SearchProduct[]) => {
     setComparedProductsList(products);
@@ -248,8 +262,10 @@ function NexoraShopApp() {
     setIsQuoteModalOpen(true);
   };
 
-  const handleFacilityTour = (supplierName?: string) => {
-    triggerToast(`Virtual Facility Tour requested for ${supplierName || 'verified manufacturing unit'}. Support desk will send access credentials.`);
+  const handleFacilityTour = (supplierName?: string, location?: string) => {
+    if (supplierName) setFacilitySupplierName(supplierName);
+    if (location) setFacilitySupplierLocation(location);
+    setIsFacilityModalOpen(true);
   };
 
   const handleOpenChat = (supplier?: { id: string; name: string; location: string; isVerified: boolean }, product?: { title: string; image: string; price?: string; moq?: string }) => {
@@ -1030,7 +1046,8 @@ function NexoraShopApp() {
             <SupplierDirectoryScreen
               onOpenEnquiryModal={handleOpenEnquiry}
               onOpenQuoteModal={handleOpenQuoteModal}
-              onOpenRFQModal={() => handleNavigate('post-rfq')}
+              onOpenRFQModal={handleOpenRFQModal}
+              onOpenFacilityTour={(sup) => handleFacilityTour(sup.name, `${sup.city}, ${sup.state}`)}
               onNavigateToExplore={() => handleNavigate('explore')}
               onNavigateToSupplierProfile={(supplierId) => handleNavigate('supplier-profile', { supplierId })}
               onNavigateToProductDetail={(productId) => handleNavigate('product-detail', { productId })}
@@ -1038,6 +1055,7 @@ function NexoraShopApp() {
               onWhatsAppSupplier={handleWhatsAppSupplier}
               isSupplierSaved={isSupplierSavedCheck}
               onToggleSaveSupplier={handleToggleSaveSupplier}
+              onOpenChat={handleOpenChat}
             />
           </main>
         )}
@@ -1052,7 +1070,7 @@ function NexoraShopApp() {
               onNavigateToProductDetail={(productId) => handleNavigate('product-detail', { productId })}
               onOpenAuth={() => handleOpenAuthModal('login')}
               onOpenEnquiryModal={handleOpenEnquiry}
-              onOpenQuoteModal={(suppName) => handleNavigate('post-rfq', { supplierName: suppName })}
+              onOpenQuoteModal={(suppName) => handleOpenRFQModal({ name: suppName })}
               onCallSupplier={(name) => handleCallSupplier(name)}
               onWhatsAppSupplier={(name) => handleWhatsAppSupplier(name)}
             />
@@ -1066,10 +1084,11 @@ function NexoraShopApp() {
               onOpenEnquiryModal={(prodName, suppName) => {
                 handleOpenEnquiry({ name: prodName, supplierName: suppName });
               }}
-              onOpenRFQModal={() => handleNavigate('post-rfq')}
-              onOpenFacilityTour={(suppName) => handleFacilityTour(suppName)}
+              onOpenRFQModal={handleOpenRFQModal}
+              onOpenFacilityTour={(suppName, location) => handleFacilityTour(suppName, location)}
               onNavigateToSuppliers={() => handleNavigate('supplier-directory')}
               onNavigateToSupplierProfile={(supplierId) => handleNavigate('supplier-profile', { supplierId })}
+              onOpenChat={handleOpenChat}
             />
           </main>
         )}
@@ -1464,6 +1483,27 @@ function NexoraShopApp() {
         isOpen={isQuoteModalOpen}
         onClose={() => setIsQuoteModalOpen(false)}
         rfq={targetQuoteRFQ}
+      />
+
+      <RFQModal
+        isOpen={isRFQModalOpen}
+        onClose={() => {
+          setIsRFQModalOpen(false);
+          setRfqTargetSupplier(null);
+        }}
+        targetSupplier={rfqTargetSupplier}
+      />
+
+      <FacilityFormulationModal
+        isOpen={isFacilityModalOpen}
+        onClose={() => setIsFacilityModalOpen(false)}
+        supplierName={facilitySupplierName}
+        supplierLocation={facilitySupplierLocation}
+        onOpenRFQModal={() => {
+          setIsFacilityModalOpen(false);
+          handleOpenRFQModal({ name: facilitySupplierName });
+        }}
+        onOpenChat={handleOpenChat}
       />
 
       {/* Shared Footer — Luxe edition on the homepage */}
