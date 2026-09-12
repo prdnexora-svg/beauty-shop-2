@@ -3,18 +3,19 @@ import React, { useEffect, useRef, useState } from 'react';
 interface RevealProps {
   children: React.ReactNode;
   /** Direction of the entrance motion */
-  direction?: 'up' | 'left' | 'right' | 'none';
+  direction?: 'up' | 'down' | 'left' | 'right' | 'scale' | 'none';
   /** Transition delay in ms — useful for staggering grids */
   delay?: number;
   className?: string;
-  as?: 'div' | 'section' | 'li' | 'span';
+  as?: 'div' | 'section' | 'li' | 'span' | 'article' | 'main';
+  /** Trigger threshold from 0.0 to 1.0 */
+  threshold?: number;
 }
 
 /**
- * Reveal — fades & slides content in the first time it enters the viewport.
- * Uses a single IntersectionObserver per instance and stops observing after
- * the reveal so scrolling stays buttery. Respects prefers-reduced-motion via
- * the `.reveal` CSS rules in index.css.
+ * Reveal — Fades & slides content smoothly when entering the viewport.
+ * Uses a single IntersectionObserver per instance and disconnects after reveal
+ * to ensure 60fps buttery scrolling.
  */
 export const Reveal: React.FC<RevealProps> = ({
   children,
@@ -22,6 +23,7 @@ export const Reveal: React.FC<RevealProps> = ({
   delay = 0,
   className = '',
   as: Tag = 'div',
+  threshold = 0.1,
 }) => {
   const ref = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
@@ -42,17 +44,21 @@ export const Reveal: React.FC<RevealProps> = ({
           }
         });
       },
-      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+      { threshold, rootMargin: '0px 0px -40px 0px' }
     );
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [threshold]);
 
   const dirClass =
     direction === 'left'
       ? 'reveal-left'
       : direction === 'right'
       ? 'reveal-right'
+      : direction === 'down'
+      ? 'reveal-down'
+      : direction === 'scale'
+      ? 'reveal-scale'
       : direction === 'none'
       ? 'reveal-fade'
       : '';

@@ -93,9 +93,9 @@ export const VerifiedSuppliers: React.FC<VerifiedSuppliersProps> = ({
               <CheckCircle2 className="w-3 h-3" />
               Verified
             </span>
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-luxe-lavender text-luxe-purple text-xs">
-              <Clock className="w-3 h-3" />
-              Responds {s.responseTime}
+            <span className="inline-flex items-center gap-1 bg-[#FFFBF0] text-[#8C5D00] border border-[#F3E5AB] px-2.5 py-1 rounded-full text-xs font-bold shadow-2xs">
+              <Clock className="w-3 h-3 text-[#D97706]" />
+              <span>Responds in &lt; 2 hrs</span>
             </span>
             <span className="inline-flex items-center px-2 py-1 rounded-full bg-luxe-gold/10 text-luxe-gold text-xs font-semibold">
               {s.years} yrs · {s.products} listed products

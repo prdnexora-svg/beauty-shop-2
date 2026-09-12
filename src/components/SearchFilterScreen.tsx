@@ -25,7 +25,8 @@ import {
   Factory,
   Radio,
   Bookmark,
-  BookmarkCheck
+  BookmarkCheck,
+  Clock
 } from 'lucide-react';
 import { SearchProduct, SearchSupplier, OEMFormulation } from '../types';
 import { SEARCH_SUPPLIERS, SEARCH_OEM_FORMULATIONS } from '../data/mockData';
@@ -1319,6 +1320,10 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
                                 />
                                 <span className="text-[11px] font-bold text-[#6B2D8C] bg-[#F5EEF8] px-2 py-0.5 rounded-full block">
                                   {sup.trustScore}/100 Trust
+                                </span>
+                                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#059669] bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full" title="Average response SLA">
+                                  <Clock className="w-3 h-3 text-[#059669]" />
+                                  Responds in {sup.responseTime || '< 2 hrs'}
                                 </span>
                               </div>
                             </div>

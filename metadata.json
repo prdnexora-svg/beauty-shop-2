@@ -1,0 +1,6 @@
+{
+  "name": "Nexora Luxe",
+  "description": "India's B2B beauty discovery, supplier network, and procurement platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

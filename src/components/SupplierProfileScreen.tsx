@@ -293,12 +293,16 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
         {/* Hero Content Card */}
         <div className="relative z-10 w-full max-w-[1440px] px-4 md:px-10 mx-auto">
           <div className="bg-white/85 backdrop-blur-md rounded-2xl p-6 md:p-12 max-w-4xl mx-auto text-center border border-white/60 shadow-2xl">
-            {/* Verified Badge */}
+            {/* Verified & Response Time Badges */}
             <div className="flex items-center justify-center gap-2 mb-5 flex-wrap">
               <VerifiedBadge trustScore={98} overallRating={4.9} size="md" />
               <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#F5EEF8] text-[#8236A0] font-bold text-[11px] uppercase tracking-wider border border-[#D9C3E8]">
                 <ShieldCheck className="w-3.5 h-3.5 fill-[#6B2D8C] text-white" />
                 <span>Nexora Verified Partner</span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-extrabold text-[11px] uppercase tracking-wider border border-emerald-200 shadow-2xs">
+                <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Avg. Response Time: Responds in &lt; 2 hrs</span>
               </div>
             </div>
 
@@ -472,9 +476,11 @@ export const SupplierProfileScreen: React.FC<SupplierProfileScreenProps> = ({
 
             {/* Response Time Badge */}
             <div className="mt-5 flex items-center justify-center">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FDFBF7] border border-[#D9C3E8] rounded-full text-[12px] font-bold text-[#6B2D8C] shadow-sm">
-                <Clock className="w-3.5 h-3.5" />
-                <span>Usually responds in &lt; 2 hours</span>
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-50 border border-emerald-200 rounded-full text-[12px] font-extrabold text-emerald-900 shadow-xs">
+                <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Avg. Response Time:</span>
+                <span>Responds in &lt; 2 hrs</span>
+                <span className="text-[11px] font-normal text-emerald-700">(98% SLA completion rate)</span>
               </div>
             </div>
 

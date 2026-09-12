@@ -45,6 +45,7 @@ import {
 import { VerifiedSupplier } from '../types';
 import { fetchSuppliers } from '../services/supplierService';
 import { VerifiedBadge } from './VerifiedBadge';
+import { Reveal } from './luxe/Reveal';
 
 interface SupplierDirectoryScreenProps {
   isSupplierSaved?: (id: string) => boolean;
@@ -1010,6 +1011,11 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                                   <span>Pending Verification</span>
                                 </span>
                               )}
+                              {/* Avg Response Time Tag (Soft Gold Luxe Accent) */}
+                              <span className="inline-flex items-center gap-1 bg-[#FFFBF0] text-[#8C5D00] border border-[#F3E5AB] px-2.5 py-0.5 rounded-full text-[11px] font-extrabold shadow-2xs" title="Average enquiry response time SLA">
+                                <Clock className="w-3 h-3 text-[#D97706]" />
+                                <span>Responds in {sup.responseTimeText || '< 2 hrs'}</span>
+                              </span>
                             </div>
 
                             <div className="flex items-center gap-2 flex-wrap mb-2.5">
