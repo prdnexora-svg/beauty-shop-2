@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ArrowLeft,
   ShieldCheck,
@@ -15,12 +15,18 @@ import {
   Factory,
   Sparkles,
   ChevronRight,
+  ChevronLeft,
   ExternalLink,
   Layers,
   FlaskConical,
   Truck,
   HelpCircle,
-  IndianRupee
+  IndianRupee,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  X,
+  RotateCcw
 } from 'lucide-react';
 import { ProductDetailData } from '../types';
 import { SPONSORED_PRODUCTS_DB } from '../data/sponsoredProductsData';
@@ -59,6 +65,35 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<'specs' | 'formulation' | 'packaging' | 'compliance'>('specs');
+
+  // Lightbox Zoom state for high-resolution cosmetic texture inspection
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [lightboxZoomLevel, setLightboxZoomLevel] = useState(1);
+  const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  // Keyboard shortcut handlers for Lightbox (Esc, Left/Right arrows)
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsLightboxOpen(false);
+        setLightboxZoomLevel(1);
+        setPanPosition({ x: 0, y: 0 });
+      } else if (e.key === 'ArrowLeft' && product?.images?.length) {
+        setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : product.images.length - 1));
+        setLightboxZoomLevel(1);
+        setPanPosition({ x: 0, y: 0 });
+      } else if (e.key === 'ArrowRight' && product?.images?.length) {
+        setActiveImageIndex((prev) => (prev < product.images.length - 1 ? prev + 1 : 0));
+        setLightboxZoomLevel(1);
+        setPanPosition({ x: 0, y: 0 });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLightboxOpen, product?.images?.length]);
 
   // Related products: same category first, then remaining catalog (max 4)
   const relatedProducts = React.useMemo(() => {
@@ -133,7 +168,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           {/* Left Column: Image Gallery (5 Cols) */}
           <div className="lg:col-span-5 space-y-4">
             <div className="bg-white border border-[#E8DEEF] rounded-2xl overflow-hidden p-3 relative group">
-              <div className="aspect-square rounded-xl overflow-hidden bg-gray-50 relative">
+              <div
+                className="aspect-square rounded-xl overflow-hidden bg-gray-50 relative cursor-zoom-in"
+                onClick={() => {
+                  setIsLightboxOpen(true);
+                  setLightboxZoomLevel(1);
+                  setPanPosition({ x: 0, y: 0 });
+                }}
+              >
                 <img
                   src={product.images[activeImageIndex] || product.images[0]}
                   alt={product.title}
@@ -143,6 +185,34 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   <Sparkles className="w-3 h-3" />
                   Sponsored Listing
                 </span>
+
+                {/* Hover overlay hint */}
+                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                  <span className="px-3.5 py-2 rounded-xl bg-white/95 text-[#2A0E3F] text-xs font-bold shadow-xl flex items-center gap-2 backdrop-blur-sm transform translate-y-2 group-hover:translate-y-0 transition-all">
+                    <Maximize2 className="w-4 h-4 text-[#6B2D8C]" />
+                    Click for High-Res Texture Zoom
+                  </span>
+                </div>
+              </div>
+
+              {/* Quick action bar beneath main image */}
+              <div className="mt-2.5 flex items-center justify-between px-1 pt-1 border-t border-gray-100">
+                <span className="text-[11px] text-[#5B4A6E] font-medium flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-[#C9A961]" />
+                  Cosmetic formulation texture view
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsLightboxOpen(true);
+                    setLightboxZoomLevel(1);
+                    setPanPosition({ x: 0, y: 0 });
+                  }}
+                  className="text-xs font-bold text-[#6B2D8C] hover:text-[#4A2560] flex items-center gap-1 py-1 px-2.5 rounded-lg hover:bg-[#F5EEF8] transition-colors"
+                >
+                  <ZoomIn className="w-3.5 h-3.5" />
+                  Inspect Texture (Zoom)
+                </button>
               </div>
             </div>
 
@@ -522,6 +592,224 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           </div>
         )}
       </div>
+
+      {/* Lightbox Modal for High-Resolution Cosmetic Texture Inspection */}
+      {isLightboxOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 animate-in fade-in duration-200 select-none"
+          onClick={() => {
+            setIsLightboxOpen(false);
+            setLightboxZoomLevel(1);
+            setPanPosition({ x: 0, y: 0 });
+          }}
+        >
+          {/* Top Control Bar */}
+          <div
+            className="flex items-center justify-between text-white z-10 bg-black/40 p-3 rounded-2xl backdrop-blur-md border border-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3">
+              <span className="w-8 h-8 rounded-full bg-[#6B2D8C] flex items-center justify-center text-white font-black text-xs shadow-md border border-purple-300/30">
+                {activeImageIndex + 1}/{product.images.length}
+              </span>
+              <div>
+                <h3 className="text-sm font-extrabold text-white truncate max-w-[200px] sm:max-w-md">
+                  {product.title}
+                </h3>
+                <p className="text-[11px] text-purple-200 font-medium flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3 text-[#C9A961]" />
+                  High-Resolution Cosmetic Texture Inspection
+                </p>
+              </div>
+            </div>
+
+            {/* Zoom Controls & Close */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setLightboxZoomLevel((prev) => {
+                    const next = Math.max(1, prev - 0.5);
+                    if (next === 1) setPanPosition({ x: 0, y: 0 });
+                    return next;
+                  });
+                }}
+                disabled={lightboxZoomLevel <= 1}
+                aria-label="Zoom Out"
+                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                title="Zoom Out"
+              >
+                <ZoomOut className="w-4 h-4" />
+              </button>
+
+              <span className="text-xs font-mono font-bold px-2 py-1 rounded bg-white/10 text-purple-200 min-w-[50px] text-center">
+                {Math.round(lightboxZoomLevel * 100)}%
+              </span>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setLightboxZoomLevel((prev) => Math.min(3, prev + 0.5));
+                }}
+                disabled={lightboxZoomLevel >= 3}
+                aria-label="Zoom In"
+                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                title="Zoom In"
+              >
+                <ZoomIn className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setLightboxZoomLevel(1);
+                  setPanPosition({ x: 0, y: 0 });
+                }}
+                aria-label="Reset Zoom"
+                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors"
+                title="Reset Zoom (100%)"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+
+              <div className="h-6 w-px bg-white/20 mx-1" />
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLightboxOpen(false);
+                  setLightboxZoomLevel(1);
+                  setPanPosition({ x: 0, y: 0 });
+                }}
+                aria-label="Close Lightbox Zoom"
+                className="p-2 rounded-xl bg-red-500/80 hover:bg-red-600 text-white transition-colors shadow-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Main Image Stage */}
+          <div
+            className="flex-1 relative flex items-center justify-center overflow-hidden my-4"
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => {
+              if (lightboxZoomLevel > 1) {
+                setIsDragging(true);
+                setDragStart({ x: e.clientX - panPosition.x, y: e.clientY - panPosition.y });
+              }
+            }}
+            onMouseMove={(e) => {
+              if (isDragging && lightboxZoomLevel > 1) {
+                setPanPosition({
+                  x: e.clientX - dragStart.x,
+                  y: e.clientY - dragStart.y,
+                });
+              }
+            }}
+            onMouseUp={() => setIsDragging(false)}
+            onMouseLeave={() => setIsDragging(false)}
+          >
+            {/* Previous Image Button */}
+            {product.images.length > 1 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : product.images.length - 1));
+                  setLightboxZoomLevel(1);
+                  setPanPosition({ x: 0, y: 0 });
+                }}
+                aria-label="Previous Image"
+                className="absolute left-2 sm:left-4 z-20 p-3 rounded-full bg-black/60 hover:bg-[#6B2D8C] text-white transition-colors border border-white/20 shadow-xl"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            )}
+
+            {/* Next Image Button */}
+            {product.images.length > 1 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveImageIndex((prev) => (prev < product.images.length - 1 ? prev + 1 : 0));
+                  setLightboxZoomLevel(1);
+                  setPanPosition({ x: 0, y: 0 });
+                }}
+                aria-label="Next Image"
+                className="absolute right-2 sm:right-4 z-20 p-3 rounded-full bg-black/60 hover:bg-[#6B2D8C] text-white transition-colors border border-white/20 shadow-xl"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            )}
+
+            {/* High-Res Image with smooth zoom / pan transforms */}
+            <div
+              className="max-w-full max-h-[80vh] flex items-center justify-center"
+              style={{
+                cursor: lightboxZoomLevel === 1 ? 'zoom-in' : isDragging ? 'grabbing' : 'grab',
+              }}
+              onClick={() => {
+                if (lightboxZoomLevel === 1) {
+                  setLightboxZoomLevel(2);
+                } else {
+                  setLightboxZoomLevel(1);
+                  setPanPosition({ x: 0, y: 0 });
+                }
+              }}
+            >
+              <img
+                src={product.images[activeImageIndex] || product.images[0]}
+                alt={product.title}
+                className="max-w-full max-h-[75vh] object-contain rounded-xl shadow-2xl transition-transform duration-200 ease-out"
+                style={{
+                  transform: `scale(${lightboxZoomLevel}) translate(${panPosition.x / lightboxZoomLevel}px, ${panPosition.y / lightboxZoomLevel}px)`,
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Bottom Thumbnail Strip & Texture Hint */}
+          <div
+            className="z-10 bg-black/40 p-3 rounded-2xl backdrop-blur-md border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2 text-xs text-purple-200">
+              <Maximize2 className="w-4 h-4 text-[#C9A961]" />
+              <span>
+                {lightboxZoomLevel > 1
+                  ? 'Drag mouse to pan high-res texture details. Click image to reset zoom.'
+                  : 'Click image to toggle 200% texture zoom level, or use controls above.'}
+              </span>
+            </div>
+
+            {product.images.length > 1 && (
+              <div className="flex items-center gap-2 overflow-x-auto max-w-full">
+                {product.images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setActiveImageIndex(idx);
+                      setLightboxZoomLevel(1);
+                      setPanPosition({ x: 0, y: 0 });
+                    }}
+                    aria-label={`View texture image ${idx + 1}`}
+                    className={`w-12 h-12 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
+                      activeImageIndex === idx
+                        ? 'border-[#C9A961] scale-105 shadow-lg'
+                        : 'border-white/20 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

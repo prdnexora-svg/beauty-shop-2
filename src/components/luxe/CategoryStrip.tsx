@@ -132,8 +132,8 @@ export const CategoryStrip: React.FC<{ onCategoryClick: (label: string) => void 
           {CATEGORIES.map((cat, idx) => (
             <button
               key={cat.label}
-              ref={(el) => { itemRefs.current[idx] = el; }}
               onClick={() => onCategoryClick(cat.label)}
+              ref={(el) => { itemRefs.current[idx] = el; }}
               className="luxe-card luxe-card-hover group overflow-visible text-left flex-shrink-0 w-[140px] sm:w-auto"
             >
               <div className="relative aspect-square overflow-hidden rounded-t-[11px] bg-[#F6EEF9]">
