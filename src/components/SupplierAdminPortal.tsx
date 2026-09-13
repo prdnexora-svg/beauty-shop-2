@@ -14,6 +14,7 @@ import { PopulatedOrder, PopulatedQuote, PopulatedRFQEnquiry } from '../db/types
 import { addNotification } from '../data/notifications';
 import { downloadOrderInvoice, downloadOrderInvoiceCsv, ORDER_STATUS_LABELS, formatInr, formatDate } from '../utils/invoicePdf';
 import { getActiveSupplierId, setActiveSupplierId, DEFAULT_SUPPLIER_ID } from '../lib/activeTenant';
+import { SellerBusinessProfile } from './SellerBusinessProfile';
 
 // Demo tenant note: in production the active supplier is resolved from the
 // authenticated supplier session and every db read below is scoped by RLS to
@@ -57,14 +58,14 @@ function timeAgoLabel(iso: string): string {
 
 interface SupplierAdminPortalProps {
   onNavigateToProduct?: (productId: string) => void;
-  initialTab?: 'dashboard' | 'products' | 'sponsored-ads' | 'analytics' | 'enquiries' | 'rfqs' | 'negotiations' | 'orders' | 'verification' | 'chat-hub';
+  initialTab?: 'dashboard' | 'business-profile' | 'products' | 'sponsored-ads' | 'analytics' | 'enquiries' | 'rfqs' | 'negotiations' | 'orders' | 'verification' | 'chat-hub';
 }
 
 export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
   onNavigateToProduct,
   initialTab = 'dashboard'
 }) => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'sponsored-ads' | 'analytics' | 'enquiries' | 'rfqs' | 'negotiations' | 'orders' | 'verification' | 'chat-hub'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'business-profile' | 'products' | 'sponsored-ads' | 'analytics' | 'enquiries' | 'rfqs' | 'negotiations' | 'orders' | 'verification' | 'chat-hub'>(initialTab);
   const [analyticsEvents, setAnalyticsEvents] = useState<SponsoredAnalyticsEvent[]>([]);
   const [chatThreads, setChatThreads] = useState<ChatThread[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
@@ -117,6 +118,7 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
   const [supplierOrders, setSupplierOrders] = useState<PopulatedOrder[]>(() => db.getOrdersBySupplierId(getActiveSupplierId()));
   const [supplierQuotes, setSupplierQuotes] = useState<PopulatedQuote[]>([]);
   const [activeSupplierId, setActiveSupplierIdState] = useState(() => getActiveSupplierId());
+  const [activeSupplier, setActiveSupplier] = useState(() => db.getSupplierProfileById(getActiveSupplierId()) || db.getSupplierProfiles()[0]);
 
   useEffect(() => {
     const loadLeads = () => {
@@ -130,7 +132,9 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
     loadLeads();
     const unsubscribe = db.subscribe(() => loadLeads());
     const onTenantChange = () => {
-      setActiveSupplierIdState(getActiveSupplierId());
+      const nextId = getActiveSupplierId();
+      setActiveSupplierIdState(nextId);
+      setActiveSupplier(db.getSupplierProfileById(nextId) || db.getSupplierProfiles()[0]);
       loadLeads();
     };
     window.addEventListener('nexora-db-change', loadLeads);
@@ -296,6 +300,16 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
           >
             <BarChart3 className="w-4.5 h-4.5" />
             <span>Suite Dashboard</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('business-profile')}
+            className={`flex items-center gap-2.5 px-4 py-3 rounded-lg text-left transition-all cursor-pointer ${
+              activeTab === 'business-profile' ? 'bg-[#F5EEF8] text-[#6B2D8C]' : 'hover:bg-neutral-50'
+            }`}
+          >
+            <Building2 className="w-4.5 h-4.5" />
+            <span>Business Profile</span>
           </button>
           
           <button
@@ -537,15 +551,15 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
         <div className="bg-white border border-[#E8DEEF] p-4.5 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h2 className="text-base font-black text-zinc-900 flex items-center gap-1.5">
-              Aura Beauty Labs
-              <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded font-bold uppercase tracking-wider">GST Verified</span>
+              {activeSupplier?.company_name || 'Supplier Business'}
+              {activeSupplier?.is_gst_verified && <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded font-bold uppercase tracking-wider">GST Verified</span>}
             </h2>
-            <p className="text-xs text-[#5B4A6E] mt-0.5">Primary Manufacturing Plant: Mumbai High Tech Cosmetic Zone • Est: 2012</p>
+            <p className="text-xs text-[#5B4A6E] mt-0.5">{activeSupplier ? `${activeSupplier.business_type} · ${activeSupplier.city}, ${activeSupplier.state} · Est. ${activeSupplier.year_established}` : 'Complete your business profile to be discovered by buyers.'}</p>
           </div>
 
           <div className="flex items-center gap-2.5">
             <span className="text-[11px] text-[#5B4A6E] font-semibold">Live Traffic Analytics:</span>
-            <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">98% conversion rating</span>
+            <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">{activeSupplier?.response_rate ?? 0}% response rate</span>
           </div>
         </div>
 
@@ -573,11 +587,16 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               
-              {/* Sourcing Demand Forecast Chart */}
+              {/* Recent buyer activity */}
               <div className="bg-white border border-[#E8DEEF] rounded-xl p-5 space-y-4">
-                <h3 className="font-extrabold text-xs text-[#7E6C96] uppercase tracking-wider">Sourcing Demand Forecast</h3>
-                <div className="h-40 bg-zinc-50 border border-zinc-100 rounded-lg flex items-center justify-center">
-                  <span className="text-xs text-[#5B4A6E] font-semibold italic">Monthly volume demand chart in progress...</span>
+                <div className="flex items-center justify-between"><h3 className="font-extrabold text-xs text-[#7E6C96] uppercase tracking-wider">Recent Buyer Activity</h3><button onClick={() => setActiveTab('enquiries')} className="text-[11px] font-black text-[#6B2D8C]">View all</button></div>
+                <div className="space-y-2">
+                  {[...liveEnquiries, ...liveRfqs].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 3).map((lead) => (
+                    <button key={lead.id} onClick={() => { setSelectedRfq(lead); setActiveTab(lead.type === 'direct_enquiry' ? 'enquiries' : 'rfqs'); }} className="w-full rounded-lg border border-zinc-100 bg-zinc-50 p-3 text-left hover:border-[#D9C3E8]">
+                      <span className="block truncate text-xs font-extrabold text-zinc-900">{lead.requirement_title}</span><span className="mt-1 block text-[10px] text-[#5B4A6E]">{lead.quantity_required.toLocaleString('en-IN')} {lead.quantity_unit} · {lead.delivery_location}</span>
+                    </button>
+                  ))}
+                  {liveEnquiries.length + liveRfqs.length === 0 && <div className="rounded-lg border border-dashed border-[#D9C3E8] p-5 text-center text-xs text-[#5B4A6E]">No buyer activity yet. Complete your profile and add products to improve matching.</div>}
                 </div>
               </div>
 
@@ -609,6 +628,10 @@ export const SupplierAdminPortal: React.FC<SupplierAdminPortalProps> = ({
 
             </div>
           </div>
+        )}
+
+        {activeTab === 'business-profile' && activeSupplier && (
+          <SellerBusinessProfile supplier={activeSupplier} onSaved={setActiveSupplier} />
         )}
 
         {/* ================== CATALOG MANAGEMENT TAB (Screen 19 / 20) ================== */}
