@@ -1,9 +1,9 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { 
-  Search, MapPin, ShieldCheck, ArrowLeft, Star, ExternalLink, 
-  Calendar, Users, Award, Briefcase, Sparkles, Building2, 
-  ChevronRight, ChevronLeft, Check, MessageSquare, FileText, Bookmark, 
-  BookmarkCheck, CheckCircle2, SlidersHorizontal, ArrowUpDown, PlusCircle,
+import React, { useState, useMemo, useEffect } from 'react';
+import {
+  Search, MapPin, ShieldCheck, ArrowLeft, Star,
+  Award, Briefcase, Sparkles, Building2, Eye,
+  Check, MessageSquare, FileText,
+  SlidersHorizontal, ArrowUpDown,
   Loader2, SearchX, RotateCcw, X
 } from 'lucide-react';
 import { fetchSuppliers } from '../services/supplierService';
@@ -103,35 +103,31 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('Relevance');
-  const [savedBrandIds, setSavedBrandIds] = useState<string[]>([]);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Scroll indicator state for categories bar
-  const filterScrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
+  // Simplified primary navigation — only the 5 essential sourcing categories.
+  const categories = ['All', 'Skincare', 'Haircare', 'Cosmetics', 'Packaging'];
 
-  const categories = [
-    'All', 'Skincare', 'Haircare', 'Cosmetics', 
-    'Professional Derma', 'Packaging', 'Clean Beauty', 
-    'Ayurvedic & Herbal', 'Fragrance & Deos', 'Salon Equipment'
-  ];
+  // Live supplier rows use longer taxonomy labels (e.g. "Skincare & Serums",
+  // "Eco Packaging", "Hair Treatments"); map each short pill to the keywords
+  // that identify it so the simplified tabs still match live data.
+  const CATEGORY_KEYWORDS: Record<string, string[]> = {
+    Skincare: ['skincare', 'skin', 'serum', 'cosmeceutical', 'derma', 'clinical', 'organic', 'herbal', 'ayurved'],
+    Haircare: ['haircare', 'hair', 'keratin', 'scalp'],
+    Cosmetics: ['cosmetic', 'makeup', 'colour', 'color', 'lip', 'nail', 'fragrance', 'deo'],
+    Packaging: ['packaging', 'pack', 'bottle', 'jar', 'container', 'pump', 'tube']
+  };
 
   // Live database fetch — replaces the old hard-coded brand cards.
   useEffect(() => {
     let mounted = true;
     setIsLoadingBrands(true);
-    const serviceSort =
-      sortBy === 'Rating' ? 'rating' :
-      sortBy === 'Year Established' ? 'years_established' :
-      sortBy === 'Employee Count' ? 'response_time' : 'relevance';
+    const serviceSort = sortBy === 'Top Rated' ? 'rating' : 'relevance';
 
     fetchSuppliers({
       searchQuery,
-      // Fetch the full database-backed supplier set; brand tabs use the custom
-      // brand-category labels (e.g. "Cosmetics") which are then filtered from
-      // the live rows below. The `/suppliers` page uses the exact `.eq(...)`
-      // database filter in supplierService.
+      // Fetch the full database-backed supplier set; the simplified category
+      // pills filter the live rows client-side via CATEGORY_KEYWORDS. The
+      // `/suppliers` page uses the exact `.eq(...)` filter in supplierService.
       category: 'All',
       sortBy: serviceSort,
       verifiedOnly: false,
@@ -155,48 +151,6 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
     };
   }, [searchQuery, selectedCategory, sortBy]);
 
-  const checkScroll = () => {
-    if (filterScrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = filterScrollRef.current;
-      setCanScrollLeft(scrollLeft > 4);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 4);
-    }
-  };
-
-  useEffect(() => {
-    checkScroll();
-    window.addEventListener('resize', checkScroll);
-    return () => window.removeEventListener('resize', checkScroll);
-  }, []);
-
-  const handleScroll = (direction: 'left' | 'right') => {
-    if (filterScrollRef.current) {
-      const scrollAmount = direction === 'left' ? -200 : 200;
-      filterScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
-  };
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3500);
-  };
-
-  const toggleSaveBrand = (id: string, name: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setSavedBrandIds(prev => {
-      const isSaved = prev.includes(id);
-      if (isSaved) {
-        showToast(`Removed ${name} from your saved shortlist`);
-        return prev.filter(item => item !== id);
-      } else {
-        showToast(`Saved ${name} to your sourcing shortlist`);
-        return [...prev, id];
-      }
-    });
-  };
-
   // Reset every active filter back to its default — used by the empty state
   // so buyers can recover from a zero-result search in one click.
   const handleClearFilters = () => {
@@ -207,42 +161,39 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
 
   const hasActiveFilters = searchQuery.trim() !== '' || selectedCategory !== 'All';
 
+  const brandMatchesCategory = (brand: BrandDirectoryItem) => {
+    if (selectedCategory === 'All') return true;
+    const keywords = CATEGORY_KEYWORDS[selectedCategory] || [selectedCategory.toLowerCase()];
+    return brand.categories.some((cat) => {
+      const label = cat.toLowerCase();
+      return keywords.some((keyword) => label.includes(keyword));
+    });
+  };
+
   // Filter & Sort logic — operates only on database-backed rows.
   const filteredBrands = useMemo(() => {
-    const list = remoteBrands.filter(brand => {
-      const matchesSearch = brand.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            brand.about.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            brand.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            brand.categories.some((cat) => cat.toLowerCase().includes(searchQuery.toLowerCase()));
-      const matchesCategory = selectedCategory === 'All' ||
-        brand.categories.some((cat) => cat.toLowerCase().includes(selectedCategory.toLowerCase()));
-      return matchesSearch && matchesCategory;
+    const query = searchQuery.toLowerCase().trim();
+    const list = remoteBrands.filter((brand) => {
+      const matchesSearch =
+        !query ||
+        brand.name.toLowerCase().includes(query) ||
+        brand.about.toLowerCase().includes(query) ||
+        brand.location.toLowerCase().includes(query) ||
+        brand.categories.some((cat) => cat.toLowerCase().includes(query));
+      return matchesSearch && brandMatchesCategory(brand);
     });
 
-    return [...list].sort((a, b) => {
-      if (sortBy === 'Rating') {
-        return b.rating - a.rating;
-      }
-      if (sortBy === 'Year Established') {
-        return a.establishedYearNum - b.establishedYearNum;
-      }
-      if (sortBy === 'Employee Count') {
-        return b.employeeCountNum - a.employeeCountNum;
-      }
-      return 0; // Default Relevance
-    });
+    // Only two sorts remain: Relevance (service order) and Top Rated.
+    if (sortBy === 'Top Rated') {
+      return [...list].sort((a, b) => b.rating - a.rating);
+    }
+    return list;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remoteBrands, searchQuery, selectedCategory, sortBy]);
 
   return (
     <div className="bg-[#FDFBF7] min-h-screen">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-8 right-8 z-50 bg-[#2A0E3F] text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl border border-[#352B44] flex items-center gap-2.5 animate-in slide-in-from-bottom-5">
-          <CheckCircle2 className="w-4 h-4 text-[#8236A0] shrink-0" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
-      
+
       {/* Banner / Navigation Header */}
       <div className="bg-white border-b border-[#E8DEEF] py-8 px-6 md:px-12">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -289,131 +240,67 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
           /* ================== DIRECTORY VIEW ================== */
           <div className="space-y-8 pb-12">
             
-            {/* Filters & Sorting Bar */}
-            <div className="bg-white p-4 border border-[#E8DEEF] rounded-xl flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 shadow-2xs">
-              
+            {/* Simplified Filters & Sorting Bar — search, 5 essential
+                category pills, and a 2-option sort. No scroll chrome. */}
+            <div className="bg-white p-4 border border-[#E8DEEF] rounded-xl flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4 shadow-2xs">
+
               {/* Search Bar */}
-              <div className="relative w-full lg:w-72 shrink-0">
+              <div className="relative w-full lg:w-64 shrink-0">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                 <input
                   type="text"
-                  placeholder="Search brands, formulators, active ingredients..."
+                  placeholder="Search brands..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none rounded-lg pl-10 pr-4 py-2 text-xs text-[#2A0E3F] font-medium"
+                  aria-label="Search brands"
+                  className="w-full bg-[#FDFBF7] border border-[#E8DEEF] focus:border-[#C9A961] focus:outline-none rounded-lg pl-10 pr-8 py-2 text-xs text-[#2A0E3F] font-medium"
                 />
-              </div>
-
-              {/* Category Filter Tabs with Gradient Fade & Scroll Indicators */}
-              <div className="relative flex-1 min-w-0 max-w-full overflow-hidden flex items-center">
-                
-                {/* Left Fade Gradient */}
-                <div 
-                  className={`absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white via-white/90 to-transparent pointer-events-none z-10 transition-opacity duration-200 ${
-                    canScrollLeft ? 'opacity-100' : 'opacity-0'
-                  }`} 
-                />
-
-                {/* Left Scroll Button */}
-                {canScrollLeft && (
+                {searchQuery && (
                   <button
-                    onClick={() => handleScroll('left')}
-                    aria-label="Scroll Left"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-6 h-6 rounded-full bg-white shadow-md border border-[#E8DEEF] flex items-center justify-center text-[#5B4A6E] hover:text-[#6B2D8C] hover:border-[#6B2D8C] cursor-pointer transition-all"
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    aria-label="Clear search"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center text-zinc-400 hover:text-[#6B2D8C] cursor-pointer"
                   >
-                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 )}
-
-                {/* Scrollable Container */}
-                <div 
-                  ref={filterScrollRef}
-                  onScroll={checkScroll}
-                  className="flex items-center gap-1.5 overflow-x-auto py-1 px-1 scrollbar-none scroll-smooth w-full"
-                >
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
-                        selectedCategory === cat
-                          ? 'bg-[#6B2D8C] text-white shadow-3xs'
-                          : 'bg-[#F6F1FA] text-[#5B4A6E] hover:bg-[#E8DEEF]'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                  
-                  {/* Category Count Indicator */}
-                  <span className="text-[10px] text-[#7E6C96] font-bold bg-[#FDFBF7] border border-[#E8DEEF] px-2 py-1 rounded-full shrink-0 whitespace-nowrap ml-1">
-                    +{categories.length - 4} more
-                  </span>
-                </div>
-
-                {/* Right Fade Gradient */}
-                <div 
-                  className={`absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-white via-white/90 to-transparent pointer-events-none z-10 transition-opacity duration-200 ${
-                    canScrollRight ? 'opacity-100' : 'opacity-0'
-                  }`} 
-                />
-
-                {/* Right Scroll Button */}
-                {canScrollRight && (
-                  <button
-                    onClick={() => handleScroll('right')}
-                    aria-label="Scroll Right"
-                    className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-6 h-6 rounded-full bg-white shadow-md border border-[#E8DEEF] flex items-center justify-center text-[#5B4A6E] hover:text-[#6B2D8C] hover:border-[#6B2D8C] cursor-pointer transition-all"
-                  >
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-                )}
-
               </div>
 
-              {/* Sorting Dropdown */}
-              <div className="flex items-center gap-2 shrink-0 border-t lg:border-t-0 pt-3 lg:pt-0 border-[#F4F0E9]">
-                <div className="flex items-center gap-1.5 text-xs text-[#5B4A6E] font-bold">
+              {/* Essential Category Pills */}
+              <div className="flex flex-1 flex-wrap items-center gap-1.5 min-w-0">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                      selectedCategory === cat
+                        ? 'bg-[#6B2D8C] text-white shadow-3xs'
+                        : 'bg-[#F6F1FA] text-[#5B4A6E] hover:bg-[#E8DEEF]'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              {/* Sorting Dropdown — Relevance or Top Rated only */}
+              <div className="flex items-center gap-2 shrink-0">
+                <label htmlFor="brand-sort" className="flex items-center gap-1.5 text-xs text-[#5B4A6E] font-bold">
                   <ArrowUpDown className="w-3.5 h-3.5 text-[#6B2D8C]" />
-                  <span>Sort by:</span>
-                </div>
+                  <span className="hidden sm:inline">Sort:</span>
+                </label>
                 <select
+                  id="brand-sort"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   className="bg-[#FDFBF7] border border-[#E8DEEF] text-xs font-semibold text-[#2A0E3F] rounded-lg px-3 py-2 focus:outline-none focus:border-[#C9A961] cursor-pointer"
                 >
                   <option value="Relevance">Relevance</option>
-                  <option value="Rating">Rating (Highest First)</option>
-                  <option value="Year Established">Year Established (Oldest First)</option>
-                  <option value="Employee Count">Employee Count (Largest First)</option>
+                  <option value="Top Rated">Top Rated</option>
                 </select>
               </div>
 
-            </div>
-
-            {/* Inline Sourcing RFQ CTA Banner */}
-            <div className="bg-gradient-to-r from-[#fff5f8] via-[#FDFBF7] to-[#fbf0f4] border border-[#f5d0de] rounded-2xl p-4 md:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-3xs">
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-[#F5EEF8] text-[#6B2D8C] flex items-center justify-center shrink-0 border border-[#f5d0de]">
-                  <Sparkles className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-extrabold text-xs md:text-sm text-zinc-900 leading-tight">
-                    Looking for custom beauty formulations, private label batches, or bespoke packaging?
-                  </h4>
-                  <p className="text-[11px] md:text-xs text-[#5B4A6E] mt-0.5">
-                    Post your requirement once to receive custom quotes, lab trial terms, and verified MOQ offers from audited GMP factories within 24 hours.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={onOpenRFQModal}
-                className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-sm transition-all cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap self-stretch md:self-auto justify-center"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>Post Custom Brand RFQ</span>
-              </button>
             </div>
 
             {/* Brands & Manufacturers Grid */}
@@ -515,159 +402,84 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                 </div>
               </div>
             ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredBrands.map((brand) => {
-                const isSaved = savedBrandIds.includes(brand.id);
+                // One primary verification tag on the card; ISO / FDA /
+                // AYUSH / MoCRA detail is hidden here and lives on the profile.
+                const isPending = !brand.isVerified && brand.status === 'pending_verification';
 
                 return (
-                  <div 
+                  <div
                     key={brand.id}
-                    onClick={() => setSelectedBrand(brand)}
-                    className="bg-white border border-[#E8DEEF] hover:border-[#6B2D8C] hover:shadow-md rounded-2xl p-5 md:p-6 transition-all flex flex-col justify-between cursor-pointer group relative"
+                    className="bg-white border border-[#E8DEEF] hover:border-[#6B2D8C] hover:shadow-md rounded-2xl p-5 transition-all flex flex-col"
                   >
-                    <div className="space-y-4">
-                      
-                      {/* Brand Banner / Logo & Bookmark Header */}
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <img 
-                            src={brand.logo} 
-                            alt={brand.name} 
-                            className="w-13 h-13 rounded-xl object-cover border border-[#E8DEEF] shrink-0"
-                          />
-                          <div className="min-w-0">
-                            <h3 className="font-extrabold text-sm text-zinc-900 group-hover:text-[#6B2D8C] transition-colors flex items-center gap-1 truncate">
-                              <span className="truncate">{brand.name}</span>
-                              <ShieldCheck className="w-4 h-4 text-[#6B2D8C] fill-[#F5EEF8] shrink-0" />
-                            </h3>
-                            <span className="text-[11px] text-[#5B4A6E] font-semibold truncate block">{brand.type}</span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                          <button
-                            onClick={(e) => toggleSaveBrand(brand.id, brand.name, e)}
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
-                              isSaved 
-                                ? 'bg-[#F5EEF8] text-[#6B2D8C] border border-[#D9C3E8]' 
-                                : 'bg-[#F6F1FA] text-zinc-400 hover:text-[#6B2D8C] hover:bg-[#F5EEF8]'
-                            }`}
-                            title={isSaved ? "Saved in Shortlist" : "Bookmark / Save"}
-                          >
-                            {isSaved ? <BookmarkCheck className="w-4 h-4 fill-[#6B2D8C]" /> : <Bookmark className="w-4 h-4" />}
-                          </button>
-                          {(!brand.isVerified && brand.status === 'pending_verification') ? (
-                            <span className="text-[10px] bg-amber-50 text-amber-700 px-2 py-1 rounded-md font-bold uppercase tracking-wider border border-amber-200">
-                              Pending Audit
-                            </span>
-                          ) : (
-                            <span className="text-[10px] bg-[#F5EEF8] text-[#6B2D8C] px-2 py-1 rounded-md font-bold uppercase tracking-wider border border-[#E8D5F2]">
-                              {brand.rating >= 4.8 ? 'Platinum Verified' : 'GST Verified'}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <p className="text-xs text-[#5B4A6E] leading-relaxed line-clamp-3">
-                        {brand.about}
-                      </p>
-
-                      {/* Key Verified Sourcing Metrics Grid (Unclipped, clean responsive layout) */}
-                      <div className="bg-[#FDFBF7] p-3.5 rounded-xl border border-[#E8DEEF] space-y-2.5 my-2">
-                        <div className="grid grid-cols-2 gap-2.5 text-[11px] text-[#5B4A6E]">
-                          <div className="flex items-center gap-1.5 min-w-0" title={`Location: ${brand.location}`}>
-                            <MapPin className="w-3.5 h-3.5 text-[#6B2D8C] shrink-0" />
-                            <span className="truncate font-semibold">{brand.location}</span>
-                          </div>
-                          
-                          <div className="flex items-center gap-1.5 min-w-0" title={`Established: ${brand.established}`}>
-                            <Calendar className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-                            <span className="truncate">Est: <span className="font-bold text-zinc-900">{brand.established}</span></span>
-                          </div>
-
-                          <div className="flex items-center gap-1.5 min-w-0" title={`Employees: ${brand.employees}`}>
-                            <Users className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-                            <span className="truncate">Team: <span className="font-bold text-zinc-900">{brand.employees}</span></span>
-                          </div>
-
-                          <div className="flex items-center gap-1.5 min-w-0" title={`Rating: ${brand.rating} out of 5 (${brand.reviewsCount} verified audits)`}>
-                            <div className="bg-[#fff8e6] text-[#92400e] border border-[#ffe082] px-1.5 py-0.5 rounded-md flex items-center gap-1 font-black shrink-0">
-                              <Star className="w-3 h-3 text-amber-500 fill-amber-500 shrink-0" />
-                              <span>{brand.rating}</span>
-                            </div>
-                            <span className="text-[10.5px] text-[#7E6C96] font-semibold">({brand.reviewsCount})</span>
-                          </div>
-                        </div>
-
-                        <div className="pt-2 border-t border-[#E8DEEF] flex items-center justify-between text-[10px] text-[#7E6C96]">
-                          <span className="font-semibold">Capacity: <span className="text-zinc-900 font-bold">{brand.capacity}</span></span>
-                          <span className="text-emerald-700 font-extrabold bg-emerald-50 px-1.5 py-0.5 rounded">Response: {brand.responseRate}</span>
-                        </div>
-                      </div>
-
-                      {/* Certification chips */}
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        {brand.certifications.map((cert) => (
-                          <span key={cert} className="text-[9.5px] bg-[#F6F1FA] text-zinc-700 px-2 py-0.5 rounded-md font-bold uppercase tracking-wide border border-[#E8DEEF]/50">
-                            {cert}
-                          </span>
-                        ))}
+                    {/* Logo, brand name and the single primary tag */}
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={brand.logo}
+                        alt={brand.name}
+                        className="w-12 h-12 rounded-xl object-cover border border-[#E8DEEF] shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <h3 className="font-extrabold text-sm text-zinc-900 truncate">
+                          {brand.name}
+                        </h3>
+                        <span
+                          className={`mt-1 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                            isPending
+                              ? 'bg-amber-50 text-amber-700 border-amber-200'
+                              : 'bg-[#F5EEF8] text-[#6B2D8C] border-[#E8D5F2]'
+                          }`}
+                        >
+                          <ShieldCheck className="w-3 h-3 shrink-0" />
+                          {isPending ? 'Pending Audit' : 'WHO-GMP Certified'}
+                        </span>
                       </div>
                     </div>
 
-                    {/* Direct Contact & Quick Action CTAs Row */}
-                    <div className="mt-5 pt-4 border-t border-[#E8DEEF] space-y-2.5">
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (onOpenChat) {
-                              onOpenChat({
-                                id: brand.id,
-                                name: brand.name,
-                                location: brand.location,
-                                isVerified: Boolean(brand.isVerified || brand.gstVerified)
-                              });
-                            } else {
-                              onOpenEnquiryModal(`Direct Manufacturing Enquiry`, brand.name);
-                            }
-                          }}
-                          className="bg-white border border-[#6B2D8C] text-[#6B2D8C] hover:bg-[#F5EEF8] font-bold text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-3xs"
-                        >
-                          <MessageSquare className="w-3.5 h-3.5" />
-                          <span>Direct Message</span>
-                        </button>
+                    {/* Location + rating — the only metrics shown */}
+                    <div className="mt-4 flex items-center justify-between gap-3">
+                      <span className="flex items-center gap-1.5 min-w-0 text-[11px] text-[#5B4A6E] font-semibold">
+                        <MapPin className="w-3.5 h-3.5 text-[#6B2D8C] shrink-0" />
+                        <span className="truncate">{brand.location}</span>
+                      </span>
+                      <span className="flex items-center gap-1 bg-[#fff8e6] text-[#92400e] border border-[#ffe082] px-1.5 py-0.5 rounded-md text-[11px] font-black shrink-0">
+                        <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                        {brand.rating.toFixed(1)}
+                      </span>
+                    </div>
 
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onOpenRFQModal({
+                    {/* Exactly two direct actions per card */}
+                    <div className="mt-4 pt-4 border-t border-[#E8DEEF] grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (onOpenChat) {
+                            onOpenChat({
                               id: brand.id,
                               name: brand.name,
-                              category: brand.categories[0] || 'Skincare',
-                              type: brand.type
+                              location: brand.location,
+                              isVerified: Boolean(brand.isVerified || brand.gstVerified)
                             });
-                          }}
-                          className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-3xs"
-                        >
-                          <FileText className="w-3.5 h-3.5" />
-                          <span>Request Quote</span>
-                        </button>
-                      </div>
-
-                      {/* Primary Navigation Action */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onOpenFacilityTour(brand.name, brand.location);
+                          } else {
+                            onOpenEnquiryModal('Direct Manufacturing Enquiry', brand.name);
+                          }
                         }}
-                        className="w-full flex items-center justify-between text-xs font-bold text-[#6B2D8C] hover:text-[#4A2560] pt-1 cursor-pointer bg-transparent border-0"
+                        className="bg-white border border-[#6B2D8C] text-[#6B2D8C] hover:bg-[#F5EEF8] font-bold text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-3xs"
                       >
-                        <span>View Formulations &amp; Facility</span>
-                        <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>Contact Supplier</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedBrand(brand)}
+                        className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-3xs"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>View Profile</span>
                       </button>
                     </div>
-
                   </div>
                 );
               })}
