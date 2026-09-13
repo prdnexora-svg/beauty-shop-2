@@ -75,7 +75,7 @@ export const SPONSORED_PRODUCTS_DB: Record<string, ProductDetailData> = {
       { quantityRange: '1000+ Jars', unitPrice: '₹220 / Jar' }
     ],
     category: 'Skincare',
-    subcategory: 'Moisturizers & Creams',
+    subcategory: 'Day & Night Moisturizers',
     description: 'Multi-ceramide complex with 5 molecular weights of Hyaluronic Acid for deep epidermal barrier restoration. Ideal for clinical dermatology brands.',
     images: [
       'https://images.unsplash.com/photo-1608248597359-052445bfa3d0?auto=format&fit=crop&w=800&q=80',

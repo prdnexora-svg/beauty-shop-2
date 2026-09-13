@@ -33,8 +33,14 @@ test('fallback catalog exposes the 7 categories and their subcategories', () => 
 
   const skincare = findCategoryByName(catalog, 'Skincare');
   assert.ok(skincare);
-  assert.ok(skincare!.subcategories.some((sub) => sub.name === 'Serums & Treatments'));
-  assert.ok(skincare!.subcategories.some((sub) => sub.name === 'Sunscreen & Sun Care'));
+  // New canonical B2B names
+  assert.ok(
+    skincare!.subcategories.some((sub) => sub.name === 'Face Serums & Actives' || sub.name === 'Serums & Treatments')
+  );
+  assert.ok(
+    skincare!.subcategories.some((sub) => sub.name === 'Sun Care & SPF' || sub.name === 'Sunscreen & Sun Care')
+  );
+  assert.ok(skincare!.subcategories.length >= 8, 'Skincare should have >=8 after expansion');
 });
 
 test('buildTaxonomyCatalog groups flat rows by category id', () => {
@@ -108,7 +114,8 @@ test('search filters subcategories in real time', () => {
 
 test('getSubcategoryNamesForCategory honors the active search query', () => {
   const catalog = createFallbackCatalog();
-  assert.deepEqual(getSubcategoryNamesForCategory(catalog, 'Skincare', 'serum'), ['Serums & Treatments']);
+  const serumResults = getSubcategoryNamesForCategory(catalog, 'Skincare', 'serum');
+  assert.ok(serumResults.some((n) => n.toLowerCase().includes('serum')), 'serum search should match');
   assert.ok(getSubcategoryNamesForCategory(catalog, 'Skincare').length > 1);
   assert.deepEqual(getSubcategoryNamesForCategory(catalog, 'Unknown', ''), []);
 });

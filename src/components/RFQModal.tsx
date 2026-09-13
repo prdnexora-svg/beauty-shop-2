@@ -35,7 +35,7 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose, targetSuppl
   const [submitted, setSubmitted] = useState(false);
   const initialCategory = targetSupplier?.category || 'Skincare';
   const [taxonomy, setTaxonomy] = useState<TaxonomySelectionState>(
-    createInitialTaxonomyState(initialCategory, ['Serums & Treatments'])
+    createInitialTaxonomyState(initialCategory, ['Face Serums & Actives'])
   );
   const [productName, setProductName] = useState(targetSupplier ? `Custom Order from ${targetSupplier.name}` : '');
   const [quantity, setQuantity] = useState('');
@@ -53,7 +53,7 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose, targetSuppl
   useEffect(() => {
     if (targetSupplier) {
       if (targetSupplier.category) {
-        setTaxonomy(createInitialTaxonomyState(targetSupplier.category, ['Serums & Treatments']));
+        setTaxonomy(createInitialTaxonomyState(targetSupplier.category, ['Face Serums & Actives']));
       }
       if (targetSupplier.name) {
         setProductName(`Custom Sourcing from ${targetSupplier.name}`);
@@ -85,7 +85,7 @@ export const RFQModal: React.FC<RFQModalProps> = ({ isOpen, onClose, targetSuppl
 
   const handleReset = () => {
     setSubmitted(false);
-    setTaxonomy(createInitialTaxonomyState('Skincare', ['Serums & Treatments']));
+    setTaxonomy(createInitialTaxonomyState('Skincare', ['Face Serums & Actives']));
     setProductName('');
     setQuantity('');
     setCity('');

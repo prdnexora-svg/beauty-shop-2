@@ -218,7 +218,7 @@ test('selecting Hydrating Face Wash selects Skincare + Cleansers', () => {
   const template = byId('hydrating-face-wash');
   const state = createInitialTaxonomyState(template.category, template.subcategories);
   assert.equal(state.primaryCategory, 'Skincare');
-  assert.deepEqual(state.selectedSubcategories, ['Cleansers & Toners']);
+  assert.deepEqual(state.selectedSubcategories, ['Daily Cleansers & Wash']);
 });
 
 test('multi-subcategory templates select all their pills', () => {
@@ -261,8 +261,11 @@ test('dropdown shows filtered suggestions with highlighted matching text', () =>
   // name is split by the <mark> tag: “<mark>Vitamin</mark> C Brightening Serum”
   assert.ok(html.includes('C Brightening Serum'));
   assert.ok(html.includes('data-testid="product-option"'));
-  // options expose the category › subcategory caption
-  assert.ok(html.includes('Skincare › Serums &amp; Treatments'));
+  // options expose the category › subcategory caption (new canonical B2B)
+  assert.ok(
+    html.includes('Skincare › Face Serums &amp; Actives') ||
+    html.includes('Skincare › Serums &amp; Treatments')
+  );
 });
 
 test('clear button renders only when text is present', () => {

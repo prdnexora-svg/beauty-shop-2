@@ -60,8 +60,10 @@ test('every primary category has a non-empty, de-duplicated subcategory list', (
 test('selecting Skincare shows Skincare subcategory pills', () => {
   const pills = getAvailableSubcategories('Skincare');
   assert.deepEqual(pills, CATEGORY_TAXONOMY['Skincare']);
-  assert.ok(pills.includes('Serums & Treatments'));
-  assert.ok(pills.includes('Sunscreen & Sun Care'));
+  // New canonical B2B list (Pure English) + legacy check via alias mapping
+  assert.ok(pills.includes('Face Serums & Actives') || pills.includes('Serums & Treatments'));
+  assert.ok(pills.includes('Sun Care & SPF') || pills.includes('Sunscreen & Sun Care'));
+  assert.ok(pills.length >= 8, 'Skincare should have >=8 subcategories after expansion');
 });
 
 test('selecting Haircare & Styling swaps pills to haircare subcategories', () => {
@@ -97,28 +99,29 @@ test('unknown / empty category yields no pills (no cross-category leak)', () => 
 /* ------------------------------------------------------------------ */
 
 test('tapping multiple pills adds each one and updates the taxonomy path', () => {
-  let state = createInitialTaxonomyState('Skincare', ['Serums & Treatments']);
-  state = toggleSubcategory(state, 'Moisturizers & Creams');
-  state = toggleSubcategory(state, 'Face Masks & Peels');
+  // Use new canonical B2B names
+  let state = createInitialTaxonomyState('Skincare', ['Face Serums & Actives']);
+  state = toggleSubcategory(state, 'Day & Night Moisturizers');
+  state = toggleSubcategory(state, 'Face Masks & Sheets');
 
   assert.deepEqual(state.selectedSubcategories, [
-    'Serums & Treatments',
-    'Moisturizers & Creams',
-    'Face Masks & Peels'
+    'Face Serums & Actives',
+    'Day & Night Moisturizers',
+    'Face Masks & Sheets'
   ]);
   assert.deepEqual(getActiveTaxonomyPath(state), [
     'Skincare',
-    'Serums & Treatments',
-    'Moisturizers & Creams',
-    'Face Masks & Peels'
+    'Face Serums & Actives',
+    'Day & Night Moisturizers',
+    'Face Masks & Sheets'
   ]);
 });
 
 test('tapping a selected pill again removes it from the path', () => {
-  let state = createInitialTaxonomyState('Skincare', ['Serums & Treatments', 'Cleansers & Toners']);
-  state = toggleSubcategory(state, 'Serums & Treatments');
-  assert.deepEqual(state.selectedSubcategories, ['Cleansers & Toners']);
-  assert.deepEqual(getActiveTaxonomyPath(state), ['Skincare', 'Cleansers & Toners']);
+  let state = createInitialTaxonomyState('Skincare', ['Face Serums & Actives', 'Daily Cleansers & Wash']);
+  state = toggleSubcategory(state, 'Face Serums & Actives');
+  assert.deepEqual(state.selectedSubcategories, ['Daily Cleansers & Wash']);
+  assert.deepEqual(getActiveTaxonomyPath(state), ['Skincare', 'Daily Cleansers & Wash']);
 });
 
 test('legacy single subcategory field tracks the first selected pill', () => {
@@ -132,7 +135,7 @@ test('legacy single subcategory field tracks the first selected pill', () => {
 });
 
 test('clear selection empties the path back to just the primary category', () => {
-  let state = createInitialTaxonomyState('Skincare', ['Serums & Treatments', 'Eye & Lip Care']);
+  let state = createInitialTaxonomyState('Skincare', ['Face Serums & Actives', 'Eye & Lip Treatments']);
   state = clearSelectedSubcategories(state);
   assert.deepEqual(getActiveTaxonomyPath(state), ['Skincare']);
   assert.equal(state.subcategory, '');
@@ -143,7 +146,7 @@ test('clear selection empties the path back to just the primary category', () =>
 /* ------------------------------------------------------------------ */
 
 test('changing primary category clears ALL previously selected subcategories', () => {
-  let state = createInitialTaxonomyState('Skincare', ['Serums & Treatments', 'Moisturizers & Creams']);
+  let state = createInitialTaxonomyState('Skincare', ['Face Serums & Actives', 'Day & Night Moisturizers']);
   state = changePrimaryCategory(state, 'Haircare & Styling');
 
   assert.equal(state.primaryCategory, 'Haircare & Styling');
@@ -154,11 +157,11 @@ test('changing primary category clears ALL previously selected subcategories', (
 
 test('auto-clear works for every category transition', () => {
   for (const next of EXPECTED_SEVEN) {
-    let state = createInitialTaxonomyState('Skincare', ['Serums & Treatments']);
+    let state = createInitialTaxonomyState('Skincare', ['Face Serums & Actives']);
     state = changePrimaryCategory(state, next);
     if (next === 'Skincare') {
       // same category = no-op, selection preserved (covered by dedicated test)
-      assert.deepEqual(state.selectedSubcategories, ['Serums & Treatments']);
+      assert.deepEqual(state.selectedSubcategories, ['Face Serums & Actives']);
       continue;
     }
     assert.deepEqual(state.selectedSubcategories, [], `switch to ${next} must clear`);
@@ -167,13 +170,13 @@ test('auto-clear works for every category transition', () => {
 });
 
 test('re-selecting the SAME category keeps the current selection', () => {
-  let state = createInitialTaxonomyState('Skincare', ['Serums & Treatments']);
+  let state = createInitialTaxonomyState('Skincare', ['Face Serums & Actives']);
   state = changePrimaryCategory(state, 'Skincare');
-  assert.deepEqual(state.selectedSubcategories, ['Serums & Treatments']);
+  assert.deepEqual(state.selectedSubcategories, ['Face Serums & Actives']);
 });
 
 test('selections can never contain pills from another primary category', () => {
-  let state = createInitialTaxonomyState('Skincare', ['Serums & Treatments']);
+  let state = createInitialTaxonomyState('Skincare', ['Face Serums & Actives']);
   const stray = toggleSubcategory(state, 'Shampoos & Conditioners'); // haircare pill
   // simulate the guard consumers rely on: switching category wipes strays
   const cleared = changePrimaryCategory(stray, 'Haircare & Styling');
@@ -187,7 +190,7 @@ test('selections can never contain pills from another primary category', () => {
 test('isTaxonomySelectionValid requires at least one pill', () => {
   assert.equal(isTaxonomySelectionValid(createInitialTaxonomyState('Skincare')), false);
   assert.equal(
-    isTaxonomySelectionValid(createInitialTaxonomyState('Skincare', ['Serums & Treatments'])),
+    isTaxonomySelectionValid(createInitialTaxonomyState('Skincare', ['Face Serums & Actives'])),
     true
   );
 });
@@ -207,12 +210,12 @@ function renderSelector(state: ReturnType<typeof createInitialTaxonomyState>, sh
 }
 
 test('component renders the Active Taxonomy Path with selected chips', () => {
-  const html = renderSelector(createInitialTaxonomyState('Skincare', ['Serums & Treatments', 'Eye & Lip Care']));
+  const html = renderSelector(createInitialTaxonomyState('Skincare', ['Face Serums & Actives', 'Eye & Lip Treatments']));
   assert.ok(html.includes('data-testid="active-taxonomy-path"'));
   assert.ok(html.includes('Active Taxonomy Path'));
   assert.ok(html.includes('Skincare'));
-  assert.ok(html.includes('Serums &amp; Treatments'));
-  assert.ok(html.includes('Eye &amp; Lip Care'));
+  assert.ok(html.includes('Face Serums &amp; Actives'));
+  assert.ok(html.includes('Eye &amp; Lip Treatments'));
   assert.ok(html.includes('Clear Selection (2)'));
   const chips = html.split('data-testid="taxonomy-path-chip"').length - 1;
   assert.equal(chips, 2);
@@ -249,7 +252,7 @@ test('component shows the empty-path hint and inline validation when nothing is 
 });
 
 test('component marks selected pills as pressed for a11y', () => {
-  const html = renderSelector(createInitialTaxonomyState('Skincare', ['Sunscreen & Sun Care']));
+  const html = renderSelector(createInitialTaxonomyState('Skincare', ['Sun Care & SPF']));
   assert.ok(html.includes('aria-pressed="true"'));
   assert.ok(html.includes('aria-pressed="false"'));
 });

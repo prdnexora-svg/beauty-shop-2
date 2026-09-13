@@ -1,6 +1,6 @@
-import { CATEGORY_TAXONOMY, CATEGORY_TAXONOMY_LIST, CATEGORIES_DATA, getSubcategoriesForCategoryName, getAllCategoryKeys } from './categoryTaxonomy';
+import { CATEGORY_TAXONOMY, CATEGORY_TAXONOMY_LIST, CATEGORIES_DATA, getSubcategoriesForCategoryName, getAllCategoryKeys, SKINCARE_SUBCATEGORIES_CANONICAL } from './categoryTaxonomy';
 
-export { CATEGORY_TAXONOMY, CATEGORY_TAXONOMY_LIST, CATEGORIES_DATA, getSubcategoriesForCategoryName, getAllCategoryKeys };
+export { CATEGORY_TAXONOMY, CATEGORY_TAXONOMY_LIST, CATEGORIES_DATA, getSubcategoriesForCategoryName, getAllCategoryKeys, SKINCARE_SUBCATEGORIES_CANONICAL };
 
 export interface CategoryTaxonomy {
   id: string;
@@ -20,14 +20,7 @@ export const B2B_CATEGORIES: CategoryTaxonomy[] = [
     subtitle: 'Clinical Serums, Creams & Derma Care',
     itemCount: '1,840+ Listings',
     image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80',
-    subcategories: [
-      'Serums & Treatments',
-      'Cleansers & Toners',
-      'Moisturizers & Creams',
-      'Sunscreen & Sun Care',
-      'Face Masks & Peels',
-      'Eye & Lip Care'
-    ]
+    subcategories: SKINCARE_SUBCATEGORIES_CANONICAL
   },
   {
     id: 'haircare',
