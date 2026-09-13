@@ -37,6 +37,38 @@ import { FilterPanel } from './FilterPanel';
 import { VerifiedBadge } from './VerifiedBadge';
 import { getSavedProductIds, toggleSavedProduct } from '../data/savedStore';
 
+/**
+ * Consistent keyword matching for the Supplier Business Type filter.
+ *
+ * A brand's free-form type string ("OEM Bulk Active Formulator", "Exporter &
+ * Manufacturer", "Wholesaler & Stockist" …) is matched against a keyword set
+ * per business type, so one filter label never depends on an exact-string hit.
+ * Unknown filter labels fall back to a plain substring match.
+ *
+ * Available supplier business types:
+ *  - Manufacturer: direct producers of raw materials, formulations and finished goods.
+ *  - Wholesaler: bulk inventory stockists offering ready-to-ship products with short lead times.
+ *  - Distributor: logistics partners handling regional and national product distribution.
+ *  - Exporter: global trade-compliant suppliers with international certifications (ISO, GMP).
+ *  - OEM / Private Label: contract development and private label manufacturing partners.
+ */
+export const supplierTypeMatches = (type: string, filter: string): boolean => {
+  const keywords: Record<string, string[]> = {
+    'Manufacturer': ['manufacturer', 'formulator', 'factory'],
+    'OEM / Private Label': ['oem', 'private label', 'contract manufacturer'],
+    'Wholesaler': ['wholesaler', 'stockist', 'bulk seller'],
+    'Distributor': ['distributor', 'distribution', 'supplier'],
+    'Exporter': ['exporter', 'export']
+  };
+
+  const lowerType = type.toLowerCase();
+  const filterKeywords = keywords[filter];
+
+  return filterKeywords
+    ? filterKeywords.some(keyword => lowerType.includes(keyword))
+    : lowerType.includes(filter.toLowerCase());
+};
+
 interface SearchFilterScreenProps {
   initialTab?: 'products' | 'suppliers' | 'oem';
   initialQuery?: string;
@@ -466,9 +498,9 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
       // Established year match
       if (!matchesEstablishedYears(p.establishedYearNumber, selectedEstablishedYears)) return false;
 
-      // Supplier type match
+      // Supplier type match (keyword-based — see supplierTypeMatches)
       if (selectedSupplierTypes.length > 0) {
-        const matchesType = selectedSupplierTypes.some((type) => p.supplierType.toLowerCase().includes(type.toLowerCase()));
+        const matchesType = selectedSupplierTypes.some((type) => supplierTypeMatches(p.supplierType, type));
         if (!matchesType) return false;
       }
 
@@ -540,9 +572,9 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
         if (!matchesCat) return false;
       }
 
-      // Supplier Type match
+      // Supplier Type match (keyword-based — see supplierTypeMatches)
       if (selectedSupplierTypes.length > 0) {
-        const matchesType = selectedSupplierTypes.some((type) => s.type.toLowerCase().includes(type.toLowerCase()));
+        const matchesType = selectedSupplierTypes.some((type) => supplierTypeMatches(s.type, type));
         if (!matchesType) return false;
       }
 

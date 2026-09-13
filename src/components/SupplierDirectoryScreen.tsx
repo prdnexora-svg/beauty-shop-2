@@ -274,9 +274,15 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
       sortBy: serviceSort,
       limit: 200
     }).then(res => {
-      // Only override the seed when the service actually returned rows.
+      // Merge live service rows ON TOP of the local seed instead of replacing
+      // it — the full mock directory is always visible, and live (e.g.
+      // newly onboarded) suppliers are simply added when the backend exists.
       if (isMounted && res.data && res.data.length > 0) {
-        setAllSuppliers(res.data);
+        setAllSuppliers(prev => {
+          const liveIds = new Set(res.data.map((row) => row.id));
+          // Live rows first; keep any local seed rows the service did not return.
+          return [...res.data, ...prev.filter(p => !liveIds.has(p.id))];
+        });
       }
     }).catch(err => {
       console.warn('Supplier service unavailable — using local seed dataset:', err);

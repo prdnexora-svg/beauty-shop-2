@@ -1775,8 +1775,390 @@ export const SEARCH_SUPPLIERS: SearchSupplier[] = [
       coldChainAvailable: false,
       transitAdvantage: 'South India primary equipment stocking & service center'
     }
+  },
+  {
+    id: 'ss-8',
+    name: 'Taloja Ocean Exports',
+    shortCode: 'TOE',
+    type: 'Exporter',
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    rating: 4.8,
+    trustScore: 94,
+    responseRate: '97%',
+    responseTime: '< 3 hrs',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    isBusinessVerified: true,
+    isGmpCertified: false,
+    isHalalCertified: false,
+    isOrganicCertified: false,
+    isFdaRegistered: true,
+    isCrueltyFree: true,
+    establishedYear: '2008 (18 yrs)',
+    establishedYearNumber: 2008,
+    employeeCount: '200-500 Employees',
+    employeeCountNumber: 240,
+    certificationsList: ['ISO 9001:2015', 'US-FDA Registered', 'Cruelty-Free Certified'],
+    exportReady: true,
+    categories: ['Skincare', 'Color Cosmetics', 'Export Consignments', 'Private Label'],
+    totalProductsCount: 58,
+    minOrderValue: '\u20b95,00,000',
+    phone: '+91 98201 66221',
+    whatsapp: '919820166221',
+    locationDetails: {
+      industrialZone: 'MIDC Taloja Export Zone, Navi Mumbai',
+      fullAddress: 'Gate 4, MIDC Taloja, Navi Mumbai, MH 410208',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      lat: 19.0506,
+      lng: 73.1102,
+      shippingHubs: [
+        {
+          id: 'ss-hub-81',
+          name: 'JNPT International Sea Port (Nhava Sheva)',
+          type: 'Port',
+          distanceKm: 18,
+          transitTime: '45 mins container gate-in',
+          description: 'Direct bonded container gateway for sea export consignments',
+          coords: { x: 40, y: 70 }
+        },
+        {
+          id: 'ss-hub-82',
+          name: 'CSMIA International Air Cargo Complex (BOM)',
+          type: 'Airport',
+          distanceKm: 38,
+          transitTime: '1.5 hrs express transit',
+          description: 'Daily temperature-controlled air cargo for premium beauty SKUs',
+          coords: { x: 34, y: 34 }
+        }
+      ],
+      rawMaterialSources: [
+        {
+          id: 'ss-mat-81',
+          name: 'Taloja Cosmetic Grade Active Base',
+          type: 'Chemical Hub',
+          distanceKm: 6,
+          transitTime: '15 mins',
+          category: 'Bio-Actives & Base Oils',
+          description: 'In-zone formulation actives for export batch manufacturing',
+          coords: { x: 58, y: 40 }
+        }
+      ],
+      customsStatus: 'AEO Tier-1 Certified \u2022 Direct Port Delivery (DPD) Enabled',
+      dispatchTurnaround: 'Same-day container seal to JNPT (< 3 hrs gate-in)',
+      coldChainAvailable: true,
+      transitAdvantage: 'Deep-sea port adjacency with instant DPD customs clearance'
+    }
+  },
+  {
+    id: 'ss-9',
+    name: 'Karol Bagh Beauty Mart',
+    shortCode: 'KBM',
+    type: 'Wholesaler & Stockist',
+    city: 'New Delhi',
+    state: 'Delhi',
+    rating: 4.5,
+    trustScore: 88,
+    responseRate: '93%',
+    responseTime: '< 2 hrs',
+    isGstVerified: true,
+    isIsoCertified: false,
+    isNexoraVerified: true,
+    isBusinessVerified: true,
+    isGmpCertified: false,
+    isHalalCertified: false,
+    isOrganicCertified: false,
+    isFdaRegistered: false,
+    isCrueltyFree: false,
+    establishedYear: '2013 (13 yrs)',
+    establishedYearNumber: 2013,
+    employeeCount: '25-50 Employees',
+    employeeCountNumber: 38,
+    certificationsList: ['GST Registered', 'Trade License - Karol Bagh Market'],
+    exportReady: false,
+    categories: ['Color Cosmetics', 'Salon Equipment', 'Bulk Stock', 'Imported Brands'],
+    totalProductsCount: 210,
+    minOrderValue: '\u20b925,000',
+    phone: '+91 98110 77334',
+    whatsapp: '919811077334',
+    locationDetails: {
+      industrialZone: 'Karol Bagh Wholesale Market, New Delhi',
+      fullAddress: 'Shop 214, Block B, Karol Bagh, New Delhi 110005',
+      city: 'New Delhi',
+      state: 'Delhi',
+      lat: 28.6519,
+      lng: 77.1907,
+      shippingHubs: [
+        {
+          id: 'ss-hub-91',
+          name: 'IGI Airport Cargo (DEL)',
+          type: 'Airport',
+          distanceKm: 14,
+          transitTime: '30 mins city access',
+          description: 'Fast intra-country and import-consignment air logistics',
+          coords: { x: 72, y: 24 }
+        },
+        {
+          id: 'ss-hub-92',
+          name: 'IMT Manesar Logistics Corridor',
+          type: 'Corridor',
+          distanceKm: 42,
+          transitTime: '55 mins trucking',
+          description: 'Dedicated NCR trucking lane for multi-city retail dispatch',
+          coords: { x: 60, y: 62 }
+        }
+      ],
+      rawMaterialSources: [
+        {
+          id: 'ss-mat-91',
+          name: 'Nehru Place Import & Packaging Cluster',
+          type: 'Chemical Hub',
+          distanceKm: 4,
+          transitTime: '12 mins',
+          category: 'Imported Stock & Packaging',
+          description: 'Dense wholesale cluster for imported beauty stock and packaging',
+          coords: { x: 50, y: 30 }
+        }
+      ],
+      customsStatus: 'Domestic Stocking \u2022 IEC Registered for Imports',
+      dispatchTurnaround: 'Same-day city pickup; next-day NCR dispatch',
+      coldChainAvailable: false,
+      transitAdvantage: 'Dense NCR retail-network coverage with same-day pickups'
+    }
+  },
+  {
+    id: 'ss-10',
+    name: 'Sanand Coastal Distributors',
+    shortCode: 'SCD',
+    type: 'Distributor & Exporter',
+    city: 'Ahmedabad',
+    state: 'Gujarat',
+    rating: 4.6,
+    trustScore: 90,
+    responseRate: '95%',
+    responseTime: '< 4 hrs',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    isBusinessVerified: true,
+    isGmpCertified: false,
+    isHalalCertified: true,
+    isOrganicCertified: false,
+    isFdaRegistered: false,
+    isCrueltyFree: false,
+    establishedYear: '2014 (12 yrs)',
+    establishedYearNumber: 2014,
+    employeeCount: '50-100 Employees',
+    employeeCountNumber: 85,
+    certificationsList: ['ISO 9001:2015', 'Halal Certified', 'GST Registered'],
+    exportReady: true,
+    categories: ['Skincare', 'Personal Care', 'Salon Equipment', 'Export Consignments'],
+    totalProductsCount: 124,
+    minOrderValue: '\u20b91,00,000',
+    phone: '+91 98790 22881',
+    whatsapp: '919879022881',
+    locationDetails: {
+      industrialZone: 'Sanand Industrial Zone, Ahmedabad',
+      fullAddress: 'Plot 12, Phase II, Sanand Industrial Zone, Ahmedabad, GJ 382175',
+      city: 'Ahmedabad',
+      state: 'Gujarat',
+      lat: 22.9615,
+      lng: 72.7302,
+      shippingHubs: [
+        {
+          id: 'ss-hub-101',
+          name: 'Mundra Port (Mundra Special Economic Zone)',
+          type: 'Port',
+          distanceKm: 95,
+          transitTime: '1.5 hrs trucking',
+          description: 'Gateway deep-sea port for Gujarat export dispatches',
+          coords: { x: 12, y: 68 }
+        },
+        {
+          id: 'ss-hub-102',
+          name: 'Aero City Cargo (AMD)',
+          type: 'Airport',
+          distanceKm: 20,
+          transitTime: '35 mins city access',
+          description: 'Daily air cargo for Gulf and SAARC destination shipments',
+          coords: { x: 64, y: 30 }
+        }
+      ],
+      rawMaterialSources: [
+        {
+          id: 'ss-mat-101',
+          name: 'Sanand Speciality Chemicals Park',
+          type: 'Chemical Hub',
+          distanceKm: 9,
+          transitTime: '20 mins',
+          category: 'Actives, Emulsifiers & Fragrance Bases',
+          description: 'Gujarat beauty-chemicals cluster supplying western distributors',
+          coords: { x: 48, y: 44 }
+        }
+      ],
+      customsStatus: 'AEO Certified \u2022 IEC Registered',
+      dispatchTurnaround: '24-48 hrs western-India dispatch; 72 hrs export consolidation',
+      coldChainAvailable: false,
+      transitAdvantage: 'Western India distribution spine with Mundra export adjacency'
+    }
+  },
+  {
+    id: 'ss-11',
+    name: 'Baddi Himalayan Exports',
+    shortCode: 'BHX',
+    type: 'Exporter & Manufacturer',
+    city: 'Baddi',
+    state: 'Himachal Pradesh',
+    rating: 4.8,
+    trustScore: 93,
+    responseRate: '96%',
+    responseTime: '< 4 hrs',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    isBusinessVerified: true,
+    isGmpCertified: true,
+    isHalalCertified: false,
+    isOrganicCertified: true,
+    isFdaRegistered: false,
+    isCrueltyFree: true,
+    establishedYear: '2010 (16 yrs)',
+    establishedYearNumber: 2010,
+    employeeCount: '250-500 Employees',
+    employeeCountNumber: 410,
+    certificationsList: ['ISO 9001:2015', 'WHO-GMP Compliant', 'Organic (COSMOS)'],
+    exportReady: true,
+    categories: ['Skincare', 'Personal Care', 'Herbal Formulations', 'Export Consignments'],
+    totalProductsCount: 46,
+    minOrderValue: '\u20b92,00,000',
+    phone: '+91 98163 44110',
+    whatsapp: '919816344110',
+    locationDetails: {
+      industrialZone: 'Baddi Industrial Hub, Himachal Pradesh',
+      fullAddress: 'Plot 7, Industrial Area, Baddi, Solan, HP 173205',
+      city: 'Baddi',
+      state: 'Himachal Pradesh',
+      lat: 30.8205,
+      lng: 77.4275,
+      shippingHubs: [
+        {
+          id: 'ss-hub-111',
+          name: 'Chandigarh International Airport',
+          type: 'Airport',
+          distanceKm: 75,
+          transitTime: '1.5 hrs trucking',
+          description: 'Air cargo gateway for northern Himalayan export dispatches',
+          coords: { x: 70, y: 18 }
+        },
+        {
+          id: 'ss-hub-112',
+          name: 'IMT Manesar Freight Corridor (via NH-44)',
+          type: 'Corridor',
+          distanceKm: 220,
+          transitTime: '4 hrs highway',
+          description: 'Direct highway lane connecting Baddi plant to NCR logistics parks',
+          coords: { x: 52, y: 58 }
+        }
+      ],
+      rawMaterialSources: [
+        {
+          id: 'ss-mat-111',
+          name: 'Baddi Botanical Extract Cluster',
+          type: 'Chemical Hub',
+          distanceKm: 12,
+          transitTime: '25 mins',
+          category: 'Herbal Extracts & Ayurvedic Base Oils',
+          description: 'Himalayan botanical extraction units sourcing plant actives',
+          coords: { x: 40, y: 42 }
+        }
+      ],
+      customsStatus: 'IEC Registered \u2022 GST Export Rebate Enrolled',
+      dispatchTurnaround: '5-7 days batch production, then 72 hrs hub consolidation',
+      coldChainAvailable: true,
+      transitAdvantage: 'High-altitude botanical sourcing with cold-chain lock to NCR'
+    }
+  },
+  {
+    id: 'ss-12',
+    name: 'Whitefield Private Label Labs',
+    shortCode: 'WPL',
+    type: 'OEM / Private Label',
+    city: 'Bengaluru',
+    state: 'Karnataka',
+    rating: 4.7,
+    trustScore: 91,
+    responseRate: '94%',
+    responseTime: '< 3 hrs',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    isBusinessVerified: true,
+    isGmpCertified: true,
+    isHalalCertified: false,
+    isOrganicCertified: false,
+    isFdaRegistered: true,
+    isCrueltyFree: true,
+    establishedYear: '2017 (9 yrs)',
+    establishedYearNumber: 2017,
+    employeeCount: '50-100 Employees',
+    employeeCountNumber: 110,
+    certificationsList: ['ISO 9001:2015', 'WHO-GMP Compliant', 'US-FDA Registered', 'Cruelty-Free Certified'],
+    exportReady: true,
+    categories: ['Skincare', 'Private Label', 'Cosmeceuticals', 'Keratin Treatments'],
+    totalProductsCount: 38,
+    minOrderValue: '\u20b950,000',
+    phone: '+91 98805 33667',
+    whatsapp: '919880533667',
+    locationDetails: {
+      industrialZone: 'Whitefield Industrial Corridor, Bengaluru',
+      fullAddress: 'Tower C, Whitefield Industrial Corridor, Bengaluru, KA 560066',
+      city: 'Bengaluru',
+      state: 'Karnataka',
+      lat: 12.9698,
+      lng: 77.7500,
+      shippingHubs: [
+        {
+          id: 'ss-hub-121',
+          name: 'Kempegowda International Airport Cargo (BLR)',
+          type: 'Airport',
+          distanceKm: 55,
+          transitTime: '1 hr express transit',
+          description: 'Same-day air cargo for premium private-label launch stock',
+          coords: { x: 26, y: 40 }
+        },
+        {
+          id: 'ss-hub-122',
+          name: 'West Coast Freight Corridor (via NH-48)',
+          type: 'Corridor',
+          distanceKm: 30,
+          transitTime: '40 mins access',
+          description: 'Highway spine to JNPT sea-port consolidation yards',
+          coords: { x: 62, y: 66 }
+        }
+      ],
+      rawMaterialSources: [
+        {
+          id: 'ss-mat-121',
+          name: 'Peenya Speciality Cosme-Active Depot',
+          type: 'Chemical Hub',
+          distanceKm: 22,
+          transitTime: '45 mins',
+          category: 'Clinical Actives & Peptides',
+          description: 'Bengaluru cosmeceutical actives supplier for private-label R&D',
+          coords: { x: 44, y: 36 }
+        }
+      ],
+      customsStatus: 'AEO Certified \u2022 IEC Registered',
+      dispatchTurnaround: '7-10 days sample-to-batch, 48 hrs dispatch on stock lines',
+      coldChainAvailable: true,
+      transitAdvantage: 'South India R&D corridor with BLR air-cargo adjacency'
+    }
   }
+
 ];
+
 
 export const SEARCH_OEM_FORMULATIONS: OEMFormulation[] = [
   {
