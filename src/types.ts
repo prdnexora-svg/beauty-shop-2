@@ -100,6 +100,24 @@ export interface VerifiedSupplier {
   isBusinessVerified?: boolean;
   isGmpCertified?: boolean;
   isFdaRegistered?: boolean;
+  /** COSMOS / organic certification flag used by the directory compliance filter. */
+  isOrganicCertified?: boolean;
+  /** Leaping Bunny / cruelty-free certification flag used by the directory compliance filter. */
+  isCrueltyFree?: boolean;
+  /** Supplier can fulfil an order immediately (catalog + stock ready). Drives "Ready to Supply". */
+  readyToSupply?: boolean;
+  /** Approximate logistics distance (km) from the default reference hub, used by the radius filter. */
+  distanceKm?: number;
+  /** Numeric minimum order quantity, used by the Max Order Quantity slider. */
+  moqNumber?: number;
+  /** Numeric monthly production capacity (units), used by the Monthly Capacity dropdown. */
+  monthlyCapacityUnits?: number;
+  /** Numeric manufacturing lead time in days, used by the Lead Time dropdown. */
+  leadTimeDays?: number;
+  /** Supplier ships across India (Pan India coverage). Drives the "Pan India" quick filter. */
+  panIndia?: boolean;
+  /** Service / delivery areas (e.g. ['Pan India', 'Export']). */
+  serviceAreas?: string[];
   categories: string[];
   /** Directory lifecycle status: active | pending_verification | rejected | suspended */
   status?: string;

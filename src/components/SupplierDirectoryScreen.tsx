@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CATEGORY_TAXONOMY } from '../data/categories';
+import { SUPPLIER_DIRECTORY_SEED } from '../data/supplierDirectorySeed';
 import {
   Search,
   MapPin,
@@ -47,6 +48,116 @@ import { fetchSuppliers } from '../services/supplierService';
 import { VerifiedBadge } from './VerifiedBadge';
 import { Reveal } from './luxe/Reveal';
 
+// ----------------------------------------------------------------------------
+// Shared helpers & presentational pieces for the Supplier Directory
+// ----------------------------------------------------------------------------
+
+type BusinessKind = 'Manufacturer' | 'Wholesaler' | 'Distributor' | 'Exporter' | 'OEM/ODM';
+
+/** Map a supplier's free-form `type` string onto one of the filter kinds. */
+export function supplierTypeMatches(type: string, kind: BusinessKind): boolean {
+  const t = type.toLowerCase();
+  switch (kind) {
+    case 'Manufacturer':
+      return t.includes('manufacturer') || t.includes('formulator') || t.includes('contract manufacturer');
+    case 'Wholesaler':
+      return t.includes('wholesaler') || t.includes('stockist');
+    case 'Distributor':
+      return t.includes('distributor');
+    case 'Exporter':
+      return t.includes('exporter');
+    case 'OEM/ODM':
+      return t.includes('oem') || t.includes('private label');
+    default:
+      return t.includes(String(kind).toLowerCase());
+  }
+}
+
+/** Skeleton placeholder shown while the list is loading / filtering. */
+const SupplierCardSkeleton: React.FC = () => (
+  <div className="bg-white rounded-2xl p-6 border border-[#E8DEEF] flex flex-col lg:flex-row gap-6 animate-pulse">
+    <div className="flex-1 flex flex-col gap-4">
+      <div className="flex items-center gap-4">
+        <div className="w-20 h-20 rounded-xl bg-[#F1EAF4]" />
+        <div className="flex-1 space-y-2">
+          <div className="h-4 w-1/3 rounded bg-[#F1EAF4]" />
+          <div className="h-3 w-1/2 rounded bg-[#F1EAF4]" />
+        </div>
+      </div>
+      <div className="grid grid-cols-4 gap-3 py-3.5 px-4 bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-8 rounded bg-[#F1EAF4]" />
+        ))}
+      </div>
+      <div className="h-9 w-2/3 rounded-xl bg-[#F1EAF4]" />
+    </div>
+    <div className="w-full lg:w-80 flex flex-col gap-2.5">
+      <div className="h-4 w-1/2 rounded bg-[#F1EAF4]" />
+      <div className="grid grid-cols-2 gap-2.5 flex-1">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="aspect-square rounded-xl bg-[#F1EAF4]" />
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+/** Explicit empty state shown when no supplier matches the active filters. */
+const SupplierDirectoryEmptyState: React.FC<{ onReset: () => void; activeFilterCount: number }> = ({
+  onReset,
+  activeFilterCount
+}) => (
+  <div className="bg-white border border-[#E8DEEF] rounded-2xl p-10 md:p-14 flex flex-col items-center justify-center text-center shadow-xs">
+    <div className="w-16 h-16 rounded-full bg-[#F5EEF8] flex items-center justify-center mb-5">
+      <Search className="w-7 h-7 text-[#6B2D8C]" />
+    </div>
+    <h3 className="text-lg font-bold text-[#2A0E3F] mb-2">No Suppliers Found</h3>
+    <p className="text-[13.5px] text-[#5B4A6E] max-w-md mb-6 font-medium">
+      {activeFilterCount > 0
+        ? `No suppliers match the ${activeFilterCount} active filter${activeFilterCount > 1 ? 's' : ''}. Try broadening your search or clearing the filters to see the full directory.`
+        : 'No suppliers match your search. Try a different keyword or reset the filters.'}
+    </p>
+    <button
+      onClick={onReset}
+      className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white text-[13px] font-bold px-6 py-3 rounded-xl shadow-sm hover:shadow transition-all cursor-pointer flex items-center gap-2"
+    >
+      <X className="w-4 h-4" />
+      <span>Reset Filters</span>
+    </button>
+  </div>
+);
+
+/** Count how many filter controls are currently active (for the empty state). */
+function countActiveFilters(args: {
+  searchInput: string;
+  selectedCity: string;
+  distanceRadius: string;
+  activeBusinessType: string;
+  businessTypeFilters: string[];
+  selectedCategory: string;
+  selectedSubcategory: string;
+  moqValue: number;
+  capacityFilter: string;
+  leadTimeFilter: string;
+  quickFilters: Record<string, boolean>;
+  complianceFilters: Record<string, boolean>;
+}): number {
+  let n = 0;
+  if (args.searchInput.trim()) n++;
+  if (args.selectedCity.trim()) n++;
+  if (args.distanceRadius !== 'National') n++;
+  if (args.activeBusinessType !== 'All') n++;
+  n += args.businessTypeFilters.length;
+  if (args.selectedCategory) n++;
+  if (args.selectedSubcategory) n++;
+  if (args.moqValue < 5000) n++;
+  if (args.capacityFilter !== 'Any Capacity') n++;
+  if (args.leadTimeFilter !== 'Any Lead Time') n++;
+  n += Object.values(args.quickFilters).filter(Boolean).length;
+  n += Object.values(args.complianceFilters).filter(Boolean).length;
+  return n;
+}
+
 interface SupplierDirectoryScreenProps {
   isSupplierSaved?: (id: string) => boolean;
   onToggleSaveSupplier?: (id: string, name?: string) => void;
@@ -84,9 +195,13 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
   onOpenChat
 }) => {
   // Search & Top Filters State
+  // `searchInput` is the immediate, controlled text-field value; `searchQuery`
+  // is the debounced value (300ms) that actually drives the filter so we don't
+  // re-filter on every keystroke.
+  const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
-  const [distanceRadius, setDistanceRadius] = useState('+250 km');
+  const [distanceRadius, setDistanceRadius] = useState('National');
 
   // Business Type Pill Tab
   const [activeBusinessType, setActiveBusinessType] = useState('All');
@@ -107,6 +222,8 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
   const [moqValue, setMoqValue] = useState<number>(5000);
+  // `appliedMoq` is the debounced value (300ms) that actually drives the filter.
+  const [appliedMoq, setAppliedMoq] = useState<number>(5000);
   const [capacityFilter, setCapacityFilter] = useState('Any Capacity');
   const [leadTimeFilter, setLeadTimeFilter] = useState('Any Lead Time');
 
@@ -127,10 +244,18 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
   // Mobile Filter Drawer State
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
-  // Service Supplier State — starts empty; only database rows are used.
-  const [remoteSuppliers, setRemoteSuppliers] = useState<VerifiedSupplier[]>([]);
-  const [isLoadingSuppliers, setIsLoadingSuppliers] = useState(false);
+  // Source dataset for the directory. It is seeded from the self-contained
+  // sample data so every interactive control works out-of-the-box (no Supabase
+  // / DB rows required); when the live service returns real supplier rows they
+  // take precedence over the seed.
+  const [allSuppliers, setAllSuppliers] = useState<VerifiedSupplier[]>(SUPPLIER_DIRECTORY_SEED);
+  const [isLoadingSuppliers, setIsLoadingSuppliers] = useState(true);
+  // True while a (debounced) filter pass is in flight — drives the skeleton UI
+  // so large lists show a loading indicator instead of feeling frozen.
+  const [isFiltering, setIsFiltering] = useState(false);
 
+  // Load live supplier rows ONCE on mount. The directory is fully interactive
+  // off the local seed; this only upgrades the dataset when a backend exists.
   useEffect(() => {
     let isMounted = true;
     setIsLoadingSuppliers(true);
@@ -141,21 +266,20 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
       sortBy === 'Employee Count' ? 'response_time' : 'relevance';
 
     fetchSuppliers({
-      searchQuery,
       businessType: activeBusinessType,
       category: selectedCategory || 'All',
       subcategory: selectedSubcategory || '',
       city: selectedCity || '',
       verifiedOnly: quickFilters.verifiedOnly,
       sortBy: serviceSort,
-      limit: 50
+      limit: 200
     }).then(res => {
-      if (isMounted) {
-        setRemoteSuppliers(res.data || []);
+      // Only override the seed when the service actually returned rows.
+      if (isMounted && res.data && res.data.length > 0) {
+        setAllSuppliers(res.data);
       }
     }).catch(err => {
-      console.warn('Supplier service error:', err);
-      if (isMounted) setRemoteSuppliers([]);
+      console.warn('Supplier service unavailable — using local seed dataset:', err);
     }).finally(() => {
       if (isMounted) setIsLoadingSuppliers(false);
     });
@@ -163,16 +287,45 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
     return () => {
       isMounted = false;
     };
-  }, [
-    searchQuery,
-    activeBusinessType,
-    selectedCategory,
-    selectedSubcategory,
-    selectedCity,
-    sortBy,
-    quickFilters.verifiedOnly,
-    quickFilters.oemPrivateLabel
-  ]);
+    // Mount-only: the live seed upgrade does not need to re-run per keystroke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Skip the (cosmetic) "filtering" indicator on the very first render so we
+  // don't flash skeletons before the seed data has even painted.
+  const firstSearchRun = useRef(true);
+  const firstMoqRun = useRef(true);
+
+  // Debounce the free-text search (300ms) so the heavy filter runs only after
+  // the user pauses typing, not on every keystroke.
+  useEffect(() => {
+    if (firstSearchRun.current) {
+      firstSearchRun.current = false;
+      setSearchQuery(searchInput);
+      return;
+    }
+    setIsFiltering(true);
+    const t = setTimeout(() => {
+      setSearchQuery(searchInput);
+      setIsFiltering(false);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  // Debounce the MOQ range slider (300ms) before it feeds the filter.
+  useEffect(() => {
+    if (firstMoqRun.current) {
+      firstMoqRun.current = false;
+      setAppliedMoq(moqValue);
+      return;
+    }
+    setIsFiltering(true);
+    const t = setTimeout(() => {
+      setAppliedMoq(moqValue);
+      setIsFiltering(false);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [moqValue]);
 
   // Comparison Selection State — starts empty; real DB rows get added on click.
   const [selectedComparisonIds, setSelectedComparisonIds] = useState<string[]>([]);
@@ -214,12 +367,16 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
   };
 
   const handleResetFilters = () => {
+    setSearchInput('');
     setSearchQuery('');
+    setSelectedCity('');
+    setDistanceRadius('National');
     setActiveBusinessType('All');
     setBusinessTypeFilters([]);
     setSelectedCategory('');
     setSelectedSubcategory('');
     setMoqValue(5000);
+    setAppliedMoq(5000);
     setCapacityFilter('Any Capacity');
     setLeadTimeFilter('Any Lead Time');
     setComplianceFilters({
@@ -242,80 +399,146 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
     showToast('Filters reset to default');
   };
 
+  // "Search Suppliers" button — commits the current text input immediately
+  // (bypassing the debounce) and gives explicit feedback.
+  const handleSearchSuppliers = () => {
+    setSearchQuery(searchInput);
+    setIsFiltering(false);
+    const label = selectedCity
+      ? `Searching suppliers near ${selectedCity}`
+      : `Searching "${searchInput.trim() || 'all'}" suppliers`;
+    showToast(label);
+  };
+
   // Filtered & Sorted Suppliers List
+  // ----------------------------------------------------------------------------
+  // Evaluates the full supplier dataset against EVERY active filter control and
+  // returns the matching, sorted list. Recomputed reactively whenever any filter
+  // value (incl. the debounced search / MOQ) changes.
+  // ----------------------------------------------------------------------------
   const filteredSuppliers = useMemo(() => {
-    const list = remoteSuppliers.filter((supplier) => {
-      // Geographic City & Industrial Hub Filter
+    // --- Parse the dropdown / radius controls into comparable numeric values ---
+    const radiusKm =
+      distanceRadius === '+250 km' ? 250 :
+      distanceRadius === '+500 km' ? 500 :
+      Infinity; // 'National'
+
+    const capacityMin =
+      capacityFilter === '> 10,000 units' ? 10000 :
+      capacityFilter === '> 50,000 units' ? 50000 :
+      capacityFilter === '> 100,000 units' ? 100000 :
+      -1; // 'Any Capacity'
+
+    const leadTimeMax =
+      leadTimeFilter === '< 15 Days' ? 15 :
+      leadTimeFilter === '< 30 Days' ? 30 :
+      leadTimeFilter === '< 60 Days' ? 60 :
+      Infinity; // 'Any Lead Time'
+
+    const getRating = (sup: VerifiedSupplier) =>
+      sup.overallRating ?? sup.productQualityRating ?? (sup.trustScore ? sup.trustScore / 20 : 4.5);
+
+    const getResponseHours = (sup: VerifiedSupplier) => {
+      const match = (sup.responseTimeText || '').match(/\d+(\.\d+)?/);
+      return match ? parseFloat(match[0]) : 99;
+    };
+
+    const list = allSuppliers.filter((supplier) => {
+      // 1. Location / City & Industrial Hub
       if (selectedCity && selectedCity.trim() !== '') {
-        const queryCity = selectedCity.toLowerCase();
-        const matchesCity = supplier.city.toLowerCase().includes(queryCity) || 
-                            supplier.state.toLowerCase().includes(queryCity) || 
-                            (supplier.locationDetails?.industrialZone && supplier.locationDetails.industrialZone.toLowerCase().includes(queryCity));
-        if (!matchesCity) return false;
+        const q = selectedCity.toLowerCase();
+        const matches =
+          supplier.city.toLowerCase().includes(q) ||
+          (supplier.state || '').toLowerCase().includes(q) ||
+          (supplier.locationDetails?.industrialZone && supplier.locationDetails.industrialZone.toLowerCase().includes(q));
+        if (!matches) return false;
       }
 
-      // Text Search
+      // 1b. Radius (distance from the Mumbai reference hub; National = no limit)
+      if (radiusKm !== Infinity && (supplier.distanceKm ?? Infinity) > radiusKm) {
+        return false;
+      }
+
+      // 2. Free-text Search (name / type / city / state / category / about)
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const matchesName = supplier.name.toLowerCase().includes(q);
-        const matchesType = supplier.type.toLowerCase().includes(q);
-        const matchesCity = supplier.city.toLowerCase().includes(q);
-        const matchesCat = supplier.categories.some((c) => c.toLowerCase().includes(q));
-        if (!matchesName && !matchesType && !matchesCity && !matchesCat) return false;
+        const haystack = [
+          supplier.name,
+          supplier.type,
+          supplier.city,
+          supplier.state || '',
+          supplier.about || '',
+          ...(supplier.categories || []),
+          ...(supplier.specialties || [])
+        ].join(' ').toLowerCase();
+        if (!haystack.includes(q)) return false;
       }
 
-      // Business Type Tab
+      // 3. Business Type Tab (single-select)
       if (activeBusinessType !== 'All') {
-        if (activeBusinessType === 'Manufacturers' && !supplier.type.toLowerCase().includes('manufacturer') && !supplier.type.toLowerCase().includes('formulator')) {
-          return false;
-        }
-        if (activeBusinessType === 'Wholesalers' && !supplier.type.toLowerCase().includes('wholesaler') && !supplier.type.toLowerCase().includes('stockist')) {
-          return false;
-        }
-        if (activeBusinessType === 'Distributors' && !supplier.type.toLowerCase().includes('distributor')) {
-          return false;
-        }
-        if (activeBusinessType === 'OEM / Private Label' && !supplier.type.toLowerCase().includes('oem') && !supplier.type.toLowerCase().includes('private label') && !supplier.type.toLowerCase().includes('formulator')) {
-          return false;
-        }
+        const kind =
+          activeBusinessType === 'Manufacturers' ? 'Manufacturer' :
+          activeBusinessType === 'Wholesalers' ? 'Wholesaler' :
+          activeBusinessType === 'Distributors' ? 'Distributor' :
+          activeBusinessType === 'OEM / Private Label' ? 'OEM/ODM' : null;
+        if (kind && !supplierTypeMatches(supplier.type, kind)) return false;
       }
 
-      // Sidebar Business Type Checkboxes
+      // 4. Sidebar Business Type Checkboxes (multi-select OR)
       if (businessTypeFilters.length > 0) {
-        const matchesAny = businessTypeFilters.some((bt) => {
-          if (bt === 'Manufacturer' && (supplier.type.toLowerCase().includes('manufacturer') || supplier.type.toLowerCase().includes('formulator'))) return true;
-          if (bt === 'Wholesaler' && (supplier.type.toLowerCase().includes('wholesaler') || supplier.type.toLowerCase().includes('stockist'))) return true;
-          if (bt === 'Distributor' && supplier.type.toLowerCase().includes('distributor')) return true;
-          if (bt === 'OEM/ODM' && (supplier.type.toLowerCase().includes('oem') || supplier.type.toLowerCase().includes('private label'))) return true;
-          return supplier.type.toLowerCase().includes(bt.toLowerCase());
-        });
+        const matchesAny = businessTypeFilters.some((bt) => supplierTypeMatches(supplier.type, bt as any));
         if (!matchesAny) return false;
       }
 
-      // Category Selection
+      // 5. Category + Subcategory
       if (selectedCategory) {
         const catMatch = supplier.categories.some((c) => c.toLowerCase().includes(selectedCategory.toLowerCase()));
         if (!catMatch) return false;
       }
+      if (selectedSubcategory) {
+        const subMatch =
+          supplier.categories.some((c) => c.toLowerCase().includes(selectedSubcategory.toLowerCase())) ||
+          (supplier.specialties || []).some((s) => s.toLowerCase().includes(selectedSubcategory.toLowerCase()));
+        if (!subMatch) return false;
+      }
 
-      // Quick Filter
+      // 6. Production Scale — Max Order Quantity (MOQ) slider
+      // Buyer's max acceptable MOQ; show suppliers whose MOQ is at/under it.
+      if (appliedMoq < 10000 && supplier.moqNumber != null && supplier.moqNumber > appliedMoq) {
+        return false;
+      }
+
+      // 6b. Monthly Capacity dropdown
+      if (capacityMin > 0 && (supplier.monthlyCapacityUnits ?? -1) < capacityMin) {
+        return false;
+      }
+
+      // 6c. Lead Time dropdown
+      if (leadTimeMax !== Infinity && (supplier.leadTimeDays ?? Infinity) > leadTimeMax) {
+        return false;
+      }
+
+      // 7. Quick Filters
       if (quickFilters.verifiedOnly && !supplier.isVerified) return false;
-      if (quickFilters.oemPrivateLabel && !supplier.type.toLowerCase().includes('oem')) return false;
+      if (quickFilters.oemPrivateLabel && !supplier.type.toLowerCase().includes('oem') && !supplier.type.toLowerCase().includes('private label')) return false;
+      if (quickFilters.readyToSupply && !supplier.readyToSupply) return false;
+      if (quickFilters.topRated && getRating(supplier) < 4.7) return false;
+      if (quickFilters.fastResponse && getResponseHours(supplier) > 8) return false;
+      if (quickFilters.lowMoq && (supplier.moqNumber == null || supplier.moqNumber > 500)) return false;
+      if (quickFilters.panIndia && !supplier.panIndia) return false;
 
-      // Sidebar Compliance
+      // 8. Compliance & Certifications
       if (complianceFilters.gst && !supplier.isGstVerified) return false;
       if (complianceFilters.iso && !supplier.isIsoCertified) return false;
       if (complianceFilters.gmp && !supplier.isGmpCertified) return false;
       if (complianceFilters.fda && !supplier.isFdaRegistered) return false;
+      if (complianceFilters.organic && !supplier.isOrganicCertified) return false;
+      if (complianceFilters.crueltyFree && !supplier.isCrueltyFree) return false;
 
       return true;
     });
 
-    // Helper functions for sorting calculations
-    const getSupplierRating = (sup: VerifiedSupplier) => {
-      return sup.overallRating ?? sup.productQualityRating ?? (sup.trustScore ? sup.trustScore / 20 : 4.5);
-    };
-
+    // --- Sorting helpers ---
     const getSupplierEstablishedYear = (sup: VerifiedSupplier) => {
       if (sup.establishedYearNumber) return sup.establishedYearNumber;
       if (sup.establishedYear) {
@@ -330,49 +553,128 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
       if (sup.employeeCount) {
         const nums = sup.employeeCount.match(/\d+/g);
         if (nums && nums.length > 0) {
-          const parsed = nums.map(n => parseInt(n, 10));
-          return Math.max(...parsed);
+          return Math.max(...nums.map((n) => parseInt(n, 10)));
         }
       }
       if (sup.facilityArea) {
         const areaMatch = sup.facilityArea.replace(/,/g, '').match(/\d+/);
-        if (areaMatch) {
-          return Math.round(parseInt(areaMatch[0], 10) / 250);
-        }
+        if (areaMatch) return Math.round(parseInt(areaMatch[0], 10) / 250);
       }
       if (sup.monthlyCapacity) {
         const capMatch = sup.monthlyCapacity.replace(/,/g, '').match(/\d+/);
-        if (capMatch) {
-          return Math.round(parseInt(capMatch[0], 10) / 1000);
-        }
+        if (capMatch) return Math.round(parseInt(capMatch[0], 10) / 1000);
       }
       return 50;
     };
 
     return [...list].sort((a, b) => {
       if (sortBy === 'Rating') {
-        const diff = getSupplierRating(b) - getSupplierRating(a);
+        const diff = getRating(b) - getRating(a);
         if (diff !== 0) return diff;
         return (b.trustScore || 0) - (a.trustScore || 0);
       }
       if (sortBy === 'Year Established') {
-        // Order by oldest established manufacturer / industry longevity first
+        // Oldest established (industry longevity) first
         return getSupplierEstablishedYear(a) - getSupplierEstablishedYear(b);
       }
       if (sortBy === 'Employee Count') {
-        // Order by largest workforce / scale first
+        // Largest workforce / scale first
         return getSupplierEmployeeCount(b) - getSupplierEmployeeCount(a);
       }
-      if (sortBy === 'Relevance' || sortBy === 'Recommended') {
-        return (b.trustScore || 0) - (a.trustScore || 0);
-      }
-      return 0;
+      // 'Relevance' / 'Recommended'
+      return (b.trustScore || 0) - (a.trustScore || 0);
     });
-  }, [remoteSuppliers, searchQuery, selectedCity, activeBusinessType, businessTypeFilters, selectedCategory, quickFilters, complianceFilters, sortBy]);
+  }, [
+    allSuppliers,
+    searchQuery,
+    selectedCity,
+    distanceRadius,
+    activeBusinessType,
+    businessTypeFilters,
+    selectedCategory,
+    selectedSubcategory,
+    appliedMoq,
+    capacityFilter,
+    leadTimeFilter,
+    quickFilters,
+    complianceFilters,
+    sortBy
+  ]);
 
   const selectedSuppliersObjects = useMemo(() => {
-    return remoteSuppliers.filter((s) => selectedComparisonIds.includes(s.id));
-  }, [remoteSuppliers, selectedComparisonIds]);
+    return allSuppliers.filter((s) => selectedComparisonIds.includes(s.id));
+  }, [allSuppliers, selectedComparisonIds]);
+
+  // How many filters are currently active — used to personalise the empty state.
+  const activeFilterCount = useMemo(
+    () =>
+      countActiveFilters({
+        searchInput,
+        selectedCity,
+        distanceRadius,
+        activeBusinessType,
+        businessTypeFilters,
+        selectedCategory,
+        selectedSubcategory,
+        moqValue,
+        capacityFilter,
+        leadTimeFilter,
+        quickFilters,
+        complianceFilters
+      }),
+    [searchInput, selectedCity, distanceRadius, activeBusinessType, businessTypeFilters, selectedCategory, selectedSubcategory, moqValue, capacityFilter, leadTimeFilter, quickFilters, complianceFilters]
+  );
+
+  // Human-readable labels for the quick-filter + compliance chips.
+  const QUICK_FILTER_LABELS: Record<string, string> = {
+    verifiedOnly: 'Verified Only',
+    oemPrivateLabel: 'OEM / Private Label',
+    readyToSupply: 'Ready to Supply',
+    topRated: 'Top Rated',
+    fastResponse: 'Fast Response',
+    lowMoq: 'Low MOQ',
+    panIndia: 'Pan India'
+  };
+  const COMPLIANCE_LABELS: Record<string, string> = {
+    gst: 'GST',
+    iso: 'ISO',
+    gmp: 'GMP',
+    fda: 'US-FDA',
+    organic: 'Organic',
+    crueltyFree: 'Cruelty-Free'
+  };
+
+  // A single, deduplicated list of every active filter — powers the "Active"
+  // pill strip and lets users remove any single filter with one click.
+  const activeFilterChips = useMemo(() => {
+    const chips: { key: string; label: string }[] = [];
+    if (selectedCity) chips.push({ key: 'city', label: `City: ${selectedCity}` });
+    if (distanceRadius !== 'National') chips.push({ key: 'radius', label: `Radius: ${distanceRadius}` });
+    if (activeBusinessType !== 'All') chips.push({ key: 'tab', label: activeBusinessType });
+    businessTypeFilters.forEach((bt) => chips.push({ key: `bt-${bt}`, label: bt }));
+    if (selectedCategory) chips.push({ key: 'cat', label: `Category: ${selectedCategory}` });
+    if (selectedSubcategory) chips.push({ key: 'subcat', label: selectedSubcategory });
+    if (moqValue < 5000) chips.push({ key: 'moq', label: `Max MOQ ≤ ${moqValue.toLocaleString()}` });
+    if (capacityFilter !== 'Any Capacity') chips.push({ key: 'cap', label: `Cap ${capacityFilter}` });
+    if (leadTimeFilter !== 'Any Lead Time') chips.push({ key: 'lead', label: `Lead ${leadTimeFilter}` });
+    Object.entries(quickFilters).forEach(([k, v]) => { if (v) chips.push({ key: `qf-${k}`, label: QUICK_FILTER_LABELS[k] }); });
+    Object.entries(complianceFilters).forEach(([k, v]) => { if (v) chips.push({ key: `cf-${k}`, label: COMPLIANCE_LABELS[k] }); });
+    return chips;
+  }, [selectedCity, distanceRadius, activeBusinessType, businessTypeFilters, selectedCategory, selectedSubcategory, moqValue, capacityFilter, leadTimeFilter, quickFilters, complianceFilters]);
+
+  const removeFilterChip = (key: string) => {
+    if (key === 'city') return setSelectedCity('');
+    if (key === 'radius') return setDistanceRadius('National');
+    if (key === 'tab') return setActiveBusinessType('All');
+    if (key === 'cat') { setSelectedCategory(''); return setSelectedSubcategory(''); }
+    if (key === 'subcat') return setSelectedSubcategory('');
+    if (key === 'moq') { setMoqValue(5000); return setAppliedMoq(5000); }
+    if (key === 'cap') return setCapacityFilter('Any Capacity');
+    if (key === 'lead') return setLeadTimeFilter('Any Lead Time');
+    if (key.startsWith('bt-')) return toggleBusinessTypeFilter(key.slice(3));
+    if (key.startsWith('qf-')) return toggleQuickFilter(key.slice(3));
+    if (key.startsWith('cf-')) return toggleComplianceFilter(key.slice(3));
+  };
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#2A0E3F] font-sans">
@@ -394,13 +696,16 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
               <Search className="w-4 h-4 text-[#5B4A6E] shrink-0" />
               <input
                 type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSearchSuppliers();
+                }}
                 placeholder="Search suppliers, manufacturers, distributors or business categories"
                 className="bg-transparent border-none text-[13.5px] text-[#2A0E3F] placeholder:text-[#B9A8C6] focus:outline-none w-full py-2 font-medium"
               />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="text-[#7E6C96] hover:text-[#2A0E3F]">
+              {searchInput && (
+                <button onClick={() => { setSearchInput(''); setSearchQuery(''); }} className="text-[#7E6C96] hover:text-[#2A0E3F]">
                   <X className="w-4 h-4" />
                 </button>
               )}
@@ -438,7 +743,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
             {/* Primary Action Button */}
             <button
-              onClick={() => showToast(`Searching suppliers around ${selectedCity}`)}
+              onClick={handleSearchSuppliers}
               className="bg-[#6B2D8C] hover:bg-[#4A2560] text-white text-[13px] font-bold px-7 py-3 rounded-lg shadow-sm hover:shadow transition-all whitespace-nowrap cursor-pointer flex items-center justify-center gap-2"
             >
               <Search className="w-4 h-4" />
@@ -519,6 +824,9 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                 </button>
               ))}
             </div>
+            <p className="text-[11px] text-[#9b8aad] mt-2 leading-snug">
+              Radius is measured as road-distance from the Mumbai reference hub.
+            </p>
           </div>
 
           {/* Category Filter */}
@@ -674,26 +982,26 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
             {/* Primary Business Type Tabs */}
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
               {[
-                { label: 'All Suppliers', key: 'All', count: remoteSuppliers.length },
+                { label: 'All Suppliers', key: 'All', count: allSuppliers.length },
                 {
                   label: 'Verified Manufacturers',
                   key: 'Manufacturers',
-                  count: remoteSuppliers.filter((s) => s.type.toLowerCase().includes('manufacturer') || s.type.toLowerCase().includes('formulator')).length
+                  count: allSuppliers.filter((s) => s.type.toLowerCase().includes('manufacturer') || s.type.toLowerCase().includes('formulator')).length
                 },
                 {
                   label: 'Wholesalers & Stockists',
                   key: 'Wholesalers',
-                  count: remoteSuppliers.filter((s) => s.type.toLowerCase().includes('wholesaler') || s.type.toLowerCase().includes('stockist')).length
+                  count: allSuppliers.filter((s) => s.type.toLowerCase().includes('wholesaler') || s.type.toLowerCase().includes('stockist')).length
                 },
                 {
                   label: 'National Distributors',
                   key: 'Distributors',
-                  count: remoteSuppliers.filter((s) => s.type.toLowerCase().includes('distributor')).length
+                  count: allSuppliers.filter((s) => s.type.toLowerCase().includes('distributor')).length
                 },
                 {
                   label: 'OEM / Private Label',
                   key: 'OEM / Private Label',
-                  count: remoteSuppliers.filter((s) => s.type.toLowerCase().includes('oem') || s.type.toLowerCase().includes('private label') || s.type.toLowerCase().includes('formulator')).length
+                  count: allSuppliers.filter((s) => s.type.toLowerCase().includes('oem') || s.type.toLowerCase().includes('private label') || s.type.toLowerCase().includes('formulator')).length
                 }
               ].map((typeTab) => {
                 const isActive = activeBusinessType === typeTab.key;
@@ -874,26 +1182,34 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
 
             {/* Active Filters Pill Strip */}
             <div className="flex flex-wrap gap-2 items-center text-[12px]">
-              <span className="text-[#7E6C96] font-semibold">Active:</span>
-              {selectedCategory && (
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E8DEEF] rounded-full text-[#2A0E3F] font-medium shadow-2xs">
-                  <span>Category: {selectedCategory}</span>
-                  <button onClick={() => setSelectedCategory('')} className="hover:text-[#6B2D8C] text-[#7E6C96]">
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
-              {activeBusinessType !== 'All' && (
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E8DEEF] rounded-full text-[#2A0E3F] font-medium shadow-2xs">
-                  <span>Type: {activeBusinessType}</span>
-                  <button onClick={() => setActiveBusinessType('All')} className="hover:text-[#6B2D8C] text-[#7E6C96]">
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+              {activeFilterChips.length > 0 ? (
+                <>
+                  <span className="text-[#7E6C96] font-semibold">Active:</span>
+                  {activeFilterChips.map((chip) => (
+                    <div
+                      key={chip.key}
+                      className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E8DEEF] rounded-full text-[#2A0E3F] font-medium shadow-2xs"
+                    >
+                      <span>{chip.label}</span>
+                      <button
+                        onClick={() => removeFilterChip(chip.key)}
+                        className="hover:text-[#6B2D8C] text-[#7E6C96]"
+                        aria-label={`Remove ${chip.label} filter`}
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <span className="text-[#7E6C96] font-medium">No filters applied</span>
               )}
               <button
                 onClick={handleResetFilters}
-                className="text-[#6B2D8C] font-bold hover:underline ml-2 cursor-pointer text-[12px]"
+                disabled={activeFilterChips.length === 0}
+                className={`text-[#6B2D8C] font-bold hover:underline ml-2 cursor-pointer text-[12px] ${
+                  activeFilterChips.length === 0 ? 'opacity-40 pointer-events-none' : ''
+                }`}
               >
                 Clear All
               </button>
@@ -935,15 +1251,21 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
           </section>
 
           {/* Supplier Cards List */}
-          <div className="flex flex-col gap-6 mb-16">
-            {filteredSuppliers.map((sup, index) => {
+          <div className={viewMode === 'grid' ? 'grid grid-cols-1 xl:grid-cols-2 gap-6 mb-16' : 'flex flex-col gap-6 mb-16'}>
+            {(isLoadingSuppliers || isFiltering) ? (
+              // Loading skeletons while the (possibly large) list is being filtered.
+              Array.from({ length: 6 }).map((_, i) => <SupplierCardSkeleton key={i} />)
+            ) : filteredSuppliers.length === 0 ? (
+              <SupplierDirectoryEmptyState onReset={handleResetFilters} activeFilterCount={activeFilterCount} />
+            ) : (
+              filteredSuppliers.map((sup, index) => {
               const saved = isSupplierSaved ? isSupplierSaved(sup.id) : false;
               const isSelectedForCompare = selectedComparisonIds.includes(sup.id);
 
               return (
                 <React.Fragment key={sup.id}>
                   {/* Supplier Card */}
-                  <article className="bg-white rounded-2xl p-6 hover:shadow-md transition-all duration-300 border border-[#E8DEEF] relative group flex flex-col lg:flex-row gap-6">
+                  <article className={`bg-white rounded-2xl p-6 hover:shadow-md transition-all duration-300 border border-[#E8DEEF] relative group flex flex-col ${viewMode === 'grid' ? 'gap-6' : 'lg:flex-row gap-6'}`}>
                     
                     {/* Floating Save & Compare Quick Tools */}
                     <div className="absolute top-6 right-6 z-10 flex flex-col gap-2">
@@ -1339,7 +1661,7 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                   )}
                 </React.Fragment>
               );
-            })}
+            }))}
           </div>
 
           {/* Floating Bottom Comparison & Action Bar Tray */}
@@ -1453,6 +1775,170 @@ export const SupplierDirectoryScreen: React.FC<SupplierDirectoryScreenProps> = (
                     </label>
                   ))}
                 </div>
+              </div>
+            </div>
+
+            {/* Mobile Quick Filters */}
+            <div className="mb-5">
+              <h3 className="text-[11px] font-bold text-[#7E6C96] uppercase tracking-wider mb-2.5">Quick Filters</h3>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { key: 'verifiedOnly', label: 'Verified Only' },
+                  { key: 'oemPrivateLabel', label: 'OEM / Private Label' },
+                  { key: 'readyToSupply', label: 'Ready to Supply' },
+                  { key: 'topRated', label: 'Top Rated' },
+                  { key: 'fastResponse', label: 'Fast Response' },
+                  { key: 'lowMoq', label: 'Low MOQ' },
+                  { key: 'panIndia', label: 'Pan India' }
+                ].map((qf) => (
+                  <button
+                    key={qf.key}
+                    onClick={() => toggleQuickFilter(qf.key)}
+                    className={`px-3 py-1.5 rounded-full text-[12px] font-medium border ${
+                      quickFilters[qf.key]
+                        ? 'bg-[#F5EEF8] border-[#6B2D8C] text-[#6B2D8C] font-bold'
+                        : 'bg-[#F4F0E9] border-[#E8DEEF] text-[#5B4A6E]'
+                    }`}
+                  >
+                    {qf.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile City & Industrial Hubs */}
+            <div className="mb-5">
+              <h3 className="text-[11px] font-bold text-[#7E6C96] uppercase tracking-wider mb-2.5">City &amp; Industrial Hubs</h3>
+              <div className="flex flex-col gap-2">
+                {[
+                  { name: 'All India', value: '' },
+                  { name: 'Mumbai', value: 'Mumbai' },
+                  { name: 'Baddi', value: 'Baddi' },
+                  { name: 'Delhi', value: 'Delhi' },
+                  { name: 'Ahmedabad', value: 'Ahmedabad' },
+                  { name: 'Bengaluru', value: 'Bengaluru' }
+                ].map((hub) => (
+                  <button
+                    key={hub.name}
+                    onClick={() => setSelectedCity(hub.value)}
+                    className={`text-left px-3 py-2 rounded-lg text-[13px] font-bold border ${
+                      selectedCity === hub.value
+                        ? 'bg-[#F5EEF8] text-[#6B2D8C] border-[#D9C3E8]'
+                        : 'bg-transparent text-[#5B4A6E] border-[#E8DEEF]'
+                    }`}
+                  >
+                    {hub.name}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-2">
+                <label className="block text-[11.5px] font-semibold text-[#5B4A6E] mb-1">Radius</label>
+                <select
+                  value={distanceRadius}
+                  onChange={(e) => setDistanceRadius(e.target.value)}
+                  className="w-full appearance-none bg-[#FDFBF7] border border-[#E8DEEF] text-[13px] font-semibold text-[#2A0E3F] rounded-xl py-2.5 pl-3.5 pr-8"
+                >
+                  <option value="+250 km">+250 km</option>
+                  <option value="+500 km">+500 km</option>
+                  <option value="National">National</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Mobile Categories */}
+            <div className="mb-5">
+              <h3 className="text-[11px] font-bold text-[#7E6C96] uppercase tracking-wider mb-2.5">Categories</h3>
+              <div className="flex flex-col gap-2">
+                {Object.keys(CATEGORY_TAXONOMY).map((catName) => (
+                  <label key={catName} className="flex items-center gap-2 text-[13px] text-[#2A0E3F]">
+                    <input
+                      type="checkbox"
+                      checked={selectedCategory === catName}
+                      onChange={() => {
+                        if (selectedCategory === catName) {
+                          setSelectedCategory('');
+                          setSelectedSubcategory('');
+                        } else {
+                          setSelectedCategory(catName);
+                          setSelectedSubcategory('');
+                        }
+                      }}
+                      className="rounded border-[#E8DEEF] text-[#6B2D8C]"
+                    />
+                    <span>{catName}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile Production Scale */}
+            <div className="mb-5">
+              <h3 className="text-[11px] font-bold text-[#7E6C96] uppercase tracking-wider mb-2.5">Production Scale</h3>
+              <div className="mb-3">
+                <div className="flex justify-between text-[12px] text-[#5B4A6E] font-medium mb-1">
+                  <span>Max Order Quantity</span>
+                  <span className="font-bold text-[#6B2D8C]">{moqValue.toLocaleString()} units</span>
+                </div>
+                <input
+                  type="range"
+                  min="100"
+                  max="10000"
+                  step="100"
+                  value={moqValue}
+                  onChange={(e) => setMoqValue(Number(e.target.value))}
+                  className="w-full accent-[#6B2D8C]"
+                />
+              </div>
+              <div className="mb-2">
+                <label className="block text-[11.5px] font-semibold text-[#5B4A6E] mb-1">Monthly Capacity</label>
+                <select
+                  value={capacityFilter}
+                  onChange={(e) => setCapacityFilter(e.target.value)}
+                  className="w-full bg-white border border-[#E8DEEF] text-[12.5px] text-[#2A0E3F] rounded-lg p-2"
+                >
+                  <option value="Any Capacity">Any Capacity</option>
+                  <option value="> 10,000 units">&gt; 10,000 units / mo</option>
+                  <option value="> 50,000 units">&gt; 50,000 units / mo</option>
+                  <option value="> 100,000 units">&gt; 100,000 units / mo</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[11.5px] font-semibold text-[#5B4A6E] mb-1">Lead Time</label>
+                <select
+                  value={leadTimeFilter}
+                  onChange={(e) => setLeadTimeFilter(e.target.value)}
+                  className="w-full bg-white border border-[#E8DEEF] text-[12.5px] text-[#2A0E3F] rounded-lg p-2"
+                >
+                  <option value="Any Lead Time">Any Lead Time</option>
+                  <option value="< 15 Days">&lt; 15 Days</option>
+                  <option value="< 30 Days">&lt; 30 Days</option>
+                  <option value="< 60 Days">&lt; 60 Days</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Mobile Compliance */}
+            <div className="mb-5">
+              <h3 className="text-[11px] font-bold text-[#7E6C96] uppercase tracking-wider mb-2.5">Compliance &amp; Certs</h3>
+              <div className="flex flex-col gap-2">
+                {[
+                  { key: 'gst', label: 'GST Registered' },
+                  { key: 'iso', label: 'ISO 9001:2015' },
+                  { key: 'gmp', label: 'WHO-GMP Certified' },
+                  { key: 'fda', label: 'US-FDA Registered' },
+                  { key: 'organic', label: 'Organic (COSMOS)' },
+                  { key: 'crueltyFree', label: 'Cruelty-Free / Leaping Bunny' }
+                ].map((cert) => (
+                  <label key={cert.key} className="flex items-center gap-2 text-[13px] text-[#2A0E3F]">
+                    <input
+                      type="checkbox"
+                      checked={complianceFilters[cert.key]}
+                      onChange={() => toggleComplianceFilter(cert.key)}
+                      className="rounded border-[#E8DEEF] text-[#6B2D8C]"
+                    />
+                    <span>{cert.label}</span>
+                  </label>
+                ))}
               </div>
             </div>
 
