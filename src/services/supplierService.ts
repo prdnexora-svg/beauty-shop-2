@@ -3,16 +3,19 @@
 // ============================================================================
 // PUBLIC SUPPLIER/BRAND DIRECTORY DATA SOURCE
 // ----------------------------------------------------------------------------
-// The directory always reads real database rows. When Supabase is configured it
-// queries `profiles_supplier` directly with `active` or `pending_verification`
-// rows (freshly onboarded suppliers appear immediately). Without Supabase it
-// falls back only to the local relational seed/onboarding store — never to a
-// hard-coded UI mock array.
+// When Supabase is configured the directory reads real `profiles_supplier`
+// rows (`active` or `pending_verification` — freshly onboarded suppliers
+// appear immediately). Without Supabase (demo/preview mode) the directory is
+// served from the self-contained mock catalogue (SUPPLIER_DIRECTORY_SEED)
+// merged with local relational-store rows, so every filter dimension —
+// business type, city, category, scale — always has data and the directory
+// never renders an empty state in the demo environment.
 // ============================================================================
 
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { db } from '../db/database';
 import { VerifiedSupplier, PortfolioProduct } from '../types';
+import { SUPPLIER_DIRECTORY_SEED } from '../data/supplierDirectorySeed';
 
 export interface SupplierFilterParams {
   searchQuery?: string;
@@ -375,7 +378,14 @@ export async function fetchSuppliers(params: SupplierFilterParams = {}): Promise
     }
   }
 
-  // Local relational fallback (no hard-coded VERIFIED_SUPPLIERS).
+  // Local relational fallback (demo/preview mode without Supabase).
+  //
+  // The full mock catalogue (SUPPLIER_DIRECTORY_SEED) is always the base of the
+  // public directory in this mode — so the directory is never empty and every
+  // business-type / city / category filter has data to operate on. Live
+  // local-store rows (e.g. freshly onboarded suppliers) are merged on top of
+  // it and, when a brand appears twice, the same one-brand-one-card dedupe
+  // keeps the verified / higher-trust version.
   const dbState = db.getRawState();
   const LOCAL_VISIBLE_STATUSES = [...VISIBLE_STATUSES, 'review', 'approved'];
   const dbSuppliers = (dbState.profiles_supplier || [])
@@ -400,7 +410,10 @@ export async function fetchSuppliers(params: SupplierFilterParams = {}): Promise
     sortBy = 'relevance'
   } = params;
 
-  let baseList = dedupedDbSuppliers;
+  // Merge live local-store rows over the full mock catalogue. Live rows come
+  // first so the directory list stays in service order, and the dedupe
+  // collapses any same-brand repeats (live row wins on equal/higher trust).
+  let baseList = dedupeSuppliers([...dedupedDbSuppliers, ...SUPPLIER_DIRECTORY_SEED]);
 
   if (searchQuery.trim()) {
     const q = searchQuery.toLowerCase();

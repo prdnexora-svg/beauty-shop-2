@@ -37,6 +37,29 @@ import { FilterPanel } from './FilterPanel';
 import { VerifiedBadge } from './VerifiedBadge';
 import { getSavedProductIds, toggleSavedProduct } from '../data/savedStore';
 
+/**
+ * Keyword map for the Supplier Business Type filter. Mirrors the supplier
+ * directory's type matching so a brand whose type reads "OEM / Private Label"
+ * still matches suppliers typed "OEM Bulk Active Formulator", "Exporter &
+ * Manufacturer", "Wholesaler & Stockist" etc. — a plain substring match on
+ * the full filter label would otherwise return an empty directory.
+ */
+const SUPPLIER_TYPE_KEYWORDS: Record<string, string[]> = {
+  manufacturer: ['manufacturer', 'formulator'],
+  wholesaler: ['wholesaler', 'stockist'],
+  distributor: ['distributor'],
+  exporter: ['exporter'],
+  'oem / private label': ['oem', 'private label'],
+  'oem/odm': ['oem', 'private label']
+};
+
+/** True when a supplier/product business type matches the selected filter label. */
+function supplierTypeMatchesFilter(type: string, filterLabel: string): boolean {
+  const t = (type || '').toLowerCase();
+  const keywords = SUPPLIER_TYPE_KEYWORDS[filterLabel.toLowerCase()] || [filterLabel.toLowerCase()];
+  return keywords.some((keyword) => t.includes(keyword));
+}
+
 interface SearchFilterScreenProps {
   initialTab?: 'products' | 'suppliers' | 'oem';
   initialQuery?: string;
@@ -466,9 +489,9 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
       // Established year match
       if (!matchesEstablishedYears(p.establishedYearNumber, selectedEstablishedYears)) return false;
 
-      // Supplier type match
+      // Supplier type match (keyword-based — see supplierTypeMatchesFilter)
       if (selectedSupplierTypes.length > 0) {
-        const matchesType = selectedSupplierTypes.some((type) => p.supplierType.toLowerCase().includes(type.toLowerCase()));
+        const matchesType = selectedSupplierTypes.some((type) => supplierTypeMatchesFilter(p.supplierType, type));
         if (!matchesType) return false;
       }
 
@@ -540,9 +563,9 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
         if (!matchesCat) return false;
       }
 
-      // Supplier Type match
+      // Supplier Type match (keyword-based — see supplierTypeMatchesFilter)
       if (selectedSupplierTypes.length > 0) {
-        const matchesType = selectedSupplierTypes.some((type) => s.type.toLowerCase().includes(type.toLowerCase()));
+        const matchesType = selectedSupplierTypes.some((type) => supplierTypeMatchesFilter(s.type, type));
         if (!matchesType) return false;
       }
 

@@ -328,7 +328,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           )}
         </div>
         <div className="flex flex-col gap-2">
-          {['Manufacturer', 'OEM / Private Label', 'Wholesaler', 'Distributor'].map((type) => {
+          {['Manufacturer', 'Wholesaler', 'Distributor', 'Exporter', 'OEM / Private Label'].map((type) => {
             const isChecked = selectedSupplierTypes.includes(type);
             return (
               <label key={type} className="flex items-center gap-2.5 cursor-pointer group select-none">
