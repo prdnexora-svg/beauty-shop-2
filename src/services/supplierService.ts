@@ -39,6 +39,98 @@ export interface PaginatedSuppliersResponse {
 const VISIBLE_STATUSES = ['active', 'pending_verification'];
 
 /**
+ * Legal / trade descriptors that carry no brand identity. They are stripped
+ * when comparing supplier names so that e.g. "Aura Beauty Labs",
+ * "Aura Beauty Labs & Formulations" and "Aura Beauty Labs Pvt Ltd" resolve to
+ * the same company instead of appearing as duplicate directory cards.
+ */
+const NAME_NOISE_TOKENS = new Set([
+  'the', 'and', 'co', 'company', 'corp', 'corporation', 'inc', 'incorporated',
+  'ltd', 'limited', 'llp', 'pvt', 'private', 'industries', 'industry',
+  'enterprise', 'enterprises', 'group', 'groups', 'mfg', 'manufacturing',
+  'manufacturer', 'manufacturers', 'formulation', 'formulations', 'formulator',
+  'formulators', 'beauty', 'cosmetics', 'cosmetic', 'india', 'indian',
+  'products', 'product', 'labs', 'lab', 'laboratories', 'global',
+  'international', 'exports', 'exporters', 'trading', 'packaging', 'natural',
+  'organic', 'herbal', 'skincare', 'haircare', 'services', 'solutions',
+  'science', 'sciences', 'professional', 'p', 'l', 't'
+]);
+
+/** Reduce a company name to its distinctive identity tokens. */
+export function supplierNameTokens(name?: string | null): string[] {
+  const normalized = (name || '')
+    .toLowerCase()
+    .replace(/&/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+  if (!normalized) return [];
+  return Array.from(
+    new Set(
+      normalized
+        .split(' ')
+        .filter((token) => token.length >= 3 && !NAME_NOISE_TOKENS.has(token))
+    )
+  );
+}
+
+/**
+ * Decide whether two supplier rows describe the SAME brand.
+ *
+ * Matches either exact identity-token equality ("Aura Beauty Labs" vs
+ * "Aura Beauty Labs") or a one-way token containment where the shorter name
+ * adds no extra identity ("Aura Beauty Labs" vs "Aura Beauty Labs &
+ * Formulations"). A lone shared token must be at least 5 characters long to
+ * avoid merging unrelated brands that happen to share a short generic word.
+ */
+export function isSameSupplierByName(aName?: string | null, bName?: string | null): boolean {
+  const a = supplierNameTokens(aName);
+  const b = supplierNameTokens(bName);
+  if (a.length === 0 || b.length === 0) return false;
+  if (a.join(' ') === b.join(' ')) return true;
+
+  const [small, large] = a.length <= b.length ? [a, b] : [b, a];
+  const allContained = small.every((token) => large.includes(token));
+  if (!allContained) return false;
+  if (small.length >= 2) return true;
+  return small[0].length >= 5;
+}
+
+/** Higher score = the row we keep when several rows describe one brand. */
+function supplierQualityScore(s: VerifiedSupplier): number {
+  return (
+    (s.isVerified ? 10_000 : 0) +
+    (s.status === 'active' || s.onboardingStatus === 'approved' ? 1_000 : 0) +
+    (s.trustScore || 0) +
+    (s.about ? 1 : 0)
+  );
+}
+
+/**
+ * Collapse duplicate / near-duplicate supplier rows into a single card.
+ *
+ * Live databases accumulate repeats from repeat onboarding submissions and
+ * test fixtures (e.g. multiple "Aura Beauty Labs …" / "LuxeForm …" rows with
+ * different ids). The directory must show each brand once; when rows collide
+ * the verified, approved, highest-trust version wins.
+ */
+export function dedupeSuppliers(rows: VerifiedSupplier[]): VerifiedSupplier[] {
+  const picked: VerifiedSupplier[] = [];
+  for (const row of rows) {
+    const existingIndex = picked.findIndex(
+      (candidate) =>
+        candidate.id === row.id ||
+        isSameSupplierByName(candidate.name, row.name)
+    );
+    if (existingIndex === -1) {
+      picked.push(row);
+    } else if (supplierQualityScore(row) > supplierQualityScore(picked[existingIndex])) {
+      picked[existingIndex] = row;
+    }
+  }
+  return picked;
+}
+
+/**
  * Directory-safe projection for public/anonymous reads.
  *
  * This is deliberately NOT `select('*')`: after migration 0110 the `anon` /
@@ -265,8 +357,10 @@ export async function fetchSuppliers(params: SupplierFilterParams = {}): Promise
       if (error) {
         console.warn('Supabase supplier query failed:', error.message);
       } else {
-        const mappedData = (data || []).map(mapSupplierRow);
-        const totalRecords = count ?? mappedData.length;
+        // Collapse same-brand repeats (repeat onboarding rows, fixtures) so
+        // the directory shows each brand exactly once.
+        const mappedData = dedupeSuppliers((data || []).map(mapSupplierRow));
+        const totalRecords = Math.max(count ?? mappedData.length, mappedData.length);
         const totalPages = Math.max(1, Math.ceil(totalRecords / limit));
         return {
           data: mappedData,
@@ -292,6 +386,10 @@ export async function fetchSuppliers(params: SupplierFilterParams = {}): Promise
     })
     .map(mapSupplierRow);
 
+  // Same one-brand-one-card guarantee as the Supabase branch, applied before
+  // filtering/pagination so counts and pages never count duplicate rows.
+  const dedupedDbSuppliers = dedupeSuppliers(dbSuppliers);
+
   const {
     searchQuery = '',
     businessType = 'All',
@@ -302,7 +400,7 @@ export async function fetchSuppliers(params: SupplierFilterParams = {}): Promise
     sortBy = 'relevance'
   } = params;
 
-  let baseList = dbSuppliers;
+  let baseList = dedupedDbSuppliers;
 
   if (searchQuery.trim()) {
     const q = searchQuery.toLowerCase();
