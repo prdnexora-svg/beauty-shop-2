@@ -1,6 +1,28 @@
 import React from 'react';
 import { SlidersHorizontal, X, Check, ShieldCheck, Award, MapPin, Building2, Calendar, Package } from 'lucide-react';
 
+/**
+ * Available supplier business types for the "Supplier Business Type" filter.
+ * Order mirrors the Supplier Directory's business-type list so both surfaces
+ * offer the exact same five options.
+ */
+export const BUSINESS_TYPE_OPTIONS = [
+  'Manufacturer',
+  'Wholesaler',
+  'Distributor',
+  'Exporter',
+  'OEM / Private Label'
+];
+
+/** Tooltip descriptions for each business type option. */
+const BUSINESS_TYPE_DESCRIPTIONS: Record<string, string> = {
+  'Manufacturer': 'Direct producers of raw materials, formulations, and finished goods.',
+  'Wholesaler': 'Bulk inventory stockists offering ready-to-ship products with short lead times.',
+  'Distributor': 'Logistics partners handling regional and national product distribution.',
+  'Exporter': 'Global trade-compliant suppliers with international certifications (ISO, GMP).',
+  'OEM / Private Label': 'Contract development and private label manufacturing partners.'
+};
+
 export interface FilterPanelProps {
   categories: { name: string; subcategories: string[] }[];
   selectedCategories: string[];
@@ -328,10 +350,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           )}
         </div>
         <div className="flex flex-col gap-2">
-          {['Manufacturer', 'Wholesaler', 'Distributor', 'Exporter', 'OEM / Private Label'].map((type) => {
+          {BUSINESS_TYPE_OPTIONS.map((type) => {
             const isChecked = selectedSupplierTypes.includes(type);
             return (
-              <label key={type} className="flex items-center gap-2.5 cursor-pointer group select-none">
+              <label
+                key={type}
+                title={BUSINESS_TYPE_DESCRIPTIONS[type]}
+                className="flex items-center gap-2.5 cursor-pointer group select-none"
+              >
                 <input
                   type="checkbox"
                   checked={isChecked}

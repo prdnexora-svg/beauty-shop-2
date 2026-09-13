@@ -38,27 +38,36 @@ import { VerifiedBadge } from './VerifiedBadge';
 import { getSavedProductIds, toggleSavedProduct } from '../data/savedStore';
 
 /**
- * Keyword map for the Supplier Business Type filter. Mirrors the supplier
- * directory's type matching so a brand whose type reads "OEM / Private Label"
- * still matches suppliers typed "OEM Bulk Active Formulator", "Exporter &
- * Manufacturer", "Wholesaler & Stockist" etc. — a plain substring match on
- * the full filter label would otherwise return an empty directory.
+ * Consistent keyword matching for the Supplier Business Type filter.
+ *
+ * A brand's free-form type string ("OEM Bulk Active Formulator", "Exporter &
+ * Manufacturer", "Wholesaler & Stockist" …) is matched against a keyword set
+ * per business type, so one filter label never depends on an exact-string hit.
+ * Unknown filter labels fall back to a plain substring match.
+ *
+ * Available supplier business types:
+ *  - Manufacturer: direct producers of raw materials, formulations and finished goods.
+ *  - Wholesaler: bulk inventory stockists offering ready-to-ship products with short lead times.
+ *  - Distributor: logistics partners handling regional and national product distribution.
+ *  - Exporter: global trade-compliant suppliers with international certifications (ISO, GMP).
+ *  - OEM / Private Label: contract development and private label manufacturing partners.
  */
-const SUPPLIER_TYPE_KEYWORDS: Record<string, string[]> = {
-  manufacturer: ['manufacturer', 'formulator'],
-  wholesaler: ['wholesaler', 'stockist'],
-  distributor: ['distributor'],
-  exporter: ['exporter'],
-  'oem / private label': ['oem', 'private label'],
-  'oem/odm': ['oem', 'private label']
-};
+export const supplierTypeMatches = (type: string, filter: string): boolean => {
+  const keywords: Record<string, string[]> = {
+    'Manufacturer': ['manufacturer', 'formulator', 'factory'],
+    'OEM / Private Label': ['oem', 'private label', 'contract manufacturer'],
+    'Wholesaler': ['wholesaler', 'stockist', 'bulk seller'],
+    'Distributor': ['distributor', 'distribution', 'supplier'],
+    'Exporter': ['exporter', 'export']
+  };
 
-/** True when a supplier/product business type matches the selected filter label. */
-function supplierTypeMatchesFilter(type: string, filterLabel: string): boolean {
-  const t = (type || '').toLowerCase();
-  const keywords = SUPPLIER_TYPE_KEYWORDS[filterLabel.toLowerCase()] || [filterLabel.toLowerCase()];
-  return keywords.some((keyword) => t.includes(keyword));
-}
+  const lowerType = type.toLowerCase();
+  const filterKeywords = keywords[filter];
+
+  return filterKeywords
+    ? filterKeywords.some(keyword => lowerType.includes(keyword))
+    : lowerType.includes(filter.toLowerCase());
+};
 
 interface SearchFilterScreenProps {
   initialTab?: 'products' | 'suppliers' | 'oem';
@@ -489,9 +498,9 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
       // Established year match
       if (!matchesEstablishedYears(p.establishedYearNumber, selectedEstablishedYears)) return false;
 
-      // Supplier type match (keyword-based — see supplierTypeMatchesFilter)
+      // Supplier type match (keyword-based — see supplierTypeMatches)
       if (selectedSupplierTypes.length > 0) {
-        const matchesType = selectedSupplierTypes.some((type) => supplierTypeMatchesFilter(p.supplierType, type));
+        const matchesType = selectedSupplierTypes.some((type) => supplierTypeMatches(p.supplierType, type));
         if (!matchesType) return false;
       }
 
@@ -563,9 +572,9 @@ export const SearchFilterScreen: React.FC<SearchFilterScreenProps> = ({
         if (!matchesCat) return false;
       }
 
-      // Supplier Type match (keyword-based — see supplierTypeMatchesFilter)
+      // Supplier Type match (keyword-based — see supplierTypeMatches)
       if (selectedSupplierTypes.length > 0) {
-        const matchesType = selectedSupplierTypes.some((type) => supplierTypeMatchesFilter(s.type, type));
+        const matchesType = selectedSupplierTypes.some((type) => supplierTypeMatches(s.type, type));
         if (!matchesType) return false;
       }
 
