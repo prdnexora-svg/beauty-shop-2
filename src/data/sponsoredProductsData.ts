@@ -477,6 +477,132 @@ export const SPONSORED_PRODUCTS_DB: Record<string, ProductDetailData> = {
       establishedYear: '2014 (12 yrs)',
       facilityArea: '38,000 sq.ft Plant'
     }
+  },
+  'product_salon_comb_111': {
+    id: 'product_salon_comb_111',
+    seller_id: 'seller_aura_001',
+    advertiser_id: 'adv_aura_001',
+    title: 'Professional Carbon Cutting & Styling Comb Set',
+    supplierName: 'Aura Beauty Labs',
+    supplierLocation: 'Mumbai, Maharashtra',
+    supplierType: 'Verified Salon Supplies Manufacturer',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    isBusinessVerified: true,
+    isPublished: true,
+    isSuspended: false,
+    moq: '100 Sets',
+    priceRange: '₹165 — ₹240 / Set',
+    priceMin: 165,
+    priceMax: 240,
+    bulkTiers: [
+      { quantityRange: '100 – 249 Sets', unitPrice: '₹240 / Set' },
+      { quantityRange: '250 – 499 Sets', unitPrice: '₹195 / Set' },
+      { quantityRange: '500+ Sets', unitPrice: '₹165 / Set' }
+    ],
+    category: 'Salon Equipment',
+    subcategory: 'Professional Tool Kits',
+    description: 'Heat-resistant, anti-static carbon comb kit for professional haircutting, sectioning and chemical services. Supplied in a reusable salon pouch.',
+    images: ['https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=800&q=80'],
+    stockAvailability: 'In-Stock',
+    leadTimeText: 'Mumbai stock — dispatch in 24 hours',
+    specs: {
+      formulationBase: 'High-strength anti-static carbon fibre',
+      packagingType: '10-piece salon pouch set',
+      shelfLife: '5+ Year Service Life',
+      sampleLeadTime: 'Same-day sample dispatch',
+      productionCapacity: '25,000 Sets / Month',
+      certifications: ['GST Verified', 'Salon Tested', 'Quality Checked']
+    },
+    sellerDetails: {
+      phone: '+91 98201 55443', whatsapp: '919820155443', email: 'sales@aurabeautylabs.in',
+      trustScore: 98, responseRate: '98% within 2 hrs', establishedYear: '2014 (12 yrs)', facilityArea: '32,000 sq.ft Mumbai Unit'
+    }
+  },
+  'product_salon_clips_112': {
+    id: 'product_salon_clips_112',
+    seller_id: 'seller_aura_001',
+    advertiser_id: 'adv_aura_001',
+    title: 'Stainless Steel Salon Sectioning Clips — 24 Pack',
+    supplierName: 'Aura Beauty Labs',
+    supplierLocation: 'Mumbai, Maharashtra',
+    supplierType: 'Verified Salon Supplies Manufacturer',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    isBusinessVerified: true,
+    isPublished: true,
+    isSuspended: false,
+    moq: '120 Packs',
+    priceRange: '₹210 — ₹295 / Pack',
+    priceMin: 210,
+    priceMax: 295,
+    bulkTiers: [
+      { quantityRange: '120 – 249 Packs', unitPrice: '₹295 / Pack' },
+      { quantityRange: '250 – 499 Packs', unitPrice: '₹245 / Pack' },
+      { quantityRange: '500+ Packs', unitPrice: '₹210 / Pack' }
+    ],
+    category: 'Salon Equipment',
+    subcategory: 'Professional Tool Kits',
+    description: 'Non-slip stainless section clips for haircutting, coloring, styling and bridal makeup studios. Rust-resistant and suitable for repeated sanitization.',
+    images: ['https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80'],
+    stockAvailability: 'In-Stock',
+    leadTimeText: 'Ready stock in Mumbai — 1–2 day dispatch',
+    specs: {
+      formulationBase: 'Salon-grade stainless steel with anti-slip grip',
+      packagingType: '24 clips per retail-ready pack',
+      shelfLife: 'Reusable professional equipment',
+      sampleLeadTime: '1 Business Day',
+      productionCapacity: '40,000 Packs / Month',
+      certifications: ['GST Verified', 'Rust Resistance Tested', 'Quality Checked']
+    },
+    sellerDetails: {
+      phone: '+91 98201 55443', whatsapp: '919820155443', email: 'sales@aurabeautylabs.in',
+      trustScore: 98, responseRate: '98% within 2 hrs', establishedYear: '2014 (12 yrs)', facilityArea: '32,000 sq.ft Mumbai Unit'
+    }
+  },
+  'product_nail_lamp_113': {
+    id: 'product_nail_lamp_113',
+    seller_id: 'seller_aura_001',
+    advertiser_id: 'adv_aura_001',
+    title: 'Portable UV LED Nail Curing Lamp for Studios',
+    supplierName: 'Aura Beauty Labs',
+    supplierLocation: 'Mumbai, Maharashtra',
+    supplierType: 'Verified Salon Supplies Manufacturer',
+    isGstVerified: true,
+    isIsoCertified: true,
+    isNexoraVerified: true,
+    isBusinessVerified: true,
+    isPublished: true,
+    isSuspended: false,
+    moq: '100 Units',
+    priceRange: '₹890 — ₹1,150 / Unit',
+    priceMin: 890,
+    priceMax: 1150,
+    bulkTiers: [
+      { quantityRange: '100 – 199 Units', unitPrice: '₹1,150 / Unit' },
+      { quantityRange: '200 – 499 Units', unitPrice: '₹990 / Unit' },
+      { quantityRange: '500+ Units', unitPrice: '₹890 / Unit' }
+    ],
+    category: 'Salon Equipment',
+    subcategory: 'Nail Studio Equipment',
+    description: 'Compact dual-light UV LED curing lamp with 30, 60 and 90 second timers for nail studios, beauty parlours and mobile nail artists.',
+    images: ['https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80'],
+    stockAvailability: 'In-Stock',
+    leadTimeText: 'Ready stock in Mumbai — dispatch in 48 hours',
+    specs: {
+      formulationBase: '48W dual UV/LED professional curing system',
+      packagingType: 'Protective retail box with adapter',
+      shelfLife: '30,000 Hour Rated LED Life',
+      sampleLeadTime: 'Demo unit available',
+      productionCapacity: '8,000 Units / Month',
+      certifications: ['CE Certified', 'Electrical Safety Tested', '1-Year Warranty']
+    },
+    sellerDetails: {
+      phone: '+91 98201 55443', whatsapp: '919820155443', email: 'sales@aurabeautylabs.in',
+      trustScore: 98, responseRate: '98% within 2 hrs', establishedYear: '2014 (12 yrs)', facilityArea: '32,000 sq.ft Mumbai Unit'
+    }
   }
 };
 
