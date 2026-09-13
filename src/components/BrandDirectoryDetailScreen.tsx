@@ -4,7 +4,7 @@ import {
   Calendar, Users, Award, Briefcase, Sparkles, Building2, 
   ChevronRight, ChevronLeft, Check, MessageSquare, FileText, Bookmark, 
   BookmarkCheck, CheckCircle2, SlidersHorizontal, ArrowUpDown, PlusCircle,
-  Loader2
+  Loader2, SearchX, RotateCcw, X
 } from 'lucide-react';
 import { fetchSuppliers } from '../services/supplierService';
 
@@ -196,6 +196,16 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
       }
     });
   };
+
+  // Reset every active filter back to its default — used by the empty state
+  // so buyers can recover from a zero-result search in one click.
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('All');
+    setSortBy('Relevance');
+  };
+
+  const hasActiveFilters = searchQuery.trim() !== '' || selectedCategory !== 'All';
 
   // Filter & Sort logic — operates only on database-backed rows.
   const filteredBrands = useMemo(() => {
@@ -414,6 +424,97 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
               </div>
             )}
 
+            {/* Dedicated empty state — only after loading finishes with zero
+                matches for the current search query / category filters. */}
+            {!isLoadingBrands && filteredBrands.length === 0 ? (
+              <div
+                data-testid="brand-directory-empty-state"
+                role="status"
+                aria-live="polite"
+                className="bg-white border border-[#E8DEEF] rounded-2xl px-6 py-14 md:px-12 md:py-16 text-center max-w-2xl mx-auto shadow-2xs"
+              >
+                {/* Icon */}
+                <div className="relative w-16 h-16 mx-auto mb-5">
+                  <div className="absolute inset-0 rounded-2xl bg-[#F5EEF8] border border-[#E8D5F2]" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <SearchX className="w-8 h-8 text-[#6B2D8C]" strokeWidth={1.75} />
+                  </div>
+                </div>
+
+                <h3 className="font-extrabold text-lg md:text-xl text-[#2A0E3F]">
+                  No brands found
+                </h3>
+                <p className="text-xs md:text-sm text-[#5B4A6E] mt-2 max-w-sm mx-auto leading-relaxed">
+                  Try another search or select a different category
+                </p>
+
+                {/* Active filter chips — remind the buyer which filters hid every result */}
+                {hasActiveFilters && (
+                  <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                    {searchQuery.trim() !== '' && (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#6B2D8C] bg-[#F5EEF8] border border-[#E8D5F2] rounded-full pl-3 pr-1.5 py-1 max-w-[260px]">
+                        <Search className="w-3 h-3 shrink-0" />
+                        <span className="truncate">“{searchQuery.trim()}”</span>
+                        <button
+                          type="button"
+                          onClick={() => setSearchQuery('')}
+                          aria-label="Clear search query"
+                          className="w-[18px] h-[18px] rounded-full flex items-center justify-center hover:bg-[#E8D5F2] transition-colors cursor-pointer shrink-0"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    )}
+                    {selectedCategory !== 'All' && (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#6B2D8C] bg-[#F5EEF8] border border-[#E8D5F2] rounded-full pl-3 pr-1.5 py-1 max-w-[260px]">
+                        <SlidersHorizontal className="w-3 h-3 shrink-0" />
+                        <span className="truncate">{selectedCategory}</span>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCategory('All')}
+                          aria-label="Clear category filter"
+                          className="w-[18px] h-[18px] rounded-full flex items-center justify-center hover:bg-[#E8D5F2] transition-colors cursor-pointer shrink-0"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Recovery actions */}
+                <div className="mt-7 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  {hasActiveFilters ? (
+                    <button
+                      type="button"
+                      onClick={handleClearFilters}
+                      className="w-full sm:w-auto bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold text-xs px-6 py-3 rounded-xl shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Clear all search filters</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={onNavigateToSuppliers}
+                      className="w-full sm:w-auto bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold text-xs px-6 py-3 rounded-xl shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      <Building2 className="w-4 h-4" />
+                      <span>Browse all suppliers</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={onOpenRFQModal}
+                    className="w-full sm:w-auto bg-white border border-[#E8DEEF] hover:border-[#6B2D8C] text-[#6B2D8C] font-bold text-xs px-6 py-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span>Post Custom Brand RFQ</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {filteredBrands.map((brand) => {
                 const isSaved = savedBrandIds.includes(brand.id);
@@ -571,43 +672,6 @@ export const BrandDirectoryDetailScreen: React.FC<BrandDirectoryDetailScreenProp
                 );
               })}
             </div>
-
-            {filteredBrands.length === 0 && (
-              <div className="bg-white border border-[#E8DEEF] rounded-2xl p-8 md:p-12 text-center max-w-lg mx-auto shadow-2xs space-y-5">
-                <div className="w-14 h-14 rounded-2xl bg-[#F5EEF8] text-[#6B2D8C] flex items-center justify-center mx-auto border border-[#f5d0de]">
-                  <Building2 className="w-7 h-7" />
-                </div>
-                
-                <div className="space-y-1.5">
-                  <h3 className="font-extrabold text-base md:text-lg text-zinc-950">
-                    No formulation brands found
-                  </h3>
-                  <p className="text-xs text-[#5B4A6E] leading-relaxed max-w-md mx-auto">
-                    {searchQuery 
-                      ? `We couldn't find an existing listed manufacturer matching "${searchQuery}". Submit a custom RFQ to have our verified supplier network quote your exact specifications.`
-                      : `No manufacturers found in the "${selectedCategory}" category. Post a custom RFQ to connect with unlisted certified formulators.`
-                    }
-                  </p>
-                </div>
-
-                {/* Prominent RFQ Placement for Empty State */}
-                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-                  <button 
-                    onClick={onOpenRFQModal}
-                    className="w-full sm:w-auto bg-[#6B2D8C] hover:bg-[#4A2560] text-white font-extrabold text-xs px-6 py-3 rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    <FileText className="w-4 h-4" />
-                    <span>Post Custom Brand RFQ</span>
-                  </button>
-
-                  <button 
-                    onClick={() => { setSearchQuery(''); setSelectedCategory('All'); setSortBy('Relevance'); }}
-                    className="w-full sm:w-auto bg-[#F6F1FA] hover:bg-[#E8DEEF] text-zinc-700 font-bold text-xs px-4 py-3 rounded-xl transition-all cursor-pointer"
-                  >
-                    Clear all search filters
-                  </button>
-                </div>
-              </div>
             )}
 
           </div>
