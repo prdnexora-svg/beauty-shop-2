@@ -16,6 +16,7 @@ import { HowItWorks } from './components/luxe/HowItWorks';
 import { LuxeFooter } from './components/luxe/LuxeFooter';
 import { Reveal } from './components/luxe/Reveal';
 import { GoldDivider } from './components/luxe/GoldDivider';
+import { SkincareTaxonomyShowcase } from './components/SkincareTaxonomyShowcase';
 import { DirectoryHubScreen } from './components/DirectoryHubScreen';
 import { EnquiryModal } from './components/EnquiryModal';
 import { AuthModal } from './components/AuthModal';
@@ -873,6 +874,12 @@ function NexoraShopApp() {
               }}
             />
 
+            </Reveal>
+
+            <GoldDivider className="pt-14 md:pt-16" />
+
+            <Reveal>
+            <SkincareTaxonomyShowcase />
             </Reveal>
 
             <GoldDivider className="pt-14 md:pt-16" />

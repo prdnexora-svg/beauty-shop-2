@@ -39,6 +39,8 @@ import { CATEGORY_TAXONOMY } from '../data/categories';
 import { getSavedProductIds, toggleSavedProduct } from '../data/savedStore';
 import { motion, AnimatePresence } from 'motion/react';
 import { ProductQuickViewModal } from './ProductQuickViewModal';
+import { useSkincareDisplayStyle } from '../hooks/useSkincareDisplayStyle';
+import { SkincareSubcategoryStyleSwitcher } from './SkincareSubcategoryStyleSwitcher';
 
 interface ProductListingScreenProps {
   isLoggedIn: boolean;
@@ -68,6 +70,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
   onOpenAuth
 }) => {
   // Filter States
+  const { styleId: skincareStyleId, translate: translateSkincare } = useSkincareDisplayStyle();
   const [selectedCategory, setSelectedCategory] = useState<string>('Haircare');
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(['Hair Serums']);
   const [categoryAccordionOpen, setCategoryAccordionOpen] = useState<boolean>(true);
@@ -346,6 +349,21 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
             </button>
           </div>
 
+          {/* Skincare Style Switcher — shows when Skincare is active */}
+          {(selectedCategory.toLowerCase().includes('skincare') || selectedCategory === 'All Categories') && (
+            <div className="bg-[#FDFBF7] border border-[#E8DEEF] rounded-xl p-3 space-y-2">
+              <div className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-[#5B4A6E]">
+                <span>🌐</span> Skincare Language
+              </div>
+              <SkincareSubcategoryStyleSwitcher compact showPreview={false} />
+              <p className="text-[10px] text-[#8B7FA3] font-medium leading-snug">
+                {skincareStyleId === 'hindiEnglishMix' && 'Bilingual: English + Hindi in brackets for easy understanding'}
+                {skincareStyleId === 'pureEnglish' && 'Clean B2B English labels — professional catalog look'}
+                {skincareStyleId === 'simpleHinglish' && 'Direct everyday Hinglish — familiar words'}
+              </p>
+            </div>
+          )}
+
           {/* Category Accordion */}
           <div className="space-y-3">
             <button
@@ -364,6 +382,7 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
               <div className="space-y-3 pl-1 max-h-96 overflow-y-auto">
                 {Object.entries(CATEGORY_TAXONOMY).map(([catName, subcategories]) => {
                   const isCatSelected = selectedCategory === catName || selectedCategory.includes(catName);
+                  const isSkincareCat = catName.toLowerCase().includes('skincare');
                   return (
                     <div key={catName} className="space-y-1.5">
                       <label className="flex items-center gap-2 cursor-pointer group">
@@ -389,19 +408,22 @@ export const ProductListingScreen: React.FC<ProductListingScreenProps> = ({
                       {/* Subcategories */}
                       {isCatSelected && (
                         <div className="pl-5 space-y-1.5 mt-1 border-l-2 border-[#ece7e7]">
-                          {subcategories.map((subName) => (
-                            <label key={subName} className="flex items-center gap-2 cursor-pointer group">
-                              <input
-                                type="checkbox"
-                                checked={selectedSubcategories.includes(subName)}
-                                onChange={() => toggleSubcategory(subName)}
-                                className="w-3.5 h-3.5 rounded text-[#6B2D8C] focus:ring-[#C9A961]/30 border-[#E8DEEF] accent-[#6B2D8C]"
-                              />
-                              <span className="text-[12px] text-[#5B4A6E] group-hover:text-[#2A0E3F] transition-colors">
-                                {subName}
-                              </span>
-                            </label>
-                          ))}
+                          {subcategories.map((subName) => {
+                            const displayName = isSkincareCat ? translateSkincare(subName) : subName;
+                            return (
+                              <label key={subName} className="flex items-center gap-2 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedSubcategories.includes(subName)}
+                                  onChange={() => toggleSubcategory(subName)}
+                                  className="w-3.5 h-3.5 rounded text-[#6B2D8C] focus:ring-[#C9A961]/30 border-[#E8DEEF] accent-[#6B2D8C]"
+                                />
+                                <span className="text-[12px] text-[#5B4A6E] group-hover:text-[#2A0E3F] transition-colors" title={subName !== displayName ? subName : undefined}>
+                                  {displayName}
+                                </span>
+                              </label>
+                            );
+                          })}
                         </div>
                       )}
                     </div>

@@ -14,6 +14,7 @@
 
 import { supabase, isSupabaseConfigured } from './supabase';
 import { CATEGORY_TAXONOMY } from '../data/categoryTaxonomy';
+import { SKINCARE_SUBCATEGORIES } from '../data/skincareSubcategoryStyles';
 
 /** One row from the `subcategories` table (or an offline fallback row). */
 export interface TaxonomySubcategory {
@@ -143,6 +144,8 @@ export function normalizeSearchQuery(value: string): string {
  * - A category is kept when its name OR any of its subcategory names matches.
  * - When a category is kept because of a subcategory match, only the matching
  *   subcategories are returned so the pills area directly answers the query.
+ * - For Skincare, also matches against Hindi / Hinglish aliases and keywords
+ *   defined in skincareSubcategoryStyles.ts
  */
 export function filterTaxonomyCatalog(
   catalog: TaxonomyCatalog,
@@ -154,9 +157,44 @@ export function filterTaxonomyCatalog(
   const categories = catalog.categories
     .map((category) => {
       const categoryMatches = category.name.toLowerCase().includes(normalized);
-      const matchedSubcategories = category.subcategories.filter((sub) =>
-        sub.name.toLowerCase().includes(normalized)
-      );
+      const isSkincare = category.name.toLowerCase().includes('skincare');
+
+      const matchedSubcategories = category.subcategories.filter((sub) => {
+        if (sub.name.toLowerCase().includes(normalized)) return true;
+        if (!isSkincare) return false;
+        // For Skincare, also match against alias lists
+        const lowerName = sub.name.toLowerCase();
+        const matchedAlias = SKINCARE_SUBCATEGORIES.some((item) => {
+          // Check if this sub matches the canonical item
+          const canonicalMatch =
+            item.canonicalEnglish.toLowerCase() === lowerName ||
+            item.pureEnglish.toLowerCase() === lowerName ||
+            item.hindiEnglishMix.toLowerCase() === lowerName ||
+            item.simpleHinglish.toLowerCase() === lowerName ||
+            lowerName.includes(item.id.replace(/-/g, ' '));
+
+          if (!canonicalMatch) {
+            // Also check if sub name is close to any alias (fuzzy)
+            // We still want to match if query matches any alias of this item
+            // So first check if sub belongs to this item via keywords, then check query against item
+            const itemBelongs =
+              item.canonicalEnglish.toLowerCase() === lowerName ||
+              item.pureEnglish.toLowerCase() === lowerName;
+            if (!itemBelongs) return false;
+          }
+
+          // Now check if query matches any of the item's display variants or keywords
+          return (
+            item.hindiEnglishMix.toLowerCase().includes(normalized) ||
+            item.pureEnglish.toLowerCase().includes(normalized) ||
+            item.simpleHinglish.toLowerCase().includes(normalized) ||
+            item.canonicalEnglish.toLowerCase().includes(normalized) ||
+            (item.hindiTranslation && item.hindiTranslation.toLowerCase().includes(normalized)) ||
+            item.keywords.some((kw) => kw.toLowerCase().includes(normalized))
+          );
+        });
+        return matchedAlias;
+      });
 
       if (!categoryMatches && matchedSubcategories.length === 0) return null;
       return {

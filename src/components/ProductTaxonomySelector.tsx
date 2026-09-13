@@ -22,6 +22,9 @@ import {
   findCategoryByName,
   normalizeSearchQuery
 } from '../lib/taxonomyService';
+import { useSkincareDisplayStyle } from '../hooks/useSkincareDisplayStyle';
+import { SKINCARE_SUBCATEGORIES, getSkincareDisplayLabel } from '../data/skincareSubcategoryStyles';
+import { SkincareSubcategoryStyleSwitcher } from './SkincareSubcategoryStyleSwitcher';
 
 interface ProductTaxonomySelectorProps {
   /** current taxonomy selection (controlled) */
@@ -56,7 +59,9 @@ export const ProductTaxonomySelector: React.FC<ProductTaxonomySelectorProps> = (
   children
 }) => {
   const { catalog, loading, isLive, error, reload } = useTaxonomyCatalog();
+  const { styleId, translate } = useSkincareDisplayStyle();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showStyleSwitcher, setShowStyleSwitcher] = useState(false);
 
   const filteredCatalog = useMemo(
     () => filterTaxonomyCatalog(catalog, searchQuery),
@@ -71,6 +76,30 @@ export const ProductTaxonomySelector: React.FC<ProductTaxonomySelectorProps> = (
     () => (selectedInFiltered ? selectedInFiltered.subcategories.map((sub) => sub.name) : []),
     [selectedInFiltered]
   );
+
+  // For Skincare, translate display labels based on current style, but keep canonical value for selection logic
+  const isSkincare = value.primaryCategory.toLowerCase().includes('skincare');
+
+  const getDisplayLabel = (canonical: string) => {
+    if (!isSkincare) return canonical;
+    return translate(canonical);
+  };
+
+  const getHindiHint = (canonical: string) => {
+    if (styleId !== 'hindiEnglishMix') return null;
+    const normalized = canonical.trim().toLowerCase();
+    const item = SKINCARE_SUBCATEGORIES.find(
+      (it) =>
+        it.canonicalEnglish.toLowerCase() === normalized ||
+        it.pureEnglish.toLowerCase() === normalized ||
+        it.hindiEnglishMix.toLowerCase() === normalized ||
+        it.simpleHinglish.toLowerCase() === normalized ||
+        it.id === normalized
+    );
+    if (!item) return null;
+    // Return just hindi part for smaller hint
+    return item.hindiTranslation;
+  };
 
   const selectOptions = useMemo(() => {
     const visibleHasSelected = visibleCategories.some((c) => c.name === value.primaryCategory);
@@ -96,6 +125,33 @@ export const ProductTaxonomySelector: React.FC<ProductTaxonomySelectorProps> = (
 
   return (
     <div className="space-y-6">
+      {/* ---------- Skincare Style Switcher (only when Skincare selected) ---------- */}
+      {isSkincare && (
+        <div className="bg-white border border-[#E8DEEF] rounded-2xl p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-wider text-[#5B4A6E]">
+              <span className="w-6 h-6 rounded-full bg-[#F5EEF8] flex items-center justify-center">🌐</span>
+              Display Style
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowStyleSwitcher(!showStyleSwitcher)}
+              className="text-[11px] font-bold text-[#6B2D8C] hover:underline cursor-pointer"
+            >
+              {showStyleSwitcher ? 'Hide Options' : 'Change Style'}
+            </button>
+          </div>
+          <div className="mt-2">
+            <SkincareSubcategoryStyleSwitcher compact showPreview={false} />
+          </div>
+          {showStyleSwitcher && (
+            <div className="mt-4 pt-4 border-t border-[#E8DEEF]">
+              <SkincareSubcategoryStyleSwitcher />
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ---------- Live / fallback taxonomy status ---------- */}
       <div className="flex items-center justify-between flex-wrap gap-2 text-[11px] font-bold">
         {loading ? (
@@ -208,9 +264,10 @@ export const ProductTaxonomySelector: React.FC<ProductTaxonomySelectorProps> = (
                   key={subItem}
                   data-testid="taxonomy-path-chip"
                   className="bg-[#6B2D8C] text-white font-bold px-3 py-1 rounded-lg text-[12px] flex items-center gap-1.5 shadow-2xs"
+                  title={subItem}
                 >
                   <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                  {subItem}
+                  {getDisplayLabel(subItem)}
                   <button
                     type="button"
                     aria-label={`Remove ${subItem}`}
@@ -294,24 +351,34 @@ export const ProductTaxonomySelector: React.FC<ProductTaxonomySelectorProps> = (
               ) : (
                 availableSubcategories.map((subItem) => {
                   const isSelected = value.selectedSubcategories.includes(subItem);
+                  const displayLabel = getDisplayLabel(subItem);
+                  const hindiHint = getHindiHint(subItem);
                   return (
                     <button
                       key={subItem}
                       type="button"
                       aria-pressed={isSelected}
                       onClick={() => handleTogglePill(subItem)}
-                      className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      title={subItem !== displayLabel ? `${subItem} → ${displayLabel}` : subItem}
+                      className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all cursor-pointer flex flex-col items-start gap-0.5 text-left ${
                         isSelected
                           ? 'bg-[#6B2D8C] text-white shadow-2xs border border-[#6B2D8C]'
                           : 'bg-white text-[#2A0E3F] border border-[#E8DEEF] hover:border-[#6B2D8C] hover:bg-[#F5EEF8]'
                       }`}
                     >
-                      {isSelected ? (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-white shrink-0" />
-                      ) : (
-                        <Plus className="w-3.5 h-3.5 text-[#8B7FA3] shrink-0" />
+                      <span className="flex items-center gap-1.5">
+                        {isSelected ? (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-white shrink-0" />
+                        ) : (
+                          <Plus className="w-3.5 h-3.5 text-[#8B7FA3] shrink-0" />
+                        )}
+                        <span>{displayLabel}</span>
+                      </span>
+                      {hindiHint && (
+                        <span className={`text-[10px] font-medium ml-5 ${isSelected ? 'text-white/70' : 'text-[#8B7FA3]'}`}>
+                          {hindiHint}
+                        </span>
                       )}
-                      <span>{subItem}</span>
                     </button>
                   );
                 })

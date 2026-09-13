@@ -1,3 +1,5 @@
+import { getPureEnglishSkincareNames, SKINCARE_SUBCATEGORIES } from './skincareSubcategoryStyles';
+
 export interface CategoryTaxonomyNode {
   id: string;
   name: string;
@@ -8,15 +10,27 @@ export interface CategoryTaxonomyNode {
   image?: string;
 }
 
+/**
+ * Updated Skincare taxonomy now supports 3 display styles:
+ * - hindiEnglishMix: bilingual easy UI
+ * - pureEnglish: clean B2B short labels (default canonical)
+ * - simpleHinglish: direct everyday language
+ *
+ * The underlying canonical list is expanded to 8 items (Pure English B2B look)
+ * plus Anti-Aging for full coverage. Legacy names are still searchable via
+ * aliases in skincareSubcategoryStyles.
+ */
+
+// Expanded canonical list — Pure English B2B is now default for clean look,
+// but includes Anti-Aging from Hindi+English mix for completeness.
+// For backward compat, legacy names are kept as searchable aliases via
+// skincareSubcategoryStyles.ts mapping.
+const SKINCARE_CANONICAL_PURE_EN = getPureEnglishSkincareNames();
+// Ensure we include Anti-Aging & Spot Care explicitly (already in pure list as mapped)
+export const SKINCARE_SUBCATEGORIES_CANONICAL = SKINCARE_CANONICAL_PURE_EN;
+
 export const CATEGORY_TAXONOMY: Record<string, string[]> = {
-  'Skincare': [
-    'Serums & Treatments',
-    'Cleansers & Toners',
-    'Moisturizers & Creams',
-    'Sunscreen & Sun Care',
-    'Face Masks & Peels',
-    'Eye & Lip Care'
-  ],
+  'Skincare': SKINCARE_CANONICAL_PURE_EN,
   'Haircare & Styling': [
     'Shampoos & Conditioners',
     'Hair Oils & Serums',

@@ -131,7 +131,7 @@ export const PostRequirementScreen: React.FC<PostRequirementScreenProps> = ({
   const [productName, setProductName] = useState(initialDraft?.requirement || '');
   // Primary Category + Subcategory Multi-Select (Active Taxonomy Path)
   const [taxonomy, setTaxonomy] = useState<TaxonomySelectionState>(
-    createInitialTaxonomyState('Skincare', ['Serums & Treatments'])
+    createInitialTaxonomyState('Skincare', ['Face Serums & Actives'])
   );
   const [showTaxonomyError, setShowTaxonomyError] = useState(false);
   const [selectedVisualRefs, setSelectedVisualRefs] = useState<string[]>(['dropper', 'pump']);

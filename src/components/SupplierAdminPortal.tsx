@@ -23,10 +23,11 @@ import { SellerBusinessProfile } from './SellerBusinessProfile';
 const CATALOG_STORAGE_KEY = 'nexora_supplier_catalog_v1';
 
 // Initial seed listings (used only until the supplier saves their own catalog)
+// Updated to new canonical B2B taxonomy (Pure English clean look)
 const INITIAL_PRODUCTS: CatalogProduct[] = [
-  { id: 'sp1', name: 'Peptide Skin Barrier Repair Cream', price: '145', mrp: '180', category: 'Skincare', subcategory: 'Moisturizers & Creams', brand: 'Aura Beauty Labs', stockQty: 2000, unit: 'Pcs', taxRate: '18%', status: 'Active', tags: ['repair', 'barrier'], attributes: [{ label: 'Size', value: '50ml' }], images: [] },
-  { id: 'sp2', name: 'Clinical Vitamin C Infused Glow Serum', price: '190', mrp: '220', category: 'Skincare', subcategory: 'Serums & Treatments', brand: 'Aura Beauty Labs', stockQty: 3000, unit: 'Pcs', taxRate: '18%', status: 'Active', tags: ['vitamin-c', 'glow'], attributes: [{ label: 'Size', value: '30ml' }], images: [] },
-  { id: 'sp3', name: 'Salicylic Acid Overnight Blemish Gel', price: '110', mrp: '135', category: 'Skincare', subcategory: 'Serums & Treatments', brand: 'Aura Beauty Labs', stockQty: 5000, unit: 'Pcs', taxRate: '18%', status: 'Draft', tags: [], attributes: [], images: [] }
+  { id: 'sp1', name: 'Peptide Skin Barrier Repair Cream', price: '145', mrp: '180', category: 'Skincare', subcategory: 'Day & Night Moisturizers', brand: 'Aura Beauty Labs', stockQty: 2000, unit: 'Pcs', taxRate: '18%', status: 'Active', tags: ['repair', 'barrier'], attributes: [{ label: 'Size', value: '50ml' }], images: [] },
+  { id: 'sp2', name: 'Clinical Vitamin C Infused Glow Serum', price: '190', mrp: '220', category: 'Skincare', subcategory: 'Face Serums & Actives', brand: 'Aura Beauty Labs', stockQty: 3000, unit: 'Pcs', taxRate: '18%', status: 'Active', tags: ['vitamin-c', 'glow'], attributes: [{ label: 'Size', value: '30ml' }], images: [] },
+  { id: 'sp3', name: 'Salicylic Acid Overnight Blemish Gel', price: '110', mrp: '135', category: 'Skincare', subcategory: 'Face Serums & Actives', brand: 'Aura Beauty Labs', stockQty: 5000, unit: 'Pcs', taxRate: '18%', status: 'Draft', tags: [], attributes: [], images: [] }
 ];
 
 function loadStoredCatalog(): CatalogProduct[] {
